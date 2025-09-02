@@ -1,6 +1,7 @@
 <p align="center">
   <img src="dougie.jpg" alt="Douglas D Mitchell" width="300"/>
 </p>
+
 # Douglas D. Mitchell
 
 **Writer • Marketing Strategist • Developer • Lifelong Learner**
