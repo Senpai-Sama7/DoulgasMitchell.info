@@ -3,11 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Douglas Mitchell | Creative Technologist</title>
+    <title>Douglas Mitchell | Creative Technologist & Digital Artist</title>
+    <meta name="description" content="Douglas Mitchell - Creative Technologist specializing in immersive digital experiences, WebGL, and interactive data visualization">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
     <style>
         :root {
@@ -15,31 +17,100 @@
             --secondary: #2575fc;
             --accent: #ff2d75;
             --dark: #0f0c29;
+            --dark-lighter: #1a153e;
             --light: #f0f0f0;
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            --glass: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-heavy: rgba(15, 12, 41, 0.7);
             --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --section-spacing: 8rem;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 300;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 600;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
         }
 
         body {
-            background: linear-gradient(135deg, var(--dark), #302b63, #24243e);
+            background: linear-gradient(135deg, var(--dark), #1a153e, #24243e);
             color: var(--light);
             overflow-x: hidden;
             min-height: 100vh;
             position: relative;
+            font-weight: 300;
+            line-height: 1.6;
         }
 
-        /* Custom Cursor */
+        /* Improved Typography */
+        h1, h2, h3, h4 {
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+        }
+
+        h2 {
+            font-size: clamp(2rem, 4vw, 3rem);
+        }
+
+        h3 {
+            font-size: clamp(1.5rem, 3vw, 1.8rem);
+        }
+
+        p {
+            margin-bottom: 1.5rem;
+            font-size: clamp(1rem, 2.5vw, 1.1rem);
+        }
+
+        /* Enhanced Custom Cursor */
         .cursor {
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: var(--accent);
             position: fixed;
@@ -47,12 +118,24 @@
             z-index: 9999;
             mix-blend-mode: difference;
             transform: translate(-50%, -50%);
-            transition: transform 0.1s ease-out;
+            transition: transform 0.15s ease-out, width 0.3s ease, height 0.3s ease;
+        }
+
+        .cursor.hover {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 45, 117, 0.2);
+            border: 2px solid var(--accent);
+        }
+
+        .cursor.click {
+            width: 35px;
+            height: 35px;
         }
 
         .cursor-trail {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             background: rgba(255, 255, 255, 0.5);
             position: fixed;
@@ -60,38 +143,55 @@
             z-index: 9998;
             transform: translate(-50%, -50%);
             opacity: 0;
+            transition: width 0.3s, height 0.3s;
         }
 
-        /* Glassmorphism Navigation */
+        /* Enhanced Glassmorphism Navigation */
         nav {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            padding: 1.5rem 2rem;
+            padding: 1.2rem 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(10px);
-            background: var(--glass);
+            backdrop-filter: blur(12px) saturate(180%);
+            background: var(--glass-heavy);
             border-bottom: 1px solid var(--glass-border);
             transition: var(--transition);
         }
 
+        nav.scrolled {
+            padding: 0.8rem 2rem;
+            background: rgba(15, 12, 41, 0.95);
+        }
+
         .logo {
             font-size: 1.8rem;
-            font-weight: 700;
+            font-weight: 800;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent);
+            border-radius: 50%;
+            margin-left: 4px;
+            animation: pulse 2s infinite;
         }
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 2.5rem;
         }
 
         .nav-links a {
@@ -100,6 +200,7 @@
             font-weight: 500;
             position: relative;
             padding: 0.5rem 0;
+            font-size: 1.1rem;
             transition: var(--transition);
         }
 
@@ -118,7 +219,20 @@
             width: 100%;
         }
 
-        /* Hero Section */
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--light);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        /* Hero Section Improvements */
         .hero {
             height: 100vh;
             display: flex;
@@ -131,36 +245,58 @@
             overflow: hidden;
         }
 
-        #wave-canvas {
+        #particles-js {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
+            top: 0;
+            left: 0;
             z-index: -1;
         }
 
         .hero-content {
-            max-width: 800px;
+            max-width: 950px;
             z-index: 2;
         }
 
         .hero h1 {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
+            margin-bottom: 1.2rem;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
             opacity: 0;
             transform: translateY(20px);
+            position: relative;
+            display: inline-block;
+        }
+
+        .hero h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.8s ease;
         }
 
         .hero p {
-            font-size: 1.5rem;
-            margin-bottom: 2rem;
+            font-size: clamp(1.2rem, 3vw, 1.6rem);
+            margin-bottom: 2.5rem;
             opacity: 0;
             transform: translateY(20px);
+            font-weight: 300;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
         }
 
         .cta-button {
@@ -176,6 +312,23 @@
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
             opacity: 0;
             transform: translateY(20px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
         }
 
         .cta-button:hover {
@@ -183,10 +336,63 @@
             box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
         }
 
+        .cta-button.secondary {
+            background: transparent;
+            border: 2px solid var(--glass-border);
+            color: var(--light);
+        }
+
+        .cta-button.secondary:hover {
+            background: var(--glass);
+            border-color: var(--accent);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--light);
+            opacity: 0.7;
+            transition: var(--transition);
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+        }
+
+        .scroll-indicator p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .scroll-indicator .mouse {
+            width: 30px;
+            height: 50px;
+            border: 2px solid var(--light);
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .scroll-indicator .wheel {
+            width: 4px;
+            height: 10px;
+            background: var(--light);
+            border-radius: 2px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: scroll 2s infinite;
+        }
+
         /* Sections */
         section {
             min-height: 100vh;
-            padding: 6rem 2rem;
+            padding: var(--section-spacing) 2rem;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -194,45 +400,49 @@
         }
 
         .section-title {
-            font-size: 2.5rem;
-            margin-bottom: 3rem;
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 4rem;
             text-align: center;
             position: relative;
+            padding-bottom: 1.5rem;
         }
 
         .section-title::after {
             content: '';
             position: absolute;
-            bottom: -10px;
+            bottom: 0;
             left: 50%;
             transform: translateX(-50%);
-            width: 100px;
+            width: 80px;
             height: 4px;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             border-radius: 2px;
         }
 
-        /* About Section */
-        .about-content {
-            display: flex;
-            gap: 3rem;
+        .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
+        }
+
+        /* About Section Improvements */
+        .about-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
             align-items: center;
         }
 
         .about-text {
-            flex: 1;
             font-size: 1.1rem;
             line-height: 1.8;
         }
 
         .about-text p {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
         }
 
         .skills-container {
-            flex: 1;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 1.5rem;
@@ -242,19 +452,38 @@
             background: var(--glass);
             backdrop-filter: blur(10px);
             border-radius: 15px;
-            padding: 1.5rem;
+            padding: 1.8rem;
             border: 1px solid var(--glass-border);
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.6s ease;
+        }
+
+        .skill-card:hover::before {
+            transform: scaleX(1);
         }
 
         .skill-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
         }
 
         .skill-card i {
             font-size: 2.5rem;
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
@@ -262,22 +491,21 @@
         }
 
         .skill-card h3 {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.3rem;
         }
 
-        /* Projects Section */
+        /* Projects Section Improvements */
         .projects-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            max-width: 1200px;
-            margin: 0 auto;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2.5rem;
         }
 
         .project-card {
             background: var(--glass);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
+            border-radius: 20px;
             overflow: hidden;
             border: 1px solid var(--glass-border);
             transition: var(--transition);
@@ -286,91 +514,164 @@
 
         .project-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .project-img {
-            height: 200px;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            height: 220px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .project-card:hover .project-img img {
+            transform: scale(1.05);
+        }
+
+        .project-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to top, rgba(15, 12, 41, 0.9), transparent);
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .project-card:hover .project-overlay {
+            opacity: 1;
+        }
+
+        .project-links {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .project-link {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--glass);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 3rem;
-            color: white;
+            color: var(--light);
+            text-decoration: none;
+            transition: var(--transition);
+        }
+
+        .project-link:hover {
+            background: var(--accent);
+            transform: translateY(-3px);
         }
 
         .project-content {
-            padding: 1.5rem;
+            padding: 2rem;
         }
 
         .project-content h3 {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            font-size: 1.4rem;
         }
 
         .project-content p {
-            font-size: 0.9rem;
-            opacity: 0.8;
-            margin-bottom: 1rem;
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
         }
 
         .tags {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-top: 1rem;
         }
 
         .tag {
             background: rgba(255, 255, 255, 0.1);
-            padding: 0.3rem 0.8rem;
+            padding: 0.4rem 1rem;
             border-radius: 20px;
             font-size: 0.8rem;
+            font-weight: 500;
         }
 
-        /* Playground Section */
+        /* Playground Section Improvements */
         .playground-container {
-            max-width: 1200px;
-            margin: 0 auto;
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            gap: 2.5rem;
         }
 
         .tool-card {
             background: var(--glass);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem;
+            border-radius: 20px;
+            padding: 2.5rem;
             border: 1px solid var(--glass-border);
             transition: var(--transition);
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            z-index: 0;
+        }
+
+        .tool-card:hover::before {
+            transform: rotate(45deg) translate(20px, 20px);
         }
 
         .tool-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
         }
 
         .tool-icon {
-            font-size: 3rem;
-            margin-bottom: 1.5rem;
+            font-size: 3.5rem;
+            margin-bottom: 1.8rem;
             background: linear-gradient(to right, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            position: relative;
+            z-index: 1;
         }
 
         .tool-card h3 {
-            margin-bottom: 1rem;
+            margin-bottom: 1.2rem;
+            position: relative;
+            z-index: 1;
         }
 
         .tool-card p {
-            margin-bottom: 1.5rem;
-            font-size: 0.95rem;
+            margin-bottom: 2rem;
+            font-size: 1rem;
+            position: relative;
+            z-index: 1;
         }
 
         .btn {
-            padding: 0.8rem 1.5rem;
+            padding: 0.9rem 2rem;
             background: linear-gradient(45deg, var(--primary), var(--secondary));
             color: white;
             border: none;
@@ -378,109 +679,205 @@
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
         }
 
-        /* Contact Section */
+        /* Contact Section Improvements */
         .contact-container {
-            max-width: 800px;
-            margin: 0 auto;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 3rem;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 4rem;
         }
 
         .contact-info {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: 2rem;
         }
 
         .contact-item {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background: var(--glass);
+            border-radius: 15px;
+            border: 1px solid var(--glass-border);
+            transition: var(--transition);
+        }
+
+        .contact-item:hover {
+            transform: translateX(10px);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .contact-icon {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: var(--glass);
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .contact-details h3 {
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-details p {
+            margin-bottom: 0;
+            opacity: 0.9;
         }
 
         .contact-form {
             background: var(--glass);
             backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 2rem;
+            border-radius: 20px;
+            padding: 2.5rem;
             border: 1px solid var(--glass-border);
         }
 
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
         }
 
         .form-group label {
             display: block;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.8rem;
+            font-weight: 500;
         }
 
         .form-group input,
         .form-group textarea {
             width: 100%;
-            padding: 0.8rem;
-            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            border-radius: 10px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--glass-border);
             color: white;
             font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.3);
         }
 
         .form-group textarea {
-            min-height: 150px;
+            min-height: 180px;
             resize: vertical;
         }
 
-        /* Footer */
+        /* Footer Improvements */
         footer {
             text-align: center;
-            padding: 3rem 2rem;
+            padding: 4rem 2rem;
             background: rgba(0, 0, 0, 0.2);
             backdrop-filter: blur(10px);
             border-top: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+        }
+
+        .footer-text {
+            margin-bottom: 2.5rem;
+            opacity: 0.8;
         }
 
         .social-links {
             display: flex;
             justify-content: center;
-            gap: 1.5rem;
-            margin: 2rem 0;
+            gap: 1.2rem;
+            margin: 2.5rem 0;
         }
 
         .social-link {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
             background: var(--glass);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.2rem;
+            font-size: 1.3rem;
             transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .social-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .social-link:hover::before {
+            opacity: 1;
+        }
+
+        .social-link i {
+            position: relative;
+            z-index: 1;
         }
 
         .social-link:hover {
             transform: translateY(-5px);
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .copyright {
+            margin-top: 2.5rem;
+            opacity: 0.7;
+            font-size: 0.9rem;
         }
 
         /* Particles Background */
@@ -524,38 +921,77 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             color: var(--accent);
-            padding: 2rem;
-            border-radius: 15px;
+            padding: 3rem;
+            border-radius: 20px;
             text-align: center;
             z-index: 10000;
             display: none;
             border: 2px solid var(--accent);
-            box-shadow: 0 0 30px rgba(255, 45, 117, 0.5);
+            box-shadow: 0 0 40px rgba(255, 45, 117, 0.6);
+            max-width: 500px;
+            width: 90%;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-            
-            .hero p {
-                font-size: 1.2rem;
-            }
-            
-            .about-content {
-                flex-direction: column;
-            }
-            
-            .nav-links {
-                display: none;
-            }
-            
-            section {
-                padding: 4rem 1.5rem;
-            }
+        .konami-message h2 {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Loading Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.8s ease-out;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid var(--accent);
+            animation: spin 1s linear infinite;
+        }
+
+        /* Back to Top Button */
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            z-index: 99;
+        }
+
+        .back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
         }
 
         /* Animations */
@@ -565,12 +1001,135 @@
             100% { transform: translateY(0px); }
         }
 
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        @keyframes scroll {
+            0% { transform: translate(-50%, 0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translate(-50%, 20px); opacity: 0; }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .floating {
             animation: float 6s ease-in-out infinite;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            :root {
+                --section-spacing: 6rem;
+            }
+            
+            .about-content {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+            
+            .contact-container {
+                grid-template-columns: 1fr;
+                gap: 3rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --section-spacing: 5rem;
+            }
+            
+            .hero h1 {
+                font-size: 3rem;
+            }
+            
+            .hero p {
+                font-size: 1.2rem;
+            }
+            
+            .nav-links {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background: var(--glass-heavy);
+                backdrop-filter: blur(15px);
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                transition: right 0.4s ease;
+                z-index: 999;
+            }
+            
+            .nav-links.active {
+                right: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+                z-index: 1000;
+            }
+            
+            .skills-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .playground-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-cta {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .contact-item {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            section {
+                padding: 4rem 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .section-title {
+                margin-bottom: 3rem;
+            }
+            
+            .tool-card {
+                padding: 1.8rem;
+            }
+            
+            .contact-form {
+                padding: 1.8rem;
+            }
+            
+            .social-link {
+                width: 45px;
+                height: 45px;
+                font-size: 1.1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+    </div>
+
     <!-- Custom Cursor -->
     <div class="cursor"></div>
     <div class="cursor-trail"></div>
@@ -578,57 +1137,76 @@
     <!-- FPS Counter -->
     <div id="fps-counter">FPS: 60</div>
 
+    <!-- Back to Top Button -->
+    <div class="back-to-top">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
     <!-- Navigation -->
     <nav>
-        <div class="logo">DM</div>
+        <div class="logo">DM<span class="logo-dot"></span></div>
         <div class="nav-links">
-            <a href="#home">Home</a>
+            <a href="#home" class="active">Home</a>
             <a href="#about">About</a>
             <a href="#projects">Projects</a>
             <a href="#playground">Playground</a>
             <a href="#contact">Contact</a>
         </div>
+        <button class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </button>
     </nav>
 
     <!-- Hero Section -->
     <section id="home" class="hero">
-        <canvas id="wave-canvas"></canvas>
+        <div id="particles-js"></div>
         <div class="hero-content">
             <h1>Douglas Mitchell</h1>
-            <p>Creative Technologist & Digital Artist</p>
-            <button class="cta-button">Explore My Work</button>
+            <p>Creative Technologist & Digital Experience Architect</p>
+            <div class="hero-cta">
+                <button class="cta-button">Explore My Work</button>
+                <button class="cta-button secondary">Download CV</button>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <p>Scroll to explore</p>
+            <div class="mouse">
+                <div class="wheel"></div>
+            </div>
         </div>
     </section>
 
     <!-- About Section -->
     <section id="about">
-        <h2 class="section-title">About Me</h2>
-        <div class="about-content">
-            <div class="about-text">
-                <p>Hello! I'm Douglas Mitchell, a passionate creative technologist with expertise in blending art and technology. With over 8 years of experience, I specialize in creating immersive digital experiences using cutting-edge web technologies.</p>
-                <p>My journey began with traditional programming, but I quickly discovered my passion for visual storytelling and interactive design. Today, I work at the intersection of code and creativity, building everything from data visualizations to 3D experiences.</p>
-                <p>When I'm not coding, you can find me exploring generative art, experimenting with new frameworks, or contributing to open-source projects.</p>
-            </div>
-            <div class="skills-container">
-                <div class="skill-card">
-                    <i class="fas fa-code"></i>
-                    <h3>Frontend Development</h3>
-                    <p>Expertise in modern JavaScript frameworks, responsive design, and performance optimization.</p>
+        <div class="container">
+            <h2 class="section-title">About Me</h2>
+            <div class="about-content">
+                <div class="about-text">
+                    <p>Hello! I'm Douglas Mitchell, a passionate creative technologist with expertise in blending art and technology. With over 8 years of experience, I specialize in creating immersive digital experiences using cutting-edge web technologies.</p>
+                    <p>My journey began with traditional programming, but I quickly discovered my passion for visual storytelling and interactive design. Today, I work at the intersection of code and creativity, building everything from data visualizations to 3D experiences.</p>
+                    <p>When I'm not coding, you can find me exploring generative art, experimenting with new frameworks, or contributing to open-source projects.</p>
                 </div>
-                <div class="skill-card">
-                    <i class="fas fa-cube"></i>
-                    <h3>3D Graphics</h3>
-                    <p>Proficient in WebGL, Three.js, and real-time rendering techniques for immersive experiences.</p>
-                </div>
-                <div class="skill-card">
-                    <i class="fas fa-chart-line"></i>
-                    <h3>Data Visualization</h3>
-                    <p>Transforming complex data into compelling visual narratives using D3.js and other libraries.</p>
-                </div>
-                <div class="skill-card">
-                    <i class="fas fa-magic"></i>
-                    <h3>Animation</h3>
-                    <p>Creating fluid, engaging animations with GSAP and CSS for memorable user experiences.</p>
+                <div class="skills-container">
+                    <div class="skill-card">
+                        <i class="fas fa-code"></i>
+                        <h3>Frontend Development</h3>
+                        <p>Expertise in modern JavaScript frameworks, responsive design, and performance optimization.</p>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-cube"></i>
+                        <h3>3D Graphics</h3>
+                        <p>Proficient in WebGL, Three.js, and real-time rendering techniques for immersive experiences.</p>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Data Visualization</h3>
+                        <p>Transforming complex data into compelling visual narratives using D3.js and other libraries.</p>
+                    </div>
+                    <div class="skill-card">
+                        <i class="fas fa-magic"></i>
+                        <h3>Animation</h3>
+                        <p>Creating fluid, engaging animations with GSAP and CSS for memorable user experiences.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -636,61 +1214,70 @@
 
     <!-- Projects Section -->
     <section id="projects">
-        <h2 class="section-title">Featured Projects</h2>
-        <div class="projects-grid">
-            <div class="project-card">
-                <div class="project-img">
-                    <i class="fas fa-vr-cardboard"></i>
-                </div>
-                <div class="project-content">
-                    <h3>Immersive VR Experience</h3>
-                    <p>A WebGL-powered virtual reality experience for architectural visualization.</p>
-                    <div class="tags">
-                        <span class="tag">WebGL</span>
-                        <span class="tag">Three.js</span>
-                        <span class="tag">VR</span>
+        <div class="container">
+            <h2 class="section-title">Featured Projects</h2>
+            <div class="projects-grid">
+                <div class="project-card">
+                    <div class="project-img">
+                        <img src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="VR Experience">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Immersive VR Experience</h3>
+                        <p>A WebGL-powered virtual reality experience for architectural visualization with real-time lighting and physics.</p>
+                        <div class="tags">
+                            <span class="tag">WebGL</span>
+                            <span class="tag">Three.js</span>
+                            <span class="tag">VR</span>
+                            <span class="tag">GLSL</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="project-card">
-                <div class="project-img">
-                    <i class="fas fa-chart-network"></i>
-                </div>
-                <div class="project-content">
-                    <h3>Social Network Analytics</h3>
-                    <p>Interactive dashboard visualizing social media engagement patterns.</p>
-                    <div class="tags">
-                        <span class="tag">D3.js</span>
-                        <span class="tag">Data Viz</span>
-                        <span class="tag">React</span>
+                <div class="project-card">
+                    <div class="project-img">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Data Visualization">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="project-content">
+                        <h3>Social Network Analytics</h3>
+                        <p>Interactive dashboard visualizing social media engagement patterns with real-time data processing.</p>
+                        <div class="tags">
+                            <span class="tag">D3.js</span>
+                            <span class="tag">Data Viz</span>
+                            <span class="tag">React</span>
+                            <span class="tag">Node.js</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="project-card">
-                <div class="project-img">
-                    <i class="fas fa-gamepad"></i>
-                </div>
-                <div class="project-content">
-                    <h3>Physics-Based Game Engine</h3>
-                    <p>Custom game engine built with Matter.js for realistic physics simulations.</p>
-                    <div class="tags">
-                        <span class="tag">Physics</span>
-                        <span class="tag">Game Dev</span>
-                        <span class="tag">Canvas</span>
+                <div class="project-card">
+                    <div class="project-img">
+                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Game Engine">
+                        <div class="project-overlay">
+                            <div class="project-links">
+                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
+                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="project-card">
-                <div class="project-img">
-                    <i class="fas fa-paint-brush"></i>
-                </div>
-                <div class="project-content">
-                    <h3>Generative Art Platform</h3>
-                    <p>Platform for creating and sharing algorithmic art pieces.</p>
-                    <div class="tags">
-                        <span class="tag">Canvas</span>
-                        <span class="tag">GLSL</span>
-                        <span class="tag">Node.js</span>
+                    <div class="project-content">
+                        <h3>Physics-Based Game Engine</h3>
+                        <p>Custom game engine built with Matter.js for realistic physics simulations and interactive gameplay.</p>
+                        <div class="tags">
+                            <span class="tag">Physics</span>
+                            <span class="tag">Game Dev</span>
+                            <span class="tag">Canvas</span>
+                            <span class="tag">Matter.js</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -699,104 +1286,123 @@
 
     <!-- Playground Section -->
     <section id="playground">
-        <h2 class="section-title">Creative Playground</h2>
-        <div class="playground-container">
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-cube"></i>
+        <div class="container">
+            <h2 class="section-title">Creative Playground</h2>
+            <div class="playground-container">
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-cube"></i>
+                    </div>
+                    <h3>3D Geometry Lab</h3>
+                    <p>Interactive WebGL environment to experiment with 3D shapes, materials, and lighting scenarios.</p>
+                    <button class="btn">Launch Demo</button>
                 </div>
-                <h3>3D Geometry Lab</h3>
-                <p>Interactive WebGL environment to experiment with 3D shapes and lighting.</p>
-                <button class="btn">Launch Demo</button>
-            </div>
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-paint-brush"></i>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3>Canvas Drawing Studio</h3>
+                    <p>Multi-mode drawing tool with custom brushes, particles, and rainbow effects for digital art creation.</p>
+                    <button class="btn">Start Creating</button>
                 </div>
-                <h3>Canvas Drawing Studio</h3>
-                <p>Multi-mode drawing tool with brushes, particles, and rainbow effects.</p>
-                <button class="btn">Start Creating</button>
-            </div>
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-chart-bar"></i>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Data Visualization Kit</h3>
+                    <p>Create dynamic charts and graphs with real-time data updates and customizable visual properties.</p>
+                    <button class="btn">Visualize Data</button>
                 </div>
-                <h3>Data Visualization Kit</h3>
-                <p>Create dynamic charts and graphs with real-time data updates.</p>
-                <button class="btn">Visualize Data</button>
-            </div>
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-ball-pile"></i>
+                <div class="tool-card">
+                    <div class="tool-icon">
+                        <i class="fas fa-ball-pile"></i>
+                    </div>
+                    <h3>Physics Playground</h3>
+                    <p>Add interactive elements to the scene and watch realistic physics simulations in action.</p>
+                    <button class="btn">Add Elements</button>
                 </div>
-                <h3>Physics Playground</h3>
-                <p>Add balls to the scene and watch realistic physics in action.</p>
-                <button class="btn">Add Balls</button>
             </div>
         </div>
     </section>
 
     <!-- Contact Section -->
     <section id="contact">
-        <h2 class="section-title">Get In Touch</h2>
-        <div class="contact-container">
-            <div class="contact-info">
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <i class="fas fa-envelope"></i>
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-container">
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Email</h3>
+                            <p>douglas@example.com</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3>Email</h3>
-                        <p>douglas@douglasmitchell.info</p>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Location</h3>
+                            <p>San Francisco, CA</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Phone</h3>
+                            <p>+1 (555) 123-4567</p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="contact-details">
+                            <h3>Availability</h3>
+                            <p>Currently available for freelance projects</p>
+                        </div>
                     </div>
                 </div>
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <i class="fas fa-map-marker-alt"></i>
+                <div class="contact-form">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" placeholder="Your Name">
                     </div>
-                    <div>
-                        <h3>Location</h3>
-                        <p>San Francisco, CA</p>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" placeholder="Your Email">
                     </div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-icon">
-                        <i class="fas fa-phone"></i>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" placeholder="Your Message"></textarea>
                     </div>
-                    <div>
-                        <h3>Phone</h3>
-                        <p>+1 (555) 123-4567</p>
-                    </div>
+                    <button class="btn">Send Message</button>
                 </div>
-            </div>
-            <div class="contact-form">
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" id="name" placeholder="Your Name">
-                </div>
-                <div class="form-group">
-                    <label for="email">Email</label>
-                    <input type="email" id="email" placeholder="Your Email">
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" placeholder="Your Message"></textarea>
-                </div>
-                <button class="btn">Send Message</button>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer>
-        <p>© 2023 Douglas Mitchell. All rights reserved.</p>
-        <div class="social-links">
-            <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-            <a href="#" class="social-link"><i class="fab fa-dribbble"></i></a>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">Douglas Mitchell</div>
+                <p class="footer-text">Crafting exceptional digital experiences at the intersection of technology and creativity.</p>
+                <div class="social-links">
+                    <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-dribbble"></i></a>
+                    <a href="#" class="social-link"><i class="fab fa-codepen"></i></a>
+                </div>
+                <p class="copyright">© 2023 Douglas Mitchell. All rights reserved. Built with cutting-edge web technologies.</p>
+            </div>
         </div>
-        <p>Built with cutting-edge web technologies</p>
     </footer>
 
     <!-- Easter Egg Message -->
@@ -810,292 +1416,395 @@
     <canvas id="physics-playground"></canvas>
 
     <script>
-        // Custom Cursor
-        const cursor = document.querySelector('.cursor');
-        const cursorTrail = document.querySelector('.cursor-trail');
-        
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e.clientX + 'px';
-            cursor.style.top = e.clientY + 'px';
+        // Wait for the page to load
+        window.addEventListener('load', function() {
+            // Hide loading screen
+            gsap.to('#loading-screen', {
+                opacity: 0,
+                duration: 0.8,
+                onComplete: function() {
+                    document.getElementById('loading-screen').style.display = 'none';
+                }
+            });
             
-            // Create trailing effect
-            const trail = cursorTrail.cloneNode();
-            trail.style.left = e.clientX + 'px';
-            trail.style.top = e.clientY + 'px';
-            trail.style.opacity = '0.7';
-            document.body.appendChild(trail);
-            
-            setTimeout(() => {
-                trail.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(trail);
-                }, 300);
-            }, 100);
+            // Initialize all functionality
+            initPortfolio();
         });
-        
-        // Animated Wave Background
-        const waveCanvas = document.getElementById('wave-canvas');
-        const waveCtx = waveCanvas.getContext('2d');
-        
-        function resizeWaveCanvas() {
-            waveCanvas.width = window.innerWidth;
-            waveCanvas.height = window.innerHeight;
-        }
-        
-        resizeWaveCanvas();
-        window.addEventListener('resize', resizeWaveCanvas);
-        
-        let time = 0;
-        function drawWaves() {
-            waveCtx.clearRect(0, 0, waveCanvas.width, waveCanvas.height);
+
+        function initPortfolio() {
+            // Enhanced Custom Cursor with magnetic effect
+            const cursor = document.querySelector('.cursor');
+            const cursorTrail = document.querySelector('.cursor-trail');
+            const hoverElements = document.querySelectorAll('a, button, .project-card, .tool-card, .skill-card');
             
-            // Draw multiple waves
-            for (let i = 0; i < 3; i++) {
-                waveCtx.beginPath();
-                waveCtx.moveTo(0, waveCanvas.height / 2);
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX + 'px';
+                cursor.style.top = e.clientY + 'px';
                 
-                for (let x = 0; x < waveCanvas.width; x += 5) {
-                    const y = waveCanvas.height / 2 + 
-                              Math.sin(x * 0.01 + time + i * 1.5) * 30 * (i + 1) +
-                              Math.sin(x * 0.02 + time * 1.5) * 20;
-                    waveCtx.lineTo(x, y);
+                // Create trailing effect
+                const trail = cursorTrail.cloneNode();
+                trail.style.left = e.clientX + 'px';
+                trail.style.top = e.clientY + 'px';
+                trail.style.opacity = '0.7';
+                document.body.appendChild(trail);
+                
+                setTimeout(() => {
+                    trail.style.opacity = '0';
+                    setTimeout(() => {
+                        document.body.removeChild(trail);
+                    }, 300);
+                }, 100);
+            });
+            
+            // Magnetic effect for hover elements
+            hoverElements.forEach(el => {
+                el.addEventListener('mouseenter', () => {
+                    cursor.classList.add('hover');
+                });
+                
+                el.addEventListener('mouseleave', () => {
+                    cursor.classList.remove('hover');
+                });
+            });
+            
+            // Click effect
+            document.addEventListener('mousedown', () => {
+                cursor.classList.add('click');
+            });
+            
+            document.addEventListener('mouseup', () => {
+                cursor.classList.remove('click');
+            });
+            
+            // Nav scroll effect
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('nav');
+                const backToTop = document.querySelector('.back-to-top');
+                
+                if (window.scrollY > 50) {
+                    nav.classList.add('scrolled');
+                } else {
+                    nav.classList.remove('scrolled');
                 }
                 
-                waveCtx.lineTo(waveCanvas.width, waveCanvas.height);
-                waveCtx.lineTo(0, waveCanvas.height);
-                waveCtx.closePath();
-                
-                const opacity = 0.3 - i * 0.1;
-                waveCtx.fillStyle = `rgba(106, 17, 203, ${opacity})`;
-                waveCtx.fill();
-            }
+                if (window.scrollY > 500) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            });
             
-            time += 0.02;
-            requestAnimationFrame(drawWaves);
-        }
-        
-        drawWaves();
-        
-        // Hero Section Animations
-        gsap.from('.hero h1', {
-            duration: 1,
-            opacity: 0,
-            y: 20,
-            delay: 0.5,
-            ease: "power3.out"
-        });
-        
-        gsap.from('.hero p', {
-            duration: 1,
-            opacity: 0,
-            y: 20,
-            delay: 0.8,
-            ease: "power3.out"
-        });
-        
-        gsap.from('.cta-button', {
-            duration: 1,
-            opacity: 0,
-            y: 20,
-            delay: 1.1,
-            ease: "power3.out"
-        });
-        
-        // Section Entrance Animations
-        gsap.utils.toArray('section').forEach(section => {
-            gsap.from(section.querySelectorAll('.section-title, .about-content, .projects-grid, .playground-container, .contact-container'), {
-                scrollTrigger: {
-                    trigger: section,
-                    start: "top 80%"
-                },
+            // Back to top functionality
+            document.querySelector('.back-to-top').addEventListener('click', () => {
+                gsap.to(window, {
+                    duration: 1.5,
+                    scrollTo: {y: 0},
+                    ease: "power2.inOut"
+                });
+            });
+            
+            // Mobile menu toggle
+            document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
+                document.querySelector('.nav-links').classList.toggle('active');
+            });
+            
+            // Close mobile menu when clicking on links
+            document.querySelectorAll('.nav-links a').forEach(link => {
+                link.addEventListener('click', () => {
+                    document.querySelector('.nav-links').classList.remove('active');
+                });
+            });
+            
+            // Hero Section Animations
+            gsap.from('.hero h1', {
+                duration: 1.2,
+                opacity: 0,
+                y: 40,
+                delay: 0.5,
+                ease: "power3.out"
+            });
+            
+            gsap.from('.hero p', {
+                duration: 1.2,
+                opacity: 0,
+                y: 30,
+                delay: 0.8,
+                ease: "power3.out"
+            });
+            
+            gsap.from('.cta-button', {
                 duration: 1,
                 opacity: 0,
                 y: 30,
+                delay: 1.1,
                 stagger: 0.2,
                 ease: "power3.out"
             });
-        });
-        
-        // Skill Card Animations
-        gsap.utils.toArray('.skill-card').forEach((card, i) => {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: "top 90%"
-                },
-                duration: 0.8,
+            
+            gsap.from('.scroll-indicator', {
+                duration: 1,
                 opacity: 0,
-                y: 20,
-                delay: i * 0.1,
-                ease: "back.out(1.7)"
+                delay: 1.8,
+                ease: "power2.out"
             });
-        });
-        
-        // Project Card Animations
-        gsap.utils.toArray('.project-card').forEach((card, i) => {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: "top 90%"
-                },
-                duration: 0.8,
-                opacity: 0,
-                y: 30,
-                delay: i * 0.1,
-                ease: "power3.out"
+            
+            // Section Entrance Animations
+            gsap.utils.toArray('section').forEach(section => {
+                if (section.id !== 'home') {
+                    gsap.from(section.querySelectorAll('.section-title, .about-content, .projects-grid, .playground-container, .contact-container'), {
+                        scrollTrigger: {
+                            trigger: section,
+                            start: "top 85%"
+                        },
+                        duration: 1,
+                        opacity: 0,
+                        y: 40,
+                        stagger: 0.2,
+                        ease: "power3.out"
+                    });
+                }
             });
-        });
-        
-        // Tool Card Animations
-        gsap.utils.toArray('.tool-card').forEach((card, i) => {
-            gsap.from(card, {
-                scrollTrigger: {
-                    trigger: card,
-                    start: "top 90%"
-                },
-                duration: 0.8,
-                opacity: 0,
-                scale: 0.9,
-                delay: i * 0.1,
-                ease: "elastic.out(1, 0.3)"
+            
+            // Skill Card Animations
+            gsap.utils.toArray('.skill-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%"
+                    },
+                    duration: 0.8,
+                    opacity: 0,
+                    y: 30,
+                    delay: i * 0.1,
+                    ease: "back.out(1.7)"
+                });
             });
-        });
-        
-        // Physics Playground
-        const physicsCanvas = document.getElementById('physics-playground');
-        const physicsCtx = physicsCanvas.getContext('2d');
-        
-        function resizePhysicsCanvas() {
-            physicsCanvas.width = window.innerWidth;
-            physicsCanvas.height = window.innerHeight;
+            
+            // Project Card Animations
+            gsap.utils.toArray('.project-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%"
+                    },
+                    duration: 0.8,
+                    opacity: 0,
+                    y: 40,
+                    delay: i * 0.15,
+                    ease: "power3.out"
+                });
+            });
+            
+            // Tool Card Animations
+            gsap.utils.toArray('.tool-card').forEach((card, i) => {
+                gsap.from(card, {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: "top 90%"
+                    },
+                    duration: 0.8,
+                    opacity: 0,
+                    scale: 0.9,
+                    delay: i * 0.1,
+                    ease: "elastic.out(1, 0.3)"
+                });
+            });
+            
+            // Contact Item Animations
+            gsap.utils.toArray('.contact-item').forEach((item, i) => {
+                gsap.from(item, {
+                    scrollTrigger: {
+                        trigger: item,
+                        start: "top 90%"
+                    },
+                    duration: 0.8,
+                    opacity: 0,
+                    x: -30,
+                    delay: i * 0.1,
+                    ease: "power2.out"
+                });
+            });
+            
+            // Initialize particles.js
+            // Note: You would need to include particles.js and configure it
+            // This is a placeholder for the actual implementation
+            
+            // Initialize Physics Playground
+            initPhysicsPlayground();
+            
+            // Initialize other interactive elements
+            initPlaygroundTools();
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('nav a, .cta-button').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    if (link.getAttribute('href').startsWith('#')) {
+                        e.preventDefault();
+                        const targetId = link.getAttribute('href');
+                        const targetElement = document.querySelector(targetId);
+                        
+                        gsap.to(window, {
+                            duration: 1.5,
+                            scrollTo: {y: targetElement, offsetY: 80},
+                            ease: "power2.inOut"
+                        });
+                    }
+                });
+            });
         }
-        
-        resizePhysicsCanvas();
-        window.addEventListener('resize', resizePhysicsCanvas);
-        
-        // Ball class for physics simulation
-        class Ball {
-            constructor(x, y) {
-                this.x = x;
-                this.y = y;
-                this.radius = Math.random() * 20 + 10;
-                this.vx = (Math.random() - 0.5) * 10;
-                this.vy = (Math.random() - 0.5) * 10;
-                this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+
+        function initPhysicsPlayground() {
+            const physicsCanvas = document.getElementById('physics-playground');
+            const physicsCtx = physicsCanvas.getContext('2d');
+            
+            function resizePhysicsCanvas() {
+                physicsCanvas.width = window.innerWidth;
+                physicsCanvas.height = window.innerHeight;
             }
             
-            update() {
-                // Apply gravity
-                this.vy += 0.2;
-                
-                // Update position
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // Boundary collision
-                if (this.x - this.radius < 0) {
-                    this.x = this.radius;
-                    this.vx *= -0.8;
-                } else if (this.x + this.radius > physicsCanvas.width) {
-                    this.x = physicsCanvas.width - this.radius;
-                    this.vx *= -0.8;
+            resizePhysicsCanvas();
+            window.addEventListener('resize', resizePhysicsCanvas);
+            
+            // Enhanced Ball class for physics simulation
+            class Ball {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.radius = Math.random() * 20 + 10;
+                    this.vx = (Math.random() - 0.5) * 8;
+                    this.vy = (Math.random() - 0.5) * 8;
+                    this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
+                    this.mass = this.radius * 0.5;
+                    this.glow = Math.random() * 10 + 5;
                 }
                 
-                if (this.y - this.radius < 0) {
-                    this.y = this.radius;
-                    this.vy *= -0.8;
-                } else if (this.y + this.radius > physicsCanvas.height) {
-                    this.y = physicsCanvas.height - this.radius;
-                    this.vy *= -0.8;
-                    this.vx *= 0.99; // Friction
-                }
-            }
-            
-            draw() {
-                physicsCtx.beginPath();
-                physicsCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                physicsCtx.fillStyle = this.color;
-                physicsCtx.fill();
-                physicsCtx.closePath();
-            }
-        }
-        
-        const balls = [];
-        
-        // Add initial balls
-        for (let i = 0; i < 5; i++) {
-            balls.push(new Ball(
-                Math.random() * physicsCanvas.width,
-                Math.random() * physicsCanvas.height
-            ));
-        }
-        
-        // Add ball on click
-        physicsCanvas.addEventListener('click', (e) => {
-            balls.push(new Ball(e.clientX, e.clientY));
-        });
-        
-        // Physics animation loop
-        function animatePhysics() {
-            physicsCtx.clearRect(0, 0, physicsCanvas.width, physicsCanvas.height);
-            
-            // Update and draw balls
-            balls.forEach(ball => {
-                ball.update();
-                ball.draw();
-            });
-            
-            // Draw connections between close balls
-            for (let i = 0; i < balls.length; i++) {
-                for (let j = i + 1; j < balls.length; j++) {
-                    const dx = balls[i].x - balls[j].x;
-                    const dy = balls[i].y - balls[j].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
+                update(balls) {
+                    // Apply gravity
+                    this.vy += 0.15;
                     
-                    if (distance < 150) {
-                        physicsCtx.beginPath();
-                        physicsCtx.moveTo(balls[i].x, balls[i].y);
-                        physicsCtx.lineTo(balls[j].x, balls[j].y);
-                        physicsCtx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/150})`;
-                        physicsCtx.lineWidth = 1;
-                        physicsCtx.stroke();
+                    // Update position
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    
+                    // Boundary collision
+                    if (this.x - this.radius < 0) {
+                        this.x = this.radius;
+                        this.vx *= -0.8;
+                    } else if (this.x + this.radius > physicsCanvas.width) {
+                        this.x = physicsCanvas.width - this.radius;
+                        this.vx *= -0.8;
+                    }
+                    
+                    if (this.y - this.radius < 0) {
+                        this.y = this.radius;
+                        this.vy *= -0.8;
+                    } else if (this.y + this.radius > physicsCanvas.height) {
+                        this.y = physicsCanvas.height - this.radius;
+                        this.vy *= -0.8;
+                        this.vx *= 0.99; // Friction
+                    }
+                    
+                    // Ball-to-ball collision
+                    for (let otherBall of balls) {
+                        if (otherBall !== this) {
+                            const dx = this.x - otherBall.x;
+                            const dy = this.y - otherBall.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const minDistance = this.radius + otherBall.radius;
+                            
+                            if (distance < minDistance) {
+                                // Collision response
+                                const angle = Math.atan2(dy, dx);
+                                const targetX = this.x + Math.cos(angle) * minDistance;
+                                const targetY = this.y + Math.sin(angle) * minDistance;
+                                const ax = (targetX - otherBall.x) * 0.05;
+                                const ay = (targetY - otherBall.y) * 0.05;
+                                
+                                this.vx -= ax;
+                                this.vy -= ay;
+                                otherBall.vx += ax;
+                                otherBall.vy += ay;
+                            }
+                        }
                     }
                 }
+                
+                draw() {
+                    // Glow effect
+                    physicsCtx.beginPath();
+                    physicsCtx.arc(this.x, this.y, this.radius + this.glow, 0, Math.PI * 2);
+                    const gradient = physicsCtx.createRadialGradient(
+                        this.x, this.y, this.radius, 
+                        this.x, this.y, this.radius + this.glow
+                    );
+                    gradient.addColorStop(0, this.color);
+                    gradient.addColorStop(1, 'transparent');
+                    physicsCtx.fillStyle = gradient;
+                    physicsCtx.fill();
+                    
+                    // Main ball
+                    physicsCtx.beginPath();
+                    physicsCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    physicsCtx.fillStyle = this.color;
+                    physicsCtx.fill();
+                    physicsCtx.closePath();
+                }
             }
             
-            requestAnimationFrame(animatePhysics);
-        }
-        
-        animatePhysics();
-        
-        // FPS Counter
-        let fps = 60;
-        let lastCalledTime;
-        const fpsCounter = document.getElementById('fps-counter');
-        
-        function updateFPS() {
-            if (!lastCalledTime) {
-                lastCalledTime = performance.now();
-                fpsCounter.textContent = 'FPS: 60';
-                return;
+            const balls = [];
+            
+            // Add initial balls
+            for (let i = 0; i < 7; i++) {
+                balls.push(new Ball(
+                    Math.random() * physicsCanvas.width,
+                    Math.random() * physicsCanvas.height
+                ));
             }
             
-            const delta = (performance.now() - lastCalledTime) / 1000;
-            lastCalledTime = performance.now();
-            fps = Math.floor(1/delta);
-            fpsCounter.textContent = `FPS: ${fps}`;
-        }
-        
-        // Toggle FPS counter with 'F' key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'f' || e.key === 'F') {
-                fpsCounter.style.display = fpsCounter.style.display === 'none' ? 'block' : 'none';
+            // Add ball on click
+            physicsCanvas.addEventListener('click', (e) => {
+                balls.push(new Ball(e.clientX, e.clientY));
+            });
+            
+            // Physics animation loop
+            function animatePhysics() {
+                physicsCtx.clearRect(0, 0, physicsCanvas.width, physicsCanvas.height);
+                
+                // Update and draw balls
+                balls.forEach(ball => {
+                    ball.update(balls);
+                    ball.draw();
+                });
+                
+                // Draw connections between close balls
+                for (let i = 0; i < balls.length; i++) {
+                    for (let j = i + 1; j < balls.length; j++) {
+                        const dx = balls[i].x - balls[j].x;
+                        const dy = balls[i].y - balls[j].y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < 150) {
+                            physicsCtx.beginPath();
+                            physicsCtx.moveTo(balls[i].x, balls[i].y);
+                            physicsCtx.lineTo(balls[j].x, balls[j].y);
+                            physicsCtx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/150})`;
+                            physicsCtx.lineWidth = 1;
+                            physicsCtx.stroke();
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(animatePhysics);
             }
-        });
-        
-        // FPS counter update loop
-        setInterval(updateFPS, 1000);
-        
+            
+            animatePhysics();
+        }
+
+        function initPlaygroundTools() {
+            // This would initialize the interactive playground tools
+            // Placeholder for actual implementation
+        }
+
         // Konami Code Easter Egg
         const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
         let konamiIndex = 0;
@@ -1109,129 +1818,14 @@
                     
                     // Add extra animations
                     document.body.classList.add('floating');
+                    
+                    // Add confetti or other effects
+                    // This would require a confetti library or custom implementation
                 }
             } else {
                 konamiIndex = 0;
             }
         });
-        
-        // Button interactions
-        document.querySelectorAll('.btn').forEach(button => {
-            button.addEventListener('mouseenter', () => {
-                gsap.to(button, {
-                    duration: 0.3,
-                    scale: 1.05,
-                    ease: "power2.out"
-                });
-            });
-            
-            button.addEventListener('mouseleave', () => {
-                gsap.to(button, {
-                    duration: 0.3,
-                    scale: 1,
-                    ease: "power2.out"
-                });
-            });
-        });
-        
-        // CTA Button interaction
-        document.querySelector('.cta-button').addEventListener('click', () => {
-            gsap.to(window, {
-                duration: 1.5,
-                scrollTo: {y: '#about'},
-                ease: "power2.inOut"
-            });
-        });
-        
-        // Smooth scrolling for navigation links
-        document.querySelectorAll('nav a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                gsap.to(window, {
-                    duration: 1.5,
-                    scrollTo: {y: targetElement.offsetTop - 80},
-                    ease: "power2.inOut"
-                });
-            });
-        });
-        
-        // Initialize D3.js visualization
-        const skillsData = [
-            {name: "JavaScript", value: 95},
-            {name: "WebGL", value: 90},
-            {name: "D3.js", value: 85},
-            {name: "GSAP", value: 92},
-            {name: "Three.js", value: 88},
-            {name: "CSS/SCSS", value: 93}
-        ];
-        
-        const width = 400;
-        const height = 300;
-        const margin = {top: 20, right: 30, bottom: 40, left: 50};
-        
-        const svg = d3.select(".contact-form")
-            .append("svg")
-            .attr("width", width)
-            .attr("height", height)
-            .attr("class", "skills-chart");
-        
-        const xScale = d3.scaleBand()
-            .domain(skillsData.map(d => d.name))
-            .range([margin.left, width - margin.right])
-            .padding(0.1);
-        
-        const yScale = d3.scaleLinear()
-            .domain([0, 100])
-            .range([height - margin.bottom, margin.top]);
-        
-        // X axis
-        svg.append("g")
-            .attr("transform", `translate(0,${height - margin.bottom})`)
-            .call(d3.axisBottom(xScale))
-            .selectAll("text")
-            .attr("transform", "rotate(-45)")
-            .style("text-anchor", "end");
-        
-        // Y axis
-        svg.append("g")
-            .attr("transform", `translate(${margin.left},0)`)
-            .call(d3.axisLeft(yScale));
-        
-        // Bars
-        svg.selectAll(".bar")
-            .data(skillsData)
-            .enter().append("rect")
-            .attr("class", "bar")
-            .attr("x", d => xScale(d.name))
-            .attr("y", height - margin.bottom)
-            .attr("width", xScale.bandwidth())
-            .attr("height", 0)
-            .attr("fill", "url(#gradient)")
-            .transition()
-            .duration(1000)
-            .delay((d, i) => i * 200)
-            .attr("y", d => yScale(d.value))
-            .attr("height", d => height - margin.bottom - yScale(d.value));
-        
-        // Gradient definition
-        const defs = svg.append("defs");
-        const gradient = defs.append("linearGradient")
-            .attr("id", "gradient")
-            .attr("x1", "0%")
-            .attr("y1", "0%")
-            .attr("x2", "0%")
-            .attr("y2", "100%");
-        
-        gradient.append("stop")
-            .attr("offset", "0%")
-            .attr("stop-color", "#6a11cb");
-        
-        gradient.append("stop")
-            .attr("offset", "100%")
-            .attr("stop-color", "#2575fc");
     </script>
 </body>
 </html>
