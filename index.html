@@ -1,614 +1,314 @@
-import React, { useRef, useEffect, useState } from "react";
-import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
-
-/**
- * Douglas — Cinematic, keynote‑grade personal site
- * Single‑file React component using TailwindCSS + Framer Motion
- * No external assets. Graphics are SVG/CSS. Apple‑style motion: calm, precise, depthy.
- */
-
-// ========= Config you can personalize =========
-const GITHUB_USERNAME = "SENPAI-SAMA7"; // ← set this
-const GITHUB_PERSONAL_TOKEN = ""; // ← optional; raises rate limit + avoids CORS flakiness
-const BOOK = {
-  title: "The Confident Mind",
-  subtitle: "A Practical Manual to Repair, Build & Sustain Authentic Confidence",
-  blurb:
-    "A short, opinionated book about clarity, motion with purpose, and crafting interfaces that respectfully disappear.",
-  link: "#" // e.g. Amazon/Gumroad/Personal store
-};
-
-// ---------- Little utilities
-const useParallax = (value, distance = 100) => useTransform(value, [0, 1], [-distance, distance]);
-
-function Magnetic({ children, strength = 0.35 }) {
-  const ref = useRef(null);
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const rx = useSpring(x, { stiffness: 200, damping: 20 });
-  const ry = useSpring(y, { stiffness: 200, damping: 20 });
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const onMove = (e) => {
-      const rect = el.getBoundingClientRect();
-      const relX = (e.clientX - rect.left) / rect.width - 0.5;
-      const relY = (e.clientY - rect.top) / rect.height - 0.5;
-      x.set(relX * strength * rect.width);
-      y.set(relY * strength * rect.height);
-    };
-    const onLeave = () => { x.set(0); y.set(0); };
-    el.addEventListener("mousemove", onMove);
-    el.addEventListener("mouseleave", onLeave);
-    return () => { el.removeEventListener("mousemove", onMove); el.removeEventListener("mouseleave", onLeave); };
-  }, [strength, x, y]);
-  return (
-    <motion.div ref={ref} style={{ x: rx, y: ry }} className="inline-block will-change-transform">
-      {children}
-    </motion.div>
-  );
-}
-
-// ---------- Graphics primitives
-function Orb({ size = 420, className = "", hue = 220 }) {
-  return (
-    <div className={`pointer-events-none ${className}`} aria-hidden>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="opacity-70">
-        <defs>
-          <radialGradient id={`g-${hue}`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor={`hsl(${hue}, 95%, 65%)`} />
-            <stop offset="60%" stopColor={`hsl(${hue}, 95%, 55%)`} />
-            <stop offset="100%" stopColor="transparent" />
-          </radialGradient>
-          <filter id={`b-${hue}`} x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="30" />
-          </filter>
-        </defs>
-        <circle cx={size/2} cy={size/2} r={size/2.4} fill={`url(#g-${hue})`} filter={`url(#b-${hue})`} />
-      </svg>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Douglas D Mitchell — The Confident Mind</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Douglas D Mitchell — Author of The Confident Mind. Builder. Engineer. Constant learner." />
+  <meta property="og:title" content="Douglas D Mitchell — The Confident Mind" />
+  <meta property="og:description" content="Author of The Confident Mind. Explore projects, writing, and updates." />
+  <meta property="og:type" content="website" />
+  <meta property="og:image" content="The-Confident-Mind_Book-Cover.jpeg" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%23e9d08a'/%3E%3C/svg%3E">
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --fg:#eaeef2;
+      --muted:#a7b0ba;
+      --gold:#e9d08a; /* matches the book accent */
+      --glass:rgba(255,255,255,.06);
+      --card:rgba(255,255,255,.08);
+      --shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      --radius:24px;
+      --max:1220px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      color:var(--fg);
+      background:radial-gradient(1200px 800px at 70% -10%, #1b1e25 0%, #0b0c10 55%) fixed,
+                 radial-gradient(900px 600px at 10% 110%, #171920 0%, #0b0c10 60%) fixed,
+                 var(--bg);
+      overflow-x:hidden;
+    }
+    a{color:var(--fg);text-decoration:none}
+    .wrap{max-width:var(--max);margin:0 auto;padding:0 clamp(16px,3vw,40px)}
+    .nav{
+      position:fixed;top:16px;left:0;right:0;z-index:20;
+      backdrop-filter:saturate(150%) blur(10px);
+    }
+    .nav .bar{
+      display:flex;gap:14px;align-items:center;justify-content:space-between;
+      padding:10px 14px;border-radius:14px;margin:0 auto;max-width:var(--max);
+      background:var(--glass);box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .brand{font-weight:700;letter-spacing:.3px}
+    .pill{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 14px;border-radius:999px;background:var(--card);
+      border:1px solid rgba(255,255,255,.08)
+    }
+    .pill small{color:var(--muted)}
+    .cta{display:inline-flex;align-items:center;gap:10px;padding:12px 16px;border:0;border-radius:999px;background:var(--gold);color:#111;font-weight:700;cursor:pointer;transition:transform .2s ease, box-shadow .2s ease}
+    .cta:hover{transform:translateY(-1px);box-shadow:0 10px 20px rgba(233,208,138,.25)}
+    /* HERO */
+    .hero{position:relative;min-height:94svh;display:grid;place-items:center;padding-top:80px;overflow:hidden}
+    #stars{position:absolute;inset:-10% -10% 0 -10%;z-index:0;pointer-events:none}
+    .hero .content{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+    @media (max-width:980px){.hero .content{grid-template-columns:1fr;gap:26px}}
+    .kicker{display:inline-flex;gap:10px;align-items:center;color:var(--muted);font-weight:600;letter-spacing:.2em;text-transform:uppercase}
+    .kicker .dot{width:6px;height:6px;border-radius:999px;background:var(--gold);box-shadow:0 0 18px var(--gold)}
+    h1{margin:.1em 0 .2em;font-size:clamp(40px,7.2vw,84px);line-height:1.05;font-weight:800;letter-spacing:-.02em}
+    .lead{font-size:clamp(18px,2.1vw,22px);color:#cfd6de;max-width:62ch}
+    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .book-card{
+      background:linear-gradient(180deg, rgba(233,208,138,.10), rgba(255,255,255,.04));
+      border:1px solid rgba(233,208,138,.35);box-shadow:var(--shadow);
+      border-radius:var(--radius);padding:18px;display:grid;gap:14px;justify-items:center
+    }
+    .book-card img{width:min(360px,70vw);border-radius:14px;box-shadow:0 30px 60px rgba(0,0,0,.45)}
+    .book-meta{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:center}
+    .ghost{border:1px solid rgba(255,255,255,.18);background:transparent;color:var(--fg)}
+    /* sections */
+    section{padding:96px 0}
+    .section-title{font-size:clamp(28px,3.4vw,40px);margin:0 0 8px;font-weight:800;letter-spacing:-.01em}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:18px}
+    .grid.cols-3{grid-template-columns:repeat(3,1fr)}
+    .grid.cols-2{grid-template-columns:repeat(2,1fr)}
+    @media (max-width:980px){.grid.cols-3,.grid.cols-2{grid-template-columns:1fr}}
+    .card{
+      background:var(--card);border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;padding:20px;box-shadow:var(--shadow);transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .6s ease;
+      transform:translateY(12px) scale(.98);opacity:.001
+    }
+    .card.in{transform:none;opacity:1}
+    .repo h3{margin:0 0 6px;font-size:18px}
+    .repo .meta{display:flex;gap:12px;color:var(--muted);font-size:13px}
+    .repo a.visit{margin-left:auto}
+    .chip{display:inline-flex;gap:8px;align-items:center;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);font-size:13px}
+    .gold{color:var(--gold)}
+    /* marquee */
+    .marquee{overflow:hidden;mask-image:linear-gradient(90deg,transparent,black 14%,black 86%,transparent)}
+    .marquee .row{display:flex;gap:14px;animation:scroll 28s linear infinite}
+    .marquee .chip{background:rgba(233,208,138,.09);border-color:rgba(233,208,138,.25)}
+    @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+    /* footer */
+    footer{padding:60px 0;color:var(--muted);text-align:center}
+    .footer-links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+    .copy{opacity:.75}
+    /* subtle scroll cue */
+    .scroll-cue{position:absolute;bottom:24px;left:50%;translate:-50% 0;color:#d9dbe1;opacity:.7;font-size:13px}
+    .scroll-cue::after{content:"";display:block;margin:8px auto 0;width:2px;height:26px;border-radius:2px;background:currentColor;animation:cue 1.6s ease-in-out infinite}
+    @keyframes cue{0%{opacity:0;transform:translateY(-6px)}50%{opacity:.9;transform:translateY(2px)}100%{opacity:0;transform:translateY(8px)}}
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <div class="nav">
+    <div class="bar">
+      <div class="brand">Douglas D Mitchell</div>
+      <div class="pill"><span style="width:8px;height:8px;border-radius:999px;background:var(--gold);box-shadow:0 0 12px var(--gold)"></span><small>Building with clarity & calm</small></div>
+      <a class="pill" href="#contact"><small>Contact</small></a>
     </div>
-  );
-}
+  </div>
 
-function Noise() {
-  return (
-    <svg className="pointer-events-none fixed inset-0 mix-blend-soft-light opacity-[.06]" aria-hidden>
-      <filter id="n">
-        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
-      </filter>
-      <rect width="100%" height="100%" filter="url(#n)"/>
-    </svg>
-  );
-}
-
-function GridBG() {
-  return (
-    <svg className="absolute inset-0 w-full h-full opacity-30 [mask-image:radial-gradient(50%_50%_at_50%_50%,black_30%,transparent_70%)]" aria-hidden>
-      <defs>
-        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M40 0H0V40" fill="none" stroke="currentColor" strokeWidth=".6" className="text-white/10"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
-  );
-}
-
-// ---------- Sticky, parallax slide
-function StickySlide({ title, eyebrow, copy, tint = "from-sky-400/30 to-violet-500/20", children }) {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const opacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0, 1, 1, 0]);
-  const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
-  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.96, 1, 0.96]);
-
-  return (
-    <section ref={ref} className="relative h-[220vh]">
-      <div className="sticky top-0 h-screen overflow-hidden">
-        <motion.div style={{ opacity }} className={`absolute inset-0 bg-gradient-to-br ${tint}`} />
-        <GridBG />
-        <div className="absolute inset-0">
-          <motion.div style={{ scale, y }} className="mx-auto max-w-6xl h-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-center px-6">
-            <div className="relative z-10">
-              <p className="text-sm uppercase tracking-[0.2em] text-white/60 mb-4">{eyebrow}</p>
-              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] text-white mb-6">
-                {title}
-              </h2>
-              <p className="text-white/70 text-lg leading-relaxed max-w-xl">{copy}</p>
-            </div>
-            <div className="relative z-0">
-              {children}
-            </div>
-          </motion.div>
+  <!-- HERO -->
+  <header class="hero wrap" id="top">
+    <canvas id="stars" width="1600" height="900" aria-hidden="true"></canvas>
+    <div class="content">
+      <div>
+        <div class="kicker"><span class="dot"></span><span>Author • Engineer</span></div>
+        <h1>The Confident Mind</h1>
+        <p class="lead">A practical manual to repair, build, and sustain authentic confidence. Minimal design, maximal signal — like a keynote: sharp, calm, inevitable.</p>
+        <div class="actions">
+          <a class="cta" href="https://www.amazon.com/dp/B0FPJPPPC9?ref=cm_sw_r_cso_cp_mwn_dp_PRHB2K2TVYV7H7Z6QMCG&social_share=cm_sw_r_cso_cp_mwn_dp_PRHB2K2TVYV7H7Z6QMCG&csmig=1" target="_blank" rel="noopener noreferrer">Buy on Amazon</a>
+          <a class="cta ghost" href="#book">Read more</a>
         </div>
       </div>
-    </section>
-  );
-}
 
-// ---------- Tilt card with glossy sheen
-function TiltCard({ children }) {
-  const ref = useRef(null);
-  const [shine, setShine] = useState({ x: 50, y: 50 });
-
-  const onMove = (e) => {
-    const rect = ref.current.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    setShine({ x: px * 100, y: py * 100 });
-    const rx = (py - 0.5) * -10; // rotateX
-    const ry = (px - 0.5) * 12;  // rotateY
-    ref.current.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
-  };
-  const onLeave = () => { ref.current.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)"; };
-
-  return (
-    <div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      className="relative rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-xl p-8 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] transition-transform will-change-transform"
-      style={{ transformStyle: "preserve-3d" }}
-    >
-      <div
-        className="pointer-events-none absolute inset-0 rounded-3xl"
-        style={{
-          background: `radial-gradient(60% 60% at ${shine.x}% ${shine.y}%, rgba(255,255,255,0.35), transparent 60%)`,
-          mixBlendMode: "overlay",
-          transform: "translateZ(50px)",
-        }}
-      />
-      <div style={{ transform: "translateZ(40px)" }}>{children}</div>
+      <div class="book-card" id="book">
+        <img src="The-Confident-Mind_Book-Cover.jpeg" alt="The Confident Mind — book cover by Douglas D Mitchell" id="bookCover"/>
+        <div class="book-meta">
+          <span class="chip"><strong>New</strong> • 2024</span>
+          <span class="chip">Practical Systems</span>
+          <span class="chip">Cognitive Fitness</span>
+        </div>
+      </div>
     </div>
-  );
-}
+    <div class="scroll-cue">Scroll</div>
+  </header>
 
-// ---------- Hero with kinetic gradient text + floating orbs
-function Hero() {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const yTitle = useParallax(scrollYProgress, 80);
-  const ySub = useParallax(scrollYProgress, 40);
-  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
-
-  return (
-    <header ref={ref} className="relative isolate h-[120svh] flex items-center justify-center overflow-hidden">
-      <motion.div style={{ opacity: fade }} className="absolute inset-0 -z-10">
-        <div className="absolute -top-24 -left-24">
-          <motion.div animate={{ y: [0, 30, 0], x: [0, 20, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}>
-            <Orb size={520} hue={210} />
-          </motion.div>
-        </div>
-        <div className="absolute bottom-0 right-0">
-          <motion.div animate={{ y: [0, -40, 0], x: [0, -30, 0] }} transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}>
-            <Orb size={460} hue={270} />
-          </motion.div>
-        </div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <motion.div animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}>
-            <Orb size={600} hue={320} />
-          </motion.div>
-        </div>
-      </motion.div>
-
-      <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)]"/>
-      <GridBG />
-
-      <div className="relative z-10 text-center px-6 max-w-5xl">
-        <motion.h1 style={{ y: yTitle }} className="text-[clamp(2.6rem,6vw,6rem)] font-semibold leading-[0.95] tracking-tight">
-          <span className="block text-white/70 text-lg sm:text-xl mb-3 font-medium">Douglas</span>
-          <span className="bg-clip-text text-transparent bg-[conic-gradient(from_180deg_at_50%_50%,#fff_0deg,#cde1ff_120deg,#f0d3ff_240deg,#fff_360deg)] [--tw:linear-gradient(90deg,rgba(255,255,255,.8),rgba(255,255,255,.2)_60%,rgba(255,255,255,.8))] [background-size:200%_200%] animate-[spin_20s_linear_infinite]">
-            Building calm, delightful software.
-          </span>
-        </motion.h1>
-        <motion.p style={{ y: ySub }} className="mt-6 text-white/70 text-lg sm:text-xl max-w-2xl mx-auto">
-          Product engineer focused on clarity, precision, and motion with purpose.
-        </motion.p>
-        <div className="mt-10 flex items-center justify-center gap-4">
-          <Magnetic>
-            <a href="#work" className="group relative inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-medium bg-white text-black transition-all overflow-hidden">
-              <span className="relative z-10">See work</span>
-              <span className="relative z-10">→</span>
-              <span className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"/>
-            </a>
-          </Magnetic>
-          <a href="#github" className="rounded-full px-6 py-3 text-sm font-medium border border-white/20 text-white/80 hover:text-white/100 hover:border-white/40 transition">
-            GitHub
-          </a>
-          <a href="#book" className="rounded-full px-6 py-3 text-sm font-medium border border-white/20 text-white/80 hover:text-white/100 hover:border-white/40 transition">
-            Book
-          </a>
-        </div>
+  <!-- HIGHLIGHTS -->
+  <section class="wrap">
+    <h2 class="section-title">Focus</h2>
+    <p class="muted">What we’ve been circling in our conversations distilled to essentials.</p>
+    <div class="marquee" aria-hidden="true">
+      <div class="row">
+        <span class="chip">AI & Applied ML</span>
+        <span class="chip">Robotics & Autonomy</span>
+        <span class="chip">Human-Centered Systems</span>
+        <span class="chip">Manufacturing Intelligence</span>
+        <span class="chip">Creative Engineering</span>
+        <span class="chip">Reliability & Safety</span>
+        <span class="chip">Learning Ops</span>
+        <span class="chip">High-signal Writing</span>
+        <!-- clone for seamless loop -->
+        <span class="chip">AI & Applied ML</span>
+        <span class="chip">Robotics & Autonomy</span>
+        <span class="chip">Human-Centered Systems</span>
+        <span class="chip">Manufacturing Intelligence</span>
+        <span class="chip">Creative Engineering</span>
+        <span class="chip">Reliability & Safety</span>
+        <span class="chip">Learning Ops</span>
+        <span class="chip">High-signal Writing</span>
       </div>
-    </header>
-  );
-}
+    </div>
+  </section>
 
-// ---------- Work card (animated in list)
-function WorkCard({ title, body, tag }) {
-  return (
-    <TiltCard>
-      <div className="space-y-4">
-        <div className="flex items-center gap-2">
-          <span className="px-2 py-1 rounded-full text-[10px] uppercase tracking-wider bg-white/10 text-white/70 border border-white/10">{tag}</span>
-        </div>
-        <h3 className="text-2xl sm:text-3xl font-semibold text-white">{title}</h3>
-        <p className="text-white/70 leading-relaxed">{body}</p>
+  <!-- GITHUB -->
+  <section class="wrap" id="work">
+    <h2 class="section-title">Recent Work</h2>
+    <p class="muted">Live from GitHub <span id="gh-username" class="gold">@Senpai-Sama7</span>. Updated continuously.</p>
+    <div class="grid cols-3" id="repoGrid" role="list"></div>
+    <div style="margin-top:16px">
+      <a class="cta ghost" id="viewAll" target="_blank" rel="noopener">View all on GitHub</a>
+    </div>
+  </section>
+
+  <!-- PRINCIPLES -->
+  <section class="wrap">
+    <h2 class="section-title">Operating Principles</h2>
+    <div class="grid cols-3">
+      <article class="card"><h3>Clarity over noise</h3><p class="muted">Strip to the essentials, state the truth plainly, and ship.</p></article>
+      <article class="card"><h3>Systems thinking</h3><p class="muted">Integrate psychology, code, and craft into repeatable loops.</p></article>
+      <article class="card"><h3>Calm intensity</h3><p class="muted">Deliberate pace, high bar, no drama — make it feel inevitable.</p></article>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="wrap" id="contact">
+    <h2 class="section-title">Contact</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Email</h3>
+        <p class="muted">I keep it simple — no contact form, no phone. Tap to copy:</p>
+        <button class="cta" id="copyEmail">DouglasMitchell@HoustonOilAirs.org</button>
+        <p class="muted copy" id="copyNote" aria-live="polite"></p>
       </div>
-    </TiltCard>
-  );
-}
-
-// ---------- Footer
-function Footer() {
-  return (
-    <footer id="contact" className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-white/10" />
-      <div className="max-w-6xl mx-auto px-6 py-20">
-        <div className="text-center">
-          <h4 className="text-4xl sm:text-5xl font-semibold text-white mb-6">Let's build something thoughtful.</h4>
-          <div className="flex items-center justify-center gap-4">
-            <a href="mailto:hello@douglas.dev" className="rounded-full px-6 py-3 bg-white text-black font-medium">hello@douglas.dev</a>
-            <a href="#" className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">LinkedIn</a>
-            <a href={`https://github.com/${GITHUB_USERNAME || ''}`} className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">GitHub</a>
-          </div>
-        </div>
+      <div class="card">
+        <h3>Links</h3>
+        <p><a class="pill" href="https://github.com/Senpai-Sama7" target="_blank" rel="noopener"><strong>GitHub</strong>&nbsp;@Senpai-Sama7</a></p>
+        <p><a class="pill" href="https://www.amazon.com/dp/B0FPJPPPC9?ref=cm_sw_r_cso_cp_mwn_dp_PRHB2K2TVYV7H7Z6QMCG&social_share=cm_sw_r_cso_cp_mwn_dp_PRHB2K2TVYV7H7Z6QMCG&csmig=1" target="_blank" rel="noopener"><strong>Book</strong>&nbsp;The Confident Mind</a></p>
       </div>
-    </footer>
-  );
-}
+    </div>
+  </section>
 
-// ---------- GitHub section (live via REST API)
-function GitHubSection() {
-  const [profile, setProfile] = useState(null);
-  const [repos, setRepos] = useState([]);
-  const [state, setState] = useState("loading"); // loading | ready | error
+  <footer class="wrap">
+    <div>© <span id="year"></span> Douglas D Mitchell. All rights reserved.</div>
+    <div class="footer-links">
+      <span>Minimal by design.</span>
+      <span>Built with vanilla JS.</span>
+      <span>Animations on scroll.</span>
+    </div>
+  </footer>
 
-  useEffect(() => {
-    if (!GITHUB_USERNAME) return setState("error");
-    const headers = GITHUB_PERSONAL_TOKEN ? { Authorization: `Bearer ${GITHUB_PERSONAL_TOKEN}` } : {};
+  <script>
+    // --- Subtle starfield background (GPU-friendly) ---
+    const cvs = document.getElementById('stars'), ctx = cvs.getContext('2d',{alpha:false});
+    let w = cvs.width = innerWidth * devicePixelRatio, h = cvs.height = innerHeight * .9 * devicePixelRatio;
+    let stars = [];
+    function resetStars(){
+      stars = Array.from({length: 220}, () => ({
+        x: Math.random()*w, y: Math.random()*h, z: Math.random()*1.5 + .3, a: Math.random()*.7 + .2
+      }));
+    }
+    function draw(){
+      ctx.fillStyle = '#0b0c10'; ctx.fillRect(0,0,w,h);
+      for(const s of stars){
+        const size = s.z*1.2;
+        ctx.fillStyle = 'rgba(233,208,138,' + s.a + ')';
+        ctx.beginPath(); ctx.arc(s.x,s.y,size,0,Math.PI*2); ctx.fill();
+        s.y += .06*s.z; if(s.y>h){s.y = -6; s.x = Math.random()*w}
+      }
+      requestAnimationFrame(draw);
+    }
+    resetStars(); draw();
+    addEventListener('resize', ()=>{w=cvs.width=innerWidth*devicePixelRatio;h=cvs.height=innerHeight*.9*devicePixelRatio;resetStars()});
 
-    async function load() {
-      try {
-        const [userRes, repoRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
-          fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`, { headers })
+    // --- Tilt the book cover for a keynote-like parallax ---
+    const cover = document.getElementById('bookCover');
+    cover.addEventListener('pointermove', e=>{
+      const r=cover.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
+      cover.style.transform = `perspective(900px) rotateX(${(-y*6).toFixed(2)}deg) rotateY(${(x*8).toFixed(2)}deg) translateZ(0)`;
+    });
+    cover.addEventListener('pointerleave', ()=>cover.style.transform='');
+
+    // --- Intersection reveal animations ---
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+    },{threshold:.18});
+    document.querySelectorAll('.card').forEach(el=>io.observe(el));
+
+    // --- Copy email (no phone listed) ---
+    const email = 'DouglasMitchell' + '@' + 'HoustonOilAirs.org';
+    document.getElementById('copyEmail').addEventListener('click', async ()=>{
+      try{
+        await navigator.clipboard.writeText(email);
+        const n = document.getElementById('copyNote'); n.textContent = 'Copied to clipboard.'; setTimeout(()=>n.textContent='',2500);
+      }catch(err){ location.href='mailto:'+email; }
+    });
+
+    // --- GitHub API integration ---
+    const username = 'Senpai-Sama7';
+    const ghUserURL = `https://api.github.com/users/${username}`;
+    const ghReposURL = `https://api.github.com/users/${username}/repos?sort=updated&per_page=6`;
+
+    document.getElementById('viewAll').href = `https://github.com/${username}`;
+
+    async function loadGitHub(){
+      try{
+        const [userRes, reposRes] = await Promise.all([
+          fetch(ghUserURL, {headers:{'Accept':'application/vnd.github+json'}}),
+          fetch(ghReposURL, {headers:{'Accept':'application/vnd.github+json'}})
         ]);
-        if (!userRes.ok || !repoRes.ok) throw new Error("GitHub API error");
+        if(!userRes.ok || !reposRes.ok) throw new Error('GitHub API unavailable');
         const user = await userRes.json();
-        let list = await repoRes.json();
-        list = list
-          .filter(r => !r.fork)
-          .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
-          .slice(0, 6);
-        setProfile(user);
-        setRepos(list);
-        setState("ready");
-      } catch (e) {
-        console.error(e);
-        setState("error");
+        const repos = (await reposRes.json()).filter(r=>!r.fork);
+
+        const grid = document.getElementById('repoGrid');
+        if(!repos.length){
+          grid.innerHTML = `<div class="card">No public repositories yet.</div>`;
+          return;
+        }
+        repos.forEach(r=>{
+          const el = document.createElement('article');
+          el.className='card repo';
+          el.innerHTML = `
+            <h3><a href="${r.html_url}" class="visit" target="_blank" rel="noopener">${r.name}</a></h3>
+            <p class="muted">${r.description ? r.description.replace(/</g,'&lt;') : '—'}</p>
+            <div class="meta">
+              ${r.language ? `<span class="chip">${r.language}</span>`:''}
+              <span class="chip">★ ${r.stargazers_count}</span>
+              <span class="chip">Updated ${new Intl.DateTimeFormat(undefined,{dateStyle:'medium'}).format(new Date(r.updated_at))}</span>
+            </div>`;
+          document.getElementById('repoGrid').appendChild(el);
+          io.observe(el);
+        });
+        document.getElementById('gh-username').textContent = '@'+(user.login || username);
+      }catch(e){
+        document.getElementById('repoGrid').innerHTML =
+          `<div class="card"><strong>Heads up:</strong> GitHub rate limits unauthenticated requests. Please refresh later or add a token.</div>`;
       }
     }
-    load();
-  }, []);
+    loadGitHub();
 
-  return (
-    <section id="github" className="relative py-28">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
-      <div className="max-w-6xl mx-auto px-6">
-        <div className="mb-10 flex items-end justify-between gap-6 flex-wrap">
-          <div>
-            <h2 className="text-4xl sm:text-5xl font-semibold">GitHub</h2>
-            <p className="text-white/70 mt-3">Live repo data from the GitHub API — most‑starred first.</p>
-          </div>
-          {profile && (
-            <a
-              href={profile.html_url}
-              className="rounded-full px-5 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40"
-            >
-              @{profile.login} • {profile.followers} followers
-            </a>
-          )}
-        </div>
-
-        {state === "loading" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="rounded-3xl border border-white/10 bg-white/5 h-40 animate-pulse" />
-            ))}
-          </div>
-        )}
-
-        {state === "error" && (
-          <div className="text-white/70">Couldn't reach GitHub. Set <code>GITHUB_USERNAME</code> (and optional token) in the file.</div>
-        )}
-
-        {state === "ready" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {repos.map((r) => (
-              <TiltCard key={r.id}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <a href={r.html_url} className="text-2xl sm:text-3xl font-semibold text-white hover:underline">{r.name}</a>
-                    <p className="text-white/70 mt-2 leading-relaxed line-clamp-3">{r.description || "No description provided."}</p>
-                    <div className="mt-4 flex items-center gap-4 text-white/60 text-sm">
-                      <span>★ {r.stargazers_count}</span>
-                      <span>⑂ {r.forks_count}</span>
-                      <span className="truncate">Updated {new Date(r.updated_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="shrink-0">
-                    <motion.div initial={{ opacity: 0, scale: .96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
-                      className="px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-xs text-white/70">
-                      {r.language || "—"}
-                    </motion.div>
-                  </div>
-                </div>
-              </TiltCard>
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
-}
-
-// ---------- Book section (callout)
-function BookSection() {
-  return (
-    <section id="book" className="relative py-28">
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
-        <div className="order-2 lg:order-1">
-          <h2 className="text-4xl sm:text-5xl font-semibold">{BOOK.title}</h2>
-          <p className="text-white/60 mt-2">{BOOK.subtitle}</p>
-          <p className="text-white/70 mt-6 leading-relaxed max-w-xl">{BOOK.blurb}</p>
-          <div className="mt-8 flex gap-4">
-            <a href={BOOK.link} className="rounded-full px-6 py-3 bg-white text-black font-medium">Read / Buy</a>
-            <a href="#contact" className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">Invite me to speak</a>
-          </div>
-        </div>
-        <div className="order-1 lg:order-2">
-          <TiltCard>
-            <div className="aspect-[3/4] w-full max-w-sm mx-auto rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/15 to-white/5 relative">
-              <motion.div
-                className="absolute inset-0"
-                animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-                transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-                style={{ backgroundImage: "radial-gradient(60% 80% at 0% 0%, rgba(180,220,255,.18), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(255,180,220,.18), transparent 60%)", backgroundSize: "200% 200%" }}
-              />
-              <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-10">
-                <p className="text-sm tracking-[0.2em] uppercase text-white/60">Book</p>
-                <h3 className="text-3xl font-semibold mt-2">{BOOK.title}</h3>
-                <p className="text-white/70 mt-3">{BOOK.subtitle}</p>
-              </div>
-            </div>
-          </TiltCard>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ---------- Conversation insights (from our work together)
-function ConversationInsights() {
-  const items = [
-    { k: "Keynote‑grade motion", v: "Calm, cinematic transitions that guide attention without distraction." },
-    { k: "Nobody‑style minimalism", v: "Austere layout that defers to content and makes type do the work." },
-    { k: "Clarity first", v: "Hierarchy via space, contrast and depth; copy stays concise and confident." },
-    { k: "Tactile details", v: "Parallax, tilt, and sheen used sparingly for a premium feel." },
-  ];
-  return (
-    <section id="insights" className="relative py-24">
-      <div className="max-w-6xl mx-auto px-6">
-        <h2 className="text-3xl sm:text-4xl font-semibold">From our conversations</h2>
-        <p className="text-white/70 mt-3">What keeps showing up as your signature.</p>
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {items.map((it, i) => (
-            <TiltCard key={i}>
-              <div className="flex items-start gap-4">
-                <div className="mt-1 h-2 w-2 rounded-full bg-white/70" />
-                <div>
-                  <p className="text-xl font-semibold">{it.k}</p>
-                  <p className="text-white/70 mt-2">{it.v}</p>
-                </div>
-              </div>
-            </TiltCard>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-export default function Douglas() {
-  // Page scroll progress for global sheen
-  const { scrollYProgress } = useScroll();
-  const glossY = useTransform(scrollYProgress, [0, 1], ["-30%", "130%"]);
-
-  return (
-    <main className="text-white bg-[#0b0c10] min-h-[100svh] relative">
-      <Noise />
-      {/* Global subtle sheen that sweeps on scroll (very keynote) */}
-      <motion.div
-        aria-hidden
-        style={{ top: glossY }}
-        className="pointer-events-none fixed left-0 right-0 h-64 -z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent_60%)]"
-      />
-
-      {/* Nav */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/30 border-b border-white/10">
-        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-          <a href="#home" className="font-semibold tracking-tight">Douglas</a>
-          <div className="hidden sm:flex items-center gap-6 text-white/70 text-sm">
-            <a href="#work" className="hover:text-white">Work</a>
-            <a href="#approach" className="hover:text-white">Approach</a>
-            <a href="#github" className="hover:text-white">GitHub</a>
-            <a href="#book" className="hover:text-white">Book</a>
-            <a href="#contact" className="hover:text-white">Contact</a>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <Hero />
-
-      {/* Sticky slides */}
-      <section id="approach" className="relative">
-        <StickySlide
-          eyebrow="Principle One"
-          title="Deference to content."
-          copy="Interfaces recede so your message shines. Motion helps orient, never distract."
-          tint="from-sky-500/20 to-cyan-400/10"
-        >
-          <div className="relative">
-            <WorkPhoneMock title="Signals stay subtle" subtitle="Haptics, blur, depth" />
-          </div>
-        </StickySlide>
-        <StickySlide
-          eyebrow="Principle Two"
-          title="Clarity over clutter."
-          copy="Type, spacing, and contrast do the heavy lifting. Transitions are measured and intentional."
-          tint="from-fuchsia-500/20 to-indigo-500/10"
-        >
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <DashboardMock />
-          </motion.div>
-        </StickySlide>
-        <StickySlide
-          eyebrow="Principle Three"
-          title="Depth provides hierarchy."
-          copy="Parallax, scale, and blur create layers—like a camera moving through space."
-          tint="from-amber-500/20 to-rose-500/10"
-        >
-          <LayersMock />
-        </StickySlide>
-      </section>
-
-      {/* Work */}
-      <section id="work" className="relative py-28">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="mb-10">
-            <h2 className="text-4xl sm:text-5xl font-semibold">Selected Work</h2>
-            <p className="text-white/70 mt-3">Hover for depth; everything responds with intent.</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <WorkCard title="OmniOS — Service Platform" tag="Platform" body="A unified OS for field teams. Offline‑first, buttery navigation, and diagnostics that feel invisible." />
-            <WorkCard title="Haven — Wellness App" tag="Mobile" body="Gentle onboarding, rhythmic micro‑animations, and typography that breathes." />
-            <WorkCard title="ArcJet — Analytics" tag="Web" body="Keynote‑style reveals, dimensional charts, and scroll‑driven storytelling." />
-            <WorkCard title="Solace — Energy" tag="IoT" body="Crisp controls, live telemetry, and considered motion states for trust." />
-          </div>
-        </div>
-      </section>
-
-      {/* Book */}
-      <BookSection />
-
-      {/* GitHub live section */}
-      <GitHubSection />
-
-      {/* Conversation insights */}
-      <ConversationInsights />
-
-      <Footer />
-    </main>
-  );
-}
-
-// ---------- Mock components (pure CSS/SVG so code is self‑contained)
-function WorkPhoneMock({ title = "", subtitle = "" }) {
-  return (
-    <div className="mx-auto w-[280px] h-[560px] rounded-[48px] p-3 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,.6)]">
-      <div className="h-full rounded-[36px] overflow-hidden relative bg-black/60">
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/60 rounded-full"/>
-        <motion.div
-          className="absolute inset-0"
-          animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
-          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
-          style={{ backgroundImage: "radial-gradient(60% 80% at 0% 0%, rgba(180,220,255,.18), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(255,180,220,.18), transparent 60%)", backgroundSize: "200% 200%" }}
-        />
-        <div className="relative z-10 p-5">
-          <div className="h-56 rounded-2xl overflow-hidden border border-white/10 bg-white/5">
-            <motion.div
-              className="w-full h-full"
-              initial={{ scale: 1.1, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-              style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0))" }}
-            />
-          </div>
-          <div className="mt-5 space-y-2">
-            <div className="h-4 w-24 bg-white/20 rounded" />
-            <div className="h-3 w-40 bg-white/10 rounded" />
-          </div>
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            {[...Array(6)].map((_, i) => (
-              <motion.div key={i} className="h-10 rounded-xl bg-white/10 border border-white/10" whileHover={{ scale: 1.04 }} />
-            ))}
-          </div>
-          <div className="absolute bottom-4 left-0 right-0 text-center">
-            <p className="text-white/70 text-sm font-medium">{title}</p>
-            <p className="text-white/50 text-xs">{subtitle}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DashboardMock() {
-  return (
-    <div className="mx-auto max-w-xl">
-      <TiltCard>
-        <div className="relative">
-          <div className="grid grid-cols-12 gap-4">
-            <div className="col-span-8 h-40 rounded-2xl bg-white/10 border border-white/10 overflow-hidden">
-              <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="h-full">
-                <svg viewBox="0 0 400 160" className="w-full h-full">
-                  <defs>
-                    <linearGradient id="lg" x1="0" x2="1" y1="0" y2="0">
-                      <stop offset="0%" stopColor="rgba(255,255,255,.1)" />
-                      <stop offset="100%" stopColor="rgba(255,255,255,.6)" />
-                    </linearGradient>
-                  </defs>
-                  <path d="M0,120 C80,80 120,140 180,100 C240,60 280,110 340,70 C360,60 380,50 400,60" fill="none" stroke="url(#lg)" strokeWidth="3" />
-                </svg>
-              </motion.div>
-            </div>
-            <div className="col-span-4 h-40 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center">
-              <div className="text-center">
-                <p className="text-3xl font-semibold">98%</p>
-                <p className="text-white/60 text-xs">Satisfaction</p>
-              </div>
-            </div>
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="col-span-3 h-24 rounded-2xl bg-white/10 border border-white/10" />
-            ))}
-          </div>
-        </div>
-      </TiltCard>
-    </div>
-  );
-}
-
-function LayersMock() {
-  return (
-    <div className="mx-auto max-w-xl perspective-[1000px]">
-      <div className="relative h-96">
-        {["40","30","20"].map((z, i) => (
-          <motion.div
-            key={i}
-            className="absolute inset-0 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl"
-            style={{ translateZ: `${(i+1)*40}px`, transformStyle: "preserve-3d" }}
-            animate={{ y: [0, -10, 0] }}
-            transition={{ duration: 6 + i, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 to-transparent" />
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
+    // year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
