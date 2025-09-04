@@ -1,1831 +1,614 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Douglas Mitchell | Creative Technologist & Digital Artist</title>
-    <meta name="description" content="Douglas Mitchell - Creative Technologist specializing in immersive digital experiences, WebGL, and interactive data visualization">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollToPlugin.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.2/d3.min.js"></script>
-    <style>
-        :root {
-            --primary: #6a11cb;
-            --secondary: #2575fc;
-            --accent: #ff2d75;
-            --dark: #0f0c29;
-            --dark-lighter: #1a153e;
-            --light: #f0f0f0;
-            --glass: rgba(255, 255, 255, 0.08);
-            --glass-border: rgba(255, 255, 255, 0.15);
-            --glass-heavy: rgba(15, 12, 41, 0.7);
-            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            --section-spacing: 8rem;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 300;
-            font-display: swap;
-            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 400;
-            font-display: swap;
-            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 500;
-            font-display: swap;
-            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 600;
-            font-display: swap;
-            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
-        }
-
-        @font-face {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 700;
-            font-display: swap;
-            src: url(https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuOKfAZJhiI2B.woff2) format('woff2');
-        }
-
-        body {
-            background: linear-gradient(135deg, var(--dark), #1a153e, #24243e);
-            color: var(--light);
-            overflow-x: hidden;
-            min-height: 100vh;
-            position: relative;
-            font-weight: 300;
-            line-height: 1.6;
-        }
-
-        /* Improved Typography */
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            line-height: 1.2;
-            margin-bottom: 1.5rem;
-        }
-
-        h1 {
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-        }
-
-        h2 {
-            font-size: clamp(2rem, 4vw, 3rem);
-        }
-
-        h3 {
-            font-size: clamp(1.5rem, 3vw, 1.8rem);
-        }
-
-        p {
-            margin-bottom: 1.5rem;
-            font-size: clamp(1rem, 2.5vw, 1.1rem);
-        }
-
-        /* Enhanced Custom Cursor */
-        .cursor {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: var(--accent);
-            position: fixed;
-            pointer-events: none;
-            z-index: 9999;
-            mix-blend-mode: difference;
-            transform: translate(-50%, -50%);
-            transition: transform 0.15s ease-out, width 0.3s ease, height 0.3s ease;
-        }
-
-        .cursor.hover {
-            width: 50px;
-            height: 50px;
-            background: rgba(255, 45, 117, 0.2);
-            border: 2px solid var(--accent);
-        }
-
-        .cursor.click {
-            width: 35px;
-            height: 35px;
-        }
-
-        .cursor-trail {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.5);
-            position: fixed;
-            pointer-events: none;
-            z-index: 9998;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: width 0.3s, height 0.3s;
-        }
-
-        /* Enhanced Glassmorphism Navigation */
-        nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 1.2rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            backdrop-filter: blur(12px) saturate(180%);
-            background: var(--glass-heavy);
-            border-bottom: 1px solid var(--glass-border);
-            transition: var(--transition);
-        }
-
-        nav.scrolled {
-            padding: 0.8rem 2rem;
-            background: rgba(15, 12, 41, 0.95);
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
-            margin-left: 4px;
-            animation: pulse 2s infinite;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2.5rem;
-        }
-
-        .nav-links a {
-            color: var(--light);
-            text-decoration: none;
-            font-weight: 500;
-            position: relative;
-            padding: 0.5rem 0;
-            font-size: 1.1rem;
-            transition: var(--transition);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--accent);
-            transition: var(--transition);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-links a.active::after {
-            width: 100%;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            color: var(--light);
-            font-size: 1.5rem;
-            cursor: pointer;
-        }
-
-        /* Hero Section Improvements */
-        .hero {
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 0 2rem;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #particles-js {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -1;
-        }
-
-        .hero-content {
-            max-width: 950px;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            margin-bottom: 1.2rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            opacity: 0;
-            transform: translateY(20px);
-            position: relative;
-            display: inline-block;
-        }
-
-        .hero h1::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 0;
-            width: 100%;
-            height: 3px;
-            background: linear-gradient(to right, var(--primary), var(--secondary), var(--accent));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.8s ease;
-        }
-
-        .hero p {
-            font-size: clamp(1.2rem, 3vw, 1.6rem);
-            margin-bottom: 2.5rem;
-            opacity: 0;
-            transform: translateY(20px);
-            font-weight: 300;
-        }
-
-        .hero-cta {
-            display: flex;
-            gap: 1.5rem;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .cta-button {
-            padding: 1rem 2.5rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-            opacity: 0;
-            transform: translateY(20px);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .cta-button:hover::before {
-            left: 100%;
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
-        }
-
-        .cta-button.secondary {
-            background: transparent;
-            border: 2px solid var(--glass-border);
-            color: var(--light);
-        }
-
-        .cta-button.secondary:hover {
-            background: var(--glass);
-            border-color: var(--accent);
-        }
-
-        .scroll-indicator {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: var(--light);
-            opacity: 0.7;
-            transition: var(--transition);
-        }
-
-        .scroll-indicator:hover {
-            opacity: 1;
-        }
-
-        .scroll-indicator p {
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-
-        .scroll-indicator .mouse {
-            width: 30px;
-            height: 50px;
-            border: 2px solid var(--light);
-            border-radius: 20px;
-            position: relative;
-        }
-
-        .scroll-indicator .wheel {
-            width: 4px;
-            height: 10px;
-            background: var(--light);
-            border-radius: 2px;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: scroll 2s infinite;
-        }
-
-        /* Sections */
-        section {
-            min-height: 100vh;
-            padding: var(--section-spacing) 2rem;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 5vw, 3rem);
-            margin-bottom: 4rem;
-            text-align: center;
-            position: relative;
-            padding-bottom: 1.5rem;
-        }
-
-        .section-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 80px;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            border-radius: 2px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        /* About Section Improvements */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 4rem;
-            align-items: center;
-        }
-
-        .about-text {
-            font-size: 1.1rem;
-            line-height: 1.8;
-        }
-
-        .about-text p {
-            margin-bottom: 1.8rem;
-        }
-
-        .skills-container {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-
-        .skill-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
-            padding: 1.8rem;
-            border: 1px solid var(--glass-border);
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skill-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            transform: scaleX(0);
-            transform-origin: left;
-            transition: transform 0.6s ease;
-        }
-
-        .skill-card:hover::before {
-            transform: scaleX(1);
-        }
-
-        .skill-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .skill-card i {
-            font-size: 2.5rem;
-            margin-bottom: 1.2rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .skill-card h3 {
-            margin-bottom: 0.8rem;
-            font-size: 1.3rem;
-        }
-
-        /* Projects Section Improvements */
-        .projects-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .project-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            overflow: hidden;
-            border: 1px solid var(--glass-border);
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .project-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .project-img {
-            height: 220px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform 0.6s ease;
-        }
-
-        .project-card:hover .project-img img {
-            transform: scale(1.05);
-        }
-
-        .project-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to top, rgba(15, 12, 41, 0.9), transparent);
-            display: flex;
-            align-items: flex-end;
-            padding: 1.5rem;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .project-card:hover .project-overlay {
-            opacity: 1;
-        }
-
-        .project-links {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .project-link {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--glass);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--light);
-            text-decoration: none;
-            transition: var(--transition);
-        }
-
-        .project-link:hover {
-            background: var(--accent);
-            transform: translateY(-3px);
-        }
-
-        .project-content {
-            padding: 2rem;
-        }
-
-        .project-content h3 {
-            margin-bottom: 0.8rem;
-            font-size: 1.4rem;
-        }
-
-        .project-content p {
-            font-size: 1rem;
-            opacity: 0.9;
-            margin-bottom: 1.5rem;
-            line-height: 1.6;
-        }
-
-        .tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .tag {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 0.4rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-
-        /* Playground Section Improvements */
-        .playground-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2.5rem;
-        }
-
-        .tool-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2.5rem;
-            border: 1px solid var(--glass-border);
-            transition: var(--transition);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .tool-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(to bottom right, rgba(255, 255, 255, 0.1), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s ease;
-            z-index: 0;
-        }
-
-        .tool-card:hover::before {
-            transform: rotate(45deg) translate(20px, 20px);
-        }
-
-        .tool-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .tool-icon {
-            font-size: 3.5rem;
-            margin-bottom: 1.8rem;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            position: relative;
-            z-index: 1;
-        }
-
-        .tool-card h3 {
-            margin-bottom: 1.2rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .tool-card p {
-            margin-bottom: 2rem;
-            font-size: 1rem;
-            position: relative;
-            z-index: 1;
-        }
-
-        .btn {
-            padding: 0.9rem 2rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            border: none;
-            border-radius: 50px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            position: relative;
-            z-index: 1;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: 0.5s;
-        }
-
-        .btn:hover::before {
-            left: 100%;
-        }
-
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Contact Section Improvements */
-        .contact-container {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 4rem;
-        }
-
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 1.5rem;
-            padding: 1.5rem;
-            background: var(--glass);
-            border-radius: 15px;
-            border: 1px solid var(--glass-border);
-            transition: var(--transition);
-        }
-
-        .contact-item:hover {
-            transform: translateX(10px);
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        .contact-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .contact-details h3 {
-            margin-bottom: 0.5rem;
-        }
-
-        .contact-details p {
-            margin-bottom: 0;
-            opacity: 0.9;
-        }
-
-        .contact-form {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 2.5rem;
-            border: 1px solid var(--glass-border);
-        }
-
-        .form-group {
-            margin-bottom: 1.8rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.8rem;
-            font-weight: 500;
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 1rem 1.2rem;
-            border-radius: 10px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            color: white;
-            font-size: 1rem;
-            transition: var(--transition);
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 2px rgba(106, 17, 203, 0.3);
-        }
-
-        .form-group textarea {
-            min-height: 180px;
-            resize: vertical;
-        }
-
-        /* Footer Improvements */
-        footer {
-            text-align: center;
-            padding: 4rem 2rem;
-            background: rgba(0, 0, 0, 0.2);
-            backdrop-filter: blur(10px);
-            border-top: 1px solid var(--glass-border);
-            position: relative;
-        }
-
-        .footer-content {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .footer-logo {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 1.5rem;
-            display: inline-block;
-        }
-
-        .footer-text {
-            margin-bottom: 2.5rem;
-            opacity: 0.8;
-        }
-
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.2rem;
-            margin: 2.5rem 0;
-        }
-
-        .social-link {
-            width: 55px;
-            height: 55px;
-            border-radius: 50%;
-            background: var(--glass);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            transition: var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .social-link::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .social-link:hover::before {
-            opacity: 1;
-        }
-
-        .social-link i {
-            position: relative;
-            z-index: 1;
-        }
-
-        .social-link:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-        }
-
-        .copyright {
-            margin-top: 2.5rem;
-            opacity: 0.7;
-            font-size: 0.9rem;
-        }
-
-        /* Particles Background */
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            z-index: -2;
-        }
-
-        /* Physics Playground */
-        #physics-playground {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* FPS Counter */
-        #fps-counter {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 5px;
-            font-family: monospace;
-            z-index: 9999;
-            display: none;
-        }
-
-        /* Easter Egg */
-        .konami-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 0, 0, 0.95);
-            color: var(--accent);
-            padding: 3rem;
-            border-radius: 20px;
-            text-align: center;
-            z-index: 10000;
-            display: none;
-            border: 2px solid var(--accent);
-            box-shadow: 0 0 40px rgba(255, 45, 117, 0.6);
-            max-width: 500px;
-            width: 90%;
-        }
-
-        .konami-message h2 {
-            margin-bottom: 1.5rem;
-        }
-
-        /* Loading Screen */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--dark);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.8s ease-out;
-        }
-
-        .loader {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid var(--accent);
-            animation: spin 1s linear infinite;
-        }
-
-        /* Back to Top Button */
-        .back-to-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            z-index: 99;
-        }
-
-        .back-to-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .back-to-top:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Animations */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        @keyframes scroll {
-            0% { transform: translate(-50%, 0); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translate(-50%, 20px); opacity: 0; }
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 1024px) {
-            :root {
-                --section-spacing: 6rem;
-            }
-            
-            .about-content {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-            
-            .contact-container {
-                grid-template-columns: 1fr;
-                gap: 3rem;
-            }
-        }
-
-        @media (max-width: 768px) {
-            :root {
-                --section-spacing: 5rem;
-            }
-            
-            .hero h1 {
-                font-size: 3rem;
-            }
-            
-            .hero p {
-                font-size: 1.2rem;
-            }
-            
-            .nav-links {
-                position: fixed;
-                top: 0;
-                right: -100%;
-                width: 70%;
-                height: 100vh;
-                background: var(--glass-heavy);
-                backdrop-filter: blur(15px);
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                transition: right 0.4s ease;
-                z-index: 999;
-            }
-            
-            .nav-links.active {
-                right: 0;
-            }
-            
-            .mobile-menu-btn {
-                display: block;
-                z-index: 1000;
-            }
-            
-            .skills-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .projects-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .playground-container {
-                grid-template-columns: 1fr;
-            }
-            
-            .hero-cta {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .contact-item {
-                flex-direction: column;
-                text-align: center;
-            }
-            
-            section {
-                padding: 4rem 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .section-title {
-                margin-bottom: 3rem;
-            }
-            
-            .tool-card {
-                padding: 1.8rem;
-            }
-            
-            .contact-form {
-                padding: 1.8rem;
-            }
-            
-            .social-link {
-                width: 45px;
-                height: 45px;
-                font-size: 1.1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
-        <div class="loader"></div>
+import React, { useRef, useEffect, useState } from "react";
+import { motion, useScroll, useTransform, useSpring, useMotionValue } from "framer-motion";
+
+/**
+ * Douglas — Cinematic, keynote‑grade personal site
+ * Single‑file React component using TailwindCSS + Framer Motion
+ * No external assets. Graphics are SVG/CSS. Apple‑style motion: calm, precise, depthy.
+ */
+
+// ========= Config you can personalize =========
+const GITHUB_USERNAME = "YOUR_GITHUB_USERNAME"; // ← set this
+const GITHUB_PERSONAL_TOKEN = ""; // ← optional; raises rate limit + avoids CORS flakiness
+const BOOK = {
+  title: "Your Book Title",
+  subtitle: "A calm guide to building thoughtful software",
+  blurb:
+    "A short, opinionated book about clarity, motion with purpose, and crafting interfaces that respectfully disappear.",
+  link: "#" // e.g. Amazon/Gumroad/Personal store
+};
+
+// ---------- Little utilities
+const useParallax = (value, distance = 100) => useTransform(value, [0, 1], [-distance, distance]);
+
+function Magnetic({ children, strength = 0.35 }) {
+  const ref = useRef(null);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const rx = useSpring(x, { stiffness: 200, damping: 20 });
+  const ry = useSpring(y, { stiffness: 200, damping: 20 });
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const onMove = (e) => {
+      const rect = el.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width - 0.5;
+      const relY = (e.clientY - rect.top) / rect.height - 0.5;
+      x.set(relX * strength * rect.width);
+      y.set(relY * strength * rect.height);
+    };
+    const onLeave = () => { x.set(0); y.set(0); };
+    el.addEventListener("mousemove", onMove);
+    el.addEventListener("mouseleave", onLeave);
+    return () => { el.removeEventListener("mousemove", onMove); el.removeEventListener("mouseleave", onLeave); };
+  }, [strength, x, y]);
+  return (
+    <motion.div ref={ref} style={{ x: rx, y: ry }} className="inline-block will-change-transform">
+      {children}
+    </motion.div>
+  );
+}
+
+// ---------- Graphics primitives
+function Orb({ size = 420, className = "", hue = 220 }) {
+  return (
+    <div className={`pointer-events-none ${className}`} aria-hidden>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="opacity-70">
+        <defs>
+          <radialGradient id={`g-${hue}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor={`hsl(${hue}, 95%, 65%)`} />
+            <stop offset="60%" stopColor={`hsl(${hue}, 95%, 55%)`} />
+            <stop offset="100%" stopColor="transparent" />
+          </radialGradient>
+          <filter id={`b-${hue}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="30" />
+          </filter>
+        </defs>
+        <circle cx={size/2} cy={size/2} r={size/2.4} fill={`url(#g-${hue})`} filter={`url(#b-${hue})`} />
+      </svg>
     </div>
+  );
+}
 
-    <!-- Custom Cursor -->
-    <div class="cursor"></div>
-    <div class="cursor-trail"></div>
+function Noise() {
+  return (
+    <svg className="pointer-events-none fixed inset-0 mix-blend-soft-light opacity-[.06]" aria-hidden>
+      <filter id="n">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" stitchTiles="stitch"/>
+      </filter>
+      <rect width="100%" height="100%" filter="url(#n)"/>
+    </svg>
+  );
+}
 
-    <!-- FPS Counter -->
-    <div id="fps-counter">FPS: 60</div>
+function GridBG() {
+  return (
+    <svg className="absolute inset-0 w-full h-full opacity-30 [mask-image:radial-gradient(50%_50%_at_50%_50%,black_30%,transparent_70%)]" aria-hidden>
+      <defs>
+        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+          <path d="M40 0H0V40" fill="none" stroke="currentColor" strokeWidth=".6" className="text-white/10"/>
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#grid)" />
+    </svg>
+  );
+}
 
-    <!-- Back to Top Button -->
-    <div class="back-to-top">
-        <i class="fas fa-arrow-up"></i>
+// ---------- Sticky, parallax slide
+function StickySlide({ title, eyebrow, copy, tint = "from-sky-400/30 to-violet-500/20", children }) {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  const opacity = useTransform(scrollYProgress, [0, 0.25, 0.75, 1], [0, 1, 1, 0]);
+  const y = useTransform(scrollYProgress, [0, 1], [80, -80]);
+  const scale = useTransform(scrollYProgress, [0, 0.5, 1], [0.96, 1, 0.96]);
+
+  return (
+    <section ref={ref} className="relative h-[220vh]">
+      <div className="sticky top-0 h-screen overflow-hidden">
+        <motion.div style={{ opacity }} className={`absolute inset-0 bg-gradient-to-br ${tint}`} />
+        <GridBG />
+        <div className="absolute inset-0">
+          <motion.div style={{ scale, y }} className="mx-auto max-w-6xl h-full grid grid-cols-1 lg:grid-cols-2 gap-10 items-center px-6">
+            <div className="relative z-10">
+              <p className="text-sm uppercase tracking-[0.2em] text-white/60 mb-4">{eyebrow}</p>
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-semibold leading-[1.05] text-white mb-6">
+                {title}
+              </h2>
+              <p className="text-white/70 text-lg leading-relaxed max-w-xl">{copy}</p>
+            </div>
+            <div className="relative z-0">
+              {children}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------- Tilt card with glossy sheen
+function TiltCard({ children }) {
+  const ref = useRef(null);
+  const [shine, setShine] = useState({ x: 50, y: 50 });
+
+  const onMove = (e) => {
+    const rect = ref.current.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+    setShine({ x: px * 100, y: py * 100 });
+    const rx = (py - 0.5) * -10; // rotateX
+    const ry = (px - 0.5) * 12;  // rotateY
+    ref.current.style.transform = `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`;
+  };
+  const onLeave = () => { ref.current.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg)"; };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={onMove}
+      onMouseLeave={onLeave}
+      className="relative rounded-3xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-xl p-8 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)] transition-transform will-change-transform"
+      style={{ transformStyle: "preserve-3d" }}
+    >
+      <div
+        className="pointer-events-none absolute inset-0 rounded-3xl"
+        style={{
+          background: `radial-gradient(60% 60% at ${shine.x}% ${shine.y}%, rgba(255,255,255,0.35), transparent 60%)`,
+          mixBlendMode: "overlay",
+          transform: "translateZ(50px)",
+        }}
+      />
+      <div style={{ transform: "translateZ(40px)" }}>{children}</div>
     </div>
+  );
+}
 
-    <!-- Navigation -->
-    <nav>
-        <div class="logo">DM<span class="logo-dot"></span></div>
-        <div class="nav-links">
-            <a href="#home" class="active">Home</a>
-            <a href="#about">About</a>
-            <a href="#projects">Projects</a>
-            <a href="#playground">Playground</a>
-            <a href="#contact">Contact</a>
-        </div>
-        <button class="mobile-menu-btn">
-            <i class="fas fa-bars"></i>
-        </button>
-    </nav>
+// ---------- Hero with kinetic gradient text + floating orbs
+function Hero() {
+  const ref = useRef(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const yTitle = useParallax(scrollYProgress, 80);
+  const ySub = useParallax(scrollYProgress, 40);
+  const fade = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div id="particles-js"></div>
-        <div class="hero-content">
-            <h1>Douglas Mitchell</h1>
-            <p>Creative Technologist & Digital Experience Architect</p>
-            <div class="hero-cta">
-                <button class="cta-button">Explore My Work</button>
-                <button class="cta-button secondary">Download CV</button>
-            </div>
+  return (
+    <header ref={ref} className="relative isolate h-[120svh] flex items-center justify-center overflow-hidden">
+      <motion.div style={{ opacity: fade }} className="absolute inset-0 -z-10">
+        <div className="absolute -top-24 -left-24">
+          <motion.div animate={{ y: [0, 30, 0], x: [0, 20, 0] }} transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}>
+            <Orb size={520} hue={210} />
+          </motion.div>
         </div>
-        <div class="scroll-indicator">
-            <p>Scroll to explore</p>
-            <div class="mouse">
-                <div class="wheel"></div>
-            </div>
+        <div className="absolute bottom-0 right-0">
+          <motion.div animate={{ y: [0, -40, 0], x: [0, -30, 0] }} transition={{ duration: 26, repeat: Infinity, ease: "easeInOut" }}>
+            <Orb size={460} hue={270} />
+          </motion.div>
         </div>
-    </section>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <motion.div animate={{ scale: [1, 1.06, 1] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}>
+            <Orb size={600} hue={320} />
+          </motion.div>
+        </div>
+      </motion.div>
 
-    <!-- About Section -->
-    <section id="about">
-        <div class="container">
-            <h2 class="section-title">About Me</h2>
-            <div class="about-content">
-                <div class="about-text">
-                    <p>Hello! I'm Douglas Mitchell, a passionate creative technologist with expertise in blending art and technology. With over 8 years of experience, I specialize in creating immersive digital experiences using cutting-edge web technologies.</p>
-                    <p>My journey began with traditional programming, but I quickly discovered my passion for visual storytelling and interactive design. Today, I work at the intersection of code and creativity, building everything from data visualizations to 3D experiences.</p>
-                    <p>When I'm not coding, you can find me exploring generative art, experimenting with new frameworks, or contributing to open-source projects.</p>
-                </div>
-                <div class="skills-container">
-                    <div class="skill-card">
-                        <i class="fas fa-code"></i>
-                        <h3>Frontend Development</h3>
-                        <p>Expertise in modern JavaScript frameworks, responsive design, and performance optimization.</p>
-                    </div>
-                    <div class="skill-card">
-                        <i class="fas fa-cube"></i>
-                        <h3>3D Graphics</h3>
-                        <p>Proficient in WebGL, Three.js, and real-time rendering techniques for immersive experiences.</p>
-                    </div>
-                    <div class="skill-card">
-                        <i class="fas fa-chart-line"></i>
-                        <h3>Data Visualization</h3>
-                        <p>Transforming complex data into compelling visual narratives using D3.js and other libraries.</p>
-                    </div>
-                    <div class="skill-card">
-                        <i class="fas fa-magic"></i>
-                        <h3>Animation</h3>
-                        <p>Creating fluid, engaging animations with GSAP and CSS for memorable user experiences.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+      <div className="absolute inset-0 bg-[radial-gradient(80%_60%_at_50%_0%,rgba(255,255,255,0.10),transparent_60%)]"/>
+      <GridBG />
 
-    <!-- Projects Section -->
-    <section id="projects">
-        <div class="container">
-            <h2 class="section-title">Featured Projects</h2>
-            <div class="projects-grid">
-                <div class="project-card">
-                    <div class="project-img">
-                        <img src="https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="VR Experience">
-                        <div class="project-overlay">
-                            <div class="project-links">
-                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Immersive VR Experience</h3>
-                        <p>A WebGL-powered virtual reality experience for architectural visualization with real-time lighting and physics.</p>
-                        <div class="tags">
-                            <span class="tag">WebGL</span>
-                            <span class="tag">Three.js</span>
-                            <span class="tag">VR</span>
-                            <span class="tag">GLSL</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-img">
-                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Data Visualization">
-                        <div class="project-overlay">
-                            <div class="project-links">
-                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Social Network Analytics</h3>
-                        <p>Interactive dashboard visualizing social media engagement patterns with real-time data processing.</p>
-                        <div class="tags">
-                            <span class="tag">D3.js</span>
-                            <span class="tag">Data Viz</span>
-                            <span class="tag">React</span>
-                            <span class="tag">Node.js</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="project-card">
-                    <div class="project-img">
-                        <img src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Game Engine">
-                        <div class="project-overlay">
-                            <div class="project-links">
-                                <a href="#" class="project-link"><i class="fas fa-external-link-alt"></i></a>
-                                <a href="#" class="project-link"><i class="fab fa-github"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="project-content">
-                        <h3>Physics-Based Game Engine</h3>
-                        <p>Custom game engine built with Matter.js for realistic physics simulations and interactive gameplay.</p>
-                        <div class="tags">
-                            <span class="tag">Physics</span>
-                            <span class="tag">Game Dev</span>
-                            <span class="tag">Canvas</span>
-                            <span class="tag">Matter.js</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <div className="relative z-10 text-center px-6 max-w-5xl">
+        <motion.h1 style={{ y: yTitle }} className="text-[clamp(2.6rem,6vw,6rem)] font-semibold leading-[0.95] tracking-tight">
+          <span className="block text-white/70 text-lg sm:text-xl mb-3 font-medium">Douglas</span>
+          <span className="bg-clip-text text-transparent bg-[conic-gradient(from_180deg_at_50%_50%,#fff_0deg,#cde1ff_120deg,#f0d3ff_240deg,#fff_360deg)] [--tw:linear-gradient(90deg,rgba(255,255,255,.8),rgba(255,255,255,.2)_60%,rgba(255,255,255,.8))] [background-size:200%_200%] animate-[spin_20s_linear_infinite]">
+            Building calm, delightful software.
+          </span>
+        </motion.h1>
+        <motion.p style={{ y: ySub }} className="mt-6 text-white/70 text-lg sm:text-xl max-w-2xl mx-auto">
+          Product engineer focused on clarity, precision, and motion with purpose.
+        </motion.p>
+        <div className="mt-10 flex items-center justify-center gap-4">
+          <Magnetic>
+            <a href="#work" className="group relative inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-medium bg-white text-black transition-all overflow-hidden">
+              <span className="relative z-10">See work</span>
+              <span className="relative z-10">→</span>
+              <span className="absolute inset-0 bg-gradient-to-r from-black/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"/>
+            </a>
+          </Magnetic>
+          <a href="#github" className="rounded-full px-6 py-3 text-sm font-medium border border-white/20 text-white/80 hover:text-white/100 hover:border-white/40 transition">
+            GitHub
+          </a>
+          <a href="#book" className="rounded-full px-6 py-3 text-sm font-medium border border-white/20 text-white/80 hover:text-white/100 hover:border-white/40 transition">
+            Book
+          </a>
         </div>
-    </section>
+      </div>
+    </header>
+  );
+}
 
-    <!-- Playground Section -->
-    <section id="playground">
-        <div class="container">
-            <h2 class="section-title">Creative Playground</h2>
-            <div class="playground-container">
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <h3>3D Geometry Lab</h3>
-                    <p>Interactive WebGL environment to experiment with 3D shapes, materials, and lighting scenarios.</p>
-                    <button class="btn">Launch Demo</button>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-paint-brush"></i>
-                    </div>
-                    <h3>Canvas Drawing Studio</h3>
-                    <p>Multi-mode drawing tool with custom brushes, particles, and rainbow effects for digital art creation.</p>
-                    <button class="btn">Start Creating</button>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-chart-bar"></i>
-                    </div>
-                    <h3>Data Visualization Kit</h3>
-                    <p>Create dynamic charts and graphs with real-time data updates and customizable visual properties.</p>
-                    <button class="btn">Visualize Data</button>
-                </div>
-                <div class="tool-card">
-                    <div class="tool-icon">
-                        <i class="fas fa-ball-pile"></i>
-                    </div>
-                    <h3>Physics Playground</h3>
-                    <p>Add interactive elements to the scene and watch realistic physics simulations in action.</p>
-                    <button class="btn">Add Elements</button>
-                </div>
-            </div>
+// ---------- Work card (animated in list)
+function WorkCard({ title, body, tag }) {
+  return (
+    <TiltCard>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="px-2 py-1 rounded-full text-[10px] uppercase tracking-wider bg-white/10 text-white/70 border border-white/10">{tag}</span>
         </div>
-    </section>
+        <h3 className="text-2xl sm:text-3xl font-semibold text-white">{title}</h3>
+        <p className="text-white/70 leading-relaxed">{body}</p>
+      </div>
+    </TiltCard>
+  );
+}
 
-    <!-- Contact Section -->
-    <section id="contact">
-        <div class="container">
-            <h2 class="section-title">Get In Touch</h2>
-            <div class="contact-container">
-                <div class="contact-info">
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-envelope"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Email</h3>
-                            <p>douglas@example.com</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Location</h3>
-                            <p>San Francisco, CA</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-phone"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Phone</h3>
-                            <p>+1 (555) 123-4567</p>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="contact-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="contact-details">
-                            <h3>Availability</h3>
-                            <p>Currently available for freelance projects</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="contact-form">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" placeholder="Your Name">
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" placeholder="Your Email">
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" placeholder="Your Message"></textarea>
-                    </div>
-                    <button class="btn">Send Message</button>
-                </div>
-            </div>
+// ---------- Footer
+function Footer() {
+  return (
+    <footer id="contact" className="relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-white/10" />
+      <div className="max-w-6xl mx-auto px-6 py-20">
+        <div className="text-center">
+          <h4 className="text-4xl sm:text-5xl font-semibold text-white mb-6">Let's build something thoughtful.</h4>
+          <div className="flex items-center justify-center gap-4">
+            <a href="mailto:hello@douglas.dev" className="rounded-full px-6 py-3 bg-white text-black font-medium">hello@douglas.dev</a>
+            <a href="#" className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">LinkedIn</a>
+            <a href={`https://github.com/${GITHUB_USERNAME || ''}`} className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">GitHub</a>
+          </div>
         </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="container">
-            <div class="footer-content">
-                <div class="footer-logo">Douglas Mitchell</div>
-                <p class="footer-text">Crafting exceptional digital experiences at the intersection of technology and creativity.</p>
-                <div class="social-links">
-                    <a href="#" class="social-link"><i class="fab fa-github"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-dribbble"></i></a>
-                    <a href="#" class="social-link"><i class="fab fa-codepen"></i></a>
-                </div>
-                <p class="copyright">© 2023 Douglas Mitchell. All rights reserved. Built with cutting-edge web technologies.</p>
-            </div>
-        </div>
+      </div>
     </footer>
+  );
+}
 
-    <!-- Easter Egg Message -->
-    <div class="konami-message">
-        <h2>Konami Code Activated!</h2>
-        <p>You've unlocked the secret developer mode. Enjoy the extra animations!</p>
-        <button class="btn" onclick="this.parentElement.style.display='none'">Close</button>
+// ---------- GitHub section (live via REST API)
+function GitHubSection() {
+  const [profile, setProfile] = useState(null);
+  const [repos, setRepos] = useState([]);
+  const [state, setState] = useState("loading"); // loading | ready | error
+
+  useEffect(() => {
+    if (!GITHUB_USERNAME) return setState("error");
+    const headers = GITHUB_PERSONAL_TOKEN ? { Authorization: `Bearer ${GITHUB_PERSONAL_TOKEN}` } : {};
+
+    async function load() {
+      try {
+        const [userRes, repoRes] = await Promise.all([
+          fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, { headers }),
+          fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`, { headers })
+        ]);
+        if (!userRes.ok || !repoRes.ok) throw new Error("GitHub API error");
+        const user = await userRes.json();
+        let list = await repoRes.json();
+        list = list
+          .filter(r => !r.fork)
+          .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
+          .slice(0, 6);
+        setProfile(user);
+        setRepos(list);
+        setState("ready");
+      } catch (e) {
+        console.error(e);
+        setState("error");
+      }
+    }
+    load();
+  }, []);
+
+  return (
+    <section id="github" className="relative py-28">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
+      <div className="max-w-6xl mx-auto px-6">
+        <div className="mb-10 flex items-end justify-between gap-6 flex-wrap">
+          <div>
+            <h2 className="text-4xl sm:text-5xl font-semibold">GitHub</h2>
+            <p className="text-white/70 mt-3">Live repo data from the GitHub API — most‑starred first.</p>
+          </div>
+          {profile && (
+            <a
+              href={profile.html_url}
+              className="rounded-full px-5 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40"
+            >
+              @{profile.login} • {profile.followers} followers
+            </a>
+          )}
+        </div>
+
+        {state === "loading" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="rounded-3xl border border-white/10 bg-white/5 h-40 animate-pulse" />
+            ))}
+          </div>
+        )}
+
+        {state === "error" && (
+          <div className="text-white/70">Couldn't reach GitHub. Set <code>GITHUB_USERNAME</code> (and optional token) in the file.</div>
+        )}
+
+        {state === "ready" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {repos.map((r) => (
+              <TiltCard key={r.id}>
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <a href={r.html_url} className="text-2xl sm:text-3xl font-semibold text-white hover:underline">{r.name}</a>
+                    <p className="text-white/70 mt-2 leading-relaxed line-clamp-3">{r.description || "No description provided."}</p>
+                    <div className="mt-4 flex items-center gap-4 text-white/60 text-sm">
+                      <span>★ {r.stargazers_count}</span>
+                      <span>⑂ {r.forks_count}</span>
+                      <span className="truncate">Updated {new Date(r.updated_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  <div className="shrink-0">
+                    <motion.div initial={{ opacity: 0, scale: .96 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}
+                      className="px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-xs text-white/70">
+                      {r.language || "—"}
+                    </motion.div>
+                  </div>
+                </div>
+              </TiltCard>
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+// ---------- Book section (callout)
+function BookSection() {
+  return (
+    <section id="book" className="relative py-28">
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+        <div className="order-2 lg:order-1">
+          <h2 className="text-4xl sm:text-5xl font-semibold">{BOOK.title}</h2>
+          <p className="text-white/60 mt-2">{BOOK.subtitle}</p>
+          <p className="text-white/70 mt-6 leading-relaxed max-w-xl">{BOOK.blurb}</p>
+          <div className="mt-8 flex gap-4">
+            <a href={BOOK.link} className="rounded-full px-6 py-3 bg-white text-black font-medium">Read / Buy</a>
+            <a href="#contact" className="rounded-full px-6 py-3 border border-white/20 text-white/80 hover:text-white hover:border-white/40">Invite me to speak</a>
+          </div>
+        </div>
+        <div className="order-1 lg:order-2">
+          <TiltCard>
+            <div className="aspect-[3/4] w-full max-w-sm mx-auto rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-white/15 to-white/5 relative">
+              <motion.div
+                className="absolute inset-0"
+                animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+                transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
+                style={{ backgroundImage: "radial-gradient(60% 80% at 0% 0%, rgba(180,220,255,.18), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(255,180,220,.18), transparent 60%)", backgroundSize: "200% 200%" }}
+              />
+              <div className="relative z-10 h-full flex flex-col items-center justify-center text-center p-10">
+                <p className="text-sm tracking-[0.2em] uppercase text-white/60">Book</p>
+                <h3 className="text-3xl font-semibold mt-2">{BOOK.title}</h3>
+                <p className="text-white/70 mt-3">{BOOK.subtitle}</p>
+              </div>
+            </div>
+          </TiltCard>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ---------- Conversation insights (from our work together)
+function ConversationInsights() {
+  const items = [
+    { k: "Keynote‑grade motion", v: "Calm, cinematic transitions that guide attention without distraction." },
+    { k: "Nobody‑style minimalism", v: "Austere layout that defers to content and makes type do the work." },
+    { k: "Clarity first", v: "Hierarchy via space, contrast and depth; copy stays concise and confident." },
+    { k: "Tactile details", v: "Parallax, tilt, and sheen used sparingly for a premium feel." },
+  ];
+  return (
+    <section id="insights" className="relative py-24">
+      <div className="max-w-6xl mx-auto px-6">
+        <h2 className="text-3xl sm:text-4xl font-semibold">From our conversations</h2>
+        <p className="text-white/70 mt-3">What keeps showing up as your signature.</p>
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
+          {items.map((it, i) => (
+            <TiltCard key={i}>
+              <div className="flex items-start gap-4">
+                <div className="mt-1 h-2 w-2 rounded-full bg-white/70" />
+                <div>
+                  <p className="text-xl font-semibold">{it.k}</p>
+                  <p className="text-white/70 mt-2">{it.v}</p>
+                </div>
+              </div>
+            </TiltCard>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function Douglas() {
+  // Page scroll progress for global sheen
+  const { scrollYProgress } = useScroll();
+  const glossY = useTransform(scrollYProgress, [0, 1], ["-30%", "130%"]);
+
+  return (
+    <main className="text-white bg-[#0b0c10] min-h-[100svh] relative">
+      <Noise />
+      {/* Global subtle sheen that sweeps on scroll (very keynote) */}
+      <motion.div
+        aria-hidden
+        style={{ top: glossY }}
+        className="pointer-events-none fixed left-0 right-0 h-64 -z-10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),transparent_60%)]"
+      />
+
+      {/* Nav */}
+      <nav className="sticky top-0 z-40 backdrop-blur-xl bg-black/30 border-b border-white/10">
+        <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+          <a href="#home" className="font-semibold tracking-tight">Douglas</a>
+          <div className="hidden sm:flex items-center gap-6 text-white/70 text-sm">
+            <a href="#work" className="hover:text-white">Work</a>
+            <a href="#approach" className="hover:text-white">Approach</a>
+            <a href="#github" className="hover:text-white">GitHub</a>
+            <a href="#book" className="hover:text-white">Book</a>
+            <a href="#contact" className="hover:text-white">Contact</a>
+          </div>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <Hero />
+
+      {/* Sticky slides */}
+      <section id="approach" className="relative">
+        <StickySlide
+          eyebrow="Principle One"
+          title="Deference to content."
+          copy="Interfaces recede so your message shines. Motion helps orient, never distract."
+          tint="from-sky-500/20 to-cyan-400/10"
+        >
+          <div className="relative">
+            <WorkPhoneMock title="Signals stay subtle" subtitle="Haptics, blur, depth" />
+          </div>
+        </StickySlide>
+        <StickySlide
+          eyebrow="Principle Two"
+          title="Clarity over clutter."
+          copy="Type, spacing, and contrast do the heavy lifting. Transitions are measured and intentional."
+          tint="from-fuchsia-500/20 to-indigo-500/10"
+        >
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <DashboardMock />
+          </motion.div>
+        </StickySlide>
+        <StickySlide
+          eyebrow="Principle Three"
+          title="Depth provides hierarchy."
+          copy="Parallax, scale, and blur create layers—like a camera moving through space."
+          tint="from-amber-500/20 to-rose-500/10"
+        >
+          <LayersMock />
+        </StickySlide>
+      </section>
+
+      {/* Work */}
+      <section id="work" className="relative py-28">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/[0.04] to-transparent" />
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="mb-10">
+            <h2 className="text-4xl sm:text-5xl font-semibold">Selected Work</h2>
+            <p className="text-white/70 mt-3">Hover for depth; everything responds with intent.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <WorkCard title="OmniOS — Service Platform" tag="Platform" body="A unified OS for field teams. Offline‑first, buttery navigation, and diagnostics that feel invisible." />
+            <WorkCard title="Haven — Wellness App" tag="Mobile" body="Gentle onboarding, rhythmic micro‑animations, and typography that breathes." />
+            <WorkCard title="ArcJet — Analytics" tag="Web" body="Keynote‑style reveals, dimensional charts, and scroll‑driven storytelling." />
+            <WorkCard title="Solace — Energy" tag="IoT" body="Crisp controls, live telemetry, and considered motion states for trust." />
+          </div>
+        </div>
+      </section>
+
+      {/* Book */}
+      <BookSection />
+
+      {/* GitHub live section */}
+      <GitHubSection />
+
+      {/* Conversation insights */}
+      <ConversationInsights />
+
+      <Footer />
+    </main>
+  );
+}
+
+// ---------- Mock components (pure CSS/SVG so code is self‑contained)
+function WorkPhoneMock({ title = "", subtitle = "" }) {
+  return (
+    <div className="mx-auto w-[280px] h-[560px] rounded-[48px] p-3 bg-gradient-to-br from-white/10 to-white/5 border border-white/10 backdrop-blur-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,.6)]">
+      <div className="h-full rounded-[36px] overflow-hidden relative bg-black/60">
+        <div className="absolute top-3 left-1/2 -translate-x-1/2 w-28 h-6 bg-black/60 rounded-full"/>
+        <motion.div
+          className="absolute inset-0"
+          animate={{ backgroundPosition: ["0% 0%", "100% 100%", "0% 0%"] }}
+          transition={{ duration: 14, repeat: Infinity, ease: "easeInOut" }}
+          style={{ backgroundImage: "radial-gradient(60% 80% at 0% 0%, rgba(180,220,255,.18), transparent 60%), radial-gradient(60% 80% at 100% 100%, rgba(255,180,220,.18), transparent 60%)", backgroundSize: "200% 200%" }}
+        />
+        <div className="relative z-10 p-5">
+          <div className="h-56 rounded-2xl overflow-hidden border border-white/10 bg-white/5">
+            <motion.div
+              className="w-full h-full"
+              initial={{ scale: 1.1, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              style={{ backgroundImage: "linear-gradient(135deg, rgba(255,255,255,.08), rgba(255,255,255,0))" }}
+            />
+          </div>
+          <div className="mt-5 space-y-2">
+            <div className="h-4 w-24 bg-white/20 rounded" />
+            <div className="h-3 w-40 bg-white/10 rounded" />
+          </div>
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            {[...Array(6)].map((_, i) => (
+              <motion.div key={i} className="h-10 rounded-xl bg-white/10 border border-white/10" whileHover={{ scale: 1.04 }} />
+            ))}
+          </div>
+          <div className="absolute bottom-4 left-0 right-0 text-center">
+            <p className="text-white/70 text-sm font-medium">{title}</p>
+            <p className="text-white/50 text-xs">{subtitle}</p>
+          </div>
+        </div>
+      </div>
     </div>
+  );
+}
 
-    <!-- Physics Playground Canvas -->
-    <canvas id="physics-playground"></canvas>
+function DashboardMock() {
+  return (
+    <div className="mx-auto max-w-xl">
+      <TiltCard>
+        <div className="relative">
+          <div className="grid grid-cols-12 gap-4">
+            <div className="col-span-8 h-40 rounded-2xl bg-white/10 border border-white/10 overflow-hidden">
+              <motion.div initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="h-full">
+                <svg viewBox="0 0 400 160" className="w-full h-full">
+                  <defs>
+                    <linearGradient id="lg" x1="0" x2="1" y1="0" y2="0">
+                      <stop offset="0%" stopColor="rgba(255,255,255,.1)" />
+                      <stop offset="100%" stopColor="rgba(255,255,255,.6)" />
+                    </linearGradient>
+                  </defs>
+                  <path d="M0,120 C80,80 120,140 180,100 C240,60 280,110 340,70 C360,60 380,50 400,60" fill="none" stroke="url(#lg)" strokeWidth="3" />
+                </svg>
+              </motion.div>
+            </div>
+            <div className="col-span-4 h-40 rounded-2xl bg-white/10 border border-white/10 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-3xl font-semibold">98%</p>
+                <p className="text-white/60 text-xs">Satisfaction</p>
+              </div>
+            </div>
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="col-span-3 h-24 rounded-2xl bg-white/10 border border-white/10" />
+            ))}
+          </div>
+        </div>
+      </TiltCard>
+    </div>
+  );
+}
 
-    <script>
-        // Wait for the page to load
-        window.addEventListener('load', function() {
-            // Hide loading screen
-            gsap.to('#loading-screen', {
-                opacity: 0,
-                duration: 0.8,
-                onComplete: function() {
-                    document.getElementById('loading-screen').style.display = 'none';
-                }
-            });
-            
-            // Initialize all functionality
-            initPortfolio();
-        });
-
-        function initPortfolio() {
-            // Enhanced Custom Cursor with magnetic effect
-            const cursor = document.querySelector('.cursor');
-            const cursorTrail = document.querySelector('.cursor-trail');
-            const hoverElements = document.querySelectorAll('a, button, .project-card, .tool-card, .skill-card');
-            
-            document.addEventListener('mousemove', (e) => {
-                cursor.style.left = e.clientX + 'px';
-                cursor.style.top = e.clientY + 'px';
-                
-                // Create trailing effect
-                const trail = cursorTrail.cloneNode();
-                trail.style.left = e.clientX + 'px';
-                trail.style.top = e.clientY + 'px';
-                trail.style.opacity = '0.7';
-                document.body.appendChild(trail);
-                
-                setTimeout(() => {
-                    trail.style.opacity = '0';
-                    setTimeout(() => {
-                        document.body.removeChild(trail);
-                    }, 300);
-                }, 100);
-            });
-            
-            // Magnetic effect for hover elements
-            hoverElements.forEach(el => {
-                el.addEventListener('mouseenter', () => {
-                    cursor.classList.add('hover');
-                });
-                
-                el.addEventListener('mouseleave', () => {
-                    cursor.classList.remove('hover');
-                });
-            });
-            
-            // Click effect
-            document.addEventListener('mousedown', () => {
-                cursor.classList.add('click');
-            });
-            
-            document.addEventListener('mouseup', () => {
-                cursor.classList.remove('click');
-            });
-            
-            // Nav scroll effect
-            window.addEventListener('scroll', () => {
-                const nav = document.querySelector('nav');
-                const backToTop = document.querySelector('.back-to-top');
-                
-                if (window.scrollY > 50) {
-                    nav.classList.add('scrolled');
-                } else {
-                    nav.classList.remove('scrolled');
-                }
-                
-                if (window.scrollY > 500) {
-                    backToTop.classList.add('visible');
-                } else {
-                    backToTop.classList.remove('visible');
-                }
-            });
-            
-            // Back to top functionality
-            document.querySelector('.back-to-top').addEventListener('click', () => {
-                gsap.to(window, {
-                    duration: 1.5,
-                    scrollTo: {y: 0},
-                    ease: "power2.inOut"
-                });
-            });
-            
-            // Mobile menu toggle
-            document.querySelector('.mobile-menu-btn').addEventListener('click', () => {
-                document.querySelector('.nav-links').classList.toggle('active');
-            });
-            
-            // Close mobile menu when clicking on links
-            document.querySelectorAll('.nav-links a').forEach(link => {
-                link.addEventListener('click', () => {
-                    document.querySelector('.nav-links').classList.remove('active');
-                });
-            });
-            
-            // Hero Section Animations
-            gsap.from('.hero h1', {
-                duration: 1.2,
-                opacity: 0,
-                y: 40,
-                delay: 0.5,
-                ease: "power3.out"
-            });
-            
-            gsap.from('.hero p', {
-                duration: 1.2,
-                opacity: 0,
-                y: 30,
-                delay: 0.8,
-                ease: "power3.out"
-            });
-            
-            gsap.from('.cta-button', {
-                duration: 1,
-                opacity: 0,
-                y: 30,
-                delay: 1.1,
-                stagger: 0.2,
-                ease: "power3.out"
-            });
-            
-            gsap.from('.scroll-indicator', {
-                duration: 1,
-                opacity: 0,
-                delay: 1.8,
-                ease: "power2.out"
-            });
-            
-            // Section Entrance Animations
-            gsap.utils.toArray('section').forEach(section => {
-                if (section.id !== 'home') {
-                    gsap.from(section.querySelectorAll('.section-title, .about-content, .projects-grid, .playground-container, .contact-container'), {
-                        scrollTrigger: {
-                            trigger: section,
-                            start: "top 85%"
-                        },
-                        duration: 1,
-                        opacity: 0,
-                        y: 40,
-                        stagger: 0.2,
-                        ease: "power3.out"
-                    });
-                }
-            });
-            
-            // Skill Card Animations
-            gsap.utils.toArray('.skill-card').forEach((card, i) => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "top 90%"
-                    },
-                    duration: 0.8,
-                    opacity: 0,
-                    y: 30,
-                    delay: i * 0.1,
-                    ease: "back.out(1.7)"
-                });
-            });
-            
-            // Project Card Animations
-            gsap.utils.toArray('.project-card').forEach((card, i) => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "top 90%"
-                    },
-                    duration: 0.8,
-                    opacity: 0,
-                    y: 40,
-                    delay: i * 0.15,
-                    ease: "power3.out"
-                });
-            });
-            
-            // Tool Card Animations
-            gsap.utils.toArray('.tool-card').forEach((card, i) => {
-                gsap.from(card, {
-                    scrollTrigger: {
-                        trigger: card,
-                        start: "top 90%"
-                    },
-                    duration: 0.8,
-                    opacity: 0,
-                    scale: 0.9,
-                    delay: i * 0.1,
-                    ease: "elastic.out(1, 0.3)"
-                });
-            });
-            
-            // Contact Item Animations
-            gsap.utils.toArray('.contact-item').forEach((item, i) => {
-                gsap.from(item, {
-                    scrollTrigger: {
-                        trigger: item,
-                        start: "top 90%"
-                    },
-                    duration: 0.8,
-                    opacity: 0,
-                    x: -30,
-                    delay: i * 0.1,
-                    ease: "power2.out"
-                });
-            });
-            
-            // Initialize particles.js
-            // Note: You would need to include particles.js and configure it
-            // This is a placeholder for the actual implementation
-            
-            // Initialize Physics Playground
-            initPhysicsPlayground();
-            
-            // Initialize other interactive elements
-            initPlaygroundTools();
-            
-            // Smooth scrolling for navigation links
-            document.querySelectorAll('nav a, .cta-button').forEach(link => {
-                link.addEventListener('click', (e) => {
-                    if (link.getAttribute('href').startsWith('#')) {
-                        e.preventDefault();
-                        const targetId = link.getAttribute('href');
-                        const targetElement = document.querySelector(targetId);
-                        
-                        gsap.to(window, {
-                            duration: 1.5,
-                            scrollTo: {y: targetElement, offsetY: 80},
-                            ease: "power2.inOut"
-                        });
-                    }
-                });
-            });
-        }
-
-        function initPhysicsPlayground() {
-            const physicsCanvas = document.getElementById('physics-playground');
-            const physicsCtx = physicsCanvas.getContext('2d');
-            
-            function resizePhysicsCanvas() {
-                physicsCanvas.width = window.innerWidth;
-                physicsCanvas.height = window.innerHeight;
-            }
-            
-            resizePhysicsCanvas();
-            window.addEventListener('resize', resizePhysicsCanvas);
-            
-            // Enhanced Ball class for physics simulation
-            class Ball {
-                constructor(x, y) {
-                    this.x = x;
-                    this.y = y;
-                    this.radius = Math.random() * 20 + 10;
-                    this.vx = (Math.random() - 0.5) * 8;
-                    this.vy = (Math.random() - 0.5) * 8;
-                    this.color = `hsl(${Math.random() * 360}, 70%, 60%)`;
-                    this.mass = this.radius * 0.5;
-                    this.glow = Math.random() * 10 + 5;
-                }
-                
-                update(balls) {
-                    // Apply gravity
-                    this.vy += 0.15;
-                    
-                    // Update position
-                    this.x += this.vx;
-                    this.y += this.vy;
-                    
-                    // Boundary collision
-                    if (this.x - this.radius < 0) {
-                        this.x = this.radius;
-                        this.vx *= -0.8;
-                    } else if (this.x + this.radius > physicsCanvas.width) {
-                        this.x = physicsCanvas.width - this.radius;
-                        this.vx *= -0.8;
-                    }
-                    
-                    if (this.y - this.radius < 0) {
-                        this.y = this.radius;
-                        this.vy *= -0.8;
-                    } else if (this.y + this.radius > physicsCanvas.height) {
-                        this.y = physicsCanvas.height - this.radius;
-                        this.vy *= -0.8;
-                        this.vx *= 0.99; // Friction
-                    }
-                    
-                    // Ball-to-ball collision
-                    for (let otherBall of balls) {
-                        if (otherBall !== this) {
-                            const dx = this.x - otherBall.x;
-                            const dy = this.y - otherBall.y;
-                            const distance = Math.sqrt(dx * dx + dy * dy);
-                            const minDistance = this.radius + otherBall.radius;
-                            
-                            if (distance < minDistance) {
-                                // Collision response
-                                const angle = Math.atan2(dy, dx);
-                                const targetX = this.x + Math.cos(angle) * minDistance;
-                                const targetY = this.y + Math.sin(angle) * minDistance;
-                                const ax = (targetX - otherBall.x) * 0.05;
-                                const ay = (targetY - otherBall.y) * 0.05;
-                                
-                                this.vx -= ax;
-                                this.vy -= ay;
-                                otherBall.vx += ax;
-                                otherBall.vy += ay;
-                            }
-                        }
-                    }
-                }
-                
-                draw() {
-                    // Glow effect
-                    physicsCtx.beginPath();
-                    physicsCtx.arc(this.x, this.y, this.radius + this.glow, 0, Math.PI * 2);
-                    const gradient = physicsCtx.createRadialGradient(
-                        this.x, this.y, this.radius, 
-                        this.x, this.y, this.radius + this.glow
-                    );
-                    gradient.addColorStop(0, this.color);
-                    gradient.addColorStop(1, 'transparent');
-                    physicsCtx.fillStyle = gradient;
-                    physicsCtx.fill();
-                    
-                    // Main ball
-                    physicsCtx.beginPath();
-                    physicsCtx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-                    physicsCtx.fillStyle = this.color;
-                    physicsCtx.fill();
-                    physicsCtx.closePath();
-                }
-            }
-            
-            const balls = [];
-            
-            // Add initial balls
-            for (let i = 0; i < 7; i++) {
-                balls.push(new Ball(
-                    Math.random() * physicsCanvas.width,
-                    Math.random() * physicsCanvas.height
-                ));
-            }
-            
-            // Add ball on click
-            physicsCanvas.addEventListener('click', (e) => {
-                balls.push(new Ball(e.clientX, e.clientY));
-            });
-            
-            // Physics animation loop
-            function animatePhysics() {
-                physicsCtx.clearRect(0, 0, physicsCanvas.width, physicsCanvas.height);
-                
-                // Update and draw balls
-                balls.forEach(ball => {
-                    ball.update(balls);
-                    ball.draw();
-                });
-                
-                // Draw connections between close balls
-                for (let i = 0; i < balls.length; i++) {
-                    for (let j = i + 1; j < balls.length; j++) {
-                        const dx = balls[i].x - balls[j].x;
-                        const dy = balls[i].y - balls[j].y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (distance < 150) {
-                            physicsCtx.beginPath();
-                            physicsCtx.moveTo(balls[i].x, balls[i].y);
-                            physicsCtx.lineTo(balls[j].x, balls[j].y);
-                            physicsCtx.strokeStyle = `rgba(255, 255, 255, ${1 - distance/150})`;
-                            physicsCtx.lineWidth = 1;
-                            physicsCtx.stroke();
-                        }
-                    }
-                }
-                
-                requestAnimationFrame(animatePhysics);
-            }
-            
-            animatePhysics();
-        }
-
-        function initPlaygroundTools() {
-            // This would initialize the interactive playground tools
-            // Placeholder for actual implementation
-        }
-
-        // Konami Code Easter Egg
-        const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-        let konamiIndex = 0;
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === konamiCode[konamiIndex]) {
-                konamiIndex++;
-                if (konamiIndex === konamiCode.length) {
-                    document.querySelector('.konami-message').style.display = 'block';
-                    konamiIndex = 0;
-                    
-                    // Add extra animations
-                    document.body.classList.add('floating');
-                    
-                    // Add confetti or other effects
-                    // This would require a confetti library or custom implementation
-                }
-            } else {
-                konamiIndex = 0;
-            }
-        });
-    </script>
-</body>
-</html>
+function LayersMock() {
+  return (
+    <div className="mx-auto max-w-xl perspective-[1000px]">
+      <div className="relative h-96">
+        {["40","30","20"].map((z, i) => (
+          <motion.div
+            key={i}
+            className="absolute inset-0 rounded-3xl border border-white/10 bg-white/5 backdrop-blur-xl"
+            style={{ translateZ: `${(i+1)*40}px`, transformStyle: "preserve-3d" }}
+            animate={{ y: [0, -10, 0] }}
+            transition={{ duration: 6 + i, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-white/10 to-transparent" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
