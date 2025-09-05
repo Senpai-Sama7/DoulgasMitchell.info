@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="dougie.jpg" alt="Douglas D Mitchell" width="300"/>
+  <img src="assets/dougie.jpg" alt="Douglas D Mitchell" width="300"/>
 </p>
 
 # Douglas D. Mitchell
