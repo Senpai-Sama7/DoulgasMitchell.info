@@ -37,7 +37,7 @@
     @keyframes float{50%{transform:translateY(-12px)}}
     .gridlines{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);background-size:80px 80px, 80px 80px;mask-image:radial-gradient(70% 70% at 50% 40%, black, transparent 70%);opacity:.14;mix-blend-mode:soft-light;transform:perspective(600px) rotateX(50deg) translateY(-10%);filter:blur(.3px);}
 
-    /* ————— Entrance “New‑world Panels” ————— */
+    /* ————— Entrance “New-world Panels” ————— */
     .gate{position:fixed;inset:0;z-index:9999;overflow:hidden;background:#000;}
     .gate video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(1.2) contrast(1.05) brightness(.9)}
     .gate .veil{position:absolute;inset:0;background:radial-gradient(70vmax 50vmax at 50% 55%, rgba(120,150,255,.25), rgba(0,0,0,.75) 60%, rgba(0,0,0,.95));mix-blend-mode:screen}
@@ -104,6 +104,9 @@
         filter: blur(10px);
         mask-image: radial-gradient(circle at center, black 50%, transparent 75%);
     }
+    .qr-grid{display:flex;gap:16px;flex-wrap:wrap;margin-top:14px}
+    .qr-item{text-align:center}
+    .qr-item img{width:150px;height:150px;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.06)}
 
     /* ————— Data & Dashboards Section ————— */
     .chart-container { grid-column: span 6; padding: 24px; }
@@ -190,23 +193,31 @@
       <span class="badge reveal">Portfolio • Focus: <strong style="margin-left:6px; color: var(--accent);">Creative Technology</strong></span>
       <h1 class="title reveal" style="transition-delay: .1s">Douglas Mitchell</h1>
       <p class="subtitle reveal" style="transition-delay: .2s">A passionate designer and developer crafting calm, cinematic, and intuitive web experiences. Meticulous about detail, obsessed with clarity, and driven by the pursuit of digital craftsmanship.</p>
-      <div class="cta reveal" style="transition-delay: .3s"><a class="btn primary glass" href="#projects">Explore Projects</a><a class="btn glass" href="#book-section">View My Book</a></div>
+      <div class="cta reveal" style="transition-delay: .3s"><a class="btn primary glass" href="#scene-projects">Explore Projects</a><a class="btn glass" href="#book-section">View My Book</a></div>
     </header>
 
     <section id="scene-projects" class="wrap">
         <h3 class="section-title reveal">Selected Work</h3>
         <div class="grid">
             <a class="card frame glass reveal" href="https://senpai-sama7.github.io/C0Di3/" target="_blank" rel="noopener">
-                <svg class="art-bg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><defs><linearGradient id="g1" gradientTransform="rotate(45)"><stop offset="0%" stop-color="#0b1222" /><stop offset="100%" stop-color="#7aa8ff" /></linearGradient></defs><rect width="300" height="200" fill="#060913" /><path d="M-50 100 L350 100" stroke="url(#g1)" stroke-width="80" stroke-linecap="round" fill="none" transform="rotate(20 150 100)"><animate attributeName="d" values="M-50 100 L350 100; M-50 100 Q150 200 350 100; M-50 100 L350 100" dur="8s" repeatCount="indefinite" /></path></svg>
-                <div class="overlay"></div><div class="content"><span class="kicker">Live • Front‑end</span><div class="name">C0Di3</div><div class="meta">An immersive, interactive coding environment designed to teach programming concepts through a unique, narrative-driven experience.</div></div>
+                <img class="art-bg" src="assets/C0Di3.png" alt="C0Di3 logo" />
+                <div class="overlay"></div>
+                <div class="content"><span class="kicker">Live • Front-end</span><div class="name">C0Di3</div><div class="meta">An immersive, interactive coding environment designed to teach programming concepts through a unique, narrative-driven experience.</div></div>
             </a>
             <a class="card frame glass reveal" href="https://synapse-form-backend.vercel.app/" target="_blank" rel="noopener" style="transition-delay: .1s">
-                 <img class="art-bg" src="assets/C0Di3.png" alt="C0Di3 logo" />
-                <div class="overlay"></div><div class="content"><span class="kicker">Live • API / Backend</span><div class="name">Synapse Form</div><div class="meta">A robust and minimal form backend service providing reliable data handling, validation, and integration for modern web applications.</div></div>
+                <svg class="art-bg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
+                  <defs><linearGradient id="g1" gradientTransform="rotate(45)"><stop offset="0%" stop-color="#0b1222" /><stop offset="100%" stop-color="#7aa8ff" /></linearGradient></defs>
+                  <rect width="300" height="200" fill="#060913" />
+                  <path d="M-50 100 L350 100" stroke="url(#g1)" stroke-width="80" stroke-linecap="round" fill="none" transform="rotate(20 150 100)">
+                    <animate attributeName="d" values="M-50 100 L350 100; M-50 100 Q150 200 350 100; M-50 100 L350 100" dur="8s" repeatCount="indefinite" />
+                  </path>
+                </svg>
+                <div class="overlay"></div>
+                <div class="content"><span class="kicker">Live • API / Backend</span><div class="name">Synapse Form</div><div class="meta">A robust and minimal form backend service providing reliable data handling, validation, and integration for modern web applications.</div></div>
             </a>
             <a class="card frame glass reveal" href="https://senpai-sama7.github.io/Houston-Oil-Airs/" target="_blank" rel="noopener" style="transition-delay: .2s">
                 <svg class="art-bg" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice"><rect width="300" height="200" fill="#060913" /><g stroke="#e7ecf3" stroke-width="0.5" stroke-opacity="0.5"><path d="M50 200 C100 -50, 200 250, 250 0" fill="none"><animate attributeName="d" values="M50 200 C100 -50, 200 250, 250 0; M50 200 C150 50, 150 150, 250 0; M50 200 C100 -50, 200 250, 250 0" dur="10s" repeatCount="indefinite" /></path><path d="M250 200 C200 -50, 100 250, 50 0" fill="none"><animate attributeName="d" values="M250 200 C200 -50, 100 250, 50 0; M250 200 C150 50, 150 150, 50 0; M250 200 C200 -50, 100 250, 50 0" dur="10s" repeatCount="indefinite" /></path></g></svg>
-                <div class="overlay"></div><div class="content"><span class="kicker">Live • Data‑viz</span><div class="name">Houston Oil Airs</div><div class="meta">An interactive data visualization project presenting an environmental snapshot of air quality metrics related to the oil industry in Houston.</div></div>
+                <div class="overlay"></div><div class="content"><span class="kicker">Live • Data-viz</span><div class="name">Houston Oil Airs</div><div class="meta">An interactive data visualization project presenting an environmental snapshot of air quality metrics related to the oil industry in Houston.</div></div>
             </a>
       </div>
     </section>
@@ -226,7 +237,16 @@
             <a href="https://www.amazon.com/s?k=The+Confident+Mind+Douglas+Mitchell" target="_blank" rel="noopener" class="btn primary glass" style="margin-top: 20px;">Buy on Amazon</a>
             <a href="https://senpai-sama7.github.io/The-Confident-Mind---BONUS/" target="_blank" rel="noopener" class="btn glass" style="display:inline-block;margin-top:14px;">Landing Page & Bonuses</a>
             <a href="qr.html" class="btn glass" style="display:inline-block;margin-top:14px;">Audio & Video Overview</a>
-           <div style="margin-top:14px;"><a href="qr.html"><img src="assets/qr-overview.png" alt="QR code for audio and video overview" width="150" height="150"></a>
+          </div>
+          <div class="qr-grid">
+            <div class="qr-item">
+              <img src="assets/the-confident-mind-video-qr.png" alt="QR code linking to The Confident Mind video overview">
+              <div class="tiny" aria-hidden="true">Video overview</div>
+            </div>
+            <div class="qr-item">
+              <img src="assets/the-confident-mind-audio-qr.png" alt="QR code linking to The Confident Mind audio overview">
+              <div class="tiny" aria-hidden="true">Audio overview</div>
+            </div>
           </div>
         </div>
       </div>
@@ -822,4 +842,3 @@
   </script>
 </body>
 </html>
-
