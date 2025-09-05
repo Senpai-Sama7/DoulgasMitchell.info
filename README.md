@@ -15,6 +15,10 @@ Douglas D. Mitchell is passionate about the intersection of psychology and perso
 ### The Confident Mind (2025)
 A comprehensive guide designed to equip readers with the "secret code" to understanding minds – their own and others' – and shaping behavior for the better.
 
+- [Landing Page](https://senpai-sama7.github.io/The-Confident-Mind---BONUS/)
+- [Buy on Amazon](https://www.amazon.com/s?k=The+Confident+Mind+Douglas+Mitchell)
+- [Audio & Video Overview](https://douglasmitchell.info/qr.html)
+
 ### The Influence Matrix Unveiled (2025)
 Before others use it against you - master the art of understanding and ethical influence through psychological insights.
 
