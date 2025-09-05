@@ -146,6 +146,9 @@
     #gemini-ideator{text-align:center;}
     #idea-container{grid-column:3 / span 8;min-height:200px;padding:24px;margin-top:24px;text-align:left;display:flex;flex-direction:column;justify-content:center;opacity:0;transform:scale(0.95);transition:opacity .5s var(--ease), transform .5s var(--ease);}
     #idea-container.visible{opacity:1;transform:scale(1);}
+    .api-key-container { margin: 20px auto 0; max-width: 500px; text-align: left; }
+    .api-key-container label { font-family:"JetBrains Mono",monospace; font-size: 12px; color: var(--muted); margin-bottom: 8px; display: block; }
+    .api-key-input { width: 100%; background: var(--bg-soft); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 12px; font-family: "JetBrains Mono", monospace; }
     .reveal{opacity:0;transform:translateY(16px);transition:all 1s var(--ease)}
     .reveal.on{opacity:1;transform:none}
     footer{padding:60px 0 80px;color:var(--muted);text-align:center}
@@ -798,17 +801,37 @@
         if(!generateIdeaBtn || !ideaContainer) return;
         
         async function getProjectIdea() {
-            generateIdeaBtn.disabled = true; ideaContainer.classList.add('visible'); ideaContainer.innerHTML = `<p class="meta" style="text-align: center;">Conjuring a concept... ✨</p>`;
-            const apiKey = ""; const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-            const systemPrompt = "You are a creative director for a cutting-edge digital agency. Your job is to brainstorm innovative web project ideas. The ideas should be ambitious but achievable for a skilled solo developer. They must blend creative design, front-end animation, and a solid back-end concept. Format the response as a JSON object with 'title', 'pitch', 'description', and an array of 'technologies'.";
-            const userQuery = "Generate a novel project idea for a portfolio. Focus on concepts that involve data visualization, interactive 3D elements (like Three.js), or unique API integrations. The project should feel both artistic and technically impressive.";
-            const payload = { contents: [{ parts: [{ text: userQuery }] }], systemInstruction: { parts: [{ text: systemPrompt }] }, generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { "title": { "type": "STRING" }, "pitch": { "type": "STRING" }, "description": { "type": "STRING" }, "technologies": { "type": "ARRAY", "items": { "type": "STRING" } } }, required: ["title", "pitch", "description", "technologies"] } } };
+            generateIdeaBtn.disabled = true; 
+            ideaContainer.classList.add('visible'); 
+            ideaContainer.innerHTML = `<p class="meta" style="text-align: center;">Conjuring a concept... ✨</p>`;
+            
+            // This now points to our secure, rate-limited serverless function
+            const apiUrl = '/api/generateIdea';
+            
             try {
-                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }); if (!response.ok) { throw new Error(`API error! status: ${response.status}`); }
-                const result = await response.json(); const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text; if (jsonText) { displayIdea(JSON.parse(jsonText)); } else { throw new Error("Invalid response structure from API."); }
-            } catch (error) { console.error("Gemini API Error:", error); ideaContainer.innerHTML = `<p class="meta" style="text-align: center; color: var(--accent);">Sorry, the creative sparks aren't flying right now. Please try again later.</p>`; } finally { generateIdeaBtn.disabled = false; }
+                const response = await fetch(apiUrl, { method: 'POST' }); 
+                
+                if (response.status === 429) {
+                    throw new Error("Too many requests. Please try again in a minute.");
+                }
+                if (!response.ok) { 
+                    throw new Error(`API error! status: ${response.status}`); 
+                }
+
+                const idea = await response.json(); 
+                displayIdea(idea);
+
+            } catch (error) { 
+                console.error("Ideator Error:", error); 
+                ideaContainer.innerHTML = `<p class="meta" style="text-align: center; color: var(--accent);">${error.message}</p>`; 
+            } finally { 
+                generateIdeaBtn.disabled = false; 
+            }
         }
-        function displayIdea(idea) { const techBadges = idea.technologies.map(tech => `<span class="badge" style="background: rgba(255,255,255,.05);">${tech}</span>`).join(''); ideaContainer.innerHTML = `<span class="kicker">Project Concept</span><h3 class="name" style="margin: 4px 0 8px;">${idea.title}</h3><p class="meta" style="font-style: italic;">"${idea.pitch}"</p><p class="meta">${idea.description}</p><div class="tech-list" style="margin-top: 16px; display:flex; flex-wrap:wrap; gap:8px;">${techBadges}</div>`; }
+        function displayIdea(idea) { 
+            const techBadges = idea.technologies.map(tech => `<span class="badge" style="background: rgba(255,255,255,.05);">${tech}</span>`).join(''); 
+            ideaContainer.innerHTML = `<span class="kicker">Project Concept</span><h3 class="name" style="margin: 4px 0 8px;">${idea.title}</h3><p class="meta" style="font-style: italic;">"${idea.pitch}"</p><p class="meta">${idea.description}</p><div class="tech-list" style="margin-top: 16px; display:flex; flex-wrap:wrap; gap:8px;">${techBadges}</div>`; 
+        }
         generateIdeaBtn.addEventListener('click', getProjectIdea);
     }
     
