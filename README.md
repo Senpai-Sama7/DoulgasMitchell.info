@@ -38,6 +38,7 @@ When not writing or consulting, you can find Douglas mentoring young professiona
 ## Connect
 
 - **Website**: [douglasmitchell.info](https://douglasmitchell.info)
+- **LinkedIn**: [Douglas Mitchell](https://www.linkedin.com/in/douglas-mitchell-bb18b1383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app)
 - **GitHub**: [@Senpai-sama7](https://github.com/Senpai-sama7)
 
 ---
