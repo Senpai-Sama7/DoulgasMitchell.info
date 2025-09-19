@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 14
+    },
+    "auditLog": "/home/donovan/Desktop/douglasmitchell-bento-fusion/logs/.32a8553c122897494f005f5347fe51bb78373129-audit.json",
+    "files": [
+        {
+            "date": 1758266175510,
+            "name": "/home/donovan/Desktop/douglasmitchell-bento-fusion/logs/mcp-puppeteer-2025-09-19.log",
+            "hash": "09ece04089e4eb42c0b4595b15277bf5043236aa7eb4ba48dac8a3a7efc9a45c"
+        }
+    ],
+    "hashType": "sha256"
+}

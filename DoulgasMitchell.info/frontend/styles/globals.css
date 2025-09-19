@@ -1,0 +1,122 @@
+/* globals.css — Bento aesthetic */
+:root{
+  --bg: #0B1220;
+  --surface: #0F172A;
+  --text: #E6EAF6;
+  --muted: #9CA3AF;
+  --line: #1F2937;
+  --azure: #317CFE;
+  --sky: #52D5FF;
+  --sunbeam: #FFAC2F;
+  --poppy: #FF8400;
+  --fiery: #F44544;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,.2), 0 8px 24px rgba(0,0,0,.25);
+  --shadow-2: 0 2px 6px rgba(0,0,0,.25), 0 16px 40px rgba(0,0,0,.35);
+}
+
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
+body{
+  margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  color: var(--text); background: var(--bg);
+}
+
+a{ color: var(--sky); text-decoration: none; }
+a:hover{ text-decoration: underline; }
+
+.site{
+  min-height:100dvh; display:flex; flex-direction:column;
+}
+.container{
+  width:min(1200px, 92vw); margin-inline:auto;
+}
+
+header{
+  position:sticky; top:0; z-index:40;
+  background: color-mix(in srgb, var(--bg) 85%, transparent);
+  border-bottom:1px solid var(--line);
+  backdrop-filter: blur(6px) saturate(1.1);
+}
+header .inner{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 0;
+}
+.brand{ display:flex; align-items:center; gap:12px; }
+.brand .logo{ width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, var(--azure), var(--sky)); }
+.brand strong{ font-size:1.05rem; letter-spacing:.2px; }
+
+footer{
+  margin-top:auto; border-top:1px solid var(--line); color: var(--muted);
+}
+footer .inner{ padding:24px 0; }
+
+/* Bento grid */
+.hero{
+  padding: 24px 0 8px;
+  display:grid; grid-template-columns: 1.1fr .9fr; gap:18px;
+}
+.hero-copy h1{ margin:.2rem 0; font-size: clamp(1.6rem, 3vw, 2.4rem); }
+.hero-copy p{ color: var(--muted); }
+.phone-mock{
+  display:grid; place-items:center;
+  background: #0E1930; border-radius: 28px; padding: 14px; border:1px solid var(--line);
+  box-shadow: var(--shadow-2);
+}
+.phone-mock img{ width:min(320px, 90%); height:auto; }
+
+.bento-grid{
+  padding: 18px 0 24px;
+  display:grid; gap:12px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-rows: 140px;
+}
+.tile{
+  background: var(--surface); border:1px solid var(--line); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1); overflow:hidden; position:relative; padding:12px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.tile:hover{ transform: translateY(-2px); box-shadow: var(--shadow-2); }
+.tile h3{ margin:.2rem 0; }
+
+/* Tile sizes (can be tweaked freely) */
+.logo-tile{ grid-column: span 4; grid-row: span 2; display:flex; align-items:center; justify-content:center; text-align:center; background: linear-gradient(135deg, var(--azure), var(--sky)); color:#061226; }
+.typography-tile{ grid-column: span 4; grid-row: span 2; display:flex; align-items:center; justify-content:center; }
+.toast-tile{ grid-column: span 4; grid-row: span 1; }
+.kpi-tile{ grid-column: span 2; grid-row: span 2; display:grid; place-items:center; }
+.kpi-tile .value{ font-size:2.2rem; font-weight:800; }
+.kpi-tile .label{ color: var(--muted); }
+.imagery-tile{ grid-column: span 6; grid-row: span 3; background-size:cover; background-position:center; display:grid; align-items:end; }
+.links-tile{ grid-column: span 3; grid-row: span 2; }
+.phone-tile{ grid-column: span 5; grid-row: span 3; display:grid; place-items:center; }
+
+/* Post grid */
+.posts{
+  display:grid; gap:14px; grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+.post-card{
+  grid-column: span 4;
+  background: var(--surface); border:1px solid var(--line); border-radius: 18px;
+  overflow:hidden; display:grid; grid-template-rows: 140px auto; box-shadow: var(--shadow-1);
+}
+.post-card .media{ background: linear-gradient(135deg, var(--azure), var(--sky)); }
+.post-card .body{ padding:12px; }
+.post-card .meta{ color: var(--muted); font-size:.85rem; margin-bottom:.25rem; }
+
+@media (max-width: 1100px){
+  .hero{ grid-template-columns: 1fr; }
+  .bento-grid{ grid-template-columns: repeat(8, minmax(0, 1fr)); }
+  .posts .post-card{ grid-column: span 6; }
+}
+@media (max-width: 720px){
+  .bento-grid{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .tile.logo-tile, .tile.typography-tile, .tile.toast-tile, .tile.kpi-tile,
+  .tile.imagery-tile, .tile.links-tile, .tile.phone-tile { grid-column: span 6; }
+  .posts .post-card{ grid-column: span 6; }
+}
+
+/* Motion preference */
+@media (prefers-reduced-motion: reduce){
+  *{ animation: none !important; transition: none !important; }
+}

@@ -1,0 +1,105 @@
+{
+  "posts": [
+    {
+      "title": "Designing with Bento Grids",
+      "slug": "designing-with-bento-grids",
+      "kind": "Article",
+      "featured": true,
+      "tags": [
+        {
+          "value": "Design"
+        },
+        {
+          "value": "UI/UX"
+        },
+        {
+          "value": "Patterns"
+        }
+      ],
+      "excerpt": "Why modular, asymmetric grids make interfaces feel organized, alive, and memorable.",
+      "contentHtml": "<p>Interactive elements\u2014buttons, sliders, cards, and device mockups\u2014guide users through an experience. Used well, they make a site feel responsive and intentional. A <strong>bento grid</strong> assembles diverse elements\u2014logo, typography, notifications, and vivid imagery\u2014into a clean, coherent layout.</p><p>This article shows how to structure a flexible grid and layer in motion responsibly.</p>"
+    },
+    {
+      "title": "Micro\u2011interactions: Tiny Motion, Big Clarity",
+      "slug": "microinteractions-video",
+      "kind": "Video",
+      "featured": true,
+      "tags": [
+        {
+          "value": "Design"
+        },
+        {
+          "value": "Motion"
+        },
+        {
+          "value": "Video"
+        }
+      ],
+      "excerpt": "Tiny animations that explain state changes and reduce cognitive load.",
+      "contentHtml": "<p>Purposeful motion builds feedback, orientation, and personality\u2014without getting in the way.</p>",
+      "videoUrl": "https://www.youtube.com/embed/TiMRwri1xJ4"
+    },
+    {
+      "title": "Ambient Study Mix",
+      "slug": "ambient-study-mix",
+      "kind": "Audio",
+      "featured": false,
+      "tags": [
+        {
+          "value": "Audio"
+        },
+        {
+          "value": "Focus"
+        }
+      ],
+      "excerpt": "An hour of gentle textures to write and code to.",
+      "contentHtml": "<p>Music can shape attention. I like sounds that disappear into the background but carry momentum.</p>",
+      "audioUrl": "/media/tone.wav"
+    },
+    {
+      "title": "Gallery: Colorways & Type",
+      "slug": "gallery-colors-type",
+      "kind": "Gallery",
+      "featured": false,
+      "tags": [
+        {
+          "value": "Design"
+        },
+        {
+          "value": "Gallery"
+        }
+      ],
+      "excerpt": "Exploring deep navies with warm accents and crisp typography.",
+      "contentHtml": "<p>Swap these with your own screenshots, brand images, or photography.</p>",
+      "gallery": [
+        {
+          "imageUrl": "/media/gradient-1.svg",
+          "alt": "Gradient one"
+        },
+        {
+          "imageUrl": "/media/gradient-2.svg",
+          "alt": "Gradient two"
+        }
+      ]
+    },
+    {
+      "title": "Notes: Practical Bento Tips",
+      "slug": "notes-bento-tips",
+      "kind": "Notes",
+      "featured": false,
+      "tags": [
+        {
+          "value": "Notes"
+        },
+        {
+          "value": "Code"
+        },
+        {
+          "value": "UI/UX"
+        }
+      ],
+      "excerpt": "Quick wins for accessible, responsive bento tiles.",
+      "contentHtml": "<ul><li>Use <code>grid-auto-rows</code> with <code>minmax()</code> to keep rhythm.</li><li>Add <code>:focus-visible</code> styles for keyboard users.</li><li>Respect <code>prefers-reduced-motion</code> in animations.</li></ul>"
+    }
+  ]
+}

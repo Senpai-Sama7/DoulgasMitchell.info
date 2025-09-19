@@ -1,0 +1,17 @@
+(douglas_static_headers) {
+  header {
+    @static path /_next/static/* /public/* /media/* *.css *.js *.svg *.png *.jpg *.webp *.woff2
+    header @static Cache-Control "public, max-age=31536000, immutable"
+  }
+  encode zstd gzip
+}
+
+douglasmitchell.info {
+  import douglas_static_headers
+  reverse_proxy frontend:3000
+}
+
+admin.douglasmitchell.info {
+  import douglas_static_headers
+  reverse_proxy cms:3001
+}

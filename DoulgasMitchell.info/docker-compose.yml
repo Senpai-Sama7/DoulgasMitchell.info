@@ -1,0 +1,80 @@
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  cms:
+    build: ./cms
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${CMS_PORT}
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      SERVER_URL: https://${ADMIN_DOMAIN}
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      # Seeded admin
+      SEED_ADMIN_EMAIL: ${SEED_ADMIN_EMAIL}
+      SEED_ADMIN_PASSWORD: ${SEED_ADMIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - cms_uploads:/app/public/uploads
+    networks: [internal]
+    expose:
+      - "${CMS_PORT}"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: ${FRONTEND_PORT}
+      # Internal URL (Docker network) for SSR data fetches
+      CMS_INTERNAL_URL: http://cms:${CMS_PORT}
+      # Public URL used for absolute links
+      CMS_PUBLIC_URL: https://${ADMIN_DOMAIN}
+      SITE_PUBLIC_URL: https://${SITE_DOMAIN}
+    depends_on:
+      - cms
+    networks: [internal]
+    expose:
+      - "${FRONTEND_PORT}"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - cms
+    networks: [internal]
+
+networks:
+  internal:
+    driver: bridge
+
+volumes:
+  pgdata:
+  cms_uploads:
+  caddy_data:
+  caddy_config:
