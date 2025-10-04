@@ -1,5 +1,9 @@
 export default function BentoGrid({ layoutHtml }){
-  if(!layoutHtml) return null;
-  // We trust content from our own CMS; it includes inline <style> from the editor
-  return <div className="bento-grid" dangerouslySetInnerHTML={{ __html: layoutHtml }} />;
+  if (!layoutHtml) return null;
+
+  return (
+    <section className="bento-grid" aria-live="polite">
+      <div className="bento-grid__inner" dangerouslySetInnerHTML={{ __html: layoutHtml }} />
+    </section>
+  );
 }

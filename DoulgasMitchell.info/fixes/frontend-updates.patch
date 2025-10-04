@@ -1,0 +1,528 @@
+diff --git a/DoulgasMitchell.info/cms/seed.mjs b/DoulgasMitchell.info/cms/seed.mjs
+index cd23949..912fa8c 100644
+--- a/DoulgasMitchell.info/cms/seed.mjs
++++ b/DoulgasMitchell.info/cms/seed.mjs
+@@ -10,6 +10,7 @@ async function seed(){
+   try{
+     await payload.init({
+       secret: process.env.PAYLOAD_SECRET,
++      local: true,
+     });
+ 
+     // Create admin user if not exists
+diff --git a/DoulgasMitchell.info/frontend/components/BentoGrid.js b/DoulgasMitchell.info/frontend/components/BentoGrid.js
+index 59deebb..44790ac 100644
+--- a/DoulgasMitchell.info/frontend/components/BentoGrid.js
++++ b/DoulgasMitchell.info/frontend/components/BentoGrid.js
+@@ -1,5 +1,9 @@
+ export default function BentoGrid({ layoutHtml }){
+-  if(!layoutHtml) return null;
+-  // We trust content from our own CMS; it includes inline <style> from the editor
+-  return <div className="bento-grid" dangerouslySetInnerHTML={{ __html: layoutHtml }} />;
++  if (!layoutHtml) return null;
++
++  return (
++    <section className="bento-grid" aria-live="polite">
++      <div className="bento-grid__inner" dangerouslySetInnerHTML={{ __html: layoutHtml }} />
++    </section>
++  );
+ }
+diff --git a/DoulgasMitchell.info/frontend/components/HeaderFooter.js b/DoulgasMitchell.info/frontend/components/HeaderFooter.js
+index a751e82..771e162 100644
+--- a/DoulgasMitchell.info/frontend/components/HeaderFooter.js
++++ b/DoulgasMitchell.info/frontend/components/HeaderFooter.js
+@@ -1,16 +1,27 @@
++import Link from 'next/link';
++
+ export function Header(){
+   return (
+     <header>
+       <div className="container inner">
+         <div className="brand">
+-          <div className="logo" />
++          <div className="logo" aria-hidden="true" />
+           <strong>Douglas Mitchell</strong>
+         </div>
+-        <nav>
+-          <a href="/">Home</a>
+-          &nbsp;·&nbsp;
+-          <a href="/posts/designing-with-bento-grids">Bento Grids</a>
++        <nav aria-label="Primary">
++          <Link href="/">Home</Link>
++          <span aria-hidden="true">·</span>
++          <Link href="/posts/designing-with-bento-grids">Bento Grids</Link>
+         </nav>
++        <button
++          id="theme-btn"
++          type="button"
++          className="theme-toggle"
++          aria-label="Toggle color theme"
++          aria-live="polite"
++        >
++          <span className="theme-toggle__icon" aria-hidden="true">☾</span>
++        </button>
+       </div>
+     </header>
+   );
+diff --git a/DoulgasMitchell.info/frontend/lib/ux.js b/DoulgasMitchell.info/frontend/lib/ux.js
+index 8982276..029ab18 100644
+--- a/DoulgasMitchell.info/frontend/lib/ux.js
++++ b/DoulgasMitchell.info/frontend/lib/ux.js
+@@ -1,30 +1,81 @@
+ 
+ export function bootUX(){
+-  // Theme
++  if (typeof window === 'undefined') return;
++
+   const html = document.documentElement;
+-  const saved = localStorage.getItem('theme') || 'light';
+-  html.setAttribute('data-theme', saved);
++  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
++  const storedTheme = window.localStorage.getItem('theme');
++  const initialTheme = storedTheme || (prefersDark ? 'dark' : 'light');
+   const btn = document.getElementById('theme-btn');
+-  btn?.addEventListener('click', () => {
+-    const next = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+-    html.setAttribute('data-theme', next);
+-    localStorage.setItem('theme', next);
+-  });
+-
+-  // IO for reveal
+-  const io = new IntersectionObserver((entries)=>{
+-    for(const e of entries){
+-      if(e.isIntersecting){ e.target.classList.add('animate-fade-in-up'); io.unobserve(e.target); }
++
++  const applyTheme = (theme) => {
++    html.setAttribute('data-theme', theme);
++    window.localStorage.setItem('theme', theme);
++    if (btn) {
++      btn.setAttribute('aria-pressed', theme === 'dark' ? 'true' : 'false');
++      const icon = btn.querySelector('.theme-toggle__icon');
++      if (icon) icon.textContent = theme === 'dark' ? '☾' : '☀︎';
++      btn.dataset.theme = theme;
+     }
+-  }, { threshold:.1, rootMargin:'0px 0px -50px 0px' });
+-  document.querySelectorAll('.bento-item').forEach(el => io.observe(el));
+-
+-  // Single delegated click for tiles
+-  const grid = document.querySelector('.bento-container');
+-  grid?.addEventListener('click', (ev) => {
+-    const tile = ev.target.closest('.bento-item');
+-    if(!tile) return;
+-    const title = tile.querySelector('h3,h4')?.textContent?.trim();
+-    if(title) console.log('Open:', title);
+-  });
++  };
++
++  applyTheme(initialTheme);
++
++  if (btn && !btn.dataset.bound) {
++    btn.dataset.bound = 'true';
++    btn.addEventListener('click', () => {
++      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
++      applyTheme(next);
++    });
++  }
++
++  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
++
++  if (prefersReducedMotion) {
++    document
++      .querySelectorAll('.bento-grid .tile, .bento-grid .bento-item')
++      .forEach((el) => {
++        el.classList.remove('will-animate');
++        el.classList.add('animate-fade-in-up');
++        el.dataset.animated = 'true';
++      });
++  }
++
++  const io = prefersReducedMotion
++    ? null
++    : new IntersectionObserver((entries) => {
++      for (const entry of entries) {
++        if (entry.isIntersecting) {
++          entry.target.classList.remove('will-animate');
++          entry.target.classList.add('animate-fade-in-up');
++          entry.target.dataset.animated = 'true';
++          io.unobserve(entry.target);
++        }
++      }
++    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
++
++  document
++    .querySelectorAll('.bento-grid .tile, .bento-grid .bento-item')
++    .forEach((el) => {
++      if (!el.dataset.observed && el.dataset.animated !== 'true') {
++        el.dataset.observed = 'true';
++        if (!prefersReducedMotion) {
++          el.classList.add('will-animate');
++          io?.observe(el);
++        }
++      }
++    });
++
++  const grid = document.querySelector('.bento-grid');
++  if (grid && !grid.dataset.bound) {
++    grid.dataset.bound = 'true';
++    grid.addEventListener('click', (ev) => {
++      const tile = ev.target.closest('.tile, .bento-item');
++      if (!tile) return;
++      const title = tile.querySelector('h3,h4')?.textContent?.trim();
++      if (title) {
++        console.debug('[bento] tile interaction', title);
++      }
++    });
++  }
+ }
+diff --git a/DoulgasMitchell.info/frontend/pages/_app.js b/DoulgasMitchell.info/frontend/pages/_app.js
+index cfec62c..960417b 100644
+--- a/DoulgasMitchell.info/frontend/pages/_app.js
++++ b/DoulgasMitchell.info/frontend/pages/_app.js
+@@ -1,8 +1,15 @@
+ import '@/styles/globals.css'
+-import HeaderFooter from '@/components/HeaderFooter'
++import { useEffect } from 'react'
+ import { AnimatePresence } from 'framer-motion'
+ 
++import { Header, Footer } from '@/components/HeaderFooter'
++import { bootUX } from '@/lib/ux'
++
+ export default function App({ Component, pageProps, router }){
++  useEffect(() => {
++    bootUX();
++  }, [router?.asPath]);
++
+   return (
+     <div className="site">
+       <Header />
+diff --git a/DoulgasMitchell.info/frontend/pages/index.js b/DoulgasMitchell.info/frontend/pages/index.js
+index 4492251..f94abf4 100644
+--- a/DoulgasMitchell.info/frontend/pages/index.js
++++ b/DoulgasMitchell.info/frontend/pages/index.js
+@@ -1,19 +1,42 @@
+ import BentoGrid from '@/components/BentoGrid'
+ import PostCard from '@/components/PostCard'
+-import HeaderFooter from '@/components/HeaderFooter';
+ 
+ export async function getServerSideProps(){
+   const base = process.env.CMS_INTERNAL_URL || process.env.CMS_PUBLIC_URL || 'http://localhost:3001';
+-  const [pageRes, postsRes] = await Promise.all([
+-    fetch(`${base}/api/pages?where[slug][equals]=home`),
+-    fetch(`${base}/api/posts?where[featured][equals]=true&limit=6&sort=-date`)
+-  ]);
+-  const pageData = await pageRes.json();
+-  const postsData = await postsRes.json();
+-  return { props: { homePage: pageData?.docs?.[0] || null, posts: postsData?.docs || [] } };
++  let homePage = null;
++  let posts = [];
++  let hadError = false;
++
++  try {
++    const [pageRes, postsRes] = await Promise.all([
++      fetch(`${base}/api/pages?where[slug][equals]=home`),
++      fetch(`${base}/api/posts?where[featured][equals]=true&limit=6&sort=-date`)
++    ]);
++
++    if (pageRes.ok) {
++      const pageData = await pageRes.json();
++      homePage = pageData?.docs?.[0] || null;
++    } else {
++      hadError = true;
++      console.error('Failed to load home page layout', pageRes.status, pageRes.statusText);
++    }
++
++    if (postsRes.ok) {
++      const postsData = await postsRes.json();
++      posts = Array.isArray(postsData?.docs) ? postsData.docs : [];
++    } else {
++      hadError = true;
++      console.error('Failed to load featured posts', postsRes.status, postsRes.statusText);
++    }
++  } catch (error) {
++    hadError = true;
++    console.error('Unable to reach Payload CMS', error);
++  }
++
++  return { props: { homePage, posts, hadError } };
+ }
+ 
+-export default function Home({ homePage, posts }){
++export default function Home({ homePage, posts, hadError }){
+   return (
+     <>
+       <section className="hero">
+@@ -24,12 +47,26 @@ export default function Home({ homePage, posts }){
+         <div className="phone-mock"><img alt="Phone mockup" src="/media/phone-frame.svg" /></div>
+       </section>
+ 
+-      <BentoGrid layoutHtml={homePage?.layoutHtml} />
++      {hadError && (
++        <p className="error-callout">
++          Unable to reach the CMS right now. Showing the latest saved layout and posts when available.
++        </p>
++      )}
++
++      {homePage?.layoutHtml ? (
++        <BentoGrid layoutHtml={homePage.layoutHtml} />
++      ) : (
++        <p className="empty-state">Design your homepage in the admin to see the Bento layout here.</p>
++      )}
+ 
+       <h2>Featured posts</h2>
+-      <section className="posts">
+-        {posts.map(p => <PostCard key={p.id || p.slug} post={p} />)}
+-      </section>
++      {posts.length > 0 ? (
++        <section className="posts">
++          {posts.map(p => <PostCard key={p.id || p.slug} post={p} />)}
++        </section>
++      ) : (
++        <p className="empty-state">Mark posts as featured in Payload to populate this section.</p>
++      )}
+     </>
+   );
+ }
+diff --git a/DoulgasMitchell.info/frontend/styles/globals.css b/DoulgasMitchell.info/frontend/styles/globals.css
+index 7f190b7..403af6b 100644
+--- a/DoulgasMitchell.info/frontend/styles/globals.css
++++ b/DoulgasMitchell.info/frontend/styles/globals.css
+@@ -1,5 +1,6 @@
+ /* globals.css — Bento aesthetic */
+ :root{
++  color-scheme: dark;
+   --bg: #0B1220;
+   --surface: #0F172A;
+   --text: #E6EAF6;
+@@ -16,6 +17,21 @@
+   --shadow-2: 0 2px 6px rgba(0,0,0,.25), 0 16px 40px rgba(0,0,0,.35);
+ }
+ 
++html[data-theme='light']{
++  color-scheme: light;
++  --bg: #F5F7FB;
++  --surface: #FFFFFF;
++  --text: #1B2533;
++  --muted: #4B5563;
++  --line: #D4D7DD;
++  --shadow-1: 0 1px 2px rgba(15,23,42,0.08), 0 8px 24px rgba(15,23,42,0.10);
++  --shadow-2: 0 2px 6px rgba(15,23,42,0.10), 0 16px 40px rgba(15,23,42,0.15);
++}
++
++html[data-theme='dark']{
++  color-scheme: dark;
++}
++
+ *{ box-sizing:border-box; }
+ html, body{ height:100%; }
+ body{
+@@ -40,13 +56,43 @@ header{
+   backdrop-filter: blur(6px) saturate(1.1);
+ }
+ header .inner{
+-  display:flex; align-items:center; justify-content:space-between;
++  display:flex; align-items:center; gap:18px;
+   padding:12px 0;
+ }
+ .brand{ display:flex; align-items:center; gap:12px; }
+ .brand .logo{ width:40px; height:40px; border-radius:10px; background:linear-gradient(135deg, var(--azure), var(--sky)); }
+ .brand strong{ font-size:1.05rem; letter-spacing:.2px; }
+ 
++nav[aria-label="Primary"]{
++  display:flex; align-items:center; gap:12px;
++  color: var(--muted);
++}
++nav[aria-label="Primary"] a{ color: inherit; font-weight:500; }
++nav[aria-label="Primary"] span{ color: var(--line); }
++
++.theme-toggle{
++  margin-left:auto;
++  border:1px solid var(--line);
++  background: var(--surface);
++  color: var(--text);
++  border-radius: 999px;
++  padding: 6px 12px;
++  font-size: 0.95rem;
++  cursor: pointer;
++  display:flex; align-items:center; gap:8px;
++  box-shadow: var(--shadow-1);
++  transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
++}
++
++.theme-toggle:hover,
++.theme-toggle:focus-visible{
++  transform: translateY(-1px);
++  box-shadow: var(--shadow-2);
++  outline: none;
++}
++
++.theme-toggle__icon{ font-size: 1.1rem; }
++
+ footer{
+   margin-top:auto; border-top:1px solid var(--line); color: var(--muted);
+ }
+@@ -61,24 +107,134 @@ footer .inner{ padding:24px 0; }
+ .hero-copy p{ color: var(--muted); }
+ .phone-mock{
+   display:grid; place-items:center;
+-  background: #0E1930; border-radius: 28px; padding: 14px; border:1px solid var(--line);
++  background: color-mix(in srgb, var(--surface) 70%, var(--bg));
++  border-radius: 28px; padding: 14px; border:1px solid var(--line);
+   box-shadow: var(--shadow-2);
+ }
+ .phone-mock img{ width:min(320px, 90%); height:auto; }
+ 
++.error-callout{
++  margin: 12px 0;
++  padding: 14px 16px;
++  border-radius: var(--radius);
++  border:1px solid color-mix(in srgb, var(--fiery) 35%, transparent);
++  background: color-mix(in srgb, var(--fiery) 12%, transparent);
++  color: var(--text);
++}
++
++.empty-state{
++  margin: 18px 0;
++  padding: 12px 0;
++  color: var(--muted);
++}
++
+ .bento-grid{
+   padding: 18px 0 24px;
+-  display:grid; gap:12px;
++}
++
++.bento-grid__inner{
++  display:grid;
++  gap:12px;
+   grid-template-columns: repeat(12, minmax(0, 1fr));
+   grid-auto-rows: 140px;
+ }
+-.tile{
++
++.bento-grid__inner > .grid,
++.bento-grid__inner > .bento-layout{
++  display: contents;
++}
++
++.bento-grid :is(.tile, .bento-item){
+   background: var(--surface); border:1px solid var(--line); border-radius: var(--radius-lg);
+   box-shadow: var(--shadow-1); overflow:hidden; position:relative; padding:12px;
+   transition: transform .2s ease, box-shadow .2s ease;
+ }
+-.tile:hover{ transform: translateY(-2px); box-shadow: var(--shadow-2); }
+-.tile h3{ margin:.2rem 0; }
++.bento-grid :is(.tile, .bento-item):hover{ transform: translateY(-2px); box-shadow: var(--shadow-2); }
++.bento-grid :is(.tile h3, .bento-item h3, .bento-item h4){ margin:.2rem 0; }
++
++.bento-item{
++  display:flex;
++  flex-direction:column;
++  gap:12px;
++}
++
++.bento-item .bento-content{ display:flex; flex-direction:column; gap:8px; }
++.bento-item .bento-media{ flex:1; display:flex; align-items:center; justify-content:center; }
++.bento-item .placeholder-img{
++  width:100%; height:100%; border-radius: var(--radius); display:grid; place-items:center;
++  background: linear-gradient(135deg, rgba(49,124,254,0.25), rgba(82,213,255,0.2));
++  font-size:2rem;
++}
++.bento-item .placeholder-img.ai-gradient{ background: radial-gradient(circle at 30% 20%, rgba(82,213,255,0.35), transparent 55%), linear-gradient(135deg, rgba(49,124,254,0.4), rgba(244,69,68,0.35)); }
++.bento-item .placeholder-img.tech-gradient{ background: linear-gradient(135deg, rgba(49,124,254,0.4), rgba(82,213,255,0.3)); }
++.bento-item .placeholder-img.video-gradient{ background: linear-gradient(135deg, rgba(244,69,68,0.35), rgba(255,132,0,0.3)); }
++
++.bento-item.featured-post{
++  grid-column: span 6;
++  grid-row: span 3;
++  padding: 20px;
++  display:grid;
++  grid-template-columns: 1.1fr 0.9fr;
++  gap: 20px;
++}
++
++.bento-item.recent-post,
++.bento-item.media-post,
++.bento-item.newsletter-card,
++.bento-item.activity-card{ grid-column: span 4; grid-row: span 2; }
++
++.bento-item.stats-card,
++.bento-item.about-card,
++.bento-item.topics-card,
++.bento-item.analytics-card{ grid-column: span 3; grid-row: span 1; }
++.bento-item .stats-card,
++.bento-item .analytics-card,
++.bento-item .topics-card,
++.bento-item .newsletter-card,
++.bento-item .about-card{ background: transparent; border:0; box-shadow:none; padding:0; }
++
++.bento-item .topic-tags{ display:flex; flex-wrap:wrap; gap:8px; }
++.bento-item .topic-tags .tag{
++  padding:4px 10px; border-radius:999px; background: color-mix(in srgb, var(--surface) 70%, transparent);
++  border:1px solid var(--line); font-size:.85rem;
++}
++
++.bento-item .newsletter-form{ display:flex; gap:8px; }
++.bento-item .newsletter-form .email-input{
++  flex:1; border-radius: var(--radius); border:1px solid var(--line);
++  padding:8px 12px; background: var(--surface); color: var(--text);
++}
++.bento-item .newsletter-form .subscribe-btn{
++  border-radius: var(--radius); border:1px solid var(--line);
++  padding:8px 12px; background: var(--azure); color:#fff; cursor:pointer;
++}
++
++.bento-item .activity-list{ display:flex; flex-direction:column; gap:10px; }
++.bento-item .activity-item{ display:flex; align-items:center; gap:10px; }
++.bento-item .activity-icon{ width:32px; height:32px; display:grid; place-items:center;
++  border-radius:999px; background: color-mix(in srgb, var(--azure) 20%, transparent); }
++.bento-item .activity-text span{ display:block; font-weight:600; }
++.bento-item .activity-text time{ color: var(--muted); font-size:.85rem; }
++
++.bento-item .stat-number{ font-size:2rem; font-weight:700; }
++.bento-item .stat-label{ color: var(--muted); }
++.bento-item .stat-growth{ color: var(--sky); font-size:.9rem; }
++
++.bento-grid :is(.tile, .bento-item).will-animate{
++  opacity: 0;
++  transform: translateY(14px) scale(.98);
++}
++
++.animate-fade-in-up{
++  opacity: 1 !important;
++  transform: translateY(0) scale(1) !important;
++  animation: fade-in-up .6s ease both;
++}
++
++@keyframes fade-in-up{
++  from{ opacity:0; transform: translateY(14px) scale(.98); }
++  to{ opacity:1; transform: translateY(0) scale(1); }
++}
+ 
+ /* Tile sizes (can be tweaked freely) */
+ .logo-tile{ grid-column: span 4; grid-row: span 2; display:flex; align-items:center; justify-content:center; text-align:center; background: linear-gradient(135deg, var(--azure), var(--sky)); color:#061226; }
+@@ -106,13 +262,22 @@ footer .inner{ padding:24px 0; }
+ 
+ @media (max-width: 1100px){
+   .hero{ grid-template-columns: 1fr; }
+-  .bento-grid{ grid-template-columns: repeat(8, minmax(0, 1fr)); }
++  .bento-grid__inner{ grid-template-columns: repeat(8, minmax(0, 1fr)); }
+   .posts .post-card{ grid-column: span 6; }
+ }
+ @media (max-width: 720px){
+-  .bento-grid{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
++  .bento-grid__inner{ grid-template-columns: repeat(6, minmax(0, 1fr)); }
+   .tile.logo-tile, .tile.typography-tile, .tile.toast-tile, .tile.kpi-tile,
+-  .tile.imagery-tile, .tile.links-tile, .tile.phone-tile { grid-column: span 6; }
++  .tile.imagery-tile, .tile.links-tile, .tile.phone-tile,
++  .bento-item.featured-post,
++  .bento-item.recent-post,
++  .bento-item.media-post,
++  .bento-item.newsletter-card,
++  .bento-item.activity-card,
++  .bento-item.stats-card,
++  .bento-item.about-card,
++  .bento-item.topics-card,
++  .bento-item.analytics-card { grid-column: span 6; grid-row: auto; }
+   .posts .post-card{ grid-column: span 6; }
+ }
+ 

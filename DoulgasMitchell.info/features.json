@@ -1,0 +1,58 @@
+[
+  {
+    "id": "F1",
+    "feature": "Next.js frontend builds for production",
+    "command": "CI=1 npm run build",
+    "expected": "Build succeeds and outputs the route manifest.",
+    "status": "VERIFIED",
+    "evidence": "evidence/frontend-build.txt"
+  },
+  {
+    "id": "F2",
+    "feature": "Home page SSR falls back gracefully when CMS is unreachable",
+    "command": "CMS_INTERNAL_URL=http://127.0.0.1:3999 PORT=3010 npm run dev -- -p 3010 & curl -sS http://localhost:3010 | head",
+    "expected": "HTML contains the error-callout and empty-state messaging instead of crashing.",
+    "status": "VERIFIED",
+    "evidence": "evidence/frontend-fallback.txt"
+  },
+  {
+    "id": "F3",
+    "feature": "Payload seed script provisions admin user, home page, and starter posts",
+    "command": "PAYLOAD_SECRET=<secret> DATABASE_URL=postgres://payload_user:payload_strong_pass@<postgres-host>:5432/payload node seed.mjs",
+    "expected": "Logs show seeded admin/home/posts or that they already exist.",
+    "status": "UNVERIFIED",
+    "reason": "PostgreSQL and Payload CMS cannot start because Docker is unavailable in this environment."
+  },
+  {
+    "id": "F4",
+    "feature": "GrapesJS admin exposes custom Bento blocks",
+    "command": "Launch CMS at https://admin.<domain> and open Pages > LayoutHtml field",
+    "expected": "Bento blocks appear in the block panel and render with live trait controls.",
+    "status": "UNVERIFIED",
+    "reason": "Requires running the Payload admin UI against a database; not possible without Docker/PostgreSQL access."
+  },
+  {
+    "id": "F5",
+    "feature": "Docker Compose orchestrates Postgres, CMS, frontend, and Caddy",
+    "command": "docker compose up -d",
+    "expected": "All services report healthy and expose ports 3000/3001 behind Caddy on 80/443.",
+    "status": "UNVERIFIED",
+    "reason": "Docker CLI is not installed in the execution environment."
+  },
+  {
+    "id": "F6",
+    "feature": "CMS media uploads directory is provisioned for static hosting",
+    "command": "ls -a cms/public/uploads",
+    "expected": "Directory exists with a .gitkeep placeholder to persist the path.",
+    "status": "VERIFIED",
+    "evidence": "evidence/cms-uploads-dir.txt"
+  },
+  {
+    "id": "F7",
+    "feature": "Client-side theme toggle and motion enhancer",
+    "command": "Open the frontend in a browser, click the theme toggle, and observe Bento tiles animating on scroll.",
+    "expected": "Theme switches between light/dark with persisted preference and tiles animate unless prefers-reduced-motion is enabled.",
+    "status": "UNVERIFIED",
+    "reason": "Requires an interactive browser session which is not available in the current environment."
+  }
+]

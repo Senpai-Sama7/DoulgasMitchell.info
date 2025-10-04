@@ -10,6 +10,7 @@ async function seed(){
   try{
     await payload.init({
       secret: process.env.PAYLOAD_SECRET,
+      local: true,
     });
 
     // Create admin user if not exists
