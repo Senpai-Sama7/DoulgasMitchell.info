@@ -18,7 +18,6 @@ export function Header(){
           type="button"
           className="theme-toggle"
           aria-label="Toggle color theme"
-          aria-live="polite"
         >
           <span className="theme-toggle__icon" aria-hidden="true">☾</span>
         </button>
