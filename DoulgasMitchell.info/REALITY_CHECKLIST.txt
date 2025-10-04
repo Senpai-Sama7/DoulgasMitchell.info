@@ -1,0 +1,7 @@
+- [x] F1 — Next.js frontend builds for production
+- [x] F2 — Home page SSR fallback when CMS is unreachable
+- [ ] F3 — Payload seed script provisions admin/home/posts
+- [ ] F4 — GrapesJS admin exposes custom Bento blocks
+- [ ] F5 — Docker Compose orchestrates the stack
+- [x] F6 — CMS media uploads directory provisioned
+- [ ] F7 — Client-side theme toggle and motion enhancer
