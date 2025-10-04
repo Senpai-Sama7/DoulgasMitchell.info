@@ -1,0 +1,4 @@
+- [ ] F3 — Payload seed script provisions admin/home/posts
+- [x] F4 — GrapesJS admin exposes custom Bento blocks
+- [ ] F5 — Docker Compose orchestrates the stack
+- [x] F7 — Client-side theme toggle and motion enhancer

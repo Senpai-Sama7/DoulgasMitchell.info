@@ -1,0 +1,48 @@
+[
+  {
+    "id": "F3",
+    "feature": "Payload seed script provisions admin/home/posts",
+    "command": "cd cms && npm run seed",
+    "expected": "Process completes with logs indicating seeded admin user, home page, and posts",
+    "status": "UNVERIFIED",
+    "evidence": [
+      "evidence/f3-seed.txt",
+      "evidence/f3-seed-attempt2.txt",
+      "evidence/f3-seed-attempt3.txt",
+      "evidence/f3-seed-attempt4.txt",
+      "evidence/f3-seed-attempt5.txt"
+    ],
+    "notes": "Command fails before reaching database because Payload configuration path is unresolved in this environment and no PostgreSQL service is available."
+  },
+  {
+    "id": "F4",
+    "feature": "GrapesJS admin exposes custom Bento blocks",
+    "command": "node scripts/check-grapes-blocks.mjs",
+    "expected": "JSON output listing custom Bento block definitions registered with the BlockManager",
+    "status": "VERIFIED",
+    "evidence": [
+      "evidence/f4-grapes-blocks.json"
+    ]
+  },
+  {
+    "id": "F5",
+    "feature": "Docker Compose orchestrates the stack",
+    "command": "docker compose config",
+    "expected": "Rendered compose configuration showing cms, frontend, postgres, and caddy services",
+    "status": "UNVERIFIED",
+    "evidence": [
+      "evidence/f5-docker-config.txt"
+    ],
+    "notes": "Docker CLI is not installed in the execution environment, so the compose command cannot run."
+  },
+  {
+    "id": "F7",
+    "feature": "Client-side theme toggle and motion enhancer",
+    "command": "node scripts/check-ux.mjs",
+    "expected": "JSON output confirming initial theme load, toggled theme persistence, and intersection observer wiring",
+    "status": "VERIFIED",
+    "evidence": [
+      "evidence/f7-ux.json"
+    ]
+  }
+]

@@ -1,0 +1,36 @@
+*** Attempted Patch (reverted)
+*** Update File: cms/seed.mjs
+@@
+-import payload from 'payload';
+-import dotenv from 'dotenv';
+-import fs from 'fs';
+-import path from 'path';
+-dotenv.config();
+-
+-const wait = (ms) => new Promise(r => setTimeout(r, ms));
+-
+-async function seed(){
+-  try{
+-    await payload.init({
+-      secret: process.env.PAYLOAD_SECRET,
+-    });
++import payload from 'payload';
++import dotenv from 'dotenv';
++import fs from 'fs';
++import path from 'path';
++import payloadConfig from './payload.config.mjs';
++dotenv.config();
++
++if(!process.env.PAYLOAD_CONFIG_PATH){
++  process.env.PAYLOAD_CONFIG_PATH = path.resolve(process.cwd(), 'payload.config.mjs');
++}
++
++const wait = (ms) => new Promise(r => setTimeout(r, ms));
++
++async function seed(){
++  try{
++    await payload.init({
++      secret: process.env.PAYLOAD_SECRET,
++      config: payloadConfig,
++    });
+*** End Patch

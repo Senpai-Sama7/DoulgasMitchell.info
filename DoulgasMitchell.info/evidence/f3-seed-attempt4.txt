@@ -1,0 +1,12 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> douglasmitchell-cms@1.0.0 seed
+> node seed.mjs
+
+Seed error: Error: Error: the payload config is required to initialize payload.
+    at BasePayload.init (file:///workspace/DoulgasMitchell.info/DoulgasMitchell.info/cms/node_modules/payload/dist/index.js:291:19)
+    at seed (file:///workspace/DoulgasMitchell.info/DoulgasMitchell.info/cms/seed.mjs:15:19)
+    at file:///workspace/DoulgasMitchell.info/DoulgasMitchell.info/cms/seed.mjs:77:1
+    at ModuleJob.run (node:internal/modules/esm/module_job:263:25)
+    at async ModuleLoader.import (node:internal/modules/esm/loader:540:24)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
