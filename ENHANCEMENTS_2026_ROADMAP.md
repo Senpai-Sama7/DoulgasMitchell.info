@@ -89,7 +89,7 @@
 #### 2.2 Screen Reader Support
 - ✅ Comprehensive ARIA labels
 - ✅ ARIA live regions for dynamic content
-- ✅ Role attribut es for custom components
+- ✅ Role attributes for custom components
 - ✅ Alt text for all images
 - ✅ Descriptive link text
 
