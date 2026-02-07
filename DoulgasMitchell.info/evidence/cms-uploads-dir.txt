@@ -1,0 +1,2 @@
+ls -a cms/public/uploads
+.  ..  .gitkeep

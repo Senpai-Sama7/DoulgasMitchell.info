@@ -1,8 +1,15 @@
 import '@/styles/globals.css'
-import HeaderFooter from '@/components/HeaderFooter'
+import { useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 
+import { Header, Footer } from '@/components/HeaderFooter'
+import { bootUX } from '@/lib/ux'
+
 export default function App({ Component, pageProps, router }){
+  useEffect(() => {
+    bootUX();
+  }, [router?.asPath]);
+
   return (
     <div className="site">
       <Header />
