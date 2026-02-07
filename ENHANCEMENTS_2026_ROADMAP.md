@@ -1,6 +1,6 @@
 # 🚀 Advanced Enhancements Roadmap 2026
 
-> **Comprehensive upgrade plan for DoulgasMitchell.info**  
+> **Comprehensive upgrade plan for DouglasMitchell.info**  
 > Targeting enterprise-grade UX, accessibility, security, and performance
 
 ---
