@@ -1,0 +1,24 @@
+{
+  "name": "douglas-mitchell-portfolio",
+  "version": "1.0.0",
+  "description": "Personal portfolio website for Douglas Mitchell",
+  "homepage": "https://senpai-sama7.github.io/DoulgasMitchell.info",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'No build needed for static site'",
+    "deploy": "gh-pages -d ."
+  },
+  "keywords": [
+    "portfolio",
+    "personal-website",
+    "developer",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "Douglas Mitchell",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.1.1"
+  }
+}
