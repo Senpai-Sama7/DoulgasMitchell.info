@@ -189,7 +189,7 @@
     </div>
   </div>
 
-  <main>
+  <main id="main">
     <header id="scene-hero" class="wrap">
       <span class="badge reveal">Portfolio • Focus: <strong style="margin-left:6px; color: var(--accent);">Creative Technology</strong></span>
       <h1 class="title reveal" style="transition-delay: .1s">Douglas Mitchell</h1>
@@ -347,6 +347,16 @@
   <footer class="wrap">
       <div class="tiny">© <span id="year"></span> Douglas Mitchell. Built with semantic HTML, modern CSS, and a dusting of JavaScript. • <a href="https://www.linkedin.com/in/douglas-mitchell-bb18b1383?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app" target="_blank" rel="noopener">LinkedIn</a></div>
   </footer>
+
+  <!-- New enterprise JS modules -->
+  <script src="/js/accessibility.js"></script>
+  <script src="/js/theme-toggle.js"></script>
+  <script src="/js/performance.js"></script>
+  <script src="/js/analytics.js"></script>
+  <script src="/js/contact-form.js"></script>
+  <script src="/js/micro-interactions.js"></script>
+  <script src="/js/loading-states.js"></script>
+  <script src="/js/error-handling.js"></script>
 
   <script>
     // Global settings & helpers
@@ -777,7 +787,7 @@
     async function loadRepos(){
       const user = document.body.dataset.githubUser || 'senpai-sama7'; const target = document.getElementById('repos'); if(!target) return;
       try{
-        const res = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=6`); if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`); const data = await res.json(); target.innerHTML = ''; if (!data || data.length === 0) { target.innerHTML = `<p class="reveal on" style="color: var(--muted);">No public repositories found.</p>`; return; }
+        const res = await fetch(`https://api.github.com/users/${user}/repos?sort=updated&per_page=6`); if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`); const data = await res.json(); target.innerHTML = ''; if (!data || data.length === 0) { target.innerHTML = `<p class=\"reveal on\" style=\"color: var(--muted);\">No public repositories found.</p>`; return; }
         data.slice(0,6).forEach((r, i) => { 
             const el = document.createElement('a'); 
             el.className = 'repo glass reveal'; 
@@ -787,12 +797,12 @@
             el.style.transitionDelay = `${i * 0.05}s`; 
 
             if (r.description) {
-                el.innerHTML = `<h4>${r.name}</h4><p>${r.description}</p><p class="tiny" style="margin-top:auto;opacity:.8">★ ${r.stargazers_count} • ${r.language || '—'}</p>`;
+                el.innerHTML = `<h4>${r.name}</h4><p>${r.description}</p><p class=\"tiny\" style=\"margin-top:auto;opacity:.8\">★ ${r.stargazers_count} • ${r.language || '—'}</p>`;
             } else {
                 el.style.justifyContent = 'center';
                 el.style.alignItems = 'center';
                 el.style.textAlign = 'center';
-                el.innerHTML = `<h4>${r.name}</h4><p class="tiny" style="margin-top:10px;opacity:.8">★ ${r.stargazers_count} • ${r.language || '—'}</p>`;
+                el.innerHTML = `<h4>${r.name}</h4><p class=\"tiny\" style=\"margin-top:10px;opacity:.8\">★ ${r.stargazers_count} • ${r.language || '—'}</p>`;
             }
 
             target.appendChild(el); 
@@ -800,7 +810,7 @@
         });
         const io = new IntersectionObserver(entries=>{ entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } }); }, {threshold:.1});
         target.querySelectorAll('.reveal').forEach(el=> io.observe(el));
-      }catch(err){ console.warn('GitHub API error', err); target.innerHTML = `<p class="reveal on" style="color: var(--muted);">Could not load projects from GitHub.</p>`; }
+      }catch(err){ console.warn('GitHub API error', err); target.innerHTML = `<p class=\"reveal on\" style=\"color: var(--muted);\">Could not load projects from GitHub.</p>`; }
     }
     function initGeminiIdeator() {
         const generateIdeaBtn = document.getElementById('generateIdeaBtn');
@@ -831,7 +841,7 @@
         function getProjectIdea() {
             generateIdeaBtn.disabled = true;
             ideaContainer.classList.add('visible');
-            ideaContainer.innerHTML = `<p class="meta" style="text-align: center;">Conjuring a concept... ✨</p>`;
+            ideaContainer.innerHTML = `<p class=\"meta\" style=\"text-align: center;\">Conjuring a concept... ✨</p>`;
 
             setTimeout(() => {
                 let randomIndex;
@@ -848,14 +858,14 @@
         }
 
         function displayIdea(idea) {
-            const techBadges = idea.technologies.map(tech => `<span class="badge" style="background: rgba(255,255,255,.05);">${tech}</span>`).join('');
-            ideaContainer.innerHTML = `<span class="kicker">Project Concept</span><h3 class="name" style="margin: 4px 0 8px;">${idea.title}</h3><p class="meta" style="font-style: italic;">"${idea.pitch}"</p><p class="meta">${idea.description}</p><div class="tech-list" style="margin-top: 16px; display:flex; flex-wrap:wrap; gap:8px;">${techBadges}</div>`;
+            const techBadges = idea.technologies.map(tech => `<span class=\"badge\" style=\"background: rgba(255,255,255,.05);\">${tech}</span>`).join('');
+            ideaContainer.innerHTML = `<span class=\"kicker\">Project Concept</span><h3 class=\"name\" style=\"margin: 4px 0 8px;\">${idea.title}</h3><p class=\"meta\" style=\"font-style: italic;\">\"${idea.pitch}\"</p><p class=\"meta\">${idea.description}</p><div class=\"tech-list\" style=\"margin-top: 16px; display:flex; flex-wrap:wrap; gap:8px;\">${techBadges}</div>`;
         }
         
         generateIdeaBtn.addEventListener('click', getProjectIdea);
     }
     
-    // Initializer that runs after the DOM is loaded
+    // Initializer that runs after the DOM is loaded.
     function main() {
         initGate();
         initSpaceCanvas();
@@ -880,4 +890,3 @@
   </script>
 </body>
 </html>
-
