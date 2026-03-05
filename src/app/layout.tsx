@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   keywords: ["photography", "architecture", "design", "portfolio", "blog", "visual arts"],
   authors: [{ name: "Senpai" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/favicon.svg",
   },
   openGraph: {
     title: "Senpai's Isekai",
