@@ -346,6 +346,7 @@ export default function HomePage() {
 
       {/* Main Content */}
       <MainLayout>
+        <main>
         {/* Hero Section */}
         <section className="relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
@@ -674,6 +675,7 @@ export default function HomePage() {
             </StaggerItem>
           </StaggerContainer>
         </section>
+        </main>
       </MainLayout>
 
       {/* Back to Top Button */}
