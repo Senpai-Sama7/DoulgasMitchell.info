@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { ZodError, ZodSchema } from 'zod';
 import { getCorsHeaders, logRequest, getClientIp, getUserAgent } from './security';
 
 // Error types
@@ -67,10 +68,7 @@ export function errorResponse(error: unknown): NextResponse {
   }
 
   if (error instanceof Error) {
-    return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred', code: 'INTERNAL_ERROR' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error', code: 'INTERNAL_ERROR' }, { status: 500 });
   }
 
   return NextResponse.json(
@@ -116,7 +114,7 @@ export function paginatedResponse<T>(
 // API handler wrapper with request logging
 type ApiHandler = (
   request: NextRequest,
-  context?: { params: Record<string, string | string[]> }
+  context?: { params: Promise<Record<string, string | string[]>> }
 ) => Promise<NextResponse>;
 
 export function withRequestLogging(handler: ApiHandler): ApiHandler {
@@ -202,19 +200,16 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
 }
 
 // Input validation wrapper
-import { ZodSchema } from 'zod';
-
-export async function validateInput<T>(
+export function validateInput<T>(
   schema: ZodSchema<T>,
   data: unknown
-): Promise<T> {
+): T {
   try {
     return schema.parse(data);
   } catch (error) {
-    if (error instanceof Error && 'errors' in error) {
-      const zodError = error as { errors: Array<{ path: string[]; message: string }> };
+    if (error instanceof ZodError) {
       throw new ValidationError('Validation failed', {
-        errors: zodError.errors.map((e) => ({
+        errors: error.issues.map((e) => ({
           path: e.path.join('.'),
           message: e.message,
         })),

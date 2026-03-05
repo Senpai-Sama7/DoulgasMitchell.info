@@ -233,103 +233,95 @@ export interface JournalEntry {
 export const journalEntries: JournalEntry[] = [
   {
     id: 'jr-1',
-    title: '晨间仪式',
+    title: 'Morning Ritual',
     date: '2024-12-15',
-    tags: ['生活', '咖啡'],
-    content: `清晨的第一缕阳光穿过窗帘，落在手冲咖啡的蒸汽上。这一刻，时间仿佛静止。
+    tags: ['lifestyle', 'coffee'],
+    content: `The first light of the day slipped through the curtains and landed on the steam from my pour-over. For a moment, everything felt quiet and intentional.
 
-**咖啡的香气与书香交织**，构成了最美妙的早晨序曲。
+The aroma of coffee and the weight of a good book made a steady start to the morning.
 
-每一口都是对生活的礼赞，每一秒都是\`与自己对话\`的珍贵时光。
+Every sip felt like a reset. Every minute felt like \`time reclaimed\`.
 
-> 早晨的仪式感，是对自己最好的投资。`,
-    quote: '生活不是等待暴风雨过去，而是学会在雨中起舞。',
+> A simple morning ritual is one of the best investments in yourself.`,
+    quote: 'Do not wait for better days. Build them, one habit at a time.',
     image: '/images/journal/jr-1.png',
     imageAlt: 'Morning coffee ritual',
   },
   {
     id: 'jr-2',
-    title: '阅读时光',
+    title: 'Reading Hour',
     date: '2024-12-10',
-    tags: ['阅读', '静谧'],
-    content: `翻开书页，干花书签轻轻滑落。文字在指尖流淌，故事在心中绽放。
+    tags: ['reading', 'quiet'],
+    content: `A dried flower bookmark fell from the page as I opened the book. The room was calm, the tea was warm, and the pace of the day slowed down.
 
-这个下午，阳光正好，茶温刚好，一本好书便是最完美的伴侣。
+Good writing has a way of making the world feel larger and more personal at the same time.
 
-在字里行间寻找自己，在故事中遇见世界。
-
-**今日推荐**：
-- 《挪威的森林》
-- 《百年孤独》
-- 《小王子》`,
+**Current shelf**:
+- *The Little Prince*
+- *One Hundred Years of Solitude*
+- *Norwegian Wood*`,
     image: '/images/journal/jr-2.png',
     imageAlt: 'Reading with dried flowers bookmark',
   },
   {
     id: 'jr-3',
-    title: '城市漫步',
+    title: 'City Walk',
     date: '2024-12-05',
-    tags: ['旅行', '城市'],
-    content: `黄昏时分漫步于城市街巷，金色阳光将每一座建筑镀上温暖。
+    tags: ['travel', 'city'],
+    content: `At golden hour, the city softened. Concrete became warm, windows caught fire with reflected light, and familiar streets felt new again.
 
-行人匆匆，而我选择慢下来，捕捉那些被忽略的美好瞬间。
+Most people rushed past. I slowed down and watched the details.
 
-城市的脉搏在这一刻显得格外温柔，每一帧都值得被铭记。
-
-**漫步路线**：
-1. 老城区的咖啡馆
-2. 河边的梧桐大道
-3. 日落时分的广场`,
-    quote: '最美的风景，往往藏在最不经意的转角。',
+**Walk route**:
+1. Coffee shop in the old district
+2. Riverside avenue
+3. Main square at sunset`,
+    quote: 'The best views are often waiting around ordinary corners.',
     image: '/images/journal/jr-3.png',
     imageAlt: 'City street at golden hour',
   },
   {
     id: 'jr-4',
-    title: '绿意盎然',
+    title: 'Small Green Things',
     date: '2024-11-28',
-    tags: ['植物', '生活'],
-    content: `窗台上的小植物，是生活中最简单的快乐。
+    tags: ['plants', 'lifestyle'],
+    content: `A few plants on the windowsill changed the atmosphere of the room more than I expected.
 
-看着它们在阳光下舒展叶片，仿佛也能感受到生命的律动。
+Watching new leaves unfold is a quiet reminder that progress can be slow and still meaningful.
 
-养护植物教会我耐心与专注，每一片新叶都是对细心照料的最好回报。
-
-**养护心得**：
-- 每周浇水两次
-- 保持散射光照射
-- 定期擦拭叶片`,
+**Care notes**:
+- Water twice a week
+- Keep in bright, indirect light
+- Wipe leaves regularly`,
     image: '/images/journal/jr-4.png',
     imageAlt: 'Minimalist desk plant',
   },
   {
     id: 'jr-5',
-    title: '光影记忆',
+    title: 'Light and Memory',
     date: '2024-11-20',
-    tags: ['摄影', '回忆'],
-    content: `拿起老相机，感受机械快门的清脆声响。
+    tags: ['photography', 'memory'],
+    content: `I picked up an older camera today and listened to the shutter click with that mechanical certainty digital cameras rarely have.
 
-每一张胶片都是对瞬间的珍重承诺，等待显影的过程充满期待。
+Film slows everything down. You compose with care, wait with patience, and trust your instincts.
 
-在这个数码时代，**慢摄影是一种仪式**，是对时间的敬畏。
+In a fast world, **slow photography feels like respect for time**.
 
 \`ISO 400\` • \`f/2.8\` • \`1/125s\``,
-    quote: '摄影是将瞬间凝固成永恒的艺术。',
+    quote: 'Photography is memory with light attached to it.',
     image: '/images/journal/jr-5.png',
     imageAlt: 'Vintage camera on wooden surface',
   },
   {
     id: 'jr-6',
-    title: '暮色温柔',
+    title: 'Gentle Dusk',
     date: '2024-11-15',
-    tags: ['黄昏', '宁静'],
-    content: `日落时分的窗边，天空被染成温柔的橙粉色。
+    tags: ['sunset', 'calm'],
+    content: `By the window at dusk, the sky turned soft orange and rose. Plant shadows stretched across the wall like a hand-drawn sketch.
 
-室内植物的剪影投射在墙上，构成一幅天然的水墨画。
+Outside, the city stayed loud. Inside, the room settled into silence.
 
-这一刻，城市的喧嚣被隔绝在外，只剩下内心的宁静与满足。
-
-> 黄昏是一天中最温柔的时刻，它提醒我们：结束也可以如此美丽。`,
+> Dusk is a daily reminder that endings can still be beautiful.`,
     image: '/images/journal/jr-6.png',
     imageAlt: 'Sunset through window with plants',
   },

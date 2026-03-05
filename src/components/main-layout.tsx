@@ -8,6 +8,8 @@ import { ReadingProgress } from "./reading-progress";
 import { BalancedParticles, LightweightParticles } from "./particles";
 import { CustomCursor } from "./cursor";
 import { ReducedMotionProvider, useReducedMotion, LoadingSpinner } from "./animations";
+import { ThemeProvider } from "./theme-provider";
+import { Toaster } from "./ui/sonner";
 
 // ============================================
 // Layout Context
@@ -263,9 +265,12 @@ function MainLayoutInner({
 // ============================================
 export function MainLayout(props: MainLayoutProps) {
   return (
-    <ReducedMotionProvider>
-      <MainLayoutInner {...props} />
-    </ReducedMotionProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ReducedMotionProvider>
+        <MainLayoutInner {...props} />
+      </ReducedMotionProvider>
+      <Toaster position="bottom-right" />
+    </ThemeProvider>
   );
 }
 

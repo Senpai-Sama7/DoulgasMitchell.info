@@ -9,9 +9,10 @@ import { cn } from "@/lib/utils";
 interface ReactionsProps {
   itemId: string;
   variant?: "light" | "dark";
+  compact?: boolean;
 }
 
-export function Reactions({ itemId, variant = "light" }: ReactionsProps) {
+export function Reactions({ itemId, variant = "light", compact = false }: ReactionsProps) {
   const { reactions, userReactions, addReaction, removeReaction, initializeReactions } =
     useReactionStore();
 
@@ -41,7 +42,14 @@ export function Reactions({ itemId, variant = "light" }: ReactionsProps) {
   const reactionTypes: ReactionType[] = ["like", "love", "laugh", "shocked", "mad", "care"];
 
   return (
-    <div className="flex flex-wrap justify-center gap-2">
+    <div
+      className={cn(
+        "flex justify-center",
+        compact
+          ? "max-w-[170px] flex-nowrap gap-1 overflow-x-auto pr-0.5"
+          : "flex-wrap gap-2"
+      )}
+    >
       <AnimatePresence>
         {reactionTypes.map((type) => {
           const count = itemReactions[type];
@@ -58,12 +66,14 @@ export function Reactions({ itemId, variant = "light" }: ReactionsProps) {
               onClick={() => handleReaction(type)}
               className={cn(
                 "reaction-btn",
+                compact && "px-2 py-1 text-xs gap-1 min-w-[34px] justify-center",
                 isActive && "active",
                 variant === "dark" && "bg-white/10 border-white/20 text-white"
               )}
+              aria-label={`${type} reaction${count > 0 ? ` (${count})` : ""}`}
             >
-              <span className="text-base">{reactionEmojis[type]}</span>
-              {count > 0 && (
+              <span className={compact ? "text-sm" : "text-base"}>{reactionEmojis[type]}</span>
+              {!compact && count > 0 && (
                 <motion.span
                   initial={{ opacity: 0, scale: 0.5 }}
                   animate={{ opacity: 1, scale: 1 }}

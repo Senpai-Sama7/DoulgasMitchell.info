@@ -59,7 +59,7 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
   const validation = loginSchema.safeParse(body);
   if (!validation.success) {
     throw new ValidationError('Invalid input', {
-      errors: validation.error.errors.map((e) => ({
+      errors: validation.error.issues.map((e) => ({
         path: e.path.join('.'),
         message: e.message,
       })),
@@ -128,8 +128,6 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
 
 // GET - Check authentication status
 async function handleCheckAuth(request: NextRequest): Promise<NextResponse> {
-  await ensureAdminInitialized();
-
   const cookieStore = await cookies();
   const token = cookieStore.get('admin-session')?.value;
 

@@ -5,6 +5,8 @@ import {
   withMiddleware,
   successResponse,
   validateInput,
+  AuthenticationError,
+  ValidationError,
 } from "@/lib/middleware";
 import {
   createJournalEntrySchema,
@@ -17,12 +19,12 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 
@@ -54,10 +56,10 @@ async function handleGetJournal(request: NextRequest): Promise<NextResponse> {
   if (filter.dateFrom || filter.dateTo) {
     where.date = {};
     if (filter.dateFrom) {
-      (where.date as Record<string, Date>).gte = filter.dateFrom;
+      (where.date as Record<string, string>).gte = filter.dateFrom;
     }
     if (filter.dateTo) {
-      (where.date as Record<string, Date>).lte = filter.dateTo;
+      (where.date as Record<string, string>).lte = filter.dateTo;
     }
   }
 
@@ -150,14 +152,15 @@ async function handleUpdateJournal(
   const { id, tags, ...updateData } = body;
 
   if (!id) {
-    throw new Error("Entry ID is required");
+    throw new ValidationError("Entry ID is required");
   }
 
   const data = validateInput(updateJournalEntrySchema, updateData);
+  const { tags: _ignoredTags, ...entryUpdateData } = data;
 
   const entry = await db.journalEntry.update({
     where: { id },
-    data,
+    data: entryUpdateData,
   });
 
   if (tags && Array.isArray(tags)) {
@@ -215,7 +218,7 @@ async function handleDeleteJournal(
   }
 
   if (!id) {
-    throw new Error("Entry ID is required");
+    throw new ValidationError("Entry ID is required");
   }
 
   await db.journalTag.deleteMany({ where: { journalEntryId: id } });

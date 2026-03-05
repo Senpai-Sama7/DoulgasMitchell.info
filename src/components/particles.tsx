@@ -174,7 +174,7 @@ export function ParticleField({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlePoolRef = useRef<ParticlePool | null>(null);
   const mouseRef = useRef({ x: -1000, y: -1000, active: false });
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const lastTimeRef = useRef(0);
   const optimizerRef = useRef<PerformanceOptimizer | null>(null);
   const [isVisible, setIsVisible] = useState(true);
@@ -382,10 +382,12 @@ export function ParticleField({
 
           if (distSq < influenceSq) {
             const dist = Math.sqrt(distSq);
-            const force = (mouseInfluence - dist) / mouseInfluence;
-            const forceStrength = force * force * 0.015; // Quadratic falloff
-            particle.vx -= (dx / dist) * forceStrength;
-            particle.vy -= (dy / dist) * forceStrength;
+            if (dist > 0.0001) {
+              const force = (mouseInfluence - dist) / mouseInfluence;
+              const forceStrength = force * force * 0.015; // Quadratic falloff
+              particle.vx -= (dx / dist) * forceStrength;
+              particle.vy -= (dy / dist) * forceStrength;
+            }
           }
         }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateSession } from "@/lib/security";
-import { withMiddleware, successResponse, validateInput } from "@/lib/middleware";
+import { withMiddleware, successResponse, validateInput, AuthenticationError, ValidationError } from "@/lib/middleware";
 import { batchMoveSchema, reorderSchema } from "@/lib/validations";
 
 async function authenticateRequest(request: NextRequest): Promise<void> {
@@ -9,12 +9,12 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 
@@ -27,7 +27,7 @@ async function handleBatchOperation(
   const { action, ids, data } = body;
 
   if (!action || !ids || !Array.isArray(ids)) {
-    throw new Error("Invalid request: action and ids are required");
+    throw new ValidationError("Invalid request: action and ids are required");
   }
 
   switch (action) {
@@ -74,7 +74,7 @@ async function handleBatchOperation(
     }
 
     default:
-      throw new Error(`Unknown action: ${action}`);
+      throw new ValidationError(`Unknown action: ${action}`);
   }
 }
 

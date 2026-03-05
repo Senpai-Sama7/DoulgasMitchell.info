@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type KeyboardEvent } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { GalleryImage } from "@/lib/data";
@@ -17,12 +17,8 @@ interface ImageCardProps {
 const generateBlurPlaceholder = (width: number, height: number): string => {
   const aspectRatio = width / height;
   const baseColor = aspectRatio > 1 ? "oklch(0.85 0.01 75)" : "oklch(0.75 0.01 70)";
-  // Return a simple SVG-based blur placeholder
-  return `data:image/svg+xml;base64,${Buffer.from(
-    `<svg width="${Math.min(width, 40)}" height="${Math.min(height, 40)}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100%" height="100%" fill="${baseColor}"/>
-    </svg>`
-  ).toString("base64")}`;
+  const svg = `<svg width="${Math.min(width, 40)}" height="${Math.min(height, 40)}" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="${baseColor}"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 };
 
 export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
@@ -59,6 +55,17 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
     return () => observer.disconnect();
   }, []);
 
+  const handleCardKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return;
+    }
+
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onImageClick(index);
+    }
+  };
+
   return (
     <motion.div
       ref={cardRef}
@@ -70,6 +77,10 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
     >
       <div
         onClick={() => onImageClick(index)}
+        onKeyDown={handleCardKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label={`Open image: ${image.alt}`}
         className={cn(
           "image-card relative overflow-hidden rounded-xl cursor-pointer bg-accent/30",
           "transform transition-all duration-500 ease-out",
@@ -137,9 +148,9 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
         </div>
 
         {/* Reactions - shown on hover */}
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+        <div className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
           <div onClick={(e) => e.stopPropagation()}>
-            <Reactions itemId={image.id} variant="dark" />
+            <Reactions itemId={image.id} variant="dark" compact />
           </div>
         </div>
 

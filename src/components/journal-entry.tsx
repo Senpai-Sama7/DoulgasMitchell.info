@@ -26,7 +26,7 @@ export function JournalEntry({ entry, index }: JournalEntryProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("zh-CN", {
+    return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
     });

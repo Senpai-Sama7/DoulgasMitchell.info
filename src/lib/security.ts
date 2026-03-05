@@ -4,10 +4,18 @@ import { NextRequest } from 'next/server';
 import { db } from './db';
 
 // Configuration
-const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-in-production';
 const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '5', 10);
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10);
 const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE || '86400', 10);
+const TRUST_PROXY_HEADERS = process.env.TRUST_PROXY_HEADERS === 'true';
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('JWT_SECRET is required');
+  }
+  return secret;
+}
 
 // Types
 export interface JwtPayload {
@@ -35,12 +43,12 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 
 // JWT utilities
 export function generateToken(payload: { userId: string; username: string }): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: SESSION_MAX_AGE });
+  return jwt.sign(payload, getJwtSecret(), { expiresIn: SESSION_MAX_AGE });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as JwtPayload;
+    return jwt.verify(token, getJwtSecret()) as JwtPayload;
   } catch {
     return null;
   }
@@ -103,7 +111,7 @@ export function resetRateLimit(identifier: string): void {
 }
 
 // Clean up expired rate limit entries periodically
-setInterval(() => {
+const rateLimitCleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [key, record] of rateLimitStore.entries()) {
     if (now > record.resetAt) {
@@ -112,16 +120,32 @@ setInterval(() => {
   }
 }, 60000); // Clean up every minute
 
+rateLimitCleanupTimer.unref?.();
+
 // IP extraction
 export function getClientIp(request: NextRequest): string {
-  const forwarded = request.headers.get('x-forwarded-for');
-  if (forwarded) {
-    return forwarded.split(',')[0].trim();
+  if (TRUST_PROXY_HEADERS) {
+    const forwarded = request.headers.get('x-forwarded-for');
+    if (forwarded) {
+      return forwarded.split(',')[0].trim();
+    }
+
+    const realIp = request.headers.get('x-real-ip');
+    if (realIp) {
+      return realIp;
+    }
   }
-  const realIp = request.headers.get('x-real-ip');
-  if (realIp) {
-    return realIp;
+
+  const vercelIp = request.headers.get('x-vercel-ip');
+  if (vercelIp) {
+    return vercelIp;
   }
+
+  const cloudflareIp = request.headers.get('cf-connecting-ip');
+  if (cloudflareIp) {
+    return cloudflareIp;
+  }
+
   return 'unknown';
 }
 
@@ -268,7 +292,10 @@ export async function logRequest(
         userAgent,
       },
     });
-  } catch {
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2021') {
+      return;
+    }
     // Log failure shouldn't break the request
     console.error('Failed to log request');
   }
@@ -276,22 +303,26 @@ export async function logRequest(
 
 // Admin user initialization
 export async function initializeAdminUser(): Promise<void> {
-  const adminPassword = process.env.ADMIN_PASSWORD || 'senpai2024';
-
   const existingAdmin = await db.adminUser.findUnique({
     where: { username: 'admin' },
   });
 
-  if (!existingAdmin) {
-    const passwordHash = await hashPassword(adminPassword);
-    await db.adminUser.create({
-      data: {
-        username: 'admin',
-        passwordHash,
-        email: 'admin@senpai-isekai.com',
-      },
-    });
-    console.log('Admin user created successfully');
+  if (existingAdmin) {
     return;
   }
+
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminPassword) {
+    throw new Error('ADMIN_PASSWORD is required to initialize the admin user');
+  }
+
+  const passwordHash = await hashPassword(adminPassword);
+  await db.adminUser.create({
+    data: {
+      username: 'admin',
+      passwordHash,
+      email: 'admin@senpai-isekai.com',
+    },
+  });
+  console.log('Admin user created successfully');
 }

@@ -2,19 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { validateSession } from "@/lib/security";
-import { withMiddleware, successResponse } from "@/lib/middleware";
+import { withMiddleware, successResponse, AuthenticationError, ValidationError } from "@/lib/middleware";
 
 async function authenticateRequest(request: NextRequest): Promise<void> {
   const cookieStore = await import("next/headers").then((m) => m.cookies());
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 
@@ -23,8 +23,8 @@ const ALLOWED_MIME_TYPES = [
   "image/png",
   "image/gif",
   "image/webp",
-  "image/svg+xml",
 ];
+const ALLOWED_UPLOAD_TYPES = new Set(["images", "gallery", "journal", "general"]);
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
@@ -33,21 +33,32 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
 
   const formData = await request.formData();
   const file = formData.get("file") as File;
-  const type = (formData.get("type") as string) || "general";
+  const typeField = formData.get("type");
+  const requestedType = typeof typeField === "string" ? typeField : "general";
+  const type = requestedType.toLowerCase();
 
   if (!file) {
-    throw new Error("No file provided");
+    throw new ValidationError("No file provided");
+  }
+
+  if (!ALLOWED_UPLOAD_TYPES.has(type)) {
+    throw new ValidationError("Invalid upload type");
   }
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
-    throw new Error("File type not allowed");
+    throw new ValidationError("File type not allowed");
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    throw new Error("File size exceeds 10MB limit");
+    throw new ValidationError("File size exceeds 10MB limit");
   }
 
-  const uploadDir = path.join(process.cwd(), "public", "uploads", type);
+  const uploadRoot = path.resolve(process.cwd(), "public", "uploads");
+  const uploadDir = path.resolve(uploadRoot, type);
+  if (!uploadDir.startsWith(`${uploadRoot}${path.sep}`)) {
+    throw new ValidationError("Invalid upload path");
+  }
+
   await mkdir(uploadDir, { recursive: true });
 
   const timestamp = Date.now();

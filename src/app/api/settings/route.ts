@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateSession } from "@/lib/security";
-import { withMiddleware, successResponse, validateInput } from "@/lib/middleware";
+import { withMiddleware, successResponse, validateInput, AuthenticationError } from "@/lib/middleware";
 import { settingsSchema } from "@/lib/validations";
 
 async function authenticateRequest(request: NextRequest): Promise<void> {
@@ -9,12 +9,12 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 

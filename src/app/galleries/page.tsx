@@ -66,9 +66,9 @@ export default function GalleriesPage() {
     };
 
     // Get date range
-    const dates = galleryImages.map((img) => new Date(img.date));
-    const oldestDate = new Date(Math.min(...dates));
-    const newestDate = new Date(Math.max(...dates));
+    const timestamps = galleryImages.map((img) => new Date(img.date).getTime());
+    const oldestDate = new Date(Math.min(...timestamps));
+    const newestDate = new Date(Math.max(...timestamps));
     
     const formatDate = (date: Date) => {
       return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
@@ -192,8 +192,12 @@ export default function GalleriesPage() {
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Search Input */}
             <div className="relative flex-1">
+              <label htmlFor="galleries-search" className="sr-only">
+                Search galleries
+              </label>
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
+                id="galleries-search"
                 ref={searchInputRef}
                 type="text"
                 value={searchQuery}
@@ -270,7 +274,7 @@ export default function GalleriesPage() {
               className="flex flex-col items-center justify-center py-16 text-center"
             >
               <Grid3X3 className="w-12 h-12 text-muted-foreground/50 mb-4" />
-              <h3 className="font-serif text-xl mb-2">No images found</h3>
+              <h2 className="font-serif text-xl mb-2">No images found</h2>
               <p className="text-sm text-muted-foreground">
                 Try adjusting your search or filters
               </p>

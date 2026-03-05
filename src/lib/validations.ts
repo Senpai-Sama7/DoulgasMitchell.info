@@ -118,9 +118,32 @@ export type GalleryFilterInput = z.infer<typeof galleryFilterSchema>;
 export type JournalFilterInput = z.infer<typeof journalFilterSchema>;
 
 // Export/Import schema
+const importGalleryImageSchema = createGalleryImageSchema
+  .extend({
+    id: z.string().optional(),
+    order: z.number().int().nonnegative().optional(),
+  });
+
+const importJournalEntrySchema = createJournalEntrySchema
+  .extend({
+    id: z.string().optional(),
+    order: z.number().int().nonnegative().optional(),
+  });
+
+const importDataPayloadSchema = z.object({
+  gallery: z.array(importGalleryImageSchema).optional(),
+  galleryImages: z.array(importGalleryImageSchema).optional(),
+  journal: z.array(importJournalEntrySchema).optional(),
+  journalEntries: z.array(importJournalEntrySchema).optional(),
+  settings: settingsSchema.optional(),
+});
+
 export const importDataSchema = z.object({
-  gallery: z.array(createGalleryImageSchema).optional(),
-  journal: z.array(createJournalEntrySchema).optional(),
+  data: importDataPayloadSchema.optional(),
+  gallery: z.array(importGalleryImageSchema).optional(),
+  galleryImages: z.array(importGalleryImageSchema).optional(),
+  journal: z.array(importJournalEntrySchema).optional(),
+  journalEntries: z.array(importJournalEntrySchema).optional(),
   settings: settingsSchema.optional(),
   mode: z.enum(['merge', 'replace']).default('merge'),
 });
@@ -135,7 +158,7 @@ export const idParamSchema = z.object({
 // Generic response schemas
 export const errorResponseSchema = z.object({
   error: z.string(),
-  details: z.record(z.unknown()).optional(),
+  details: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const successResponseSchema = z.object({

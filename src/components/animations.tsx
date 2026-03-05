@@ -150,7 +150,7 @@ export function ScrollReveal({
   rootMargin = "-50px",
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once, margin: rootMargin });
+  const isInView = useInView(ref, { once, margin: rootMargin as never });
   const prefersReducedMotion = useReducedMotion();
 
   const getInitialPosition = useMemo(() => {

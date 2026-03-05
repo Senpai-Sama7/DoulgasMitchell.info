@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, Manrope, IBM_Plex_Mono, Caveat } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "@/components/theme-provider";
 
 // Fraunces - Sophisticated Serif for Headlines
 const fraunces = Fraunces({
@@ -39,21 +37,6 @@ const caveat = Caveat({
 export const metadata: Metadata = {
   title: "Senpai's Isekai | Open-Source Humanity",
   description: "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
-  keywords: ["photography", "architecture", "design", "portfolio", "blog", "visual arts"],
-  authors: [{ name: "Senpai" }],
-  icons: {
-    icon: "/favicon.svg",
-  },
-  openGraph: {
-    title: "Senpai's Isekai",
-    description: "Open-Source Humanity - A sophisticated visual journey",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Senpai's Isekai",
-    description: "Open-Source Humanity - A sophisticated visual journey",
-  },
 };
 
 export default function RootLayout({
@@ -66,20 +49,11 @@ export default function RootLayout({
       <body
         className={`${fraunces.variable} ${manrope.variable} ${ibmPlexMono.variable} ${caveat.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {/* Noise Texture Overlay */}
-          <div className="noise-overlay" aria-hidden="true" />
-          
-          {/* Main Content */}
-          {children}
-          
-          <Toaster position="bottom-right" />
-        </ThemeProvider>
+        {/* Noise Texture Overlay */}
+        <div className="noise-overlay" aria-hidden="true" />
+        
+        {/* Main Content */}
+        {children}
       </body>
     </html>
   );

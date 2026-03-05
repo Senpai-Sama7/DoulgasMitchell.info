@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # 配置项
-ROOT_DIR="/home/z/my-project/mini-services"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+ROOT_DIR="$REPO_ROOT/mini-services"
 DIST_DIR="/tmp/build_fullstack_$BUILD_ID/mini-services-dist"
 
 main() {
@@ -75,4 +77,3 @@ main() {
 }
 
 main
-

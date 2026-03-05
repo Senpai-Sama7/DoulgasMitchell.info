@@ -4,8 +4,12 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function resetAdmin() {
-  const password = 'senpai2024';
-  const passwordHash = await bcrypt.hash(password, 10);
+  const password = process.env.ADMIN_PASSWORD;
+  if (!password) {
+    throw new Error('ADMIN_PASSWORD must be set');
+  }
+  const rounds = Number.parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
+  const passwordHash = await bcrypt.hash(password, rounds);
   
   await prisma.adminUser.deleteMany({
     where: { username: 'admin' }
@@ -21,7 +25,6 @@ async function resetAdmin() {
   
   console.log('✅ Admin user reset successfully');
   console.log('Username: admin');
-  console.log('Password: senpai2024');
   
   await prisma.$disconnect();
 }

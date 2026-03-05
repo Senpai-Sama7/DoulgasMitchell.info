@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { validateSession } from "@/lib/security";
-import { withMiddleware, successResponse, validateInput } from "@/lib/middleware";
+import { withMiddleware, successResponse, validateInput, AuthenticationError, ValidationError } from "@/lib/middleware";
 import { importDataSchema } from "@/lib/validations";
 
 async function authenticateRequest(request: NextRequest): Promise<void> {
@@ -9,12 +9,12 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 
@@ -75,10 +75,18 @@ async function handleImport(request: NextRequest): Promise<NextResponse> {
   await authenticateRequest(request);
 
   const body = await request.json();
-  const { data, mode = "merge" } = validateInput(importDataSchema, { ...body, mode: body.mode || "merge" });
+  const bodyRecord = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+  const parsed = validateInput(importDataSchema, {
+    ...bodyRecord,
+    mode: typeof bodyRecord.mode === "string" ? bodyRecord.mode : "merge",
+  });
+  const sourceData = parsed.data ?? parsed;
+  const galleryItems = sourceData.gallery ?? sourceData.galleryImages ?? [];
+  const journalItems = sourceData.journal ?? sourceData.journalEntries ?? [];
+  const importSettings = sourceData.settings;
 
-  if (!data) {
-    throw new Error("No data provided");
+  if (galleryItems.length === 0 && journalItems.length === 0 && !importSettings) {
+    throw new ValidationError("No import data provided");
   }
 
   const results = {
@@ -87,86 +95,82 @@ async function handleImport(request: NextRequest): Promise<NextResponse> {
     settings: false,
   };
 
-  if (mode === "replace") {
-    await db.journalTag.deleteMany();
-    await db.journalEntry.deleteMany();
-    await db.galleryImage.deleteMany();
-    await db.settings.deleteMany();
-  }
-
-  if (data.gallery && Array.isArray(data.gallery)) {
-    for (const image of data.gallery) {
-      if (mode === "merge") {
-        const existing = await db.galleryImage.findUnique({ where: { id: image.id } });
-
-        if (existing) {
-          await db.galleryImage.update({ where: { id: image.id }, data: image });
-          results.gallery.updated++;
-        } else {
-          await db.galleryImage.create({ data: { ...image, id: undefined } });
-          results.gallery.created++;
-        }
-      } else {
-        await db.galleryImage.create({ data: image });
-        results.gallery.created++;
-      }
+  await db.$transaction(async (tx) => {
+    if (parsed.mode === "replace") {
+      await tx.journalTag.deleteMany();
+      await tx.journalEntry.deleteMany();
+      await tx.galleryImage.deleteMany();
+      await tx.settings.deleteMany();
     }
-  }
 
-  if (data.journal && Array.isArray(data.journal)) {
-    for (const entry of data.journal) {
-      const { tags, ...entryData } = entry;
+    for (const image of galleryItems) {
+      const { id, ...imageData } = image;
+      if (parsed.mode === "merge" && id) {
+        const existing = await tx.galleryImage.findUnique({ where: { id } });
+        if (existing) {
+          await tx.galleryImage.update({ where: { id }, data: imageData });
+          results.gallery.updated++;
+          continue;
+        }
+      }
+
+      await tx.galleryImage.create({
+        data: id && parsed.mode === "replace" ? { ...imageData, id } : imageData,
+      });
+      results.gallery.created++;
+    }
+
+    for (const entry of journalItems) {
+      const { id, tags, ...entryData } = entry;
       let newEntry;
 
-      if (mode === "merge") {
-        const existing = await db.journalEntry.findUnique({ where: { id: entry.id } });
-
+      if (parsed.mode === "merge" && id) {
+        const existing = await tx.journalEntry.findUnique({ where: { id } });
         if (existing) {
-          newEntry = await db.journalEntry.update({ where: { id: entry.id }, data: entryData });
+          newEntry = await tx.journalEntry.update({ where: { id }, data: entryData });
+          await tx.journalTag.deleteMany({ where: { journalEntryId: id } });
           results.journal.updated++;
-        } else {
-          newEntry = await db.journalEntry.create({ data: { ...entryData, id: undefined } });
-          results.journal.created++;
         }
-      } else {
-        newEntry = await db.journalEntry.create({ data: { ...entryData, id: undefined } });
+      }
+
+      if (!newEntry) {
+        newEntry = await tx.journalEntry.create({
+          data: id && parsed.mode === "replace" ? { ...entryData, id } : entryData,
+        });
         results.journal.created++;
       }
 
       if (tags && Array.isArray(tags)) {
         for (const tagName of tags) {
-          let tag = await db.tag.findUnique({ where: { name: tagName } });
-
+          let tag = await tx.tag.findUnique({ where: { name: tagName } });
           if (!tag) {
-            tag = await db.tag.create({ data: { name: tagName } });
+            tag = await tx.tag.create({ data: { name: tagName } });
           }
 
-          await db.journalTag.create({
+          await tx.journalTag.create({
             data: { journalEntryId: newEntry.id, tagId: tag.id },
           });
         }
       }
     }
-  }
 
-  if (data.settings) {
-    const existing = await db.settings.findFirst();
-
-    if (existing) {
-      await db.settings.update({ where: { id: existing.id }, data: data.settings });
-    } else {
-      await db.settings.create({ data: data.settings });
+    if (importSettings) {
+      const existing = await tx.settings.findFirst();
+      if (existing) {
+        await tx.settings.update({ where: { id: existing.id }, data: importSettings });
+      } else {
+        await tx.settings.create({ data: importSettings });
+      }
+      results.settings = true;
     }
 
-    results.settings = true;
-  }
-
-  await db.activityLog.create({
-    data: {
-      action: "import",
-      resource: "data",
-      details: JSON.stringify({ mode, results }),
-    },
+    await tx.activityLog.create({
+      data: {
+        action: "import",
+        resource: "data",
+        details: JSON.stringify({ mode: parsed.mode, results }),
+      },
+    });
   });
 
   return successResponse({ results }, "Data imported successfully");

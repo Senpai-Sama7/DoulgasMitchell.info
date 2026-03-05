@@ -8,9 +8,16 @@ BUILD_DIR="$SCRIPT_DIR"
 
 # 存储所有子进程的 PID
 pids=""
+cleanup_done=0
 
 # 清理函数：优雅关闭所有服务
 cleanup() {
+    if [ "${cleanup_done:-0}" -eq 1 ]; then
+        return
+    fi
+    cleanup_done=1
+    trap - INT TERM EXIT
+
     echo ""
     echo "🛑 正在关闭所有服务..."
     
@@ -42,8 +49,9 @@ cleanup() {
     done
     
     echo "✅ 所有服务已关闭"
-    exit 0
 }
+
+trap cleanup INT TERM EXIT
 
 echo "🚀 开始启动所有服务..."
 echo ""
@@ -123,4 +131,14 @@ echo "💡 按 Ctrl+C 停止所有服务"
 echo ""
 
 # Caddy 作为主进程运行
-exec caddy run --config Caddyfile --adapter caddyfile
+caddy run --config Caddyfile --adapter caddyfile &
+CADDY_PID=$!
+pids="$pids $CADDY_PID"
+
+if wait "$CADDY_PID"; then
+    CADDY_STATUS=0
+else
+    CADDY_STATUS=$?
+fi
+
+exit "$CADDY_STATUS"

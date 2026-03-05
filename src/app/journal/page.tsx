@@ -39,9 +39,9 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, isWithinInterval, startOfDay, endOfDay } from "date-fns";
-import { zhCN } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 
-// Calculate reading time (assuming ~200 Chinese characters per minute)
+// Calculate reading time using mixed character and word density.
 function calculateReadingTime(content: string): number {
   const chineseChars = (content.match(/[\u4e00-\u9fa5]/g) || []).length;
   const englishWords = (content.match(/[a-zA-Z]+/g) || []).length;
@@ -123,10 +123,18 @@ function JournalEntryComponent({
   };
 
   const formatDate = (dateString: string) => {
-    return format(parseISO(dateString), "MMM d", { locale: zhCN });
+    return format(parseISO(dateString), "MMM d", { locale: enUS });
   };
 
   const readingTime = calculateReadingTime(entry.content);
+  const expandedContentId = `entry-content-${entry.id}`;
+
+  const handleToggleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onToggle();
+    }
+  };
 
   return (
     <motion.article
@@ -155,7 +163,15 @@ function JournalEntryComponent({
         </motion.div>
       )}
 
-      <div className="flex gap-3" onClick={onToggle}>
+      <div
+        className="flex gap-3"
+        onClick={onToggle}
+        onKeyDown={handleToggleKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
+        aria-controls={expandedContentId}
+      >
         {/* Image */}
         <div className="relative w-16 h-16 md:w-20 md:h-20 flex-shrink-0 rounded-lg overflow-hidden">
           <Image
@@ -170,9 +186,9 @@ function JournalEntryComponent({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h3 className="font-serif text-base md:text-lg font-semibold group-hover:text-primary transition-colors">
+              <h2 className="font-serif text-base md:text-lg font-semibold group-hover:text-primary transition-colors">
                 {entry.title}
-              </h3>
+              </h2>
               <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                 <time className="font-mono text-xs text-muted-foreground">
                   {formatDate(entry.date)}
@@ -217,6 +233,7 @@ function JournalEntryComponent({
       <AnimatePresence>
         {isExpanded && (
           <motion.div
+            id={expandedContentId}
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -315,6 +332,7 @@ function JournalEntryComponent({
                         onShare(entry);
                       }}
                       className="h-8 px-2"
+                      aria-label="Share entry"
                     >
                       <Share2 className="w-4 h-4" />
                     </Button>
@@ -341,10 +359,10 @@ function TableOfContents({ entries, activeEntryId, onEntryClick }: TableOfConten
   return (
     <div className="hidden lg:block sticky top-24 w-64 flex-shrink-0">
       <div className="bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4">
-        <h4 className="font-serif text-sm font-semibold mb-3 flex items-center gap-2">
+        <h2 className="font-serif text-sm font-semibold mb-3 flex items-center gap-2">
           <List className="w-4 h-4" />
           Table of Contents
-        </h4>
+        </h2>
         <ScrollArea className="h-[calc(100vh-200px)]">
           <nav className="space-y-1">
             {entries.map((entry) => (
@@ -378,14 +396,34 @@ interface ShareDialogProps {
 
 function ShareDialog({ entry, open, onOpenChange }: ShareDialogProps) {
   const [copied, setCopied] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  const shareUrl = typeof window !== "undefined" && entry
+    ? `${window.location.origin}/journal#entry-${entry.id}`
+    : "";
+  const shareText = entry ? `"${entry.title}" - ${entry.content.slice(0, 100)}...` : "";
+  const dialogTitleId = entry ? `share-dialog-title-${entry.id}` : "share-dialog-title";
+  const dialogDescriptionId = entry ? `share-dialog-description-${entry.id}` : "share-dialog-description";
+
+  useEffect(() => {
+    if (!open || !entry) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onOpenChange(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    dialogRef.current?.focus();
+
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [open, onOpenChange, entry]);
 
   if (!entry) return null;
-
-  const shareUrl = typeof window !== 'undefined' 
-    ? `${window.location.origin}/journal#entry-${entry.id}` 
-    : '';
-
-  const shareText = `"${entry.title}" - ${entry.content.slice(0, 100)}...`;
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(shareUrl);
@@ -435,26 +473,36 @@ function ShareDialog({ entry, open, onOpenChange }: ShareDialogProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 z-50"
             onClick={() => onOpenChange(false)}
+            aria-hidden="true"
           />
           <motion.div
+            ref={dialogRef}
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-sm bg-card rounded-lg border border-border p-6 shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={dialogTitleId}
+            aria-describedby={dialogDescriptionId}
+            tabIndex={-1}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-serif text-lg font-semibold">Share Entry</h3>
+              <h2 id={dialogTitleId} className="font-serif text-lg font-semibold">
+                Share Entry
+              </h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => onOpenChange(false)}
                 className="h-8 w-8"
+                aria-label="Close share dialog"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
             
-            <p className="text-sm text-muted-foreground mb-4">
+            <p id={dialogDescriptionId} className="text-sm text-muted-foreground mb-4">
               Share &ldquo;{entry.title}&rdquo; with others
             </p>
 
@@ -467,6 +515,7 @@ function ShareDialog({ entry, open, onOpenChange }: ShareDialogProps) {
                       size="icon"
                       onClick={action.onClick}
                       className="h-12 w-12"
+                      aria-label={action.name}
                     >
                       <action.icon className="w-5 h-5" />
                     </Button>
@@ -717,7 +766,13 @@ export default function JournalPage() {
           <div className="flex gap-1">
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="sm" onClick={expandAll} className="h-9 px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={expandAll}
+                  className="h-9 px-2"
+                  aria-label="Expand all journal entries"
+                >
                   <ChevronUp className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -725,7 +780,13 @@ export default function JournalPage() {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="sm" onClick={collapseAll} className="h-9 px-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={collapseAll}
+                  className="h-9 px-2"
+                  aria-label="Collapse all journal entries"
+                >
                   <ChevronDown className="w-4 h-4" />
                 </Button>
               </TooltipTrigger>
@@ -749,6 +810,7 @@ export default function JournalPage() {
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => setFontSize((s) => Math.max(12, s - 1))}
+                    aria-label="Decrease journal font size"
                   >
                     <Minus className="w-3 h-3" />
                   </Button>
@@ -765,6 +827,7 @@ export default function JournalPage() {
                     size="icon"
                     className="h-7 w-7"
                     onClick={() => setFontSize((s) => Math.min(20, s + 1))}
+                    aria-label="Increase journal font size"
                   >
                     <Plus className="w-3 h-3" />
                   </Button>
@@ -779,7 +842,13 @@ export default function JournalPage() {
           {/* Print */}
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm" onClick={handlePrint} className="h-9 px-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handlePrint}
+                className="h-9 px-2"
+                aria-label="Print journal entries"
+              >
                 <Printer className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -794,6 +863,7 @@ export default function JournalPage() {
                 size="sm"
                 onClick={() => setShowReadingProgress(!showReadingProgress)}
                 className="h-9 px-2"
+                aria-label={showReadingProgress ? "Hide reading progress" : "Show reading progress"}
               >
                 <Clock className="w-4 h-4" />
               </Button>

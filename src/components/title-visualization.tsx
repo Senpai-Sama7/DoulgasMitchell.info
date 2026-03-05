@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export function TitleVisualization() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
   const timeRef = useRef(0);
   const mouseRef = useRef({ x: 0, y: 0 });
 

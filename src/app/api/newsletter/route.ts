@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { db } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/security";
-import { withMiddleware, successResponse, validateInput, RateLimitError } from "@/lib/middleware";
-import { contactFormSchema } from "@/lib/validations";
+import { withMiddleware, successResponse, validateInput, RateLimitError, ValidationError } from "@/lib/middleware";
+
+const newsletterSchema = z.object({
+  email: z.string().email("Valid email is required"),
+});
 
 async function handleSubscribe(request: NextRequest): Promise<NextResponse> {
   const ipAddress = getClientIp(request);
@@ -15,16 +19,12 @@ async function handleSubscribe(request: NextRequest): Promise<NextResponse> {
   }
 
   const body = await request.json();
-  const { email } = body;
-
-  if (!email || !email.includes("@")) {
-    throw new Error("Valid email is required");
-  }
+  const { email } = validateInput(newsletterSchema, body);
 
   const existing = await db.newsletter.findUnique({ where: { email } });
 
   if (existing) {
-    throw new Error("Email already subscribed");
+    throw new ValidationError("Email already subscribed");
   }
 
   await db.newsletter.create({ data: { email } });

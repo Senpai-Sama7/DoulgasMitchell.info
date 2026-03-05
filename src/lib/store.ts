@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { ReactionType } from '@/lib/data';
 
+export type { ReactionType } from '@/lib/data';
+
 // Lightbox Store
 interface LightboxState {
   isOpen: boolean;

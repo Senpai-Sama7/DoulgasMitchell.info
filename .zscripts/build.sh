@@ -8,9 +8,10 @@ set -e
 # 获取脚本所在目录（.zscripts 目录，即 workspace-agent/.zscripts）
 # 使用 $0 获取脚本路径（兼容 sh 和 bash）
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # Next.js 项目路径
-NEXTJS_PROJECT_DIR="/home/z/my-project"
+NEXTJS_PROJECT_DIR="$REPO_ROOT"
 
 # 检查 Next.js 项目目录是否存在
 if [ ! -d "$NEXTJS_PROJECT_DIR" ]; then
@@ -77,14 +78,13 @@ if [ -d "public" ]; then
     cp -r public "$BUILD_DIR/next-service-dist/"
 fi
 
-# 最后再迁移数据库到 BUILD_DIR/db
-if [ "$(ls -A ./db 2>/dev/null)" ]; then
-    echo "🗄️  检测到数据库文件，运行数据库迁移..."
-    DATABASE_URL=file:$BUILD_DIR/db/custom.db bun run db:push
+# 数据库迁移（仅在设置 DATABASE_URL 时执行）
+if [ -n "${DATABASE_URL:-}" ]; then
+    echo "🗄️  检测到 DATABASE_URL，运行数据库迁移..."
+    bun run db:push
     echo "✅ 数据库迁移完成"
-    ls -lah $BUILD_DIR/db
 else
-    echo "ℹ️  db 目录为空，跳过数据库迁移"
+    echo "⚠️  未设置 DATABASE_URL，跳过数据库迁移"
 fi
 
 # 复制 Caddyfile（如果存在）

@@ -3,10 +3,11 @@ import { db } from "@/lib/db";
 import { validateSession } from "@/lib/security";
 import {
   withMiddleware,
-  errorResponse,
   successResponse,
   validateInput,
   NotFoundError,
+  AuthenticationError,
+  ValidationError,
 } from "@/lib/middleware";
 import {
   createGalleryImageSchema,
@@ -19,12 +20,12 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   const token = (await cookieStore).get("admin-session")?.value;
 
   if (!token) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 
   const sessionResult = await validateSession(token);
   if (!sessionResult.valid) {
-    throw new Error("Unauthorized");
+    throw new AuthenticationError();
   }
 }
 
@@ -32,7 +33,7 @@ async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   
   const filterInput = {
-    series: searchParams.get("series"),
+    series: searchParams.get("series") || undefined,
     search: searchParams.get("search") || undefined,
     sortBy: searchParams.get("sortBy") || "date",
     sortOrder: searchParams.get("sortOrder") || "desc",
@@ -72,7 +73,7 @@ async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
       total,
       limit: filter.limit,
       offset: filter.offset,
-      hasMore: offset + images.length < total,
+      hasMore: filter.offset + images.length < total,
     },
   });
 }
@@ -126,7 +127,7 @@ async function handleUpdateGallery(
   const { id, ...updateData } = body;
 
   if (!id) {
-    throw new Error("Image ID is required");
+    throw new ValidationError("Image ID is required");
   }
 
   const data = validateInput(updateGalleryImageSchema, updateData);
@@ -175,7 +176,7 @@ async function handleDeleteGallery(
   }
 
   if (!id) {
-    throw new Error("Image ID is required");
+    throw new ValidationError("Image ID is required");
   }
 
   await db.galleryImage.delete({

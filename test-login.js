@@ -6,18 +6,24 @@ async function testLogin() {
   const admin = await prisma.adminUser.findUnique({
     where: { username: 'admin' }
   });
+  if (!admin) {
+    throw new Error('Admin user not found');
+  }
   
-  const testPassword = 'senpai2024';
+  const testPassword = process.env.ADMIN_PASSWORD;
+  if (!testPassword) {
+    throw new Error('ADMIN_PASSWORD must be set');
+  }
   const isValid = await bcrypt.compare(testPassword, admin.passwordHash);
   
-  console.log('Testing password:', testPassword);
   console.log('Password valid:', isValid);
   
   if (!isValid) {
     console.log('\n❌ Password does not match!');
-    console.log('Resetting to senpai2024...');
+    console.log('Resetting to ADMIN_PASSWORD from environment...');
     
-    const newHash = await bcrypt.hash(testPassword, 10);
+    const rounds = Number.parseInt(process.env.BCRYPT_ROUNDS || '12', 10);
+    const newHash = await bcrypt.hash(testPassword, rounds);
     await prisma.adminUser.update({
       where: { username: 'admin' },
       data: { passwordHash: newHash }

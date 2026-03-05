@@ -22,6 +22,7 @@ model AdminUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   sessions     Session[]
+  passkeys     PasskeyCredential[]
 }
 
 model Session {
@@ -37,6 +38,22 @@ model Session {
   @@index([token])
   @@index([adminUserId])
   @@index([expiresAt])
+}
+
+model PasskeyCredential {
+  id         String   @id @default(cuid())
+  adminUserId String
+  credentialID String @unique
+  publicKey  String
+  counter    Int      @default(0)
+  transports String?
+  deviceType String?
+  backedUp   Boolean?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  adminUser  AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
 }
 
 model LoginAttempt {

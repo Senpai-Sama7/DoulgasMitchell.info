@@ -45,6 +45,11 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-useless-escape": "off",
   },
 }, {
+  files: ["check-admin.js", "reset-admin.js", "test-login.js"],
+  rules: {
+    "@typescript-eslint/no-require-imports": "off",
+  },
+}, {
   ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills"]
 }];
 

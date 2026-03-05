@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, useSpring, useMotionValue, AnimatePresence } from "framer-motion";
+import { motion, useSpring, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 
 interface TrailPoint {
   id: number;
@@ -25,6 +25,7 @@ export function CustomCursor() {
   
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorDotRef = useRef<HTMLDivElement>(null);
+  const hasPointerPositionRef = useRef(false);
   const [state, setState] = useState<CursorState>({
     isVisible: false,
     isHovering: false,
@@ -32,16 +33,12 @@ export function CustomCursor() {
     isMagnetic: false,
     hoverType: "default",
   });
-  const [trail, setTrail] = useState<TrailPoint[]>([]);
-  const trailIdRef = useRef(0);
-  const lastTrailTimeRef = useRef(0);
-  const lastMousePosRef = useRef({ x: 0, y: 0 });
-  const magneticTargetRef = useRef<HTMLElement | null>(null);
   
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const magneticX = useMotionValue(0);
   const magneticY = useMotionValue(0);
+  const magneticTargetRef = useRef<HTMLElement | null>(null);
   
   const springConfig = { damping: 20, stiffness: 400, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
@@ -50,40 +47,17 @@ export function CustomCursor() {
   const magneticSpringConfig = { damping: 15, stiffness: 200, mass: 0.8 };
   const magneticXSpring = useSpring(magneticX, magneticSpringConfig);
   const magneticYSpring = useSpring(magneticY, magneticSpringConfig);
+  const cursorRenderX = useTransform([cursorXSpring, magneticXSpring], (values) => {
+    const [x = 0, offset = 0] = values as number[];
+    return x + offset;
+  });
+  const cursorRenderY = useTransform([cursorYSpring, magneticYSpring], (values) => {
+    const [y = 0, offset = 0] = values as number[];
+    return y + offset;
+  });
 
   const prefersReducedMotion = typeof window !== "undefined" && 
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const addTrailPoint = useCallback((x: number, y: number) => {
-    const now = Date.now();
-    if (now - lastTrailTimeRef.current < 25) return;
-    lastTrailTimeRef.current = now;
-
-    const dx = x - lastMousePosRef.current.x;
-    const dy = y - lastMousePosRef.current.y;
-    const velocity = Math.sqrt(dx * dx + dy * dy);
-    
-    lastMousePosRef.current = { x, y };
-
-    const id = trailIdRef.current++;
-    const scale = Math.min(1 + velocity * 0.01, 1.5);
-    
-    setTrail(prev => {
-      const newTrail = [...prev, { 
-        id, 
-        x, 
-        y, 
-        opacity: 0.6, 
-        scale,
-        timestamp: now 
-      }];
-      return newTrail.slice(-12);
-    });
-
-    setTimeout(() => {
-      setTrail(prev => prev.filter(p => p.id !== id));
-    }, 600);
-  }, []);
 
   const getHoverType = useCallback((element: Element): "default" | "link" | "button" | "image" | "text" | "input" | "video" => {
     const tagName = element.tagName.toLowerCase();
@@ -129,17 +103,28 @@ export function CustomCursor() {
   useEffect(() => {
     if (prefersReducedMotion || isMobile) return;
 
+    let rafId: number;
+    let lastX = 0;
+    let lastY = 0;
+
     const handleMouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
-      
-      if (magneticTargetRef.current && state.isMagnetic) {
-        handleMagneticEffect(e, magneticTargetRef.current);
+      lastX = e.clientX;
+      lastY = e.clientY;
+
+      if (!hasPointerPositionRef.current) {
+        hasPointerPositionRef.current = true;
+        setState((prev) => ({ ...prev, isVisible: true }));
       }
       
-      if (state.isVisible && !state.isMagnetic) {
-        addTrailPoint(e.clientX, e.clientY);
-      }
+      if (rafId) cancelAnimationFrame(rafId);
+      
+      rafId = requestAnimationFrame(() => {
+        cursorX.set(lastX);
+        cursorY.set(lastY);
+        if (magneticTargetRef.current) {
+          handleMagneticEffect(e, magneticTargetRef.current);
+        }
+      });
     };
 
     const handleMouseDown = () => {
@@ -150,17 +135,24 @@ export function CustomCursor() {
       setState(prev => ({ ...prev, isClicking: false }));
     };
 
-    const handleMouseEnter = () => {
-      setState(prev => ({ ...prev, isVisible: true }));
-    };
-
     const handleMouseLeave = () => {
-      setState(prev => ({ ...prev, isVisible: false, isMagnetic: false }));
-      setTrail([]);
+      hasPointerPositionRef.current = false;
+      magneticTargetRef.current = null;
+      magneticX.set(0);
+      magneticY.set(0);
+      setState(prev => ({
+        ...prev,
+        isVisible: false,
+        isMagnetic: false,
+        isHovering: false,
+        hoverType: "default",
+      }));
     };
 
-    const handleElementHover = (e: MouseEvent) => {
-      const target = e.target as Element;
+    const interactiveSelector =
+      "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover], [data-magnetic], .magnetic";
+
+    const handleElementHover = (target: Element) => {
       const hoverType = getHoverType(target);
       const isMagnetic = isMagneticElement(target);
       
@@ -188,72 +180,77 @@ export function CustomCursor() {
       }));
     };
 
+    const handlePointerOver = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      if (!target) return;
+      const interactiveTarget = target.closest(interactiveSelector);
+      if (!interactiveTarget) return;
+      handleElementHover(interactiveTarget);
+    };
+
+    const handlePointerOut = (e: MouseEvent) => {
+      const target = e.target as Element | null;
+      if (!target) return;
+      const interactiveTarget = target.closest(interactiveSelector);
+      if (!interactiveTarget) return;
+
+      const relatedTarget = e.relatedTarget as Node | null;
+      if (relatedTarget && interactiveTarget.contains(relatedTarget)) {
+        return;
+      }
+
+      handleElementLeave();
+    };
+
     window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    document.addEventListener("mouseenter", handleMouseEnter);
     document.addEventListener("mouseleave", handleMouseLeave);
     document.addEventListener("mousedown", handleMouseDown, { passive: true });
     document.addEventListener("mouseup", handleMouseUp, { passive: true });
-
-    const addInteractiveListeners = () => {
-      const interactiveElements = document.querySelectorAll(
-        "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover], [data-magnetic], .magnetic"
-      );
-      interactiveElements.forEach((el) => {
-        el.addEventListener("mouseenter", handleElementHover);
-        el.addEventListener("mouseleave", handleElementLeave);
-      });
-    };
-
-    addInteractiveListeners();
-
-    const observer = new MutationObserver(() => {
-      addInteractiveListeners();
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-    });
+    document.addEventListener("mouseover", handlePointerOver, { passive: true });
+    document.addEventListener("mouseout", handlePointerOut, { passive: true });
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseenter", handleMouseEnter);
       document.removeEventListener("mouseleave", handleMouseLeave);
       document.removeEventListener("mousedown", handleMouseDown);
       document.removeEventListener("mouseup", handleMouseUp);
-      observer.disconnect();
-      
-      const interactiveElements = document.querySelectorAll(
-        "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover], [data-magnetic], .magnetic"
-      );
-      interactiveElements.forEach((el) => {
-        el.removeEventListener("mouseenter", handleElementHover);
-        el.removeEventListener("mouseleave", handleElementLeave);
-      });
+      document.removeEventListener("mouseover", handlePointerOver);
+      document.removeEventListener("mouseout", handlePointerOut);
     };
-  }, [cursorX, cursorY, state.isVisible, state.isMagnetic, addTrailPoint, getHoverType, isMagneticElement, handleMagneticEffect, magneticX, magneticY, prefersReducedMotion, isMobile]);
+  }, [
+    cursorX,
+    cursorY,
+    getHoverType,
+    isMagneticElement,
+    handleMagneticEffect,
+    magneticX,
+    magneticY,
+    prefersReducedMotion,
+    isMobile,
+  ]);
 
   if (prefersReducedMotion || isMobile) return null;
 
-  // Get cursor size based on hover type
-  const getCursorSize = () => {
+  // Keep a fixed base size and animate scale to avoid layout instability.
+  const getCursorScale = () => {
     if (state.isClicking && state.isHovering) {
-      return { width: 24, height: 24 };
+      return { x: 0.8, y: 0.8 };
     }
     
     switch (state.hoverType) {
       case "link":
       case "button":
-        return { width: 48, height: 48 };
+        return { x: 1.5, y: 1.5 };
       case "image":
-        return { width: 56, height: 56 };
+        return { x: 1.75, y: 1.75 };
       case "video":
-        return { width: 64, height: 64 };
+        return { x: 2, y: 2 };
       case "text":
       case "input":
-        return { width: 4, height: 24 };
+        return { x: 0.14, y: 0.75 };
       default:
-        return { width: 32, height: 32 };
+        return { x: 1, y: 1 };
     }
   };
 
@@ -275,68 +272,33 @@ export function CustomCursor() {
     return "transparent";
   };
 
+  const cursorScale = getCursorScale();
+
   if (prefersReducedMotion) {
     return null;
   }
 
   return (
     <>
-      {/* Gradient Trail Effect */}
-      <AnimatePresence>
-        {trail.map((point, index) => {
-          // Calculate gradient opacity based on position in trail
-          const gradientOpacity = (index / trail.length) * 0.5;
-          
-          return (
-            <motion.div
-              key={point.id}
-              className="fixed pointer-events-none z-[9998] hidden md:block"
-              initial={{ opacity: 0.6, scale: point.scale }}
-              animate={{ opacity: 0, scale: 0.3 }}
-              exit={{ opacity: 0, scale: 0 }}
-              transition={{ duration: 0.6, ease: "easeOut" }}
-              style={{
-                left: point.x,
-                top: point.y,
-                width: 10 + index,
-                height: 10 + index,
-                transform: "translate(-50%, -50%)",
-                contain: "layout style paint",
-                willChange: "transform, opacity",
-              }}
-            >
-              {/* Gradient circle */}
-              <div 
-                className="w-full h-full rounded-full"
-                style={{
-                  background: `radial-gradient(circle, 
-                    hsla(45, 70%, 55%, ${gradientOpacity}) 0%, 
-                    hsla(40, 60%, 50%, ${gradientOpacity * 0.5}) 50%, 
-                    transparent 100%)`,
-                }}
-              />
-            </motion.div>
-          );
-        })}
-      </AnimatePresence>
-      
       {/* Main cursor ring */}
       <motion.div
         ref={cursorRef}
         className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center"
         style={{
-          x: state.isMagnetic ? magneticXSpring : cursorXSpring,
-          y: state.isMagnetic ? magneticYSpring : cursorYSpring,
+          x: cursorRenderX,
+          y: cursorRenderY,
           translateX: "-50%",
           translateY: "-50%",
           border: "2px solid var(--primary)",
           backgroundColor: getCursorColor(),
           opacity: state.isVisible ? 1 : 0,
-          width: getCursorSize().width,
-          height: getCursorSize().height,
+          width: 32,
+          height: 32,
+          scaleX: cursorScale.x,
+          scaleY: cursorScale.y,
           borderRadius: getCursorRadius(),
-          contain: "layout style paint",
-          willChange: "transform, opacity, width, height",
+          contain: "paint",
+          willChange: "transform, opacity",
           transition: "opacity 0.2s ease, background-color 0.15s ease, border-color 0.15s ease",
         }}
       >
@@ -435,9 +397,9 @@ export function CustomCursor() {
           backgroundColor: state.isClicking ? "transparent" : "var(--primary)",
           opacity: state.isVisible ? (state.isClicking ? 0 : 1) : 0,
           scale: state.isClicking ? 2 : 1,
-          transition: "opacity 0.2s ease, background-color 0.15s ease, transform 0.15s ease",
+          transition: "opacity 0.2s ease, background-color 0.15s ease",
           willChange: "transform",
-          contain: "layout style",
+          contain: "paint",
         }}
       />
 
@@ -445,26 +407,26 @@ export function CustomCursor() {
       <AnimatePresence>
         {state.isClicking && state.isHovering && (
           <motion.div
-            className="fixed rounded-full pointer-events-none z-[9997] hidden md:block"
+            className="fixed top-0 left-0 w-5 h-5 rounded-full pointer-events-none z-[9997] hidden md:block"
             initial={{ 
-              width: 20, 
-              height: 20, 
               opacity: 0.5,
-              x: cursorX.get() - 10,
-              y: cursorY.get() - 10,
+              scale: 0.7,
+              x: cursorX.get(),
+              y: cursorY.get(),
             }}
             animate={{ 
-              width: 60, 
-              height: 60, 
               opacity: 0,
-              x: cursorX.get() - 30,
-              y: cursorY.get() - 30,
+              scale: 2.6,
+              x: cursorX.get(),
+              y: cursorY.get(),
             }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
             style={{
+              translateX: "-50%",
+              translateY: "-50%",
               border: "2px solid var(--primary)",
-              contain: "layout style",
+              contain: "paint",
             }}
           />
         )}

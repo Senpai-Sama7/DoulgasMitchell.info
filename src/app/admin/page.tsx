@@ -1,7 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, useTransition } from "react";
 import { motion, AnimatePresence, Reorder } from "framer-motion";
+import {
+  startAuthentication,
+  startRegistration,
+  type AuthenticationResponseJSON,
+  type RegistrationResponseJSON,
+} from "@simplewebauthn/browser";
 import {
   Lock,
   LogOut,
@@ -56,6 +62,7 @@ import {
   Heading1,
   Heading2,
   EyeOff,
+  Fingerprint,
 } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { cn } from "@/lib/utils";
@@ -107,6 +114,23 @@ interface ActivityLog {
 
 type Tab = "gallery" | "journal" | "settings" | "activity" | "analytics" | "export";
 
+function normalizeApiItems<T>(data: unknown): T[] {
+  if (Array.isArray(data)) {
+    return data as T[];
+  }
+
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "items" in data &&
+    Array.isArray((data as { items?: unknown }).items)
+  ) {
+    return (data as { items: T[] }).items;
+  }
+
+  return [];
+}
+
 // Series options
 const seriesOptions = [
   { value: "recent-post", label: "Recent Post" },
@@ -129,6 +153,48 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [isPasskeySupported, setIsPasskeySupported] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const checkSupport = async () => {
+      if (
+        typeof window === "undefined" ||
+        typeof window.PublicKeyCredential === "undefined"
+      ) {
+        return;
+      }
+
+      if (
+        typeof window.PublicKeyCredential
+          .isUserVerifyingPlatformAuthenticatorAvailable !== "function"
+      ) {
+        if (!cancelled) {
+          setIsPasskeySupported(true);
+        }
+        return;
+      }
+
+      try {
+        const available = await window.PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+        if (!cancelled) {
+          setIsPasskeySupported(available);
+        }
+      } catch {
+        if (!cancelled) {
+          setIsPasskeySupported(false);
+        }
+      }
+    };
+
+    checkSupport();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,6 +222,61 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
     }
   };
 
+  const handlePasskeyLogin = async () => {
+    setIsPasskeyLoading(true);
+    setError("");
+
+    try {
+      const optionsRes = await fetch("/api/admin/passkey/auth/options", {
+        method: "POST",
+      });
+      const optionsData = await optionsRes.json();
+
+      if (!optionsRes.ok || !optionsData.success || !optionsData.data?.options) {
+        const errorMessage =
+          typeof optionsData?.error === "string" ? optionsData.error : "";
+        setError(
+          errorMessage === "Internal server error"
+            ? "Passkey login is currently unavailable. Use your password."
+            : errorMessage || "Passkey login is not available"
+        );
+        return;
+      }
+
+      const response: AuthenticationResponseJSON = await startAuthentication({
+        optionsJSON: optionsData.data.options,
+      });
+
+      const verifyRes = await fetch("/api/admin/passkey/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (verifyRes.ok && verifyData.success) {
+        onLogin();
+        return;
+      }
+
+      const verifyError = typeof verifyData?.error === "string" ? verifyData.error : "";
+      setError(
+        verifyError === "Internal server error"
+          ? "Passkey authentication failed."
+          : verifyError || "Passkey authentication failed"
+      );
+    } catch (error) {
+      if (error instanceof Error && error.name === "NotAllowedError") {
+        setError("Passkey request was cancelled");
+        return;
+      }
+
+      setError("Passkey authentication failed");
+    } finally {
+      setIsPasskeyLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <motion.div
@@ -171,7 +292,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
 
         <h1 className="font-serif text-2xl text-center mb-2">Admin Portal</h1>
         <p className="text-sm text-muted-foreground text-center mb-6">
-          Enter your password to access the admin area
+          Sign in with password or passkey biometrics
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -183,6 +304,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               placeholder="Password"
               className="form-input w-full"
               autoFocus
+              aria-label="Admin password"
             />
           </div>
 
@@ -199,7 +321,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isPasskeyLoading}
             className="btn-premium w-full flex items-center justify-center gap-2"
           >
             {isLoading ? (
@@ -218,6 +340,27 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
               </>
             )}
           </button>
+
+          {isPasskeySupported && (
+            <button
+              type="button"
+              onClick={handlePasskeyLogin}
+              disabled={isLoading || isPasskeyLoading}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background hover:bg-accent transition-colors disabled:opacity-60"
+            >
+              {isPasskeyLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Verifying Passkey...
+                </>
+              ) : (
+                <>
+                  <Fingerprint className="w-4 h-4" />
+                  Sign in with Face ID / Passkey
+                </>
+              )}
+            </button>
+          )}
         </form>
 
         <p className="text-xs text-muted-foreground text-center mt-6">
@@ -269,6 +412,15 @@ function DropZone({
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
       onClick={() => inputRef.current?.click()}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+      aria-label={label}
     >
       <input
         ref={inputRef}
@@ -316,12 +468,16 @@ function ImagePreview({
           <button
             onClick={() => setRotation((r) => r - 90)}
             className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+            type="button"
+            aria-label="Rotate preview image"
           >
             <RotateCcw className="w-4 h-4 text-white" />
           </button>
           <button
             onClick={() => setZoom((z) => Math.min(z + 0.1, 2))}
             className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+            type="button"
+            aria-label="Zoom preview image"
           >
             <ZoomIn className="w-4 h-4 text-white" />
           </button>
@@ -329,6 +485,8 @@ function ImagePreview({
             <button
               onClick={onCrop}
               className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+              type="button"
+              aria-label="Crop preview image"
             >
               <Crop className="w-4 h-4 text-white" />
             </button>
@@ -336,6 +494,8 @@ function ImagePreview({
           <button
             onClick={onRemove}
             className="p-2 rounded-lg bg-destructive/80 hover:bg-destructive transition-colors"
+            type="button"
+            aria-label="Remove preview image"
           >
             <X className="w-4 h-4 text-white" />
           </button>
@@ -405,6 +565,8 @@ function MarkdownEditor({
             onClick={() => insertText(tool.before, tool.after)}
             className="p-2 rounded-lg hover:bg-accent transition-colors"
             title={tool.title}
+            type="button"
+            aria-label={tool.title}
           >
             <tool.icon className="w-4 h-4" />
           </button>
@@ -433,9 +595,9 @@ function MarkdownPreview({ content }: { content: string }) {
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
       // Headers
-      .replace(/^### (.*$)/gm, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-serif font-semibold mt-4 mb-2">$1</h2>')
-      .replace(/^# (.*$)/gm, '<h1 class="text-2xl font-serif font-bold mt-4 mb-3">$1</h1>')
+      .replace(/^### (.*$)/gm, '<h4 class="text-lg font-semibold mt-4 mb-2">$1</h4>')
+      .replace(/^## (.*$)/gm, '<h3 class="text-xl font-serif font-semibold mt-4 mb-2">$1</h3>')
+      .replace(/^# (.*$)/gm, '<h2 class="text-2xl font-serif font-bold mt-4 mb-3">$1</h2>')
       // Bold and italic
       .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -471,6 +633,7 @@ export default function AdminPage() {
   const [isChecking, setIsChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("gallery");
   const [isUploading, setIsUploading] = useState(false);
+  const [, startTabTransition] = useTransition();
 
   // Data states
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
@@ -493,13 +656,19 @@ export default function AdminPage() {
   const [editingImage, setEditingImage] = useState<GalleryImage | null>(null);
   const [editingEntry, setEditingEntry] = useState<JournalEntry | null>(null);
   const [journalPreview, setJournalPreview] = useState(false);
+  const [isPasskeyRegistering, setIsPasskeyRegistering] = useState(false);
+  const [passkeyStatus, setPasskeyStatus] = useState({
+    hasPasskey: false,
+    passkeyCount: 0,
+  });
+  const [passkeyMessage, setPasskeyMessage] = useState("");
 
   // Form states
   const [imageForm, setImageForm] = useState({
     src: "",
     alt: "",
     caption: "",
-    series: "recent-post" as const,
+    series: "recent-post" as GalleryImage["series"],
     width: 1344,
     height: 768,
     date: new Date().toISOString().split("T")[0],
@@ -539,6 +708,7 @@ export default function AdminPage() {
       fetchJournalEntries();
       fetchSettings();
       fetchActivityLog();
+      fetchPasskeyStatus();
     }
   }, [isAuthenticated]);
 
@@ -548,7 +718,8 @@ export default function AdminPage() {
       const res = await fetch("/api/gallery");
       const data = await res.json();
       if (data.success) {
-        setGalleryImages(data.data);
+        const items = normalizeApiItems<GalleryImage>(data.data);
+        setGalleryImages(items);
       }
     } catch (error) {
       console.error("Error fetching gallery images:", error);
@@ -560,7 +731,31 @@ export default function AdminPage() {
       const res = await fetch("/api/journal");
       const data = await res.json();
       if (data.success) {
-        setJournalEntries(data.data);
+        const items = normalizeApiItems<JournalEntry>(data.data).map((entry) => {
+          const safeTags = Array.isArray(entry.tags)
+            ? entry.tags.filter((tag): tag is string => typeof tag === "string")
+            : [];
+
+          return {
+            ...entry,
+            title: typeof entry.title === "string" ? entry.title : "Untitled entry",
+            content: typeof entry.content === "string" ? entry.content : "",
+            date:
+              typeof entry.date === "string" && entry.date.length > 0
+                ? entry.date
+                : new Date().toISOString().split("T")[0],
+            image:
+              typeof entry.image === "string" && entry.image.length > 0
+                ? entry.image
+                : "/images/journal/jr-1.png",
+            imageAlt:
+              typeof entry.imageAlt === "string" && entry.imageAlt.length > 0
+                ? entry.imageAlt
+                : "Journal image",
+            tags: safeTags,
+          };
+        });
+        setJournalEntries(items);
       }
     } catch (error) {
       console.error("Error fetching journal entries:", error);
@@ -584,10 +779,96 @@ export default function AdminPage() {
       const res = await fetch("/api/activity?limit=100");
       const data = await res.json();
       if (data.success) {
-        setActivityLog(data.data);
+        const items = normalizeApiItems<ActivityLog>(data.data);
+        setActivityLog(items);
       }
     } catch (error) {
       console.error("Error fetching activity log:", error);
+    }
+  };
+
+  const fetchPasskeyStatus = async () => {
+    try {
+      const res = await fetch("/api/admin/passkey/status");
+      const data = await res.json();
+
+      if (res.ok && data.success && data.data) {
+        setPasskeyStatus({
+          hasPasskey: Boolean(data.data.hasPasskey),
+          passkeyCount:
+            typeof data.data.passkeyCount === "number" ? data.data.passkeyCount : 0,
+        });
+        setPasskeyMessage("");
+        return;
+      }
+
+      setPasskeyStatus({ hasPasskey: false, passkeyCount: 0 });
+      if (typeof data?.error === "string") {
+        setPasskeyMessage(
+          data.error === "Internal server error"
+            ? "Passkey status is currently unavailable."
+            : data.error
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching passkey status:", error);
+      setPasskeyStatus({ hasPasskey: false, passkeyCount: 0 });
+    }
+  };
+
+  const registerPasskey = async () => {
+    setIsPasskeyRegistering(true);
+    setPasskeyMessage("");
+
+    try {
+      const optionsRes = await fetch("/api/admin/passkey/register/options", {
+        method: "POST",
+      });
+      const optionsData = await optionsRes.json();
+
+      if (!optionsRes.ok || !optionsData.success || !optionsData.data?.options) {
+        const errorMessage =
+          typeof optionsData?.error === "string" ? optionsData.error : "";
+        setPasskeyMessage(
+          errorMessage === "Internal server error"
+            ? "Passkey registration is currently unavailable."
+            : errorMessage || "Unable to start passkey registration"
+        );
+        return;
+      }
+
+      const response: RegistrationResponseJSON = await startRegistration({
+        optionsJSON: optionsData.data.options,
+      });
+
+      const verifyRes = await fetch("/api/admin/passkey/register/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ response }),
+      });
+      const verifyData = await verifyRes.json();
+
+      if (!verifyRes.ok || !verifyData.success) {
+        const verifyError = typeof verifyData?.error === "string" ? verifyData.error : "";
+        setPasskeyMessage(
+          verifyError === "Internal server error"
+            ? "Passkey registration failed."
+            : verifyError || "Passkey registration failed"
+        );
+        return;
+      }
+
+      setPasskeyMessage("Passkey registered successfully.");
+      await fetchPasskeyStatus();
+      await fetchActivityLog();
+    } catch (error) {
+      if (error instanceof Error && error.name === "NotAllowedError") {
+        setPasskeyMessage("Passkey registration was cancelled.");
+      } else {
+        setPasskeyMessage("Passkey registration failed.");
+      }
+    } finally {
+      setIsPasskeyRegistering(false);
     }
   };
 
@@ -894,11 +1175,35 @@ export default function AdminPage() {
     const query = journalSearch.toLowerCase();
     return journalEntries.filter(
       (entry) =>
-        entry.title.toLowerCase().includes(query) ||
-        entry.content.toLowerCase().includes(query) ||
-        entry.tags.some((tag) => tag.toLowerCase().includes(query))
+        (typeof entry.title === "string" ? entry.title : "").toLowerCase().includes(query) ||
+        (typeof entry.content === "string" ? entry.content : "")
+          .toLowerCase()
+          .includes(query) ||
+        (Array.isArray(entry.tags) ? entry.tags : []).some((tag) =>
+          (typeof tag === "string" ? tag : "").toLowerCase().includes(query)
+        )
     );
   }, [journalEntries, journalSearch]);
+
+  const gallerySeriesCounts = useMemo(() => {
+    const counts: Record<GalleryImage["series"], number> = {
+      "recent-post": 0,
+      "tech-deck": 0,
+      project: 0,
+    };
+
+    for (const image of galleryImages) {
+      counts[image.series] += 1;
+    }
+
+    return counts;
+  }, [galleryImages]);
+
+  const journalTagCount = useMemo(() => {
+    return new Set(
+      journalEntries.flatMap((entry) => (Array.isArray(entry.tags) ? entry.tags : []))
+    ).size;
+  }, [journalEntries]);
 
   // Loading state
   if (isChecking) {
@@ -935,6 +1240,8 @@ export default function AdminPage() {
           <button
             onClick={handleLogout}
             className="p-2 rounded-xl glass-card hover:bg-destructive/10 hover:text-destructive transition-colors"
+            type="button"
+            aria-label="Log out from admin portal"
           >
             <LogOut className="w-5 h-5" />
           </button>
@@ -944,7 +1251,7 @@ export default function AdminPage() {
         <div className="flex flex-wrap gap-2 mb-6 p-1 rounded-xl bg-accent/30">
           {[
             { key: "gallery", label: "Gallery", icon: ImageIcon },
-            { key: "journal", label: "Journal", icon: FileText },
+            { key: "journal", label: "Library", icon: FileText },
             { key: "settings", label: "Settings", icon: Settings },
             { key: "activity", label: "Activity", icon: Activity },
             { key: "analytics", label: "Analytics", icon: BarChart3 },
@@ -952,13 +1259,16 @@ export default function AdminPage() {
           ].map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key as Tab)}
+              onClick={() => {
+                startTabTransition(() => setActiveTab(tab.key as Tab));
+              }}
               className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300",
+                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
                 activeTab === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-accent"
               )}
+              type="button"
             >
               <tab.icon className="w-4 h-4" />
               {tab.label}
@@ -977,6 +1287,8 @@ export default function AdminPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-4"
             >
+              <h2 className="font-serif text-xl">Gallery Library</h2>
+
               {/* Gallery Header */}
               <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                 <div className="flex flex-wrap gap-2">
@@ -988,6 +1300,7 @@ export default function AdminPage() {
                         ? "bg-primary text-primary-foreground"
                         : "bg-accent hover:bg-accent/80"
                     )}
+                    type="button"
                   >
                     All ({galleryImages.length})
                   </button>
@@ -1001,8 +1314,9 @@ export default function AdminPage() {
                           ? "bg-primary text-primary-foreground"
                           : "bg-accent hover:bg-accent/80"
                       )}
+                      type="button"
                     >
-                      {series.label} ({galleryImages.filter((i) => i.series === series.value).length})
+                      {series.label} ({gallerySeriesCounts[series.value]})
                     </button>
                   ))}
                 </div>
@@ -1016,11 +1330,13 @@ export default function AdminPage() {
                       value={gallerySearch}
                       onChange={(e) => setGallerySearch(e.target.value)}
                       className="w-full pl-10 pr-4 py-2 rounded-xl bg-background border border-border text-sm"
+                      aria-label="Search gallery images"
                     />
                   </div>
                   <button
                     onClick={() => setShowGalleryModal(true)}
                     className="btn-premium flex items-center gap-2"
+                    type="button"
                   >
                     <Plus className="w-4 h-4" />
                     Add
@@ -1058,12 +1374,15 @@ export default function AdminPage() {
                     <button
                       onClick={batchDeleteImages}
                       className="px-3 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-sm hover:bg-destructive/90 transition-colors"
+                      type="button"
+                      aria-label="Delete selected images"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setSelectedImages([])}
                       className="px-3 py-1.5 rounded-lg bg-accent text-sm"
+                      type="button"
                     >
                       Cancel
                     </button>
@@ -1076,7 +1395,6 @@ export default function AdminPage() {
                 {filteredGalleryImages.map((image) => (
                   <motion.div
                     key={image.id}
-                    layout
                     className="group relative aspect-square rounded-xl overflow-hidden bg-accent/20 border border-border"
                   >
                     <img
@@ -1100,6 +1418,12 @@ export default function AdminPage() {
                           ? "bg-primary text-primary-foreground"
                           : "bg-black/50 text-white opacity-0 group-hover:opacity-100"
                       )}
+                      type="button"
+                      aria-label={
+                        selectedImages.includes(image.id)
+                          ? `Unselect image ${image.alt}`
+                          : `Select image ${image.alt}`
+                      }
                     >
                       {selectedImages.includes(image.id) ? (
                         <CheckSquare className="w-4 h-4" />
@@ -1125,12 +1449,16 @@ export default function AdminPage() {
                           setShowGalleryModal(true);
                         }}
                         className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                        type="button"
+                        aria-label={`Edit image ${image.alt}`}
                       >
                         <Edit3 className="w-4 h-4 text-white" />
                       </button>
                       <button
                         onClick={() => deleteGalleryImage(image.id)}
                         className="p-2 rounded-lg bg-destructive/80 hover:bg-destructive transition-colors"
+                        type="button"
+                        aria-label={`Delete image ${image.alt}`}
                       >
                         <Trash2 className="w-4 h-4 text-white" />
                       </button>
@@ -1167,6 +1495,8 @@ export default function AdminPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-4"
             >
+              <h2 className="font-serif text-xl">Journal Library</h2>
+
               {/* Journal Header */}
               <div className="flex gap-3 items-center justify-between">
                 <div className="relative flex-1 max-w-md">
@@ -1177,11 +1507,13 @@ export default function AdminPage() {
                     value={journalSearch}
                     onChange={(e) => setJournalSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 rounded-xl bg-background border border-border text-sm"
+                    aria-label="Search journal entries"
                   />
                 </div>
                 <button
                   onClick={() => setShowJournalModal(true)}
                   className="btn-premium flex items-center gap-2"
+                  type="button"
                 >
                   <Plus className="w-4 h-4" />
                   New Entry
@@ -1223,17 +1555,21 @@ export default function AdminPage() {
                                 quote: entry.quote || "",
                                 image: entry.image,
                                 imageAlt: entry.imageAlt,
-                                tags: entry.tags,
+                                tags: Array.isArray(entry.tags) ? entry.tags : [],
                               });
                               setShowJournalModal(true);
                             }}
                             className="p-2 hover:bg-accent rounded-lg transition-colors"
+                            type="button"
+                            aria-label={`Edit journal entry ${entry.title}`}
                           >
                             <Edit3 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => deleteJournalEntry(entry.id)}
                             className="p-2 hover:bg-destructive/10 hover:text-destructive rounded-lg transition-colors"
+                            type="button"
+                            aria-label={`Delete journal entry ${entry.title}`}
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -1245,7 +1581,7 @@ export default function AdminPage() {
                       </p>
 
                       <div className="flex gap-1 mt-2 flex-wrap">
-                        {entry.tags.map((tag) => (
+                        {(Array.isArray(entry.tags) ? entry.tags : []).map((tag) => (
                           <span
                             key={tag}
                             className="px-2 py-0.5 rounded-full bg-accent text-xs"
@@ -1285,8 +1621,9 @@ export default function AdminPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Site Title</label>
+                    <label htmlFor="site-title" className="block text-sm font-medium mb-2">Site Title</label>
                     <input
+                      id="site-title"
                       type="text"
                       value={settings.siteTitle}
                       onChange={(e) =>
@@ -1297,10 +1634,11 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label htmlFor="site-description" className="block text-sm font-medium mb-2">
                       Site Description
                     </label>
                     <textarea
+                      id="site-description"
                       value={settings.siteDescription}
                       onChange={(e) =>
                         setSettings((p) => ({ ...p, siteDescription: e.target.value }))
@@ -1318,6 +1656,7 @@ export default function AdminPage() {
                     <div className="flex items-center gap-3">
                       <Linkedin className="w-5 h-5 text-muted-foreground" />
                       <input
+                        id="social-linkedin"
                         type="url"
                         placeholder="LinkedIn URL"
                         value={settings.linkedin || ""}
@@ -1325,12 +1664,14 @@ export default function AdminPage() {
                           setSettings((p) => ({ ...p, linkedin: e.target.value }))
                         }
                         className="form-input flex-1"
+                        aria-label="LinkedIn URL"
                       />
                     </div>
 
                     <div className="flex items-center gap-3">
                       <Github className="w-5 h-5 text-muted-foreground" />
                       <input
+                        id="social-github"
                         type="url"
                         placeholder="GitHub URL"
                         value={settings.github || ""}
@@ -1338,12 +1679,14 @@ export default function AdminPage() {
                           setSettings((p) => ({ ...p, github: e.target.value }))
                         }
                         className="form-input flex-1"
+                        aria-label="GitHub URL"
                       />
                     </div>
 
                     <div className="flex items-center gap-3">
                       <MessageCircle className="w-5 h-5 text-muted-foreground" />
                       <input
+                        id="social-telegram"
                         type="url"
                         placeholder="Telegram URL"
                         value={settings.telegram || ""}
@@ -1351,11 +1694,53 @@ export default function AdminPage() {
                           setSettings((p) => ({ ...p, telegram: e.target.value }))
                         }
                         className="form-input flex-1"
+                        aria-label="Telegram URL"
                       />
                     </div>
                   </div>
 
-                  <button onClick={saveSettings} className="btn-premium w-full">
+                  <h3 className="font-serif text-lg flex items-center gap-2 pt-4 border-t border-border">
+                    <Fingerprint className="w-4 h-4" />
+                    Biometric Login
+                  </h3>
+
+                  <div className="rounded-xl border border-border bg-background/60 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-medium">
+                          Passkeys registered: {passkeyStatus.passkeyCount}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Use Face ID / Touch ID / Windows Hello to sign in faster.
+                        </p>
+                      </div>
+                      <span
+                        className={cn(
+                          "text-xs px-2.5 py-1 rounded-full border",
+                          passkeyStatus.hasPasskey
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30"
+                            : "bg-amber-500/10 text-amber-500 border-amber-500/30"
+                        )}
+                      >
+                        {passkeyStatus.hasPasskey ? "Configured" : "Not configured"}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={registerPasskey}
+                      className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60"
+                      type="button"
+                      disabled={isPasskeyRegistering}
+                    >
+                      {isPasskeyRegistering ? "Registering passkey..." : "Register new passkey"}
+                    </button>
+
+                    {passkeyMessage && (
+                      <p className="text-xs text-muted-foreground">{passkeyMessage}</p>
+                    )}
+                  </div>
+
+                  <button onClick={saveSettings} className="btn-premium w-full" type="button">
                     <Save className="w-4 h-4 mr-2" />
                     Save Settings
                   </button>
@@ -1381,6 +1766,7 @@ export default function AdminPage() {
                 <button
                   onClick={clearActivityLog}
                   className="px-3 py-1.5 rounded-lg bg-destructive/10 text-destructive text-sm hover:bg-destructive/20 transition-colors"
+                  type="button"
                 >
                   Clear Log
                 </button>
@@ -1470,7 +1856,7 @@ export default function AdminPage() {
                 </div>
                 <div className="glass-card p-4 text-center">
                   <p className="text-3xl font-serif font-bold text-primary">
-                    {new Set(journalEntries.flatMap((e) => e.tags)).size}
+                    {journalTagCount}
                   </p>
                   <p className="text-sm text-muted-foreground">Tags Used</p>
                 </div>
@@ -1486,9 +1872,7 @@ export default function AdminPage() {
                   <h3 className="font-serif text-lg mb-4">Content by Series</h3>
                   <div className="space-y-3">
                     {seriesOptions.map((series) => {
-                      const count = galleryImages.filter(
-                        (img) => img.series === series.value
-                      ).length;
+                      const count = gallerySeriesCounts[series.value];
                       const percentage = galleryImages.length > 0 
                         ? (count / galleryImages.length) * 100 
                         : 0;
@@ -1544,7 +1928,7 @@ export default function AdminPage() {
                   Download all your blog data as a JSON file. This includes gallery images,
                   journal entries, and settings.
                 </p>
-                <button onClick={exportData} className="btn-premium w-full">
+                <button onClick={exportData} className="btn-premium w-full" type="button">
                   <Download className="w-4 h-4 mr-2" />
                   Export All Data
                 </button>
@@ -1593,6 +1977,8 @@ export default function AdminPage() {
                   <button
                     onClick={closeGalleryModal}
                     className="p-2 hover:bg-accent rounded-lg"
+                    type="button"
+                    aria-label="Close image editor"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -1621,10 +2007,11 @@ export default function AdminPage() {
 
                   {/* Form Fields */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label htmlFor="gallery-alt" className="block text-sm font-medium mb-2">
                       Alt Text
                     </label>
                     <input
+                      id="gallery-alt"
                       type="text"
                       value={imageForm.alt}
                       onChange={(e) =>
@@ -1636,10 +2023,11 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label htmlFor="gallery-caption" className="block text-sm font-medium mb-2">
                       Caption
                     </label>
                     <textarea
+                      id="gallery-caption"
                       value={imageForm.caption}
                       onChange={(e) =>
                         setImageForm((p) => ({ ...p, caption: e.target.value }))
@@ -1651,10 +2039,11 @@ export default function AdminPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">
+                      <label htmlFor="gallery-series" className="block text-sm font-medium mb-2">
                         Series
                       </label>
                       <select
+                        id="gallery-series"
                         value={imageForm.series}
                         onChange={(e) =>
                           setImageForm((p) => ({
@@ -1673,10 +2062,11 @@ export default function AdminPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">
+                      <label htmlFor="gallery-date" className="block text-sm font-medium mb-2">
                         Date
                       </label>
                       <input
+                        id="gallery-date"
                         type="date"
                         value={imageForm.date}
                         onChange={(e) =>
@@ -1691,6 +2081,7 @@ export default function AdminPage() {
                     onClick={saveGalleryImage}
                     disabled={!imageForm.src || !imageForm.alt}
                     className="btn-premium w-full disabled:opacity-50"
+                    type="button"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {editingImage ? "Update" : "Save"} Image
@@ -1729,12 +2120,16 @@ export default function AdminPage() {
                         "p-2 rounded-lg transition-colors",
                         journalPreview ? "bg-primary text-primary-foreground" : "hover:bg-accent"
                       )}
+                      type="button"
+                      aria-label={journalPreview ? "Hide markdown preview" : "Show markdown preview"}
                     >
                       {journalPreview ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                     <button
                       onClick={closeJournalModal}
                       className="p-2 hover:bg-accent rounded-lg"
+                      type="button"
+                      aria-label="Close journal editor"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -1766,10 +2161,11 @@ export default function AdminPage() {
                   {/* Form Fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium mb-2">
+                      <label htmlFor="journal-title" className="block text-sm font-medium mb-2">
                         Title
                       </label>
                       <input
+                        id="journal-title"
                         type="text"
                         value={journalForm.title}
                         onChange={(e) =>
@@ -1781,10 +2177,11 @@ export default function AdminPage() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium mb-2">
+                      <label htmlFor="journal-date" className="block text-sm font-medium mb-2">
                         Date
                       </label>
                       <input
+                        id="journal-date"
                         type="date"
                         value={journalForm.date}
                         onChange={(e) =>
@@ -1809,10 +2206,11 @@ export default function AdminPage() {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label htmlFor="journal-quote" className="block text-sm font-medium mb-2">
                       Quote (optional)
                     </label>
                     <input
+                      id="journal-quote"
                       type="text"
                       value={journalForm.quote}
                       onChange={(e) =>
@@ -1824,10 +2222,11 @@ export default function AdminPage() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">
+                    <label htmlFor="journal-tags" className="block text-sm font-medium mb-2">
                       Tags (comma separated)
                     </label>
                     <input
+                      id="journal-tags"
                       type="text"
                       value={journalForm.tags.join(", ")}
                       onChange={(e) =>
@@ -1848,6 +2247,7 @@ export default function AdminPage() {
                     onClick={saveJournalEntry}
                     disabled={!journalForm.title || !journalForm.content || !journalForm.image}
                     className="btn-premium w-full disabled:opacity-50"
+                    type="button"
                   >
                     <Save className="w-4 h-4 mr-2" />
                     {editingEntry ? "Update" : "Publish"} Entry

@@ -1,16 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useMotionValue, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { heroImage, galleryImages } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
-import { TitleVisualization } from "@/components/title-visualization";
-import { EntranceOverlay } from "@/components/entrance-overlay";
+
 
 // Typing animation component
 function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?: number; speed?: number }) {
@@ -52,46 +51,6 @@ function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?
         />
       )}
     </span>
-  );
-}
-
-// Mouse spotlight effect
-function MouseSpotlight() {
-  const spotlightX = useMotionValue(0);
-  const spotlightY = useMotionValue(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      spotlightX.set(e.clientX - rect.left);
-      spotlightY.set(e.clientY - rect.top);
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [spotlightX, spotlightY]);
-
-  return (
-    <motion.div
-      ref={containerRef}
-      className="absolute inset-0 pointer-events-none overflow-hidden"
-      style={{
-        background: `radial-gradient(circle 300px at var(--x, 50%) var(--y, 50%), rgba(217, 119, 6, 0.08), transparent)`,
-      } as React.CSSProperties}
-    >
-      <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full"
-        style={{
-          x: spotlightX,
-          y: spotlightY,
-          translateX: "-50%",
-          translateY: "-50%",
-          background: "radial-gradient(circle, rgba(217, 119, 6, 0.05) 0%, transparent 70%)",
-        }}
-      />
-    </motion.div>
   );
 }
 
@@ -159,6 +118,8 @@ function BackToTop() {
           className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full glass-card flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow group"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          type="button"
+          aria-label="Back to top"
         >
           <ArrowUp className="w-5 h-5 text-primary group-hover:-translate-y-0.5 transition-transform" />
           <span className="absolute inset-0 rounded-full bg-primary/10 animate-ping" />
@@ -186,7 +147,7 @@ function FloatingDecorations() {
   };
 
   return (
-    <>
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
       {decorations.map((dec, i) => (
         <motion.div
           key={i}
@@ -218,7 +179,7 @@ function FloatingDecorations() {
           </motion.div>
         </motion.div>
       ))}
-    </>
+    </div>
   );
 }
 
@@ -236,22 +197,14 @@ interface GalleryItemProps {
 }
 
 function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryItemProps) {
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <Link
       href="/galleries"
       className={`relative overflow-hidden rounded-lg cursor-pointer group block ${
         isLarge ? "col-span-2 row-span-2 aspect-[4/3]" : "aspect-square"
       }`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
-      <motion.div
-        animate={{ scale: isHovered ? 1.08 : 1 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="absolute inset-0"
-      >
+      <div className="absolute inset-0 transition-transform duration-500 ease-out will-change-transform group-hover:scale-[1.06]">
         <Image
           src={image.src}
           alt={image.alt}
@@ -259,18 +212,13 @@ function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryIte
           className="object-cover"
           sizes="(max-width: 768px) 50vw, 33vw"
         />
-      </motion.div>
+      </div>
 
       {/* View count badge */}
-      <motion.div
-        initial={{ opacity: 0, x: 10 }}
-        animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 10 }}
-        transition={{ duration: 0.3 }}
-        className="absolute top-2 right-2 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm"
-      >
+      <div className="absolute top-2 right-2 z-20 flex items-center gap-1 px-2 py-1 rounded-full bg-black/50 backdrop-blur-sm opacity-0 translate-x-2 transition-all duration-200 group-hover:opacity-100 group-hover:translate-x-0">
         <Eye className="w-3 h-3 text-white/80" />
         <span className="text-xs text-white/80 font-mono">{viewCount}</span>
-      </motion.div>
+      </div>
 
       {/* Popular badge */}
       {isPopular && (
@@ -286,86 +234,68 @@ function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryIte
       )}
 
       {/* Hover overlay with title */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: isHovered ? 1 : 0 }}
-        transition={{ duration: 0.3 }}
-        className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end"
-      >
-        <motion.div
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-          transition={{ duration: 0.3, delay: 0.05 }}
-          className="p-3"
-        >
-          <h4 className="text-white text-sm font-medium mb-1">{image.alt}</h4>
+      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+        <div className="p-3 translate-y-2 transition-transform duration-200 group-hover:translate-y-0">
+          <h2 className="text-white text-sm font-medium mb-1">{image.alt}</h2>
           <div className="flex items-center gap-2">
             <span className="text-xs text-white/60">View in gallery</span>
             <ArrowRight className="w-3 h-3 text-primary" />
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
 
       {/* Corner accent */}
-      <motion.div
-        initial={{ scale: 0, rotate: -45 }}
-        animate={{ scale: isHovered ? 1 : 0, rotate: isHovered ? 0 : -45 }}
-        transition={{ duration: 0.3 }}
-        className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-primary/80 flex items-center justify-center"
-      >
+      <div className="absolute bottom-2 right-2 w-6 h-6 rounded-full bg-primary/80 flex items-center justify-center scale-0 rotate-[-45deg] transition-transform duration-200 group-hover:scale-100 group-hover:rotate-0">
         <ArrowRight className="w-3 h-3 text-white" />
-      </motion.div>
+      </div>
     </Link>
   );
 }
 
 export default function HomePage() {
-  const [showContent, setShowContent] = useState(false);
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined' && localStorage.getItem("senpai-intro-seen") === "true") {
-      setShowContent(true);
-    }
-  }, []);
+  const [showContent] = useState(true);
   
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 500], [1, 1.1]);
 
-  // Get featured images for preview with mock view counts
-  const featuredImages = galleryImages.slice(0, 6).map((img, idx) => ({
-    ...img,
-    viewCount: Math.floor(Math.random() * 500) + 100,
-    isPopular: idx === 0 || idx === 2,
-  }));
+  const featuredImages = useMemo(
+    () =>
+      galleryImages.slice(0, 6).map((img, idx) => {
+        const seed = `${img.src}-${img.alt}-${idx}`;
+        let hash = 0;
+        for (let i = 0; i < seed.length; i++) {
+          hash = (hash << 5) - hash + seed.charCodeAt(i);
+          hash |= 0;
+        }
 
-  const handleIntroComplete = () => {
-    setShowContent(true);
-  };
+        return {
+          ...img,
+          viewCount: 100 + (Math.abs(hash) % 500),
+          isPopular: idx === 0 || idx === 2,
+        };
+      }),
+    []
+  );
 
   return (
     <>
-      {/* Entrance Overlay */}
-      <EntranceOverlay onComplete={handleIntroComplete} />
-
-      {/* Main Content */}
       <MainLayout>
         <main>
         {/* Hero Section */}
-        <section className="relative overflow-hidden">
+        <section className="relative overflow-visible">
           <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
             {/* Centered Title with Visualization Background */}
             <div className="relative min-h-[280px] md:min-h-[320px] lg:min-h-[360px] flex items-center justify-center mb-4 md:mb-6">
-              {/* Full-width Visualization Background */}
+              {/* Static Gradient Background */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.98 }}
                 animate={{ opacity: showContent ? 1 : 0, scale: 1 }}
                 transition={{ duration: 0.8 }}
                 className="absolute inset-0 rounded-xl overflow-hidden glass-card"
               >
-                <TitleVisualization />
-                <MouseSpotlight />
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 via-transparent to-amber-600/5" />
               </motion.div>
 
               {/* Floating Decorations */}
@@ -390,24 +320,25 @@ export default function HomePage() {
                   </span>
                 </motion.div>
 
-                <motion.div
+                <motion.h1
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
+                  className="font-serif font-bold tracking-tight"
                 >
-                  <span className="block text-5xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-white drop-shadow-lg" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+                  <span className="block text-5xl md:text-6xl lg:text-7xl text-white drop-shadow-lg" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
                     Senpai&apos;s
                   </span>
                   <motion.span
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3, duration: 0.5 }}
-                    className="block text-5xl md:text-6xl lg:text-7xl font-serif font-bold tracking-tight text-primary/90 drop-shadow-lg"
+                    className="block text-5xl md:text-6xl lg:text-7xl text-primary/90 drop-shadow-lg"
                     style={{ textShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
                   >
                     Isekai
                   </motion.span>
-                </motion.div>
+                </motion.h1>
 
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
@@ -509,6 +440,7 @@ export default function HomePage() {
 
         {/* Quick Navigation Cards */}
         <section className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+          <h2 className="sr-only">Explore Collections</h2>
           <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-3" staggerDelay={0.1}>
             <StaggerItem>
               <Link href="/galleries" className="group block h-full">
@@ -636,6 +568,7 @@ export default function HomePage() {
 
         {/* Quote & CTA Combined */}
         <section className="max-w-7xl mx-auto px-4 py-6 md:py-8">
+          <h2 className="sr-only">Quote and Contact</h2>
           <StaggerContainer className="grid grid-cols-1 md:grid-cols-2 gap-3" staggerDelay={0.15}>
             <StaggerItem>
               <div className="glass-card p-4 relative overflow-hidden group">

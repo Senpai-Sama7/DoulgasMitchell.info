@@ -48,13 +48,13 @@ export function Navigation() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
         className={cn(
-          "fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300",
+          "fixed top-3 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 w-[calc(100vw-1rem)] md:w-auto",
           isScrolled && "top-2"
         )}
       >
         <nav
           className={cn(
-            "nav-premium flex items-center gap-0.5 md:gap-1",
+            "nav-premium flex items-center justify-between md:justify-start gap-0.5 md:gap-1 w-full md:w-auto",
             isScrolled && "shadow-lg"
           )}
         >
@@ -82,7 +82,7 @@ export function Navigation() {
           {mounted && (
             <button
               onClick={toggleTheme}
-              className="ml-1 p-1.5 rounded-full hover:bg-accent transition-colors duration-300"
+              className="ml-1 p-1.5 rounded-full hover:bg-accent transition-colors duration-150"
               aria-label="Toggle theme"
             >
               <motion.div
@@ -102,17 +102,17 @@ export function Navigation() {
           {/* Admin Button */}
           <Link
             href="/admin"
-            className="ml-1 p-1.5 rounded-full hover:bg-accent transition-colors duration-300 flex items-center gap-1"
+            className="ml-1 p-1.5 rounded-full hover:bg-accent transition-colors duration-150 flex items-center gap-1"
             aria-label="Admin portal"
           >
             <Lock className="w-4 h-4" />
-            <span className="hidden md:inline text-xs">Admin</span>
+            <span className="hidden lg:inline text-xs">Admin</span>
           </Link>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-1.5 rounded-full hover:bg-accent transition-colors duration-300"
+            className="md:hidden p-1.5 rounded-full hover:bg-accent transition-colors duration-150"
             aria-label="Toggle menu"
           >
             {isMobileMenuOpen ? (

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { checkRateLimit, getClientIp } from "@/lib/security";
-import { withMiddleware, successResponse, RateLimitError } from "@/lib/middleware";
+import { withMiddleware, successResponse, RateLimitError, validateInput } from "@/lib/middleware";
 import { contactFormSchema } from "@/lib/validations";
 
 async function handleContact(request: NextRequest): Promise<NextResponse> {
