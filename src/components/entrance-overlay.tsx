@@ -35,8 +35,6 @@ interface EntranceOverlayProps {
 const TARGET  = "Senpai's Isekai";
 const GLYPHS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%?!·×";
 const GLYPH_N = GLYPHS.length;
-const LS_KEY  = "senpai-signal-seen-v2";
-
 // ── Mulberry32 — lightweight seeded PRNG ──────────────────────────────────────
 // 32-bit xorshift-multiply with strong avalanche characteristics.
 // Deterministic seed guarantees identical particle layout across replays,
@@ -350,7 +348,6 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
     }, 1960);
 
     T(() => {
-      localStorage.setItem(LS_KEY, "true");
       onComplete?.();
     }, 2260);
 
@@ -366,11 +363,6 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
       s.id = "si-global-css";
       s.textContent = GLOBAL_CSS;
       document.head.appendChild(s);
-    }
-
-    if (localStorage.getItem(LS_KEY) === "true") {
-      onComplete?.();
-      return;
     }
 
     play();

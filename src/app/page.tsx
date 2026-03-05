@@ -11,10 +11,6 @@ import { heroImage, galleryImages } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
-const INTRO_SEEN_KEY = "senpai-signal-seen-v2";
-const LEGACY_INTRO_SEEN_KEY = "senpai-signal-seen";
-
-
 // Typing animation component
 function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?: number; speed?: number }) {
   const [displayText, setDisplayText] = useState("");
@@ -271,14 +267,12 @@ export default function HomePage() {
     const params = new URLSearchParams(window.location.search);
     const introMode = params.get("intro");
 
-    if (introMode === "1" || introMode === "force" || introMode === "reset") {
-      localStorage.removeItem(INTRO_SEEN_KEY);
-      localStorage.removeItem(LEGACY_INTRO_SEEN_KEY);
-      setShowEntranceOverlay(true);
+    if (introMode === "0" || introMode === "off" || introMode === "skip") {
+      setShowEntranceOverlay(false);
       return;
     }
 
-    setShowEntranceOverlay(localStorage.getItem(INTRO_SEEN_KEY) !== "true");
+    setShowEntranceOverlay(true);
   }, []);
 
   const featuredImages = useMemo(
