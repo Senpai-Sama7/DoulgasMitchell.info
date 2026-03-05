@@ -10,6 +10,7 @@ import {
 } from '@/lib/middleware';
 import {
   getPasskeyChallengeCookieOptions,
+  getPasskeyExpectedOrigins,
   getPasskeyRPID,
   parseStoredTransports,
   PASSKEY_AUTH_CHALLENGE_COOKIE,
@@ -48,8 +49,16 @@ async function handlePasskeyAuthOptions(request: NextRequest): Promise<NextRespo
     );
   }
 
+  let rpID: string;
+  try {
+    rpID = getPasskeyRPID(request);
+    getPasskeyExpectedOrigins(request);
+  } catch {
+    throw new AuthenticationError('Passkey login is currently unavailable. Use your password.');
+  }
+
   const options = await generateAuthenticationOptions({
-    rpID: getPasskeyRPID(request),
+    rpID,
     allowCredentials: adminUser.passkeys.map((passkey) => ({
       id: passkey.credentialID,
       transports: parseStoredTransports(passkey.transports),

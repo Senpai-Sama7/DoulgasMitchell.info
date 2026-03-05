@@ -3,20 +3,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, useSpring, useMotionValue, useTransform, AnimatePresence } from "framer-motion";
 
-interface TrailPoint {
-  id: number;
-  x: number;
-  y: number;
-  opacity: number;
-  scale: number;
-  timestamp: number;
-}
-
 interface CursorState {
   isVisible: boolean;
   isHovering: boolean;
   isClicking: boolean;
-  isMagnetic: boolean;
   hoverType: "default" | "link" | "button" | "image" | "text" | "input" | "video";
 }
 
@@ -30,31 +20,17 @@ export function CustomCursor() {
     isVisible: false,
     isHovering: false,
     isClicking: false,
-    isMagnetic: false,
     hoverType: "default",
   });
   
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
-  const magneticX = useMotionValue(0);
-  const magneticY = useMotionValue(0);
-  const magneticTargetRef = useRef<HTMLElement | null>(null);
   
   const springConfig = { damping: 20, stiffness: 400, mass: 0.5 };
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
-  
-  const magneticSpringConfig = { damping: 15, stiffness: 200, mass: 0.8 };
-  const magneticXSpring = useSpring(magneticX, magneticSpringConfig);
-  const magneticYSpring = useSpring(magneticY, magneticSpringConfig);
-  const cursorRenderX = useTransform([cursorXSpring, magneticXSpring], (values) => {
-    const [x = 0, offset = 0] = values as number[];
-    return x + offset;
-  });
-  const cursorRenderY = useTransform([cursorYSpring, magneticYSpring], (values) => {
-    const [y = 0, offset = 0] = values as number[];
-    return y + offset;
-  });
+  const cursorRenderX = useTransform(cursorXSpring, (value) => value);
+  const cursorRenderY = useTransform(cursorYSpring, (value) => value);
 
   const prefersReducedMotion = typeof window !== "undefined" && 
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -74,26 +50,6 @@ export function CustomCursor() {
     
     return "default";
   }, []);
-
-  const isMagneticElement = useCallback((element: Element): boolean => {
-    return element.hasAttribute("data-magnetic") || 
-           element.classList.contains("magnetic") ||
-           element.closest("[data-magnetic]") !== null ||
-           element.closest(".magnetic") !== null;
-  }, []);
-
-  const handleMagneticEffect = useCallback((e: MouseEvent, element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    const strength = parseFloat(element.getAttribute("data-magnetic-strength") || "0.3");
-    
-    const deltaX = (e.clientX - centerX) * strength;
-    const deltaY = (e.clientY - centerY) * strength;
-    
-    magneticX.set(deltaX);
-    magneticY.set(deltaY);
-  }, [magneticX, magneticY]);
 
   useEffect(() => {
     const isAdminPage = window.location.pathname.startsWith('/admin');
@@ -123,9 +79,6 @@ export function CustomCursor() {
       rafId = requestAnimationFrame(() => {
         cursorX.set(lastX);
         cursorY.set(lastY);
-        if (magneticTargetRef.current) {
-          handleMagneticEffect(e, magneticTargetRef.current);
-        }
       });
     };
 
@@ -139,46 +92,32 @@ export function CustomCursor() {
 
     const handleMouseLeave = () => {
       hasPointerPositionRef.current = false;
-      magneticTargetRef.current = null;
-      magneticX.set(0);
-      magneticY.set(0);
       setState(prev => ({
         ...prev,
         isVisible: false,
-        isMagnetic: false,
         isHovering: false,
         hoverType: "default",
       }));
     };
 
     const interactiveSelector =
-      "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover], [data-magnetic], .magnetic";
+      "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover]";
 
     const handleElementHover = (target: Element) => {
       const hoverType = getHoverType(target);
-      const isMagnetic = isMagneticElement(target);
-      
-      if (isMagnetic && target instanceof HTMLElement) {
-        magneticTargetRef.current = target;
-      }
       
       setState(prev => ({ 
         ...prev, 
         isHovering: true, 
         hoverType,
-        isMagnetic 
       }));
     };
 
     const handleElementLeave = () => {
-      magneticTargetRef.current = null;
-      magneticX.set(0);
-      magneticY.set(0);
       setState(prev => ({ 
         ...prev, 
         isHovering: false, 
         hoverType: "default",
-        isMagnetic: false 
       }));
     };
 
@@ -224,10 +163,6 @@ export function CustomCursor() {
     cursorX,
     cursorY,
     getHoverType,
-    isMagneticElement,
-    handleMagneticEffect,
-    magneticX,
-    magneticY,
     prefersReducedMotion,
     isMobile,
   ]);
@@ -285,7 +220,7 @@ export function CustomCursor() {
       {/* Main cursor ring */}
       <motion.div
         ref={cursorRef}
-        className="fixed top-0 left-0 rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center"
+        className="custom-cursor fixed top-0 left-0 rounded-full pointer-events-none z-[9999] mix-blend-difference hidden md:flex items-center justify-center"
         style={{
           x: cursorRenderX,
           y: cursorRenderY,
@@ -390,7 +325,7 @@ export function CustomCursor() {
       {/* Cursor dot - follows instantly */}
       <motion.div
         ref={cursorDotRef}
-        className="fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[9999] hidden md:block"
+        className="custom-cursor fixed top-0 left-0 w-1.5 h-1.5 rounded-full pointer-events-none z-[9999] hidden md:block"
         style={{
           x: cursorX,
           y: cursorY,
@@ -409,7 +344,7 @@ export function CustomCursor() {
       <AnimatePresence>
         {state.isClicking && state.isHovering && (
           <motion.div
-            className="fixed top-0 left-0 w-5 h-5 rounded-full pointer-events-none z-[9997] hidden md:block"
+            className="custom-cursor fixed top-0 left-0 w-5 h-5 rounded-full pointer-events-none z-[9997] hidden md:block"
             initial={{ 
               opacity: 0.5,
               scale: 0.7,

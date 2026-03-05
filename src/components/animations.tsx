@@ -514,8 +514,13 @@ export function Magnetic({
     const rect = ref.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    x.set((e.clientX - centerX) * strength);
-    y.set((e.clientY - centerY) * strength);
+    const rawX = (e.clientX - centerX) * strength;
+    const rawY = (e.clientY - centerY) * strength;
+    const maxOffsetX = rect.width * 0.14;
+    const maxOffsetY = rect.height * 0.14;
+
+    x.set(Math.max(-maxOffsetX, Math.min(maxOffsetX, rawX)));
+    y.set(Math.max(-maxOffsetY, Math.min(maxOffsetY, rawY)));
   }, [prefersReducedMotion, disabled, x, y, strength]);
 
   const handleMouseLeave = useCallback(() => {

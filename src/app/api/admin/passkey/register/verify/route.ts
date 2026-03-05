@@ -36,6 +36,22 @@ function isRegistrationResponseJSON(value: unknown): value is RegistrationRespon
   );
 }
 
+function isRegistrationPayloadError(error: unknown): boolean {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return (
+    message.includes('attestation') ||
+    message.includes('clientdata') ||
+    message.includes('base64') ||
+    message.includes('json') ||
+    message.includes('parse') ||
+    message.includes('malformed')
+  );
+}
+
 async function getAuthenticatedAdmin(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get('admin-session')?.value;
@@ -82,68 +98,79 @@ async function handlePasskeyRegisterVerify(request: NextRequest): Promise<NextRe
   const cookieStore = await cookies();
   const expectedChallenge = cookieStore.get(PASSKEY_REGISTRATION_CHALLENGE_COOKIE)?.value;
 
-  if (!expectedChallenge) {
-    throw new AuthenticationError('Passkey challenge is missing or expired. Please try again.');
+  try {
+    if (!expectedChallenge) {
+      throw new AuthenticationError('Passkey challenge is missing or expired. Please try again.');
+    }
+
+    let verification: Awaited<ReturnType<typeof verifyRegistrationResponse>>;
+    try {
+      verification = await verifyRegistrationResponse({
+        response: registrationResponse,
+        expectedChallenge,
+        expectedOrigin: getPasskeyExpectedOrigins(request),
+        expectedRPID: getPasskeyRPID(request),
+        requireUserVerification: true,
+      });
+    } catch (error) {
+      if (isRegistrationPayloadError(error)) {
+        throw new ValidationError('Invalid passkey registration payload');
+      }
+
+      throw new AuthenticationError('Passkey registration verification failed');
+    }
+
+    if (!verification.verified || !verification.registrationInfo) {
+      throw new AuthenticationError('Passkey registration verification failed');
+    }
+
+    const credentialID = verification.registrationInfo.credential.id;
+    const publicKey = toBase64URL(verification.registrationInfo.credential.publicKey);
+    const transports = serializeTransports(registrationResponse.response.transports);
+
+    const existingCredential = await db.passkeyCredential.findUnique({
+      where: { credentialID },
+    });
+
+    if (existingCredential && existingCredential.adminUserId !== adminUser.id) {
+      throw new AuthenticationError('Passkey is already registered to a different account');
+    }
+
+    await db.passkeyCredential.upsert({
+      where: { credentialID },
+      update: {
+        adminUserId: adminUser.id,
+        publicKey,
+        counter: verification.registrationInfo.credential.counter,
+        transports,
+        deviceType: verification.registrationInfo.credentialDeviceType,
+        backedUp: verification.registrationInfo.credentialBackedUp,
+      },
+      create: {
+        adminUserId: adminUser.id,
+        credentialID,
+        publicKey,
+        counter: verification.registrationInfo.credential.counter,
+        transports,
+        deviceType: verification.registrationInfo.credentialDeviceType,
+        backedUp: verification.registrationInfo.credentialBackedUp,
+      },
+    });
+
+    await db.activityLog.create({
+      data: {
+        action: 'create',
+        resource: 'passkey',
+        resourceId: adminUser.id,
+        details: JSON.stringify({ credentialID }),
+        ipAddress,
+      },
+    });
+
+    return successResponse({ registered: true }, 'Passkey registered successfully');
+  } finally {
+    cookieStore.delete(PASSKEY_REGISTRATION_CHALLENGE_COOKIE);
   }
-
-  const verification = await verifyRegistrationResponse({
-    response: registrationResponse,
-    expectedChallenge,
-    expectedOrigin: getPasskeyExpectedOrigins(request),
-    expectedRPID: getPasskeyRPID(request),
-    requireUserVerification: true,
-  });
-
-  if (!verification.verified || !verification.registrationInfo) {
-    throw new AuthenticationError('Passkey registration verification failed');
-  }
-
-  const credentialID = verification.registrationInfo.credential.id;
-  const publicKey = toBase64URL(verification.registrationInfo.credential.publicKey);
-  const transports = serializeTransports(registrationResponse.response.transports);
-
-  const existingCredential = await db.passkeyCredential.findUnique({
-    where: { credentialID },
-  });
-
-  if (existingCredential && existingCredential.adminUserId !== adminUser.id) {
-    throw new AuthenticationError('Passkey is already registered to a different account');
-  }
-
-  await db.passkeyCredential.upsert({
-    where: { credentialID },
-    update: {
-      adminUserId: adminUser.id,
-      publicKey,
-      counter: verification.registrationInfo.credential.counter,
-      transports,
-      deviceType: verification.registrationInfo.credentialDeviceType,
-      backedUp: verification.registrationInfo.credentialBackedUp,
-    },
-    create: {
-      adminUserId: adminUser.id,
-      credentialID,
-      publicKey,
-      counter: verification.registrationInfo.credential.counter,
-      transports,
-      deviceType: verification.registrationInfo.credentialDeviceType,
-      backedUp: verification.registrationInfo.credentialBackedUp,
-    },
-  });
-
-  await db.activityLog.create({
-    data: {
-      action: 'create',
-      resource: 'passkey',
-      resourceId: adminUser.id,
-      details: JSON.stringify({ credentialID }),
-      ipAddress,
-    },
-  });
-
-  cookieStore.delete(PASSKEY_REGISTRATION_CHALLENGE_COOKIE);
-
-  return successResponse({ registered: true }, 'Passkey registered successfully');
 }
 
 export const POST = withMiddleware(handlePasskeyRegisterVerify);

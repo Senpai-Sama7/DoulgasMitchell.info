@@ -233,6 +233,7 @@
     text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scrollbar-gutter: stable both-edges;
   }
   
   body {
@@ -243,8 +244,6 @@
       radial-gradient(ellipse at 20% 0%, oklch(0.98 0.008 85) 0%, transparent 50%),
       radial-gradient(ellipse at 80% 100%, oklch(0.95 0.01 75) 0%, transparent 50%);
     min-height: 100vh;
-    /* Performance: contain layout */
-    contain: layout;
     /* Prevent horizontal scroll */
     overflow-x: hidden;
   }
@@ -1287,10 +1286,6 @@
    LOADING STATE
    ======================================== */
 @layer utilities {
-  body.is-loading {
-    overflow: hidden;
-  }
-  
   body.is-loading * {
     pointer-events: none;
   }

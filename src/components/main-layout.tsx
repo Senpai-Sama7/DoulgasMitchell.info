@@ -196,7 +196,7 @@ function MainLayoutInner({
         
         {/* Navigation with stagger animation */}
         <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0, y: -20 }}
+          initial={false}
           animate={{ opacity: 1, y: 0 }}
           transition={{ 
             duration: prefersReducedMotion ? 0.1 : 0.5, 
@@ -214,7 +214,7 @@ function MainLayoutInner({
           <motion.main
             key="main-content"
             variants={activeVariants}
-            initial="initial"
+            initial={false}
             animate="animate"
             exit="exit"
             transition={{
@@ -243,7 +243,7 @@ function MainLayoutInner({
         
         {/* Footer with entrance animation */}
         <motion.div
-          initial={prefersReducedMotion ? false : { opacity: 0 }}
+          initial={false}
           animate={{ opacity: 1 }}
           transition={{ 
             duration: prefersReducedMotion ? 0.1 : 0.5, 

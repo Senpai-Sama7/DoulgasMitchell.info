@@ -1,5 +1,7 @@
 import { db } from './db';
 
+const SETTINGS_SINGLETON_ID = 'settings-singleton';
+
 // Gallery Images Data
 export interface GalleryImage {
   id: string;
@@ -467,27 +469,32 @@ export async function getJournalEntries(filters?: {
       offset = 0,
     } = filters || {};
 
-    const where = {
-      ...(search
-        ? {
-            OR: [
-              { title: { contains: search } },
-              { content: { contains: search } },
-            ],
-          }
-        : {}),
-      ...(dateFrom ? { date: { gte: dateFrom } } : {}),
-      ...(dateTo ? { date: { lte: dateTo } } : {}),
-      ...(tag
-        ? {
-            tags: {
-              some: {
-                tag: { name: tag },
-              },
-            },
-          }
-        : {}),
-    };
+    const where: Record<string, unknown> = {};
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search } },
+        { content: { contains: search } },
+      ];
+    }
+
+    if (dateFrom || dateTo) {
+      where.date = {};
+      if (dateFrom) {
+        (where.date as Record<string, string>).gte = dateFrom;
+      }
+      if (dateTo) {
+        (where.date as Record<string, string>).lte = dateTo;
+      }
+    }
+
+    if (tag) {
+      where.tags = {
+        some: {
+          tag: { name: tag },
+        },
+      };
+    }
 
     const [dbEntries, total] = await Promise.all([
       db.journalEntry.findMany({
@@ -542,7 +549,9 @@ export async function getJournalEntries(filters?: {
  */
 export async function getSettings() {
   try {
-    const settings = await db.settings.findFirst();
+    const settings =
+      (await db.settings.findUnique({ where: { id: SETTINGS_SINGLETON_ID } })) ??
+      (await db.settings.findFirst({ orderBy: { updatedAt: 'desc' } }));
     if (settings) {
       return {
         siteTitle: settings.siteTitle,

@@ -4,6 +4,57 @@ import { validateSession } from "@/lib/security";
 import { withMiddleware, successResponse, validateInput, AuthenticationError, ValidationError } from "@/lib/middleware";
 import { importDataSchema } from "@/lib/validations";
 
+const SETTINGS_SINGLETON_ID = "settings-singleton";
+const DEFAULT_SETTINGS = {
+  siteTitle: "Senpai's Isekai",
+  siteDescription: "A personal blog exploring architecture, technology, and creative expression",
+};
+
+function isImportPayload(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  return (
+    "gallery" in value ||
+    "galleryImages" in value ||
+    "journal" in value ||
+    "journalEntries" in value ||
+    "settings" in value
+  );
+}
+
+function normalizeImportBody(rawBody: unknown): Record<string, unknown> {
+  if (typeof rawBody !== "object" || rawBody === null) {
+    return {};
+  }
+
+  const body = rawBody as Record<string, unknown>;
+  const firstData = body.data;
+  const secondData =
+    typeof firstData === "object" && firstData !== null
+      ? (firstData as Record<string, unknown>).data
+      : undefined;
+
+  if (isImportPayload(body)) {
+    return body;
+  }
+
+  if (isImportPayload(firstData)) {
+    const normalized = { ...(body as Record<string, unknown>) };
+    normalized.data = firstData;
+    return normalized;
+  }
+
+  if (isImportPayload(secondData)) {
+    const normalized = { ...(body as Record<string, unknown>) };
+    normalized.data = secondData;
+    return normalized;
+  }
+
+  return body;
+}
+
 async function authenticateRequest(request: NextRequest): Promise<void> {
   const cookieStore = await import("next/headers").then((m) => m.cookies());
   const token = (await cookieStore).get("admin-session")?.value;
@@ -21,14 +72,16 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
 async function handleExport(request: NextRequest): Promise<NextResponse> {
   await authenticateRequest(request);
 
-  const [galleryImages, journalEntries, settings] = await Promise.all([
+  const [galleryImages, journalEntries, singletonSettings, legacySettings] = await Promise.all([
     db.galleryImage.findMany({ orderBy: { order: "asc" } }),
     db.journalEntry.findMany({
       orderBy: { order: "asc" },
       include: { tags: { include: { tag: true } } },
     }),
-    db.settings.findFirst(),
+    db.settings.findUnique({ where: { id: SETTINGS_SINGLETON_ID } }),
+    db.settings.findFirst({ orderBy: { updatedAt: "desc" } }),
   ]);
+  const settings = singletonSettings ?? legacySettings;
 
   const transformedEntries = journalEntries.map((entry) => ({
     id: entry.id,
@@ -51,8 +104,7 @@ async function handleExport(request: NextRequest): Promise<NextResponse> {
       galleryImages,
       journalEntries: transformedEntries,
       settings: settings || {
-        siteTitle: "Senpai's Isekai",
-        siteDescription: "A personal blog exploring architecture, technology, and creative expression",
+        ...DEFAULT_SETTINGS,
       },
     },
   };
@@ -75,7 +127,7 @@ async function handleImport(request: NextRequest): Promise<NextResponse> {
   await authenticateRequest(request);
 
   const body = await request.json();
-  const bodyRecord = typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
+  const bodyRecord = normalizeImportBody(body);
   const parsed = validateInput(importDataSchema, {
     ...bodyRecord,
     mode: typeof bodyRecord.mode === "string" ? bodyRecord.mode : "merge",
@@ -140,27 +192,37 @@ async function handleImport(request: NextRequest): Promise<NextResponse> {
         results.journal.created++;
       }
 
-      if (tags && Array.isArray(tags)) {
-        for (const tagName of tags) {
-          let tag = await tx.tag.findUnique({ where: { name: tagName } });
-          if (!tag) {
-            tag = await tx.tag.create({ data: { name: tagName } });
-          }
+      const uniqueTags = [...new Set(tags)];
+      if (uniqueTags.length > 0) {
+        const upsertedTags = await Promise.all(
+          uniqueTags.map((tagName) =>
+            tx.tag.upsert({
+              where: { name: tagName },
+              update: {},
+              create: { name: tagName },
+            })
+          )
+        );
 
-          await tx.journalTag.create({
-            data: { journalEntryId: newEntry.id, tagId: tag.id },
-          });
-        }
+        await tx.journalTag.createMany({
+          data: upsertedTags.map((tag) => ({
+            journalEntryId: newEntry.id,
+            tagId: tag.id,
+          })),
+          skipDuplicates: true,
+        });
       }
     }
 
     if (importSettings) {
-      const existing = await tx.settings.findFirst();
-      if (existing) {
-        await tx.settings.update({ where: { id: existing.id }, data: importSettings });
-      } else {
-        await tx.settings.create({ data: importSettings });
-      }
+      await tx.settings.upsert({
+        where: { id: SETTINGS_SINGLETON_ID },
+        update: importSettings,
+        create: {
+          id: SETTINGS_SINGLETON_ID,
+          ...importSettings,
+        },
+      });
       results.settings = true;
     }
 

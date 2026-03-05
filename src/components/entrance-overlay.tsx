@@ -1,156 +1,418 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-<<<<<<< HEAD
+import { useEffect, useRef, useCallback } from "react";
 
-/**
- * CinematicEntrance
- * ─────────────────────────────────────────────────────────────────────────────
- * A ~2 s cinematic video-intro overlay for douglasmitchell.info
- *
- * Timeline (ms):
- *   0        → black frame
- *   60       → letterbox bars snap in
- *   200      → "D·M" monogram fades + scales in
- *   480      → lens-sweep light streak crosses left→right
- *   680      → "DOUGLAS MITCHELL" slide-up reveals
- *   1 050    → sub-tagline fades in
- *   1 500    → hold
- *   1 700    → full-frame white flash (simulates film cut)
- *   1 900    → overlay fades to transparent → onComplete fires
- *
- * No external dependencies beyond React.
- * Drop this into your Next.js project and swap out the existing EntranceOverlay.
- */
-
-const TOTAL_MS = 2000;
-
-// ─── Keyframe injection ──────────────────────────────────────────────────────
-const CSS = `
-  @keyframes ci-bar-top {
-    from { transform: translateY(-100%); }
-    to   { transform: translateY(0); }
-  }
-  @keyframes ci-bar-bot {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
-  }
-  @keyframes ci-sweep {
-    0%   { left: -30%; opacity: 0; }
-    10%  { opacity: 1; }
-    90%  { opacity: 0.9; }
-    100% { left: 115%; opacity: 0; }
-  }
-  @keyframes ci-monogram-in {
-    0%   { opacity: 0; transform: scale(1.18); }
-    100% { opacity: 1; transform: scale(1); }
-  }
-  @keyframes ci-name-in {
-    0%   { opacity: 0; transform: translateY(22px); letter-spacing: 0.55em; }
-    100% { opacity: 1; transform: translateY(0);    letter-spacing: 0.28em; }
-  }
-  @keyframes ci-sub-in {
-    from { opacity: 0; }
-    to   { opacity: 0.55; }
-  }
-  @keyframes ci-flash {
-    0%   { opacity: 0; }
-    35%  { opacity: 1; }
-    100% { opacity: 0; }
-  }
-  @keyframes ci-fade-out {
-    from { opacity: 1; }
-    to   { opacity: 0; }
-  }
-  @keyframes ci-grain {
-    0%,100% { transform: translate(0,0); }
-    10%     { transform: translate(-2%,-3%); }
-    20%     { transform: translate(3%,1%); }
-    30%     { transform: translate(-1%,3%); }
-    40%     { transform: translate(2%,-1%); }
-    50%     { transform: translate(-3%,2%); }
-    60%     { transform: translate(1%,-2%); }
-    70%     { transform: translate(-2%,1%); }
-    80%     { transform: translate(3%,-3%); }
-    90%     { transform: translate(-1%,2%); }
-  }
-  @keyframes ci-scanline {
-    from { background-position: 0 0; }
-    to   { background-position: 0 100%; }
-  }
-  @keyframes ci-pulse-ring {
-    0%   { transform: scale(0.88); opacity: 0.7; }
-    60%  { transform: scale(1.08); opacity: 0.18; }
-    100% { transform: scale(1.2);  opacity: 0; }
-  }
-`;
-=======
-import { motion, AnimatePresence } from "framer-motion";
-
-const HOLD_MS = 2000;
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
+// ─────────────────────────────────────────────────────────────────────────────
+// EntranceOverlay — Signal / Decode
+//
+// Motion concept: a vertical scan line sweeps top→bottom, triggering a
+// per-character glyph scramble on the name as it passes. Each character
+// cycles pseudorandom glyphs and simultaneously renders chromatic aberration
+// via dual-offset text-shadow (R +X, B -X). Aberration magnitude decays as
+// resolved/total → 1 — the visual "decoding" is literally encoded in the
+// physics. When the last char locks: bloom pulse → amber rule draws → tagline
+// fades → white flash film cut → onComplete fires.
+//
+// Aesthetic contract: all tokens pulled verbatim from existing system —
+//   background  : #1c0e04 → #060402
+//   accent      : rgba(251,191,36, ·)
+//   display font: var(--font-fraunces, Georgia, serif)
+//   mono font   : var(--font-ibm-plex, monospace)
+//   handwritten : var(--font-caveat, cursive)
+//
+// Architecture: zero React state during the 2 s animation window.
+// All transitions are direct style mutations on stable DOM refs so the
+// React reconciler never touches the component after mount. This eliminates
+// reconciler overhead on animation-critical frames and avoids the
+// animation-fill-mode/iframe sandbox pathologies of the previous iteration.
+// ─────────────────────────────────────────────────────────────────────────────
 
 interface EntranceOverlayProps {
   onComplete?: () => void;
 }
 
-<<<<<<< HEAD
-export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
-  const [phase, setPhase] = useState<"init" | "run" | "flash" | "done">("init");
-  const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+// ── Scramble constants ────────────────────────────────────────────────────────
+const TARGET  = "Senpai's Isekai";
+const GLYPHS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%?!·×";
+const GLYPH_N = GLYPHS.length;
+const LS_KEY  = "senpai-signal-seen";
 
-  const schedule = (fn: () => void, ms: number): void => {
-    const id = setTimeout(fn, ms);
-    timerRef.current.push(id);
+// ── Mulberry32 — lightweight seeded PRNG ──────────────────────────────────────
+// 32-bit xorshift-multiply with strong avalanche characteristics.
+// Deterministic seed guarantees identical particle layout across replays,
+// eliminating the visual pop that would occur if Math.random() were used
+// at spawn time. O(1) per invocation, zero external state.
+function mulberry32(seed: number): () => number {
+  let s = seed >>> 0;
+  return (): number => {
+    s  = (s + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
 
+// ── Global CSS — injected once into <head> ────────────────────────────────────
+// Keyframes live here rather than in inline style props because:
+// 1. CSS @keyframes cannot be expressed as inline styles in React
+// 2. A single <style> tag is cheaper than per-element animation strings
+// 3. The dm-grain animation must run on a pseudo-element-like div whose
+//    transform-origin is outside the box — easier to express in a class rule
+const GLOBAL_CSS = `
+  @keyframes si-sweep {
+    0%   { transform: translateY(-2px); opacity: 1; }
+    85%  { opacity: 0.5; }
+    100% { transform: translateY(105vh); opacity: 0; }
+  }
+  @keyframes si-flash {
+    0%   { opacity: 0; }
+    22%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  @keyframes si-grain {
+    0%,100%{ transform: translate(0,0); }
+    20%    { transform: translate(-2%,1.5%); }
+    40%    { transform: translate(1.5%,-2%); }
+    60%    { transform: translate(-1%,2%); }
+    80%    { transform: translate(2%,-1%); }
+  }
+  @keyframes si-pulse-ring {
+    0%   { transform: scale(0.85); opacity: 0.7; }
+    65%  { transform: scale(1.14); opacity: 0.1; }
+    100% { transform: scale(1.26); opacity: 0; }
+  }
+`;
+
+// ── Particle shape ────────────────────────────────────────────────────────────
+interface Particle {
+  x: number; y: number;
+  r: number;
+  vx: number; vy: number;
+  a: number;
+}
+
+// ── ScrambleChar state ────────────────────────────────────────────────────────
+interface ScrambleChar {
+  resolved: boolean;
+  resolveAt: number; // ms from scramble start
+  glyph: string;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
+
+  // ── DOM refs — the entire animation is driven by direct style mutations
+  const wrapperRef  = useRef<HTMLDivElement>(null);
+  const canvasRef   = useRef<HTMLCanvasElement>(null);
+  const sweepRef    = useRef<HTMLDivElement>(null);
+  const eyebrowRef  = useRef<HTMLParagraphElement>(null);
+  const nameRef     = useRef<HTMLSpanElement>(null);
+  const ruleRef     = useRef<HTMLDivElement>(null);
+  const tagRef      = useRef<HTMLParagraphElement>(null);
+  const subTagRef   = useRef<HTMLParagraphElement>(null);
+  const flashRef    = useRef<HTMLDivElement>(null);
+
+  // ── Mutable imperative state — not React state, intentionally
+  const timersRef  = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const ptxRafRef  = useRef<number>(0);
+  const sRafRef    = useRef<number>(0);
+
+  // ── Particle field ────────────────────────────────────────────────────────
+  // 55 dim amber-tinted particles drifting slowly across the dark bg.
+  // Amber tint (251,191,36) at very low opacity coheres with the accent
+  // system without competing with the name during decode.
+  const spawnParticles = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const W = canvas.width  = window.innerWidth;
+    const H = canvas.height = window.innerHeight;
+
+    const rng = mulberry32(0xF3ABCD12);
+    const particles: Particle[] = Array.from({ length: 55 }, () => ({
+      x:  rng() * W,
+      y:  rng() * H,
+      r:  rng() * 1.2 + 0.2,
+      vx: (rng() - 0.5) * 0.18,
+      vy: (rng() - 0.5) * 0.18,
+      a:  rng() * 0.08 + 0.018,
+    }));
+
+    const tick = (): void => {
+      ctx.clearRect(0, 0, W, H);
+      for (const p of particles) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+        if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, 6.2832);
+        // Amber-tinted particles — coheres with existing accent system
+        ctx.fillStyle = `rgba(251,191,36,${p.a})`;
+        ctx.fill();
+      }
+      ptxRafRef.current = requestAnimationFrame(tick);
+    };
+    ptxRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // ── Scramble engine ───────────────────────────────────────────────────────
+  // Per-character resolve schedule: linear stagger with bounded jitter
+  // (±35 ms) ensures left-to-right directionality reads clearly while
+  // feeling organic rather than mechanical.
+  //
+  // Chromatic aberration is modeled as two offset text-shadow entries:
+  //   R channel: +offset px on X axis, rgba(255,24,72,alpha)
+  //   B channel: -offset px on X axis, rgba(0,215,255,alpha)
+  // Both magnitude and alpha decay linearly with resolve ratio, so the
+  // effect self-extinguishes exactly when the last character locks in.
+  // Single DOM write per frame: one textContent + one textShadow assignment.
+  const runScramble = useCallback((
+    duration: number,
+    onDone?: () => void
+  ): void => {
+    cancelAnimationFrame(sRafRef.current);
+    const el = nameRef.current;
+    if (!el) return;
+
+    const chars = TARGET.split("");
+    const n     = chars.length;
+
+    const states: ScrambleChar[] = chars.map((c, i) => ({
+      resolved:  c === " " || c === "'",
+      resolveAt: (c === " " || c === "'")
+        ? 0
+        : (i / (n - 1)) * duration * 0.84 + (Math.random() * 70 - 35),
+      glyph: (c === " " || c === "'")
+        ? c
+        : GLYPHS[(Math.random() * GLYPH_N) | 0],
+    }));
+
+    const start = performance.now();
+
+    const tick = (now: number): void => {
+      const elapsed  = now - start;
+      let   resolved = 0;
+
+      const out = states.map((s, i): string => {
+        const c = chars[i];
+        if (c === " " || c === "'") { resolved++; return c; }
+        if (s.resolved)             { resolved++; return c; }
+        if (elapsed >= s.resolveAt) { s.resolved = true; resolved++; return c; }
+        if (Math.random() > 0.38)   s.glyph = GLYPHS[(Math.random() * GLYPH_N) | 0];
+        return s.glyph;
+      }).join("");
+
+      el.textContent = out;
+
+      // Chromatic aberration decay
+      const ratio  = resolved / n;
+      const offset = (1 - ratio) * 7;
+      const alpha  = (1 - ratio) * 0.85;
+
+      el.style.textShadow = offset > 0.3
+        ? `${offset}px 0 rgba(255,24,72,${alpha.toFixed(3)}), -${offset}px 0 rgba(0,215,255,${alpha.toFixed(3)})`
+        : "0 0 40px rgba(251,191,36,0.18)"; // amber glow once resolved
+
+      if (resolved < n) {
+        sRafRef.current = requestAnimationFrame(tick);
+      } else {
+        onDone?.();
+      }
+    };
+
+    sRafRef.current = requestAnimationFrame(tick);
+  }, []);
+
+  // ── Orchestration ─────────────────────────────────────────────────────────
+  const play = useCallback((): void => {
+    // Cancel all in-flight work
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
+    cancelAnimationFrame(sRafRef.current);
+    cancelAnimationFrame(ptxRafRef.current);
+
+    spawnParticles();
+
+    const T  = (fn: () => void, ms: number) =>
+      timersRef.current.push(setTimeout(fn, ms));
+
+    const reflow = (el: HTMLElement): void => { void el.offsetWidth; };
+
+    const css = (
+      el: HTMLElement | null,
+      props: Partial<CSSStyleDeclaration>
+    ): void => {
+      if (!el) return;
+      Object.assign(el.style, props);
+    };
+
+    // ── Synchronous hard reset — disable all transitions/animations,
+    //    snap every element to its initial invisible state before the
+    //    first scheduled timer fires.
+    const managed = [
+      wrapperRef, sweepRef, eyebrowRef,
+      nameRef, ruleRef, tagRef, subTagRef, flashRef,
+    ];
+    managed.forEach(r => {
+      if (!r.current) return;
+      r.current.style.transition = "none";
+      r.current.style.animation  = "none";
+    });
+    reflow(wrapperRef.current!);
+
+    css(wrapperRef.current,  { opacity: "1" });
+    css(sweepRef.current,    { opacity: "0", transform: "translateY(-2px)", animation: "none" });
+    css(eyebrowRef.current,  { opacity: "0" });
+    css(nameRef.current,     { opacity: "0", textShadow: "none" });
+    if (nameRef.current) nameRef.current.textContent = TARGET;
+    css(ruleRef.current,     { transform: "scaleX(0)", opacity: "0" });
+    css(tagRef.current,      { opacity: "0" });
+    css(subTagRef.current,   { opacity: "0" });
+    css(flashRef.current,    { opacity: "0", animation: "none" });
+
+    const spring = "cubic-bezier(.22,1,.36,1)";
+
+    // 45ms — eyebrow fades in
+    T(() => {
+      css(eyebrowRef.current, {
+        transition: "opacity 500ms ease",
+        opacity: "1",
+      });
+    }, 45);
+
+    // 80ms — scan sweep fires
+    T(() => {
+      const s = sweepRef.current;
+      if (!s) return;
+      css(s, { animation: "none", opacity: "1" });
+      reflow(s);
+      s.style.animation = "si-sweep 500ms cubic-bezier(.38,0,.76,1) forwards";
+    }, 80);
+
+    // 320ms — name becomes visible, scramble begins
+    // (sweep's vertical midpoint hits name region ~290ms in)
+    T(() => {
+      css(nameRef.current, { opacity: "1" });
+      runScramble(820, () => {
+        // Last char locked — bloom pulse then settle to amber glow
+        const el = nameRef.current;
+        if (!el) return;
+        el.style.transition  = "text-shadow 120ms ease-out";
+        el.style.textShadow  = "0 0 90px rgba(251,191,36,0.6)";
+        setTimeout(() => {
+          if (!el) return;
+          el.style.transition = "text-shadow 400ms ease";
+          el.style.textShadow = "0 0 40px rgba(251,191,36,0.18)";
+        }, 120);
+      });
+    }, 320);
+
+    // 1210ms — amber rule draws left→right, width matched to name
+    T(() => {
+      const w = nameRef.current?.offsetWidth ?? 0;
+      if (w > 40 && ruleRef.current) {
+        ruleRef.current.style.width = `${w}px`;
+      }
+      css(ruleRef.current, {
+        transition: `transform 440ms ${spring}, opacity 220ms ease`,
+        transform:  "scaleX(1)",
+        opacity:    "1",
+      });
+    }, 1210);
+
+    // 1360ms — tagline
+    T(() => {
+      css(tagRef.current, { transition: "opacity 380ms ease", opacity: "1" });
+    }, 1360);
+
+    // 1520ms — handwritten sub-tag (Caveat)
+    T(() => {
+      css(subTagRef.current, { transition: "opacity 380ms ease", opacity: "1" });
+    }, 1520);
+
+    // 1760ms — white flash (film cut)
+    T(() => {
+      const f = flashRef.current;
+      if (!f) return;
+      css(f, { animation: "none" });
+      reflow(f);
+      f.style.animation = "si-flash 320ms ease-in-out forwards";
+    }, 1760);
+
+    // 1960ms — wrapper fades to black → onComplete
+    T(() => {
+      css(wrapperRef.current, {
+        transition: "opacity 280ms ease-in",
+        opacity:    "0",
+      });
+    }, 1960);
+
+    T(() => {
+      localStorage.setItem(LS_KEY, "true");
+      onComplete?.();
+    }, 2260);
+
+  }, [spawnParticles, runScramble, onComplete]);
+
+  // ── Lifecycle ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    // Skip if already seen
-    if (localStorage.getItem("dm-intro-v2-seen") === "true") {
+    // Inject keyframes once
+    if (!document.getElementById("si-global-css")) {
+      const s = document.createElement("style");
+      s.id = "si-global-css";
+      s.textContent = GLOBAL_CSS;
+      document.head.appendChild(s);
+    }
+
+    if (localStorage.getItem(LS_KEY) === "true") {
       onComplete?.();
       return;
     }
 
-    // Inject CSS once
-    if (!document.getElementById("ci-styles")) {
-      const s = document.createElement("style");
-      s.id = "ci-styles";
-      s.textContent = CSS;
-      document.head.appendChild(s);
-    }
+    play();
 
-    schedule(() => setPhase("run"),   60);
-    schedule(() => setPhase("flash"), 1700);
-    schedule(() => {
-      setPhase("done");
-      localStorage.setItem("dm-intro-v2-seen", "true");
-      setTimeout(() => onComplete?.(), 200);
-    }, TOTAL_MS);
+    return () => {
+      timersRef.current.forEach(clearTimeout);
+      cancelAnimationFrame(ptxRafRef.current);
+      cancelAnimationFrame(sRafRef.current);
+    };
+  }, [play, onComplete]);
 
-    return () => timerRef.current.forEach(clearTimeout);
-  }, [onComplete]);
-
-  if (phase === "done") return null;
-
-  const running = phase === "run" || phase === "flash";
-
+  // ── Render ─────────────────────────────────────────────────────────────────
+  // JSX is a static structural skeleton — zero dynamic expressions that
+  // would trigger reconciler diffing during the animation window.
   return (
     <div
+      ref={wrapperRef}
       style={{
         position: "fixed",
         inset: 0,
         zIndex: 9999,
-        background: "#000",
         overflow: "hidden",
-        // Fade the whole overlay out at the flash phase
-        animation: phase === "flash"
-          ? "ci-fade-out 320ms ease-in forwards"
-          : undefined,
+        userSelect: "none",
+        // Warm dark radial bg — matches existing system exactly
+        background:
+          "radial-gradient(ellipse 110% 80% at 50% 55%, #1c0e04 0%, #0d0805 45%, #000000 100%)",
       }}
     >
-      {/* ── Film grain overlay ──────────────────────────────────────────────── */}
+      {/* Ambient amber glow orbs — inherited from existing overlay */}
+      <div
+        aria-hidden
+        style={{
+          pointerEvents: "none",
+          position: "absolute",
+          inset: 0,
+          background:
+            "radial-gradient(circle at 34% 40%, rgba(217,119,6,0.12) 0%, transparent 55%), " +
+            "radial-gradient(circle at 68% 62%, rgba(180,83,9,0.08) 0%, transparent 50%)",
+        }}
+      />
+
+      {/* Film grain */}
       <div
         aria-hidden
         style={{
@@ -158,865 +420,177 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
           inset: "-10%",
           width: "120%",
           height: "120%",
-          opacity: 0.038,
           pointerEvents: "none",
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23g)'/%3E%3C/svg%3E")`,
-          animation: "ci-grain 0.12s steps(1) infinite",
+          opacity: 0.04,
+          backgroundImage:
+            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          backgroundSize: "300px 300px",
+          animation: "si-grain 0.13s steps(1) infinite",
         }}
       />
 
-      {/* ── Scanlines ───────────────────────────────────────────────────────── */}
+      {/* Scanlines */}
       <div
         aria-hidden
         style={{
           position: "absolute",
           inset: 0,
           pointerEvents: "none",
-          backgroundImage: "repeating-linear-gradient(to bottom, transparent 0px, transparent 3px, rgba(0,0,0,0.18) 3px, rgba(0,0,0,0.18) 4px)",
-          opacity: 0.55,
+          backgroundImage:
+            "repeating-linear-gradient(to bottom, transparent 0px, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 3px)",
+          opacity: 0.45,
         }}
       />
 
-      {/* ── Letterbox bars ──────────────────────────────────────────────────── */}
-      {/* Top bar */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0,
-          height: "14%",
-          background: "#000",
-          zIndex: 10,
-          transformOrigin: "top center",
-          animation: running
-            ? "ci-bar-top 160ms cubic-bezier(.22,1,.36,1) 60ms both"
-            : undefined,
-          transform: running ? undefined : "translateY(-100%)",
-        }}
-      />
-      {/* Bottom bar */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0, left: 0, right: 0,
-          height: "14%",
-          background: "#000",
-          zIndex: 10,
-          transformOrigin: "bottom center",
-          animation: running
-            ? "ci-bar-bot 160ms cubic-bezier(.22,1,.36,1) 60ms both"
-            : undefined,
-          transform: running ? undefined : "translateY(100%)",
-        }}
-      />
-
-      {/* ── Main stage — confined between letterbox bars ──────────────────── */}
-      <div
-        style={{
-          position: "absolute",
-          inset: "14% 0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-          // Deep warm-dark radial bg
-          background:
-            "radial-gradient(ellipse 120% 120% at 50% 50%, #140a02 0%, #0a0603 55%, #000000 100%)",
-        }}
-      >
-        {/* Ambient amber glow */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(circle at 50% 50%, rgba(217,119,6,0.14) 0%, transparent 65%)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* ── Lens-sweep streak ─────────────────────────────────────────────── */}
-        {running && (
-          <div
-            aria-hidden
-            style={{
-              position: "absolute",
-              top: 0,
-              bottom: 0,
-              width: "28%",
-              pointerEvents: "none",
-              animation: "ci-sweep 520ms cubic-bezier(.4,0,.2,1) 450ms both",
-              background:
-                "linear-gradient(105deg, transparent 0%, rgba(251,191,36,0.04) 30%, rgba(255,255,255,0.22) 50%, rgba(251,191,36,0.04) 70%, transparent 100%)",
-              filter: "blur(3px)",
-              zIndex: 5,
-            }}
-          />
-        )}
-
-        {/* ── Vignette ─────────────────────────────────────────────────────── */}
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background:
-              "radial-gradient(ellipse 95% 95% at 50% 50%, transparent 48%, rgba(0,0,0,0.72) 100%)",
-            pointerEvents: "none",
-            zIndex: 2,
-          }}
-        />
-
-        {/* ── Center content ────────────────────────────────────────────────── */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 3,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 0,
-          }}
-        >
-          {/* — Monogram lockup — */}
-          {running && (
-            <div
-              style={{
-                position: "relative",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                animation: "ci-monogram-in 380ms cubic-bezier(.22,1,.36,1) 180ms both",
-                marginBottom: 28,
-              }}
-            >
-              {/* Pulse ring behind monogram */}
-              <div
-                aria-hidden
-                style={{
-                  position: "absolute",
-                  width: 88,
-                  height: 88,
-                  borderRadius: "50%",
-                  border: "1px solid rgba(251,191,36,0.45)",
-                  animation: "ci-pulse-ring 1.6s ease-out 400ms infinite",
-                }}
-              />
-
-              {/* Outer circle */}
-              <svg
-                width="96"
-                height="96"
-                viewBox="0 0 96 96"
-                style={{ display: "block" }}
-              >
-                <defs>
-                  <linearGradient id="ci-ring-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%"   stopColor="rgba(180,83,9,0.7)" />
-                    <stop offset="50%"  stopColor="rgba(251,191,36,0.9)" />
-                    <stop offset="100%" stopColor="rgba(180,83,9,0.5)" />
-                  </linearGradient>
-                  <filter id="ci-glow" x="-40%" y="-40%" width="180%" height="180%">
-                    <feGaussianBlur stdDeviation="2.8" result="b" />
-                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-                  </filter>
-                </defs>
-
-                {/* Thin outer ring */}
-                <circle
-                  cx="48" cy="48" r="46"
-                  fill="none"
-                  stroke="url(#ci-ring-grad)"
-                  strokeWidth="0.8"
-                  opacity="0.6"
-                />
-
-                {/* Dashed tick ring */}
-                <circle
-                  cx="48" cy="48" r="42"
-                  fill="none"
-                  stroke="rgba(251,191,36,0.28)"
-                  strokeWidth="0.5"
-                  strokeDasharray="2 8"
-                />
-
-                {/* Filled disc */}
-                <circle
-                  cx="48" cy="48" r="36"
-                  fill="#0d0702"
-                  stroke="rgba(251,191,36,0.2)"
-                  strokeWidth="0.6"
-                />
-
-                {/* Cardinal dots */}
-                {[0, 90, 180, 270].map((deg, i) => {
-                  const rad = (deg - 90) * (Math.PI / 180);
-                  return (
-                    <circle
-                      key={i}
-                      cx={48 + 46 * Math.cos(rad)}
-                      cy={48 + 46 * Math.sin(rad)}
-                      r="2.2"
-                      fill="rgba(251,191,36,0.85)"
-                      filter="url(#ci-glow)"
-                    />
-                  );
-                })}
-
-                {/* "D·M" monogram */}
-                <text
-                  x="48" y="54"
-                  textAnchor="middle"
-                  fill="rgba(255,255,255,0.96)"
-                  fontSize="22"
-                  fontFamily="Georgia, 'Times New Roman', serif"
-                  fontWeight="700"
-                  filter="url(#ci-glow)"
-                  letterSpacing="2"
-                >
-                  D·M
-                </text>
-              </svg>
-            </div>
-          )}
-
-          {/* — Horizontal rule — */}
-          {running && (
-            <div
-              style={{
-                width: 220,
-                height: 1,
-                marginBottom: 20,
-                background:
-                  "linear-gradient(90deg, transparent, rgba(251,191,36,0.55) 30%, rgba(255,255,255,0.7) 50%, rgba(251,191,36,0.55) 70%, transparent)",
-                animation: "ci-sub-in 280ms ease 550ms both",
-              }}
-            />
-          )}
-
-          {/* — Name — */}
-          {running && (
-            <div style={{ overflow: "hidden", paddingBottom: 6 }}>
-              <p
-                style={{
-                  margin: 0,
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  fontSize: "clamp(1.05rem, 4.5vw, 1.65rem)",
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  letterSpacing: "0.28em",
-                  textTransform: "uppercase",
-                  textShadow:
-                    "0 0 28px rgba(251,191,36,0.35), 0 4px 24px rgba(0,0,0,0.8)",
-                  animation: "ci-name-in 480ms cubic-bezier(.22,1,.36,1) 650ms both",
-                }}
-              >
-                Douglas Mitchell
-              </p>
-            </div>
-          )}
-
-          {/* — Sub-tagline — */}
-          {running && (
-            <p
-              style={{
-                margin: "10px 0 0",
-                fontFamily: "monospace",
-                fontSize: "clamp(0.52rem, 1.6vw, 0.66rem)",
-                letterSpacing: "0.44em",
-                textTransform: "uppercase",
-                color: "rgba(251,191,36,0.55)",
-                animation: "ci-sub-in 420ms ease 1020ms both",
-                opacity: 0,
-              }}
-            >
-              Author · Storyteller · Visionary
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* ── White flash frame (film cut) ────────────────────────────────────── */}
-      {phase === "flash" && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "#fff",
-            zIndex: 20,
-            animation: "ci-flash 320ms ease-in-out forwards",
-            pointerEvents: "none",
-          }}
-        />
-=======
-// ─── Animated SVG monogram ────────────────────────────────────────────────────
-function IsekaiMonogram() {
-  const outerR = 85;
-  const outerC = +(2 * Math.PI * outerR).toFixed(2); // ≈5 34.07
-
-  const ticks = Array.from({ length: 8 }, (_, i) => {
-    const angle = (i * 45 - 90) * (Math.PI / 180);
-    return {
-      x1: 100 + (outerR - 13) * Math.cos(angle),
-      y1: 100 + (outerR - 13) * Math.sin(angle),
-      x2: 100 + (outerR - 4) * Math.cos(angle),
-      y2: 100 + (outerR - 4) * Math.sin(angle),
-    };
-  });
-
-  const cardinals = [0, 90, 180, 270].map((deg) => {
-    const rad = (deg - 90) * (Math.PI / 180);
-    return { cx: 100 + outerR * Math.cos(rad), cy: 100 + outerR * Math.sin(rad) };
-  });
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.78 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.12, duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
-      style={{ position: "relative", width: 190, height: 190, flexShrink: 0 }}
-    >
-      {/*
-        CSS keyframes are embedded here so the spin + pulse animations run
-        independently of framer-motion’s transform pipeline, avoiding the
-        SVG transform-origin conflict that breaks rotation pivot points.
-      */}
-      <style>{`
-        @keyframes ei-spin-cw {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes ei-spin-ccw {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(-360deg); }
-        }
-        @keyframes ei-pulse-out {
-          0%   { transform: scale(1);    opacity: 0.38; }
-          100% { transform: scale(1.73); opacity: 0; }
-        }
-        .ei-ring-cw {
-          transform-origin: 100px 100px;
-          transform-box: view-box;
-          animation: ei-spin-cw 22s linear 1.08s infinite;
-        }
-        .ei-ring-ccw {
-          transform-origin: 100px 100px;
-          transform-box: view-box;
-          animation: ei-spin-ccw 14s linear 0.52s infinite;
-        }
-        .ei-pulse-ring {
-          transform-origin: center;
-          transform-box: fill-box;
-          animation: ei-pulse-out 2.2s ease-out 1.1s infinite;
-          opacity: 0;
-        }
-      `}</style>
-
-      {/* Pulsing ambient glow halo (div, not SVG — no transform-box conflict) */}
-      <motion.div
-        animate={{ opacity: [0.32, 0.7, 0.32], scale: [1, 1.12, 1] }}
-        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+      {/* Particle canvas — amber dust field */}
+      <canvas
+        ref={canvasRef}
+        aria-hidden
         style={{
           position: "absolute",
           inset: 0,
-          borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(217,119,6,0.32) 0%, transparent 68%)",
-          filter: "blur(22px)",
+          width: "100%",
+          height: "100%",
+          zIndex: 0,
           pointerEvents: "none",
         }}
       />
 
-      <svg
-        viewBox="0 0 200 200"
-        width="190"
-        height="190"
-        style={{ display: "block", overflow: "visible" }}
+      {/* Vertical scan sweep line */}
+      <div
+        ref={sweepRef}
+        aria-hidden
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          height: 1,
+          top: 0,
+          transform: "translateY(-2px)",
+          opacity: 0,
+          zIndex: 8,
+          pointerEvents: "none",
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(251,191,36,0.06) 8%, rgba(251,191,36,0.95) 50%, rgba(251,191,36,0.06) 92%, transparent 100%)",
+          boxShadow:
+            "0 0 8px rgba(251,191,36,0.6), 0 0 24px rgba(217,119,6,0.22), 0 0 48px rgba(217,119,6,0.08)",
+        }}
+      />
+
+      {/* Signature corner brackets */}
+      <div style={{ position: "absolute", top: 28, left: 28, width: 52, height: 52, borderTop: "1px solid rgba(251,191,36,0.32)", borderLeft: "1px solid rgba(251,191,36,0.32)" }} />
+      <div style={{ position: "absolute", top: 28, right: 28, width: 52, height: 52, borderTop: "1px solid rgba(251,191,36,0.32)", borderRight: "1px solid rgba(251,191,36,0.32)" }} />
+      <div style={{ position: "absolute", bottom: 28, left: 28, width: 52, height: 52, borderBottom: "1px solid rgba(251,191,36,0.32)", borderLeft: "1px solid rgba(251,191,36,0.32)" }} />
+      <div style={{ position: "absolute", bottom: 28, right: 28, width: 52, height: 52, borderBottom: "1px solid rgba(251,191,36,0.32)", borderRight: "1px solid rgba(251,191,36,0.32)" }} />
+
+      {/* ── Content center ── */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 5,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "0 24px",
+        }}
       >
-        <defs>
-          <radialGradient id="ei-inner-grad" cx="50%" cy="50%" r="50%">
-            <stop offset="0%"   stopColor="#1c0e04" stopOpacity="0.97" />
-            <stop offset="100%" stopColor="#060402" stopOpacity="0.99" />
-          </radialGradient>
-          <filter id="ei-text-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2.5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-          <filter id="ei-dot-glow" x="-150%" y="-150%" width="400%" height="400%">
-            <feGaussianBlur stdDeviation="2.2" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        {/* ── Expand-pulse ring — CSS animated, plain <circle> ── */}
-        <circle
-          cx="100" cy="100" r="52"
-          fill="none"
-          stroke="rgba(217,119,6,0.38)"
-          strokeWidth="1"
-          className="ei-pulse-ring"
-        />
-
-        {/*
-          ── Outer dashed ring ──
-          Spin: plain <g className="ei-ring-cw"> → CSS transform
-          Draw: framer-motion <motion.circle> → strokeDashoffset only
-          Keeping on separate elements prevents transform conflicts.
-        */}
-        <g className="ei-ring-cw">
-          <motion.circle
-            cx="100" cy="100"
-            r={outerR}
-            fill="none"
-            stroke="rgba(251,191,36,0.44)"
-            strokeWidth="0.85"
-            strokeDasharray="6 3.5"
-            initial={{ strokeDashoffset: outerC, opacity: 0 }}
-            animate={{ strokeDashoffset: 0, opacity: 1 }}
-            transition={{
-              strokeDashoffset: { delay: 0.18, duration: 0.9, ease: [0.22, 1, 0.36, 1] },
-              opacity:          { delay: 0.18, duration: 0.28 },
-            }}
-          />
-        </g>
-
-        {/*
-          ── Inner counter-rotating dashed ring ──
-          Spin: plain <g className="ei-ring-ccw"> → CSS transform
-          Opacity: framer-motion on inner <motion.circle>
-        */}
-        <g className="ei-ring-ccw">
-          <motion.circle
-            cx="100" cy="100" r="65"
-            fill="none"
-            stroke="rgba(180,83,9,0.3)"
-            strokeWidth="0.55"
-            strokeDasharray="3 7"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.52, duration: 0.38 }}
-          />
-        </g>
-
-        {/* ── Frosted inner disc ── */}
-        <motion.circle
-          cx="100" cy="100" r="52"
-          fill="url(#ei-inner-grad)"
-          stroke="rgba(251,191,36,0.15)"
-          strokeWidth="0.75"
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.28, duration: 0.68, ease: [0.22, 1, 0.36, 1] }}
-          style={{ transformBox: "fill-box", transformOrigin: "center" }}
-        />
-
-        {/* ── 8 tick marks — opacity only (avoids transform-box complications) ── */}
-        {ticks.map((t, i) => (
-          <motion.line
-            key={i}
-            x1={t.x1} y1={t.y1}
-            x2={t.x2} y2={t.y2}
-            stroke={i % 2 === 0 ? "rgba(251,191,36,0.78)" : "rgba(251,191,36,0.3)"}
-            strokeWidth={i % 2 === 0 ? 1.2 : 0.65}
-            strokeLinecap="round"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 + i * 0.05, duration: 0.22 }}
-          />
-        ))}
-
-        {/* ── 4 cardinal amber dots ── */}
-        {cardinals.map((c, i) => (
-          <motion.circle
-            key={i}
-            cx={c.cx} cy={c.cy} r="3"
-            fill="rgba(251,191,36,0.92)"
-            filter="url(#ei-dot-glow)"
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.9 + i * 0.07, duration: 0.3, ease: "backOut" }}
-            style={{ transformBox: "fill-box", transformOrigin: "center" }}
-          />
-        ))}
-
-        {/* ── Central ‘S’ in Fraunces serif ── */}
-        <motion.text
-          x="97" y="116"
-          textAnchor="middle"
-          fill="rgba(255,255,255,0.95)"
-          fontSize="58"
-          fontFamily="var(--font-fraunces, Georgia, serif)"
-          fontWeight="700"
-          filter="url(#ei-text-glow)"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.42, duration: 0.6 }}
-          style={{ letterSpacing: "-0.02em" }}
-        >
-          S
-        </motion.text>
-
-        {/* ── ·I subscript in IBM Plex ── */}
-        <motion.text
-          x="125" y="109"
-          textAnchor="start"
-          fill="rgba(251,191,36,0.68)"
-          fontSize="17"
-          fontFamily="var(--font-ibm-plex, monospace)"
-          fontWeight="400"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.76, duration: 0.45 }}
-        >
-          ·I
-        </motion.text>
-      </svg>
-    </motion.div>
-  );
-}
-
-// ─── Main overlay ─────────────────────────────────────────────────────────────
-export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
-  const [visible, setVisible] = useState(false);
-  const barRef  = useRef<HTMLDivElement>(null);
-  const numRef  = useRef<HTMLSpanElement>(null);
-  const rafRef  = useRef<number>(0);
-  const startRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (localStorage.getItem("senpai-intro-seen") === "true") {
-      onComplete?.();
-      return;
-    }
-    const t = setTimeout(() => setVisible(true), 100);
-    return () => clearTimeout(t);
-  }, [onComplete]);
-
-  useEffect(() => {
-    if (!visible) return;
-    startRef.current = 0;
-    const tick = (now: number) => {
-      if (!startRef.current) startRef.current = now;
-      const p = Math.min(((now - startRef.current) / HOLD_MS) * 100, 100);
-      if (barRef.current) barRef.current.style.width = `${p}%`;
-      if (numRef.current)
-        numRef.current.textContent = Math.round(p).toString().padStart(3, "0");
-      if (p < 100) {
-        rafRef.current = requestAnimationFrame(tick);
-      } else {
-        setTimeout(() => {
-          setVisible(false);
-          localStorage.setItem("senpai-intro-seen", "true");
-          setTimeout(() => onComplete?.(), 480);
-        }, 60);
-      }
-    };
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [visible, onComplete]);
-
-  return (
-    <AnimatePresence>
-      {visible && (
-        <motion.div
-          key="senpai-entrance-overlay"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, scale: 1.04 }}
-          transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        {/* Eyebrow */}
+        <p
+          ref={eyebrowRef}
           style={{
-            position: "fixed",
-            inset: 0,
-            zIndex: 9999,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            overflow: "hidden",
-            userSelect: "none",
-            background:
-              "radial-gradient(ellipse 110% 80% at 50% 55%, #1c0e04 0%, #0d0805 45%, #000000 100%)",
+            fontFamily: "var(--font-ibm-plex, monospace)",
+            fontSize: "0.58rem",
+            letterSpacing: "0.44em",
+            textTransform: "uppercase",
+            color: "rgba(251,191,36,0.55)",
+            marginBottom: 28,
+            opacity: 0,
           }}
         >
-          {/* Ambient amber glow orbs */}
-          <div
-            style={{
-              pointerEvents: "none",
-              position: "absolute",
-              inset: 0,
-              background:
-                "radial-gradient(circle at 34% 40%, rgba(217,119,6,0.12) 0%, transparent 55%), " +
-                "radial-gradient(circle at 68% 62%, rgba(180,83,9,0.08) 0%, transparent 50%)",
-            }}
-          />
+          Welcome to
+        </p>
 
-          {/* Fine grain noise texture */}
-          <div
-            style={{
-              pointerEvents: "none",
-              position: "absolute",
-              inset: 0,
-              opacity: 0.04,
-              backgroundImage:
-                "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)'/%3E%3C/svg%3E\")",
-              backgroundSize: "300px 300px",
-            }}
-          />
-
-          {/* Signature corner brackets */}
-          <div style={{ position: "absolute", top: 28, left: 28, width: 52, height: 52, borderTop: "1px solid rgba(251,191,36,0.32)", borderLeft: "1px solid rgba(251,191,36,0.32)" }} />
-          <div style={{ position: "absolute", top: 28, right: 28, width: 52, height: 52, borderTop: "1px solid rgba(251,191,36,0.32)", borderRight: "1px solid rgba(251,191,36,0.32)" }} />
-          <div style={{ position: "absolute", bottom: 28, left: 28, width: 52, height: 52, borderBottom: "1px solid rgba(251,191,36,0.32)", borderLeft: "1px solid rgba(251,191,36,0.32)" }} />
-          <div style={{ position: "absolute", bottom: 28, right: 28, width: 52, height: 52, borderBottom: "1px solid rgba(251,191,36,0.32)", borderRight: "1px solid rgba(251,191,36,0.32)" }} />
-
-          {/* Floating amber dust particles */}
-          {([...Array(10)] as undefined[]).map((_, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: [0, 0.45, 0] }}
-              transition={{
-                duration: 2.4 + i * 0.28,
-                repeat: Infinity,
-                delay: i * 0.2,
-                ease: "easeInOut",
-              }}
-              style={{
-                position: "absolute",
-                left: `${6 + i * 9}%`,
-                top: `${14 + (i * 17) % 68}%`,
-                width: i % 3 === 0 ? 4 : 2.5,
-                height: i % 3 === 0 ? 4 : 2.5,
-                borderRadius: "50%",
-                background: "rgba(251,191,36,0.55)",
-                pointerEvents: "none",
-                boxShadow: "0 0 6px rgba(217,119,6,0.4)",
-              }}
-            />
-          ))}
-
-          {/* ── Center stack ── */}
-          <div
-            style={{
-              position: "relative",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 14,
-              textAlign: "center",
-            }}
-          >
-            {/* “Welcome to” eyebrow */}
-            <motion.p
-              initial={{ opacity: 0, letterSpacing: "0.15em" }}
-              animate={{ opacity: 0.65, letterSpacing: "0.42em" }}
-              transition={{ delay: 0.08, duration: 0.95 }}
-              style={{
-                fontFamily: "var(--font-ibm-plex, monospace)",
-                fontSize: "0.62rem",
-                textTransform: "uppercase",
-                color: "rgba(251,191,36,0.65)",
-                margin: 0,
-              }}
-            >
-              Welcome to
-            </motion.p>
-
-            {/* Animated SVG monogram */}
-            <IsekaiMonogram />
-
-            {/* Main title — clipped slide-up */}
-            <div style={{ overflow: "hidden", paddingBottom: 4 }}>
-              <motion.h1
-                initial={{ y: 72, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.38, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-                style={{
-                  fontFamily: "var(--font-fraunces, Georgia, serif)",
-                  fontSize: "clamp(2.4rem, 8vw, 5rem)",
-                  fontWeight: 700,
-                  color: "#ffffff",
-                  margin: 0,
-                  lineHeight: 1.05,
-                  textShadow: "0 8px 48px rgba(0,0,0,0.55)",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                Senpai&apos;s Isekai
-              </motion.h1>
-            </div>
-
-            {/* Tagline */}
-            <motion.p
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 0.7, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.65, ease: "easeOut" }}
-              style={{
-                fontFamily: "var(--font-manrope, sans-serif)",
-                fontSize: "clamp(0.62rem, 1.8vw, 0.78rem)",
-                letterSpacing: "0.3em",
-                textTransform: "uppercase",
-                color: "rgba(255,255,255,0.7)",
-                margin: 0,
-              }}
-            >
-              Open-Source Humanity
-            </motion.p>
-
-            {/* Handwritten sub-tagline */}
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.48 }}
-              transition={{ delay: 0.92, duration: 0.55 }}
-              style={{
-                fontFamily: "var(--font-caveat, cursive)",
-                fontSize: "clamp(1.05rem, 3vw, 1.45rem)",
-                color: "rgba(251,191,36,0.5)",
-                margin: 0,
-                marginTop: -2,
-              }}
-            >
-              ~ Thee Strongest ~
-            </motion.p>
-          </div>
-
-          {/* ── rAF progress bar ── */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: "7.5%",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: 220,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-end",
-              gap: 8,
-            }}
-          >
-            <motion.span
-              ref={numRef}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 0.4 }}
-              transition={{ delay: 0.38 }}
-              style={{
-                fontFamily: "var(--font-ibm-plex, monospace)",
-                fontSize: "0.58rem",
-                letterSpacing: "0.22em",
-                color: "rgba(251,191,36,0.68)",
-                fontVariantNumeric: "tabular-nums",
-                display: "block",
-                textAlign: "right",
-              }}
-            >
-              000
-            </motion.span>
-            <div
-              style={{
-                width: "100%",
-                height: 1,
-                background: "rgba(255,255,255,0.07)",
-                borderRadius: 9999,
-                overflow: "hidden",
-              }}
-            >
-              <div
-                ref={barRef}
-                style={{
-                  height: "100%",
-                  width: "0%",
-                  background:
-                    "linear-gradient(90deg, rgba(180,83,9,0.55), rgba(217,119,6,1), rgba(251,191,36,0.9))",
-                  borderRadius: 9999,
-                  boxShadow: "0 0 8px rgba(217,119,6,0.65)",
-                }}
-              />
-            </div>
-          </div>
-        </motion.div>
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
-      )}
-
-      {/* ── Corner frame markers ─────────────────────────────────────────────── */}
-      {running && (
-        <>
-          {[
-            { top: "14%", left: 0,    borderTop: true,    borderLeft: true },
-            { top: "14%", right: 0,   borderTop: true,    borderRight: true },
-            { bottom: "14%", left: 0, borderBottom: true, borderLeft: true },
-            { bottom: "14%", right: 0,borderBottom: true, borderRight: true },
-          ].map((pos, i) => (
-            <div
-              key={i}
-              aria-hidden
-              style={{
-                position: "absolute",
-                width: 24,
-                height: 24,
-                zIndex: 11,
-                borderTop:    pos.borderTop    ? "1px solid rgba(251,191,36,0.3)" : undefined,
-                borderLeft:   pos.borderLeft   ? "1px solid rgba(251,191,36,0.3)" : undefined,
-                borderRight:  pos.borderRight  ? "1px solid rgba(251,191,36,0.3)" : undefined,
-                borderBottom: pos.borderBottom ? "1px solid rgba(251,191,36,0.3)" : undefined,
-                top:    pos.top,
-                bottom: pos.bottom,
-                left:   pos.left,
-                right:  pos.right,
-              }}
-            />
-          ))}
-        </>
-      )}
-
-      {/* ── Timecode / metadata strip (cinematic detail) ──────────────────── */}
-      {running && (
-        <div
-          style={{
-            position: "absolute",
-            bottom: "14%",
-            left: 0,
-            right: 0,
-            height: 0,
-            zIndex: 11,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-            padding: "0 18px",
-            transform: "translateY(8px)",
-          }}
-        >
+        {/* Name — Fraunces display, dominant hero element */}
+        <div style={{ overflow: "hidden", paddingBottom: 4 }}>
           <span
+            ref={nameRef}
             style={{
-              fontFamily: "monospace",
-              fontSize: "0.48rem",
-              letterSpacing: "0.2em",
-              color: "rgba(251,191,36,0.28)",
-              animation: "ci-sub-in 300ms ease 400ms both",
+              display: "block",
+              fontFamily: "var(--font-fraunces, Georgia, serif)",
+              fontSize: "clamp(2.6rem, 9vw, 5.4rem)",
+              fontWeight: 700,
+              color: "#ffffff",
+              letterSpacing: "-0.02em",
+              whiteSpace: "nowrap",
+              lineHeight: 1.05,
               opacity: 0,
             }}
           >
-            DM·MMXXVI
-          </span>
-          <span
-            style={{
-              fontFamily: "monospace",
-              fontSize: "0.48rem",
-              letterSpacing: "0.2em",
-              color: "rgba(251,191,36,0.28)",
-              animation: "ci-sub-in 300ms ease 400ms both",
-              opacity: 0,
-            }}
-          >
-            HOUSTON · TX
+            {TARGET}
           </span>
         </div>
-      )}
+
+        {/* Amber rule — draws left → right after last char locks */}
+        <div
+          ref={ruleRef}
+          style={{
+            height: 1,
+            width: "100%",
+            marginTop: 16,
+            background:
+              "linear-gradient(90deg, transparent 0%, rgba(180,83,9,0.5) 16%, rgba(251,191,36,1.0) 50%, rgba(180,83,9,0.5) 84%, transparent 100%)",
+            transformOrigin: "left center",
+            transform: "scaleX(0)",
+            opacity: 0,
+          }}
+        />
+
+        {/* Tagline — IBM Plex mono, spaced caps */}
+        <p
+          ref={tagRef}
+          style={{
+            fontFamily: "var(--font-ibm-plex, monospace)",
+            fontSize: "clamp(0.44rem, 1.2vw, 0.6rem)",
+            letterSpacing: "0.38em",
+            textTransform: "uppercase",
+            color: "rgba(255,255,255,0.65)",
+            marginTop: 14,
+            opacity: 0,
+          }}
+        >
+          Open-Source Humanity
+        </p>
+
+        {/* Handwritten sub-tag — Caveat */}
+        <p
+          ref={subTagRef}
+          style={{
+            fontFamily: "var(--font-caveat, cursive)",
+            fontSize: "clamp(1.05rem, 3vw, 1.45rem)",
+            color: "rgba(251,191,36,0.5)",
+            marginTop: 6,
+            opacity: 0,
+          }}
+        >
+          ~ Thee Strongest ~
+        </p>
+      </div>
+
+      {/* White flash — film cut at end of sequence */}
+      <div
+        ref={flashRef}
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 15,
+          background: "#fff",
+          opacity: 0,
+          pointerEvents: "none",
+        }}
+      />
     </div>
   );
 }

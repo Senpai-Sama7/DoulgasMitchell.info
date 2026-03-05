@@ -148,7 +148,7 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
         </div>
 
         {/* Reactions - shown on hover */}
-        <div className="absolute bottom-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
+        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
           <div onClick={(e) => e.stopPropagation()}>
             <Reactions itemId={image.id} variant="dark" compact />
           </div>

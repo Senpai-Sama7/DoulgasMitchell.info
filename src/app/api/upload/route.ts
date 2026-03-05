@@ -32,14 +32,15 @@ async function handleUpload(request: NextRequest): Promise<NextResponse> {
   await authenticateRequest(request);
 
   const formData = await request.formData();
-  const file = formData.get("file") as File;
+  const fileInput = formData.get("file");
   const typeField = formData.get("type");
   const requestedType = typeof typeField === "string" ? typeField : "general";
   const type = requestedType.toLowerCase();
 
-  if (!file) {
+  if (!(fileInput instanceof File)) {
     throw new ValidationError("No file provided");
   }
+  const file = fileInput;
 
   if (!ALLOWED_UPLOAD_TYPES.has(type)) {
     throw new ValidationError("Invalid upload type");

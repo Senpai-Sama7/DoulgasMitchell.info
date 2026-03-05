@@ -6,9 +6,12 @@ import Link from "next/link";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
+import { EntranceOverlay } from "@/components/entrance-overlay";
 import { heroImage, galleryImages } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
+
+const INTRO_SEEN_KEY = "senpai-signal-seen";
 
 
 // Typing animation component
@@ -254,11 +257,27 @@ function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryIte
 
 export default function HomePage() {
   const [showContent] = useState(true);
+  const [showEntranceOverlay, setShowEntranceOverlay] = useState(false);
   
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);
   const heroScale = useTransform(scrollY, [0, 500], [1, 1.1]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const introMode = params.get("intro");
+
+    if (introMode === "1" || introMode === "force" || introMode === "reset") {
+      localStorage.removeItem(INTRO_SEEN_KEY);
+      setShowEntranceOverlay(true);
+      return;
+    }
+
+    setShowEntranceOverlay(localStorage.getItem(INTRO_SEEN_KEY) !== "true");
+  }, []);
 
   const featuredImages = useMemo(
     () =>
@@ -281,6 +300,9 @@ export default function HomePage() {
 
   return (
     <>
+      {showEntranceOverlay && (
+        <EntranceOverlay onComplete={() => setShowEntranceOverlay(false)} />
+      )}
       <MainLayout>
         <main>
         {/* Hero Section */}
@@ -364,7 +386,7 @@ export default function HomePage() {
                   transition={{ delay: 0.8 }}
                   className="flex flex-wrap justify-center gap-3 mt-6"
                 >
-                  <Magnetic>
+                  <Magnetic strength={0.12}>
                     <Link
                       href="/galleries"
                       className="btn-premium flex items-center gap-2 text-sm py-2.5 px-5"
@@ -373,7 +395,7 @@ export default function HomePage() {
                       <ArrowRight className="w-4 h-4" />
                     </Link>
                   </Magnetic>
-                  <Magnetic>
+                  <Magnetic strength={0.1}>
                     <Link
                       href="/journal"
                       className="px-5 py-2.5 rounded-lg border border-white/30 hover:bg-white/10 transition-colors duration-300 text-sm text-white/80 hover:text-white"
@@ -588,7 +610,7 @@ export default function HomePage() {
             </StaggerItem>
 
             <StaggerItem>
-              <div className="glass-card p-4 flex flex-col justify-center relative overflow-hidden">
+              <div className="glass-card p-4 flex flex-col justify-center relative overflow-visible">
                 <motion.div
                   initial={{ scale: 0, opacity: 0 }}
                   whileInView={{ scale: 1, opacity: 0.1 }}
@@ -600,7 +622,7 @@ export default function HomePage() {
                 <p className="text-xs text-muted-foreground mb-3 relative z-10">
                   Have a project in mind? I&apos;d love to hear from you.
                 </p>
-                <Magnetic>
+                <Magnetic strength={0.12}>
                   <Link
                     href="/contact"
                     className="btn-premium inline-flex items-center gap-2 w-fit text-xs py-2 relative z-10"

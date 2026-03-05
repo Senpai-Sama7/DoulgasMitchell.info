@@ -26,6 +26,7 @@ import {
   getClientIp,
   getUserAgent,
   recordLoginAttempt,
+  SESSION_MAX_AGE_SECONDS,
 } from '@/lib/security';
 
 function isAuthenticationResponseJSON(value: unknown): value is AuthenticationResponseJSON {
@@ -72,89 +73,92 @@ async function handlePasskeyAuthVerify(request: NextRequest): Promise<NextRespon
   const cookieStore = await cookies();
   const expectedChallenge = cookieStore.get(PASSKEY_AUTH_CHALLENGE_COOKIE)?.value;
 
-  if (!expectedChallenge) {
-    throw new AuthenticationError('Passkey challenge is missing or expired. Please try again.');
-  }
-
-  const credential = await db.passkeyCredential.findUnique({
-    where: { credentialID: authenticationResponse.id },
-    include: { adminUser: true },
-  });
-
-  if (!credential) {
-    await recordLoginAttempt(ipAddress, false);
-    throw new AuthenticationError('Invalid passkey credential');
-  }
-
   try {
-    const verification = await verifyAuthenticationResponse({
-      response: authenticationResponse,
-      expectedChallenge,
-      expectedOrigin: getPasskeyExpectedOrigins(request),
-      expectedRPID: getPasskeyRPID(request),
-      credential: {
-        id: credential.credentialID,
-        publicKey: fromBase64URL(credential.publicKey) as unknown as Uint8Array<ArrayBuffer>,
-        counter: credential.counter,
-        transports: parseStoredTransports(credential.transports),
-      },
-      requireUserVerification: true,
+    if (!expectedChallenge) {
+      throw new AuthenticationError('Passkey challenge is missing or expired. Please try again.');
+    }
+
+    const credential = await db.passkeyCredential.findUnique({
+      where: { credentialID: authenticationResponse.id },
+      include: { adminUser: true },
     });
 
-    if (!verification.verified) {
+    if (!credential) {
+      await recordLoginAttempt(ipAddress, false);
+      throw new AuthenticationError('Invalid passkey credential');
+    }
+
+    try {
+      const verification = await verifyAuthenticationResponse({
+        response: authenticationResponse,
+        expectedChallenge,
+        expectedOrigin: getPasskeyExpectedOrigins(request),
+        expectedRPID: getPasskeyRPID(request),
+        credential: {
+          id: credential.credentialID,
+          publicKey: fromBase64URL(credential.publicKey) as unknown as Uint8Array<ArrayBuffer>,
+          counter: credential.counter,
+          transports: parseStoredTransports(credential.transports),
+        },
+        requireUserVerification: true,
+      });
+
+      if (!verification.verified) {
+        throw new AuthenticationError('Passkey verification failed');
+      }
+
+      await db.passkeyCredential.update({
+        where: { id: credential.id },
+        data: {
+          counter: verification.authenticationInfo.newCounter,
+          deviceType: verification.authenticationInfo.credentialDeviceType,
+          backedUp: verification.authenticationInfo.credentialBackedUp,
+        },
+      });
+
+      const token = generateToken({
+        userId: credential.adminUser.id,
+        username: credential.adminUser.username,
+      });
+
+      await createSession(credential.adminUser.id, token, ipAddress, userAgent);
+      await recordLoginAttempt(ipAddress, true);
+
+      await db.adminUser.update({
+        where: { id: credential.adminUser.id },
+        data: { lastLoginAt: new Date() },
+      });
+
+      await db.activityLog.create({
+        data: {
+          action: 'login',
+          resource: 'auth',
+          resourceId: credential.adminUser.id,
+          details: JSON.stringify({ method: 'passkey' }),
+          ipAddress,
+        },
+      });
+
+      cookieStore.set('admin-session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: SESSION_MAX_AGE_SECONDS,
+        path: '/',
+      });
+
+      return successResponse({ authenticated: true }, 'Passkey login successful');
+    } catch (error) {
+      await recordLoginAttempt(ipAddress, false);
+
+      if (error instanceof AuthenticationError) {
+        throw error;
+      }
+
       throw new AuthenticationError('Passkey verification failed');
     }
-
-    await db.passkeyCredential.update({
-      where: { id: credential.id },
-      data: {
-        counter: verification.authenticationInfo.newCounter,
-        deviceType: verification.authenticationInfo.credentialDeviceType,
-        backedUp: verification.authenticationInfo.credentialBackedUp,
-      },
-    });
-
-    const token = generateToken({
-      userId: credential.adminUser.id,
-      username: credential.adminUser.username,
-    });
-
-    await createSession(credential.adminUser.id, token, ipAddress, userAgent);
-    await recordLoginAttempt(ipAddress, true);
-
-    await db.adminUser.update({
-      where: { id: credential.adminUser.id },
-      data: { lastLoginAt: new Date() },
-    });
-
-    await db.activityLog.create({
-      data: {
-        action: 'login',
-        resource: 'auth',
-        resourceId: credential.adminUser.id,
-        details: JSON.stringify({ method: 'passkey' }),
-        ipAddress,
-      },
-    });
-
+  } finally {
     cookieStore.delete(PASSKEY_AUTH_CHALLENGE_COOKIE);
-    cookieStore.set('admin-session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 60 * 60 * 24,
-      path: '/',
-    });
-
-    return successResponse({ authenticated: true }, 'Passkey login successful');
-  } catch (error) {
-    await recordLoginAttempt(ipAddress, false);
-
-    if (error instanceof AuthenticationError) {
-      throw error;
-    }
-
-    throw new AuthenticationError('Passkey verification failed');
   }
 }
 

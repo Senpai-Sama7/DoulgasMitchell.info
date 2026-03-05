@@ -65,6 +65,7 @@ import {
   Fingerprint,
 } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
+import { journalEntries as fallbackJournalEntries } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
 // Types
@@ -129,6 +130,46 @@ function normalizeApiItems<T>(data: unknown): T[] {
   }
 
   return [];
+}
+
+function extractImportPayload(input: unknown): Record<string, unknown> {
+  if (typeof input !== "object" || input === null) {
+    return {};
+  }
+
+  const hasImportKeys = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== "object" || value === null) {
+      return false;
+    }
+
+    const candidate = value as Record<string, unknown>;
+    return (
+      "gallery" in candidate ||
+      "galleryImages" in candidate ||
+      "journal" in candidate ||
+      "journalEntries" in candidate ||
+      "settings" in candidate
+    );
+  };
+
+  const root = input as Record<string, unknown>;
+  const firstData = root.data;
+  const secondData =
+    typeof firstData === "object" && firstData !== null
+      ? (firstData as Record<string, unknown>).data
+      : undefined;
+
+  const candidates: unknown[] = [root, firstData, secondData];
+  const payload = candidates.find(hasImportKeys);
+  return payload ?? {};
+}
+
+const fallbackJournalLookup = new Map(
+  fallbackJournalEntries.map((entry) => [entry.id, entry])
+);
+
+function containsCjkText(value: string): boolean {
+  return /[\u3400-\u9fff]/.test(value);
 }
 
 // Series options
@@ -208,15 +249,39 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
         body: JSON.stringify({ password }),
       });
 
-      const data = await res.json();
+      const data: unknown = await res.json().catch(() => null);
+      const isSuccessResponse =
+        typeof data === "object" &&
+        data !== null &&
+        "success" in data &&
+        (data as { success?: unknown }).success === true;
 
-      if (data.success) {
+      if (res.ok && isSuccessResponse) {
         onLogin();
-      } else {
-        setError("Invalid password");
+        return;
       }
+
+      const apiError =
+        typeof data === "object" &&
+        data !== null &&
+        "error" in data &&
+        typeof (data as { error?: unknown }).error === "string"
+          ? (data as { error: string }).error
+          : "";
+
+      if (res.status === 429) {
+        setError(apiError || "Too many login attempts. Please wait and try again.");
+        return;
+      }
+
+      if (res.status >= 500 || apiError === "Internal server error") {
+        setError("Authentication service is currently unavailable. Please try again.");
+        return;
+      }
+
+      setError(apiError || "Invalid password");
     } catch {
-      setError("Authentication failed");
+      setError("Authentication service is currently unavailable. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -718,12 +783,32 @@ export default function AdminPage() {
       const res = await fetch("/api/gallery");
       const data = await res.json();
       if (data.success) {
-<<<<<<< HEAD
-        const items = normalizeApiItems<GalleryImage>(data.data);
+        const items = normalizeApiItems<GalleryImage>(data.data).flatMap((item) => {
+          if (typeof item !== "object" || item === null) {
+            return [];
+          }
+
+          const series = item.series;
+          if (series !== "recent-post" && series !== "tech-deck" && series !== "project") {
+            return [];
+          }
+
+          return [{
+            ...item,
+            src: typeof item.src === "string" ? item.src : "",
+            alt: typeof item.alt === "string" ? item.alt : "Untitled image",
+            caption: typeof item.caption === "string" ? item.caption : "",
+            width: typeof item.width === "number" ? item.width : 1,
+            height: typeof item.height === "number" ? item.height : 1,
+            date:
+              typeof item.date === "string" && item.date.length > 0
+                ? item.date
+                : new Date().toISOString().split("T")[0],
+            order: typeof item.order === "number" ? item.order : 0,
+            series,
+          }];
+        });
         setGalleryImages(items);
-=======
-        setGalleryImages(data.data?.items || []);
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
       }
     } catch (error) {
       console.error("Error fetching gallery images:", error);
@@ -735,35 +820,52 @@ export default function AdminPage() {
       const res = await fetch("/api/journal");
       const data = await res.json();
       if (data.success) {
-<<<<<<< HEAD
         const items = normalizeApiItems<JournalEntry>(data.data).map((entry) => {
           const safeTags = Array.isArray(entry.tags)
             ? entry.tags.filter((tag): tag is string => typeof tag === "string")
             : [];
 
+          const safeTitle = typeof entry.title === "string" ? entry.title : "Untitled entry";
+          const safeContent = typeof entry.content === "string" ? entry.content : "";
+          const safeDate =
+            typeof entry.date === "string" && entry.date.length > 0
+              ? entry.date
+              : new Date().toISOString().split("T")[0];
+          const safeImage =
+            typeof entry.image === "string" && entry.image.length > 0
+              ? entry.image
+              : "/images/journal/jr-1.png";
+          const safeImageAlt =
+            typeof entry.imageAlt === "string" && entry.imageAlt.length > 0
+              ? entry.imageAlt
+              : "Journal image";
+
+          const fallback =
+            typeof entry.id === "string" ? fallbackJournalLookup.get(entry.id) : undefined;
+
+          const shouldApplyFallback =
+            Boolean(fallback) &&
+            (containsCjkText(safeTitle) ||
+              containsCjkText(safeContent) ||
+              safeTags.some((tag) => containsCjkText(tag)));
+
           return {
             ...entry,
-            title: typeof entry.title === "string" ? entry.title : "Untitled entry",
-            content: typeof entry.content === "string" ? entry.content : "",
-            date:
-              typeof entry.date === "string" && entry.date.length > 0
-                ? entry.date
-                : new Date().toISOString().split("T")[0],
-            image:
-              typeof entry.image === "string" && entry.image.length > 0
-                ? entry.image
-                : "/images/journal/jr-1.png",
-            imageAlt:
-              typeof entry.imageAlt === "string" && entry.imageAlt.length > 0
-                ? entry.imageAlt
-                : "Journal image",
-            tags: safeTags,
+            title: shouldApplyFallback ? fallback!.title : safeTitle,
+            content: shouldApplyFallback ? fallback!.content : safeContent,
+            date: shouldApplyFallback ? fallback!.date : safeDate,
+            image: shouldApplyFallback ? fallback!.image : safeImage,
+            imageAlt: shouldApplyFallback ? fallback!.imageAlt : safeImageAlt,
+            quote:
+              shouldApplyFallback
+                ? fallback!.quote
+                : typeof entry.quote === "string"
+                  ? entry.quote
+                  : undefined,
+            tags: shouldApplyFallback ? fallback!.tags : safeTags,
           };
         });
         setJournalEntries(items);
-=======
-        setJournalEntries(data.data?.items || []);
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
       }
     } catch (error) {
       console.error("Error fetching journal entries:", error);
@@ -775,7 +877,14 @@ export default function AdminPage() {
       const res = await fetch("/api/settings");
       const data = await res.json();
       if (data.success) {
-        setSettings(data.data);
+        if (
+          typeof data.data === "object" &&
+          data.data !== null &&
+          typeof data.data.siteTitle === "string" &&
+          typeof data.data.siteDescription === "string"
+        ) {
+          setSettings(data.data as Settings);
+        }
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -1123,12 +1232,18 @@ export default function AdminPage() {
   const importData = async (file: File) => {
     try {
       const text = await file.text();
-      const data = JSON.parse(text);
+      const parsedFile = JSON.parse(text);
+      const payload = extractImportPayload(parsedFile);
+
+      if (Object.keys(payload).length === 0) {
+        alert("Import failed. File does not contain supported gallery, journal, or settings data.");
+        return;
+      }
 
       const res = await fetch("/api/data", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data: data.data, mode: "merge" }),
+        body: JSON.stringify({ data: payload, mode: "merge" }),
       });
 
       const result = await res.json();
@@ -1137,8 +1252,26 @@ export default function AdminPage() {
         fetchJournalEntries();
         fetchSettings();
         fetchActivityLog();
-        alert(`Import successful! Gallery: ${result.results.gallery.created} created, ${result.results.gallery.updated} updated. Journal: ${result.results.journal.created} created, ${result.results.journal.updated} updated.`);
+        const importResults =
+          typeof result.data === "object" &&
+          result.data !== null &&
+          "results" in result.data &&
+          typeof (result.data as { results?: unknown }).results === "object" &&
+          (result.data as { results?: unknown }).results !== null
+            ? ((result.data as { results: Record<string, Record<string, number>> }).results)
+            : null;
+
+        if (importResults) {
+          alert(
+            `Import successful! Gallery: ${importResults.gallery?.created ?? 0} created, ${importResults.gallery?.updated ?? 0} updated. Journal: ${importResults.journal?.created ?? 0} created, ${importResults.journal?.updated ?? 0} updated.`
+          );
+        } else {
+          alert("Import successful.");
+        }
+        return;
       }
+
+      alert(typeof result.error === "string" ? result.error : "Import failed. Please check the file format.");
     } catch (error) {
       console.error("Error importing data:", error);
       alert("Import failed. Please check the file format.");
@@ -1271,11 +1404,7 @@ export default function AdminPage() {
                 startTabTransition(() => setActiveTab(tab.key as Tab));
               }}
               className={cn(
-<<<<<<< HEAD
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
-=======
-                "flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 min-h-10",
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
+                "flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors duration-150 min-h-10",
                 activeTab === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-accent"

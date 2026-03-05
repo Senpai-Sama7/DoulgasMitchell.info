@@ -46,7 +46,7 @@ export function Reactions({ itemId, variant = "light", compact = false }: Reacti
       className={cn(
         "flex justify-center",
         compact
-          ? "max-w-[170px] flex-nowrap gap-1 overflow-x-auto pr-0.5"
+          ? "flex-nowrap gap-1 overflow-x-auto pr-0.5"
           : "flex-wrap gap-2"
       )}
     >
@@ -61,11 +61,11 @@ export function Reactions({ itemId, variant = "light", compact = false }: Reacti
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              whileHover={{ scale: 1.1 }}
+              whileHover={compact ? { scale: 1.03 } : { scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => handleReaction(type)}
               className={cn(
-                "reaction-btn",
+                "reaction-btn shrink-0",
                 compact && "px-2 py-1 text-xs gap-1 min-w-[34px] justify-center",
                 isActive && "active",
                 variant === "dark" && "bg-white/10 border-white/20 text-white"

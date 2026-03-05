@@ -12,10 +12,10 @@ import {
   invalidateSession,
   recordLoginAttempt,
   initializeAdminUser,
+  SESSION_MAX_AGE_SECONDS,
 } from '@/lib/security';
 import {
   withMiddleware,
-  errorResponse,
   successResponse,
   RateLimitError,
   AuthenticationError,
@@ -35,95 +35,106 @@ async function ensureAdminInitialized() {
 
 // POST - Login
 async function handleLogin(request: NextRequest): Promise<NextResponse> {
-  await ensureAdminInitialized();
-
   const ipAddress = getClientIp(request);
   const userAgent = getUserAgent(request);
-
-  // Check rate limit
-  const rateLimitResult = checkRateLimit(ipAddress);
-  if (!rateLimitResult.allowed) {
-    throw new RateLimitError(
-      Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
-    );
-  }
-
-  // Parse and validate input
-  let body: unknown;
   try {
-    body = await request.json();
-  } catch {
-    throw new ValidationError('Invalid JSON body');
-  }
+    await ensureAdminInitialized();
 
-  const validation = loginSchema.safeParse(body);
-  if (!validation.success) {
-    throw new ValidationError('Invalid input', {
-      errors: validation.error.issues.map((e) => ({
-        path: e.path.join('.'),
-        message: e.message,
-      })),
+    // Check rate limit
+    const rateLimitResult = checkRateLimit(ipAddress);
+    if (!rateLimitResult.allowed) {
+      throw new RateLimitError(
+        Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
+      );
+    }
+
+    // Parse and validate input
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      throw new ValidationError('Invalid JSON body');
+    }
+
+    const validation = loginSchema.safeParse(body);
+    if (!validation.success) {
+      throw new ValidationError('Invalid input', {
+        errors: validation.error.issues.map((e) => ({
+          path: e.path.join('.'),
+          message: e.message,
+        })),
+      });
+    }
+
+    const { password } = validation.data;
+
+    // Find admin user
+    const adminUser = await db.adminUser.findUnique({
+      where: { username: 'admin' },
     });
+
+    if (!adminUser) {
+      await recordLoginAttempt(ipAddress, false);
+      throw new AuthenticationError('Invalid credentials');
+    }
+
+    // Verify password
+    const isValid = await verifyPassword(password, adminUser.passwordHash);
+    if (!isValid) {
+      await recordLoginAttempt(ipAddress, false);
+      throw new AuthenticationError('Invalid credentials');
+    }
+
+    // Generate JWT token
+    const token = generateToken({
+      userId: adminUser.id,
+      username: adminUser.username,
+    });
+
+    // Create session in database
+    await createSession(adminUser.id, token, ipAddress, userAgent);
+
+    // Record successful login
+    await recordLoginAttempt(ipAddress, true);
+
+    // Update last login time
+    await db.adminUser.update({
+      where: { id: adminUser.id },
+      data: { lastLoginAt: new Date() },
+    });
+
+    // Log activity
+    await db.activityLog.create({
+      data: {
+        action: 'login',
+        resource: 'auth',
+        resourceId: adminUser.id,
+        ipAddress,
+      },
+    });
+
+    // Set cookie
+    const cookieStore = await cookies();
+    cookieStore.set('admin-session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+      path: '/',
+    });
+
+    return successResponse({ authenticated: true }, 'Login successful');
+  } catch (error) {
+    if (
+      error instanceof RateLimitError ||
+      error instanceof ValidationError ||
+      error instanceof AuthenticationError
+    ) {
+      throw error;
+    }
+
+    throw new AuthenticationError('Authentication service is currently unavailable. Please try again.');
   }
-
-  const { password } = validation.data;
-
-  // Find admin user
-  const adminUser = await db.adminUser.findUnique({
-    where: { username: 'admin' },
-  });
-
-  if (!adminUser) {
-    await recordLoginAttempt(ipAddress, false);
-    throw new AuthenticationError('Invalid credentials');
-  }
-
-  // Verify password
-  const isValid = await verifyPassword(password, adminUser.passwordHash);
-  if (!isValid) {
-    await recordLoginAttempt(ipAddress, false);
-    throw new AuthenticationError('Invalid credentials');
-  }
-
-  // Generate JWT token
-  const token = generateToken({
-    userId: adminUser.id,
-    username: adminUser.username,
-  });
-
-  // Create session in database
-  await createSession(adminUser.id, token, ipAddress, userAgent);
-
-  // Record successful login
-  await recordLoginAttempt(ipAddress, true);
-
-  // Update last login time
-  await db.adminUser.update({
-    where: { id: adminUser.id },
-    data: { lastLoginAt: new Date() },
-  });
-
-  // Log activity
-  await db.activityLog.create({
-    data: {
-      action: 'login',
-      resource: 'auth',
-      resourceId: adminUser.id,
-      ipAddress,
-    },
-  });
-
-  // Set cookie
-  const cookieStore = await cookies();
-  cookieStore.set('admin-session', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 60 * 60 * 24, // 24 hours
-    path: '/',
-  });
-
-  return successResponse({ authenticated: true }, 'Login successful');
 }
 
 // GET - Check authentication status

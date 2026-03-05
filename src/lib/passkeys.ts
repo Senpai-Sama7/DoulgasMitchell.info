@@ -50,7 +50,42 @@ function getRequestProtocol(request: NextRequest): 'http' | 'https' {
   return process.env.NODE_ENV === 'production' ? 'https' : 'http';
 }
 
+function getConfiguredExpectedOrigins(): string[] {
+  return (
+    process.env.PASSKEY_EXPECTED_ORIGINS
+      ?.split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean) ?? []
+  );
+}
+
+function assertPasskeyConfig(): void {
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
+
+  const configuredRPID = process.env.PASSKEY_RP_ID?.trim();
+  const configuredOrigins = getConfiguredExpectedOrigins();
+  const missingVars: string[] = [];
+
+  if (!configuredRPID) {
+    missingVars.push('PASSKEY_RP_ID');
+  }
+
+  if (configuredOrigins.length === 0) {
+    missingVars.push('PASSKEY_EXPECTED_ORIGINS');
+  }
+
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing required passkey configuration for production: ${missingVars.join(', ')}`
+    );
+  }
+}
+
 export function getPasskeyRPID(request: NextRequest): string {
+  assertPasskeyConfig();
+
   const configuredRPID = process.env.PASSKEY_RP_ID?.trim();
   if (configuredRPID) {
     return configuredRPID;
@@ -65,12 +100,10 @@ export function getPasskeyRPID(request: NextRequest): string {
 }
 
 export function getPasskeyExpectedOrigins(request: NextRequest): string[] {
-  const configuredOrigins = process.env.PASSKEY_EXPECTED_ORIGINS
-    ?.split(',')
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  assertPasskeyConfig();
+  const configuredOrigins = getConfiguredExpectedOrigins();
 
-  if (configuredOrigins && configuredOrigins.length > 0) {
+  if (configuredOrigins.length > 0) {
     return configuredOrigins;
   }
 

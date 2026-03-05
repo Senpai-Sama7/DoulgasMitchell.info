@@ -200,11 +200,6 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
 }
 
 // Input validation wrapper
-<<<<<<< HEAD
-=======
-import { ZodSchema } from 'zod';
-
->>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
 export function validateInput<T>(
   schema: ZodSchema<T>,
   data: unknown

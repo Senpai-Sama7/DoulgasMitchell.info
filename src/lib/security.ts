@@ -1,13 +1,20 @@
 import bcrypt from 'bcrypt';
+import { randomBytes, randomUUID } from 'crypto';
 import jwt from 'jsonwebtoken';
+import { isIP } from 'net';
 import { NextRequest } from 'next/server';
 import { db } from './db';
 
 // Configuration
 const RATE_LIMIT_MAX = parseInt(process.env.RATE_LIMIT_MAX || '5', 10);
 const RATE_LIMIT_WINDOW_MS = parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10);
-const SESSION_MAX_AGE = parseInt(process.env.SESSION_MAX_AGE || '86400', 10);
+export const SESSION_MAX_AGE_SECONDS = parseInt(process.env.SESSION_MAX_AGE || '86400', 10);
 const TRUST_PROXY_HEADERS = process.env.TRUST_PROXY_HEADERS === 'true';
+const IS_VERCEL_RUNTIME = process.env.VERCEL === '1' || process.env.VERCEL === 'true';
+const IS_CLOUDFLARE_RUNTIME =
+  process.env.CF_PAGES === '1' ||
+  process.env.CF_PAGES === 'true' ||
+  Boolean(process.env.CF_PAGES_URL);
 
 function getJwtSecret(): string {
   const secret = process.env.JWT_SECRET;
@@ -21,6 +28,7 @@ function getJwtSecret(): string {
 export interface JwtPayload {
   userId: string;
   username: string;
+  jti: string;
   iat: number;
   exp: number;
 }
@@ -42,8 +50,18 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
 }
 
 // JWT utilities
+function generateJwtId(): string {
+  if (typeof randomUUID === 'function') {
+    return randomUUID();
+  }
+  return randomBytes(16).toString('hex');
+}
+
 export function generateToken(payload: { userId: string; username: string }): string {
-  return jwt.sign(payload, getJwtSecret(), { expiresIn: SESSION_MAX_AGE });
+  return jwt.sign(payload, getJwtSecret(), {
+    expiresIn: SESSION_MAX_AGE_SECONDS,
+    jwtid: generateJwtId(),
+  });
 }
 
 export function verifyToken(token: string): JwtPayload | null {
@@ -123,27 +141,74 @@ const rateLimitCleanupTimer = setInterval(() => {
 rateLimitCleanupTimer.unref?.();
 
 // IP extraction
+function parseIpCandidate(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim().replace(/^"(.*)"$/, '$1');
+  if (!trimmed) {
+    return null;
+  }
+
+  const bracketedMatch = trimmed.match(/^\[([^\]]+)\](?::\d+)?$/);
+  if (bracketedMatch && isIP(bracketedMatch[1]) !== 0) {
+    return bracketedMatch[1];
+  }
+
+  if (isIP(trimmed) !== 0) {
+    return trimmed;
+  }
+
+  const ipv4WithPortMatch = trimmed.match(/^(\d{1,3}(?:\.\d{1,3}){3}):\d+$/);
+  if (ipv4WithPortMatch && isIP(ipv4WithPortMatch[1]) === 4) {
+    return ipv4WithPortMatch[1];
+  }
+
+  return null;
+}
+
+function getForwardedForIp(request: NextRequest): string | null {
+  const forwarded = request.headers.get('x-forwarded-for');
+  if (!forwarded) {
+    return null;
+  }
+
+  for (const candidate of forwarded.split(',')) {
+    const parsedIp = parseIpCandidate(candidate);
+    if (parsedIp) {
+      return parsedIp;
+    }
+  }
+
+  return null;
+}
+
 export function getClientIp(request: NextRequest): string {
   if (TRUST_PROXY_HEADERS) {
-    const forwarded = request.headers.get('x-forwarded-for');
-    if (forwarded) {
-      return forwarded.split(',')[0].trim();
+    const forwardedIp = getForwardedForIp(request);
+    if (forwardedIp) {
+      return forwardedIp;
     }
 
-    const realIp = request.headers.get('x-real-ip');
+    const realIp = parseIpCandidate(request.headers.get('x-real-ip'));
     if (realIp) {
       return realIp;
     }
   }
 
-  const vercelIp = request.headers.get('x-vercel-ip');
-  if (vercelIp) {
-    return vercelIp;
+  if (IS_VERCEL_RUNTIME) {
+    const vercelIp = parseIpCandidate(request.headers.get('x-vercel-ip'));
+    if (vercelIp) {
+      return vercelIp;
+    }
   }
 
-  const cloudflareIp = request.headers.get('cf-connecting-ip');
-  if (cloudflareIp) {
-    return cloudflareIp;
+  if (IS_CLOUDFLARE_RUNTIME) {
+    const cloudflareIp = parseIpCandidate(request.headers.get('cf-connecting-ip'));
+    if (cloudflareIp) {
+      return cloudflareIp;
+    }
   }
 
   return 'unknown';
@@ -161,7 +226,7 @@ export async function createSession(
   ipAddress?: string,
   userAgent?: string
 ): Promise<void> {
-  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE * 1000);
+  const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000);
 
   await db.session.create({
     data: {
@@ -317,12 +382,21 @@ export async function initializeAdminUser(): Promise<void> {
   }
 
   const passwordHash = await hashPassword(adminPassword);
-  await db.adminUser.create({
-    data: {
-      username: 'admin',
-      passwordHash,
-      email: 'admin@senpai-isekai.com',
-    },
-  });
-  console.log('Admin user created successfully');
+
+  try {
+    await db.adminUser.create({
+      data: {
+        username: 'admin',
+        passwordHash,
+        email: 'admin@senpai-isekai.com',
+      },
+    });
+    console.log('Admin user created successfully');
+  } catch (error) {
+    if (typeof error === 'object' && error !== null && 'code' in error && error.code === 'P2002') {
+      return;
+    }
+
+    throw error;
+  }
 }
