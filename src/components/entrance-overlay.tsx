@@ -56,7 +56,31 @@ export function EntranceOverlay() {
         >
           {/* Animated background grid */}
           <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff0a_1px,transparent_1px),linear-gradient(to_bottom,#ffffff0a_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#fbbf2440_1px,transparent_1px),linear-gradient(to_bottom,#fbbf2440_1px,transparent_1px)] bg-[size:4rem_4rem]" />
+          </div>
+
+          {/* Floating particles */}
+          <div className="absolute inset-0">
+            {[...Array(30)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-1 h-1 bg-amber-400/40 rounded-full"
+                initial={{
+                  x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+                  y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+                  scale: Math.random() * 2 + 0.5,
+                }}
+                animate={{
+                  y: [null, Math.random() * -100 - 50],
+                  opacity: [0, 0.6, 0],
+                }}
+                transition={{
+                  duration: Math.random() * 3 + 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 2,
+                }}
+              />
+            ))}
           </div>
 
           {/* Main content */}
@@ -66,11 +90,14 @@ export function EntranceOverlay() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <h1 className="mb-6 font-serif text-7xl md:text-9xl font-bold bg-gradient-to-b from-white to-gray-400 bg-clip-text text-transparent">
-                Douglas Mitchell
+              <h1 className="mb-2 font-serif text-5xl md:text-7xl font-bold text-white">
+                Senpai's Isekai
               </h1>
-              <p className="text-xl md:text-2xl text-gray-400 mb-12 font-light tracking-wider">
-                Author • Storyteller • Visionary
+              <p className="text-lg md:text-xl text-gray-400 mb-2 font-light tracking-wider">
+                ~ Thee Strongest ~
+              </p>
+              <p className="text-base md:text-lg text-gray-500 mb-12 font-light tracking-wider">
+                Open-Source Humanity
               </p>
             </motion.div>
 
