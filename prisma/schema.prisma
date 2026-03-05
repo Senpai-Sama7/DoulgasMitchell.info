@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  email        String?
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  sessions     Session[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  token        String   @unique
+  adminUserId  String
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+  adminUser    AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([adminUserId])
+  @@index([expiresAt])
+}
+
+model LoginAttempt {
+  id          String   @id @default(cuid())
+  ipAddress   String
+  success     Boolean
+  createdAt   DateTime @default(now())
+
+  @@index([ipAddress])
+  @@index([createdAt])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model GalleryImage {
+  id          String   @id @default(cuid())
+  src         String
+  alt         String
+  caption     String
+  series      String   // 'recent-post' | 'tech-deck' | 'project'
+  width       Int      @default(1344)
+  height      Int      @default(768)
+  date        String   // ISO date string
+  blurDataUrl String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([series])
+  @@index([date])
+}
+
+model JournalEntry {
+  id        String   @id @default(cuid())
+  title     String
+  date      String   // ISO date string
+  content   String
+  quote     String?
+  image     String
+  imageAlt  String
+  order     Int      @default(0)
+  tags      JournalTag[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([date])
+}
+
+model Tag {
+  id      String       @id @default(cuid())
+  name    String       @unique
+  journals JournalTag[]
+
+  @@index([name])
+}
+
+model JournalTag {
+  journalEntryId String
+  tagId          String
+
+  journalEntry JournalEntry @relation(fields: [journalEntryId], references: [id], onDelete: Cascade)
+  tag          Tag          @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([journalEntryId, tagId])
+}
+
+model Settings {
+  id          String @id @default(cuid())
+  siteTitle   String @default("Senpai's Isekai")
+  siteDescription String @default("A personal blog exploring architecture, technology, and creative expression")
+  linkedin    String?
+  github      String?
+  telegram    String?
+  whatsapp    String?
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  action    String   // 'create', 'update', 'delete', 'upload', 'export', 'import', 'login', 'logout'
+  resource  String   // 'gallery', 'journal', 'settings', 'auth', etc.
+  resourceId String?
+  details   String?  // JSON string for additional details
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([action])
+  @@index([resource])
+  @@index([createdAt])
+}
+
+model RequestLog {
+  id          String   @id @default(cuid())
+  method      String
+  path        String
+  statusCode  Int
+  duration    Int      // milliseconds
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([path])
+  @@index([createdAt])
+}
