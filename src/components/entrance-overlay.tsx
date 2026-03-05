@@ -52,7 +52,7 @@ export function EntranceOverlay() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-black via-zinc-900 to-black"
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
         >
           {/* Animated background grid */}
           <div className="absolute inset-0 opacity-20">
