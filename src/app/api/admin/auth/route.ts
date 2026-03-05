@@ -19,6 +19,7 @@ import {
   successResponse,
   RateLimitError,
   AuthenticationError,
+  ServiceUnavailableError,
   ValidationError,
 } from '@/lib/middleware';
 import { loginSchema } from '@/lib/validations';
@@ -133,7 +134,7 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
       throw error;
     }
 
-    throw new AuthenticationError('Authentication service is currently unavailable. Please try again.');
+    throw new ServiceUnavailableError('Authentication service is currently unavailable. Please try again.');
   }
 }
 

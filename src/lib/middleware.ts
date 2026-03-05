@@ -50,6 +50,13 @@ export class RateLimitError extends AppError {
   }
 }
 
+export class ServiceUnavailableError extends AppError {
+  constructor(message: string = 'Service is currently unavailable') {
+    super(message, 503, 'SERVICE_UNAVAILABLE');
+    this.name = 'ServiceUnavailableError';
+  }
+}
+
 // Error response formatter
 export function errorResponse(error: unknown): NextResponse {
   console.error('API Error:', error);
