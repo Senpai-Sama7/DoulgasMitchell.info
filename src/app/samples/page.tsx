@@ -33,7 +33,7 @@ export default function SamplesPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black text-white py-20 px-4">
+      <main className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8">
             Book Samples
@@ -58,14 +58,14 @@ export default function SamplesPage() {
                     <p className="text-lg text-gray-400">
                       {sample.chapter} • {sample.genre} • {sample.year}
                     </p>
-                  </div>
-                </div>
+                  </main>
+                </main>
                 
                 <div className="bg-black/30 border border-white/5 rounded-xl p-6 mb-6">
                   <p className="text-gray-300 leading-relaxed text-lg italic">
                     "{sample.excerpt}"
                   </p>
-                </div>
+                </main>
                 
                 <div className="flex flex-col sm:flex-row gap-4">
                   <button className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
@@ -74,10 +74,10 @@ export default function SamplesPage() {
                   <button className="border border-white/20 text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/10 transition-colors">
                     Purchase Book
                   </button>
-                </div>
-              </div>
+                </main>
+              </main>
             ))}
-          </div>
+          </main>
 
           <div className="mt-16 bg-white/5 border border-white/10 rounded-2xl p-8">
             <h2 className="text-3xl font-serif font-bold mb-4">Want More?</h2>
@@ -94,10 +94,10 @@ export default function SamplesPage() {
               <button className="bg-white text-black px-6 py-3 rounded-lg font-semibold hover:bg-gray-200 transition-colors">
                 Subscribe
               </button>
-            </div>
-          </div>
-        </div>
-      </div>
+            </main>
+          </main>
+        </main>
+      </main>
     </MainLayout>
   );
 }

@@ -36,7 +36,7 @@ export default function EventsPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black text-white py-20 px-4">
+      <main className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8">
             Upcoming Events
@@ -61,7 +61,7 @@ export default function EventsPage() {
                     <p className="text-lg text-gray-300">
                       {event.venue} • {event.location}
                     </p>
-                  </div>
+                  </main>
                   <div className="text-right mt-4 md:mt-0">
                     <div className="text-xl font-bold text-white">
                       {new Date(event.date).toLocaleDateString('en-US', {
@@ -69,14 +69,14 @@ export default function EventsPage() {
                         day: 'numeric',
                         year: 'numeric'
                       })}
-                    </div>
-                    <div className="text-gray-400">{event.time}</div>
-                  </div>
-                </div>
+                    </main>
+                    <div className="text-gray-400">{event.time}</main>
+                  </main>
+                </main>
                 <p className="text-gray-300">{event.description}</p>
-              </div>
+              </main>
             ))}
-          </div>
+          </main>
 
           <div className="mt-16 bg-white/5 border border-white/10 rounded-2xl p-8">
             <h2 className="text-3xl font-serif font-bold mb-4">Book a Reading</h2>
@@ -90,9 +90,9 @@ export default function EventsPage() {
             >
               Contact for Bookings
             </a>
-          </div>
-        </div>
-      </div>
+          </main>
+        </main>
+      </main>
     </MainLayout>
   );
 }

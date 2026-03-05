@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black text-white py-20 px-4">
+      <main className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8">
             About the Author
@@ -25,7 +25,7 @@ export default function AboutPage() {
                 height={800}
                 className="rounded-2xl"
               />
-            </div>
+            </main>
 
             <div className="space-y-6 text-gray-300 leading-relaxed">
               <p className="text-xl text-white font-light">
@@ -47,8 +47,8 @@ export default function AboutPage() {
                 When he's not writing, Douglas enjoys [Hobbies], spending time with his family,
                 and exploring new ideas that inspire his next story.
               </p>
-            </div>
-          </div>
+            </main>
+          </main>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 mb-16">
             <h2 className="text-3xl font-serif font-bold mb-6">Writing Philosophy</h2>
@@ -57,24 +57,24 @@ export default function AboutPage() {
               My goal is to create worlds that readers can lose themselves in, while discovering
               truths about themselves along the way."
             </blockquote>
-          </div>
+          </main>
 
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">10+</div>
-              <div className="text-gray-400">Published Works</div>
-            </div>
+              <div className="text-4xl font-bold text-white mb-2">10+</main>
+              <div className="text-gray-400">Published Works</main>
+            </main>
             <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">50K+</div>
-              <div className="text-gray-400">Readers Worldwide</div>
-            </div>
+              <div className="text-4xl font-bold text-white mb-2">50K+</main>
+              <div className="text-gray-400">Readers Worldwide</main>
+            </main>
             <div className="text-center">
-              <div className="text-4xl font-bold text-white mb-2">5</div>
-              <div className="text-gray-400">Literary Awards</div>
-            </div>
-          </div>
-        </div>
-      </div>
+              <div className="text-4xl font-bold text-white mb-2">5</main>
+              <div className="text-gray-400">Literary Awards</main>
+            </main>
+          </main>
+        </main>
+      </main>
     </MainLayout>
   );
 }

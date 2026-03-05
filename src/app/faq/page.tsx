@@ -44,7 +44,7 @@ export default function FAQPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black text-white py-20 px-4">
+      <main className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8">
             Frequently Asked Questions
@@ -66,9 +66,9 @@ export default function FAQPage() {
                 <p className="text-gray-300 leading-relaxed">
                   {faq.answer}
                 </p>
-              </div>
+              </main>
             ))}
-          </div>
+          </main>
 
           <div className="mt-16 bg-white/5 border border-white/10 rounded-2xl p-8">
             <h2 className="text-3xl font-serif font-bold mb-4">Have Another Question?</h2>
@@ -82,9 +82,9 @@ export default function FAQPage() {
             >
               Contact Douglas
             </a>
-          </div>
-        </div>
-      </div>
+          </main>
+        </main>
+      </main>
     </MainLayout>
   );
 }

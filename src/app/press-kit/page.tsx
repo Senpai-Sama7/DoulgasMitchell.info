@@ -36,7 +36,7 @@ export default function PressKitPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-black text-white py-20 px-4">
+      <main className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-5xl md:text-7xl font-serif font-bold mb-8">
             Press Kit
@@ -64,10 +64,10 @@ export default function PressKitPage() {
                   <button className="bg-white text-black px-4 py-2 rounded-lg text-sm font-semibold hover:bg-gray-200 transition-colors">
                     Download
                   </button>
-                </div>
-              </div>
+                </main>
+              </main>
             ))}
-          </div>
+          </main>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8 mb-16">
             <h2 className="text-3xl font-serif font-bold mb-6">Quick Facts</h2>
@@ -80,7 +80,7 @@ export default function PressKitPage() {
                   <li><strong>Debut:</strong> 2018</li>
                   <li><strong>Awards:</strong> 5 Literary Awards</li>
                 </ul>
-              </div>
+              </main>
               <div>
                 <h3 className="text-lg font-semibold text-white mb-4">Latest Work</h3>
                 <ul className="space-y-2 text-gray-300">
@@ -89,9 +89,9 @@ export default function PressKitPage() {
                   <li><strong>Release:</strong> [Release Date]</li>
                   <li><strong>ISBN:</strong> [ISBN Number]</li>
                 </ul>
-              </div>
-            </div>
-          </div>
+              </main>
+            </main>
+          </main>
 
           <div className="bg-white/5 border border-white/10 rounded-2xl p-8">
             <h2 className="text-3xl font-serif font-bold mb-4">Media Inquiries</h2>
@@ -112,10 +112,10 @@ export default function PressKitPage() {
               >
                 General Contact
               </a>
-            </div>
-          </div>
-        </div>
-      </div>
+            </main>
+          </main>
+        </main>
+      </main>
     </MainLayout>
   );
 }
