@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const CANONICAL_HOST = (
-  process.env.CANONICAL_HOST || "douglasmitchell.info"
+  process.env.CANONICAL_HOST || "www.douglasmitchell.info"
 ).toLowerCase();
 
 function shouldRedirectToCanonicalHost(host: string): boolean {
