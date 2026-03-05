@@ -6,9 +6,9 @@ const globalForPrisma = globalThis as unknown as {
 
 function resolveDatabaseUrl(): string | undefined {
   const candidates = [
-    process.env.POSTGRES_PRISMA_URL,
     process.env.DATABASE_URL,
     process.env.DATABASE_URL_UNPOOLED,
+    process.env.POSTGRES_PRISMA_URL,
     process.env.POSTGRES_URL,
     process.env.POSTGRES_URL_NON_POOLING,
   ];
