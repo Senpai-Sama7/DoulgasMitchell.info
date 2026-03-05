@@ -18,10 +18,10 @@ export function Lightbox({ images }: LightboxProps) {
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [copied, setCopied] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
 
   const currentImage = images[currentIndex];
+  const dialogTitleId = currentImage ? `lightbox-title-${currentImage.id}` : undefined;
+  const dialogDescriptionId = currentImage ? `lightbox-description-${currentImage.id}` : undefined;
 
   // Toggle fullscreen - defined first since it's used in keyboard handler
   const toggleFullscreen = useCallback(async () => {
@@ -84,6 +84,7 @@ export function Lightbox({ images }: LightboxProps) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      containerRef.current?.focus();
     } else {
       document.body.style.overflow = "";
     }
@@ -113,33 +114,6 @@ export function Lightbox({ images }: LightboxProps) {
     document.addEventListener("fullscreenchange", handleFullscreenChange);
     return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
   }, []);
-
-  // Handle touch swipe
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    const swipeThreshold = 50;
-    const diff = touchStartX.current - touchEndX.current;
-
-    if (Math.abs(diff) > swipeThreshold) {
-      if (diff > 0 && currentIndex < images.length - 1) {
-        // Swipe left - next image
-        next();
-      } else if (diff < 0 && currentIndex > 0) {
-        // Swipe right - previous image
-        prev();
-      }
-    }
-
-    touchStartX.current = 0;
-    touchEndX.current = 0;
-  };
 
   // Handle pan gesture for mobile
   const handlePanEnd = (_: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
@@ -216,9 +190,11 @@ export function Lightbox({ images }: LightboxProps) {
           transition={{ duration: 0.3 }}
           className="lightbox-overlay"
           onClick={close}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={dialogTitleId}
+          aria-describedby={dialogDescriptionId}
+          tabIndex={-1}
         >
           {/* Top Bar */}
           <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/50 to-transparent">
@@ -395,10 +371,10 @@ export function Lightbox({ images }: LightboxProps) {
               transition={{ delay: 0.2 }}
               className="mt-4 text-center"
             >
-              <h3 className="text-white text-xl font-serif mb-2">
+              <h3 id={dialogTitleId} className="text-white text-xl font-serif mb-2">
                 {currentImage.alt}
               </h3>
-              <p className="text-white/70 text-sm max-w-xl mx-auto mb-1">
+              <p id={dialogDescriptionId} className="text-white/70 text-sm max-w-xl mx-auto mb-1">
                 {currentImage.caption}
               </p>
               <p className="text-white/50 text-xs font-mono">

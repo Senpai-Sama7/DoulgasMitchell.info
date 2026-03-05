@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+const journalTagNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Tag is required')
+  .max(50, 'Tag is too long');
+
 // Auth validation schemas
 export const loginSchema = z.object({
   password: z
@@ -37,13 +43,17 @@ export const createJournalEntrySchema = z.object({
   quote: z.string().max(500, 'Quote is too long').optional(),
   image: z.string().url('Invalid image URL').or(z.string().startsWith('/images/', 'Invalid image path')),
   imageAlt: z.string().min(1, 'Image alt text is required').max(200, 'Image alt text is too long'),
-  tags: z.array(z.string()).default([]),
+  tags: z.array(journalTagNameSchema).default([]),
 });
 
 export const updateJournalEntrySchema = createJournalEntrySchema.partial();
+export const updateJournalEntryRequestSchema = updateJournalEntrySchema.extend({
+  id: z.string().min(1, 'Entry ID is required'),
+});
 
 export type CreateJournalEntryInput = z.infer<typeof createJournalEntrySchema>;
 export type UpdateJournalEntryInput = z.infer<typeof updateJournalEntrySchema>;
+export type UpdateJournalEntryRequestInput = z.infer<typeof updateJournalEntryRequestSchema>;
 
 // Settings validation schema
 export const settingsSchema = z.object({
@@ -116,6 +126,22 @@ export const journalFilterSchema = z.object({
 
 export type GalleryFilterInput = z.infer<typeof galleryFilterSchema>;
 export type JournalFilterInput = z.infer<typeof journalFilterSchema>;
+
+// Activity query schemas
+export const activityQuerySchema = z.object({
+  limit: z.coerce.number().int().positive().max(200).default(50),
+  offset: z.coerce.number().int().nonnegative().default(0),
+  resource: z.string().trim().min(1, 'Resource cannot be empty').max(100).optional(),
+});
+
+export const activityDeleteSchema = z.object({
+  before: z
+    .string()
+    .trim()
+    .min(1)
+    .refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid before date')
+    .optional(),
+});
 
 // Export/Import schema
 const importGalleryImageSchema = createGalleryImageSchema

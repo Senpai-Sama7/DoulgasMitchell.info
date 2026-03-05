@@ -4,6 +4,12 @@ import { validateSession } from "@/lib/security";
 import { withMiddleware, successResponse, validateInput, AuthenticationError } from "@/lib/middleware";
 import { settingsSchema } from "@/lib/validations";
 
+const SETTINGS_SINGLETON_ID = "settings-singleton";
+const DEFAULT_SETTINGS = {
+  siteTitle: "Senpai's Isekai",
+  siteDescription: "A personal blog exploring architecture, technology, and creative expression",
+};
+
 async function authenticateRequest(request: NextRequest): Promise<void> {
   const cookieStore = await import("next/headers").then((m) => m.cookies());
   const token = (await cookieStore).get("admin-session")?.value;
@@ -19,16 +25,31 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
 }
 
 async function handleGetSettings(request: NextRequest): Promise<NextResponse> {
-  let settings = await db.settings.findFirst();
+  const singleton = await db.settings.findUnique({
+    where: { id: SETTINGS_SINGLETON_ID },
+  });
 
-  if (!settings) {
-    settings = await db.settings.create({
-      data: {
-        siteTitle: "Senpai's Isekai",
-        siteDescription: "A personal blog exploring architecture, technology, and creative expression",
-      },
-    });
+  if (singleton) {
+    return successResponse(singleton);
   }
+
+  const latestLegacy = await db.settings.findFirst({
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const settings = await db.settings.upsert({
+    where: { id: SETTINGS_SINGLETON_ID },
+    update: {},
+    create: {
+      id: SETTINGS_SINGLETON_ID,
+      siteTitle: latestLegacy?.siteTitle ?? DEFAULT_SETTINGS.siteTitle,
+      siteDescription: latestLegacy?.siteDescription ?? DEFAULT_SETTINGS.siteDescription,
+      linkedin: latestLegacy?.linkedin ?? undefined,
+      github: latestLegacy?.github ?? undefined,
+      telegram: latestLegacy?.telegram ?? undefined,
+      whatsapp: latestLegacy?.whatsapp ?? undefined,
+    },
+  });
 
   return successResponse(settings);
 }
@@ -41,17 +62,14 @@ async function handleUpdateSettings(
   const body = await request.json();
   const data = validateInput(settingsSchema, body);
 
-  let settings;
-
-  const existing = await db.settings.findFirst();
-  if (existing) {
-    settings = await db.settings.update({
-      where: { id: existing.id },
-      data,
-    });
-  } else {
-    settings = await db.settings.create({ data });
-  }
+  const settings = await db.settings.upsert({
+    where: { id: SETTINGS_SINGLETON_ID },
+    update: data,
+    create: {
+      id: SETTINGS_SINGLETON_ID,
+      ...data,
+    },
+  });
 
   await db.activityLog.create({
     data: {

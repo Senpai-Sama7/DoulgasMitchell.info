@@ -113,6 +113,8 @@ export function CustomCursor() {
 
       if (!hasPointerPositionRef.current) {
         hasPointerPositionRef.current = true;
+        cursorX.set(lastX);
+        cursorY.set(lastY);
         setState((prev) => ({ ...prev, isVisible: true }));
       }
       
