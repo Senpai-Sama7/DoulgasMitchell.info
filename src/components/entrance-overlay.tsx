@@ -12,22 +12,18 @@ interface EntranceOverlayProps {
 // ─── Animated SVG monogram ────────────────────────────────────────────────────
 function IsekaiMonogram() {
   const outerR = 85;
-  const outerC = 2 * Math.PI * outerR; // ≈ 534
+  const outerC = +(2 * Math.PI * outerR).toFixed(2); // ≈5 34.07
 
-  // 8 tick marks evenly around the outer ring
   const ticks = Array.from({ length: 8 }, (_, i) => {
     const angle = (i * 45 - 90) * (Math.PI / 180);
-    const r1 = outerR - 13;
-    const r2 = outerR - 4;
     return {
-      x1: 100 + r1 * Math.cos(angle),
-      y1: 100 + r1 * Math.sin(angle),
-      x2: 100 + r2 * Math.cos(angle),
-      y2: 100 + r2 * Math.sin(angle),
+      x1: 100 + (outerR - 13) * Math.cos(angle),
+      y1: 100 + (outerR - 13) * Math.sin(angle),
+      x2: 100 + (outerR - 4) * Math.cos(angle),
+      y2: 100 + (outerR - 4) * Math.sin(angle),
     };
   });
 
-  // 4 glowing dots at cardinal points
   const cardinals = [0, 90, 180, 270].map((deg) => {
     const rad = (deg - 90) * (Math.PI / 180);
     return { cx: 100 + outerR * Math.cos(rad), cy: 100 + outerR * Math.sin(rad) };
@@ -37,19 +33,54 @@ function IsekaiMonogram() {
     <motion.div
       initial={{ opacity: 0, scale: 0.78 }}
       animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ delay: 0.12, duration: 0.82, ease: [0.22, 1, 0.36, 1] }}
       style={{ position: "relative", width: 190, height: 190, flexShrink: 0 }}
     >
-      {/* Pulsing ambient glow halo */}
+      {/*
+        CSS keyframes are embedded here so the spin + pulse animations run
+        independently of framer-motion’s transform pipeline, avoiding the
+        SVG transform-origin conflict that breaks rotation pivot points.
+      */}
+      <style>{`
+        @keyframes ei-spin-cw {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+        @keyframes ei-spin-ccw {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(-360deg); }
+        }
+        @keyframes ei-pulse-out {
+          0%   { transform: scale(1);    opacity: 0.38; }
+          100% { transform: scale(1.73); opacity: 0; }
+        }
+        .ei-ring-cw {
+          transform-origin: 100px 100px;
+          transform-box: view-box;
+          animation: ei-spin-cw 22s linear 1.08s infinite;
+        }
+        .ei-ring-ccw {
+          transform-origin: 100px 100px;
+          transform-box: view-box;
+          animation: ei-spin-ccw 14s linear 0.52s infinite;
+        }
+        .ei-pulse-ring {
+          transform-origin: center;
+          transform-box: fill-box;
+          animation: ei-pulse-out 2.2s ease-out 1.1s infinite;
+          opacity: 0;
+        }
+      `}</style>
+
+      {/* Pulsing ambient glow halo (div, not SVG — no transform-box conflict) */}
       <motion.div
-        animate={{ opacity: [0.35, 0.72, 0.35], scale: [1, 1.12, 1] }}
+        animate={{ opacity: [0.32, 0.7, 0.32], scale: [1, 1.12, 1] }}
         transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
         style={{
           position: "absolute",
           inset: 0,
           borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(217,119,6,0.35) 0%, transparent 68%)",
+          background: "radial-gradient(circle, rgba(217,119,6,0.32) 0%, transparent 68%)",
           filter: "blur(22px)",
           pointerEvents: "none",
         }}
@@ -62,121 +93,100 @@ function IsekaiMonogram() {
         style={{ display: "block", overflow: "visible" }}
       >
         <defs>
-          <radialGradient id="ei-inner" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#1c0e04" stopOpacity="0.96" />
-            <stop offset="100%" stopColor="#080503" stopOpacity="0.99" />
+          <radialGradient id="ei-inner-grad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%"   stopColor="#1c0e04" stopOpacity="0.97" />
+            <stop offset="100%" stopColor="#060402" stopOpacity="0.99" />
           </radialGradient>
-          <filter id="ei-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2.5" result="b" />
+          <filter id="ei-text-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
             <feMerge>
-              <feMergeNode in="b" />
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
           <filter id="ei-dot-glow" x="-150%" y="-150%" width="400%" height="400%">
-            <feGaussianBlur stdDeviation="2" result="b" />
+            <feGaussianBlur stdDeviation="2.2" result="blur" />
             <feMerge>
-              <feMergeNode in="b" />
+              <feMergeNode in="blur" />
               <feMergeNode in="SourceGraphic" />
             </feMerge>
           </filter>
         </defs>
 
-        {/* ── Breathe / pulse ring expanding from center ── */}
-        <motion.circle
+        {/* ── Expand-pulse ring — CSS animated, plain <circle> ── */}
+        <circle
           cx="100" cy="100" r="52"
           fill="none"
-          stroke="rgba(217,119,6,0.25)"
+          stroke="rgba(217,119,6,0.38)"
           strokeWidth="1"
-          animate={{ r: [52, 90, 52], opacity: [0, 0.35, 0] }}
-          transition={{ delay: 1.1, duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+          className="ei-pulse-ring"
         />
 
-        {/* ── Outer dashed ring: draws in, then slow CW spin ── */}
-        <motion.g
-          animate={{ rotate: 360 }}
-          transition={{
-            delay: 1.08,
-            duration: 22,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{ transformOrigin: "100px 100px" }}
-        >
+        {/*
+          ── Outer dashed ring ──
+          Spin: plain <g className="ei-ring-cw"> → CSS transform
+          Draw: framer-motion <motion.circle> → strokeDashoffset only
+          Keeping on separate elements prevents transform conflicts.
+        */}
+        <g className="ei-ring-cw">
           <motion.circle
             cx="100" cy="100"
             r={outerR}
             fill="none"
-            stroke="rgba(251,191,36,0.42)"
-            strokeWidth="0.8"
+            stroke="rgba(251,191,36,0.44)"
+            strokeWidth="0.85"
             strokeDasharray="6 3.5"
             initial={{ strokeDashoffset: outerC, opacity: 0 }}
             animate={{ strokeDashoffset: 0, opacity: 1 }}
             transition={{
-              strokeDashoffset: { delay: 0.18, duration: 0.88, ease: [0.22, 1, 0.36, 1] },
-              opacity: { delay: 0.18, duration: 0.3 },
+              strokeDashoffset: { delay: 0.18, duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+              opacity:          { delay: 0.18, duration: 0.28 },
             }}
           />
-        </motion.g>
+        </g>
 
-        {/* ── Inner counter-rotating dashed ring ── */}
-        <motion.g
-          animate={{ rotate: -360 }}
-          transition={{
-            delay: 0.52,
-            duration: 14,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          style={{ transformOrigin: "100px 100px" }}
-        >
+        {/*
+          ── Inner counter-rotating dashed ring ──
+          Spin: plain <g className="ei-ring-ccw"> → CSS transform
+          Opacity: framer-motion on inner <motion.circle>
+        */}
+        <g className="ei-ring-ccw">
           <motion.circle
             cx="100" cy="100" r="65"
             fill="none"
-            stroke="rgba(180,83,9,0.28)"
+            stroke="rgba(180,83,9,0.3)"
             strokeWidth="0.55"
             strokeDasharray="3 7"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.52, duration: 0.35 }}
+            transition={{ delay: 0.52, duration: 0.38 }}
           />
-        </motion.g>
+        </g>
 
         {/* ── Frosted inner disc ── */}
         <motion.circle
           cx="100" cy="100" r="52"
-          fill="url(#ei-inner)"
-          stroke="rgba(251,191,36,0.16)"
+          fill="url(#ei-inner-grad)"
+          stroke="rgba(251,191,36,0.15)"
           strokeWidth="0.75"
-          initial={{ scale: 0.55, opacity: 0 }}
+          initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.3, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-          style={{ transformOrigin: "100px 100px" }}
+          transition={{ delay: 0.28, duration: 0.68, ease: [0.22, 1, 0.36, 1] }}
+          style={{ transformBox: "fill-box", transformOrigin: "center" }}
         />
 
-        {/* ── 8 tick marks ── */}
+        {/* ── 8 tick marks — opacity only (avoids transform-box complications) ── */}
         {ticks.map((t, i) => (
           <motion.line
             key={i}
             x1={t.x1} y1={t.y1}
             x2={t.x2} y2={t.y2}
-            stroke={
-              i % 2 === 0
-                ? "rgba(251,191,36,0.75)"
-                : "rgba(251,191,36,0.32)"
-            }
+            stroke={i % 2 === 0 ? "rgba(251,191,36,0.78)" : "rgba(251,191,36,0.3)"}
             strokeWidth={i % 2 === 0 ? 1.2 : 0.65}
             strokeLinecap="round"
-            initial={{ opacity: 0, scaleY: 0 }}
-            animate={{ opacity: 1, scaleY: 1 }}
-            transition={{
-              delay: 0.58 + i * 0.045,
-              duration: 0.22,
-              ease: "easeOut",
-            }}
-            style={{
-              transformOrigin: `${t.x1}px ${t.y1}px`,
-            }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 + i * 0.05, duration: 0.22 }}
           />
         ))}
 
@@ -189,45 +199,39 @@ function IsekaiMonogram() {
             filter="url(#ei-dot-glow)"
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{
-              delay: 0.9 + i * 0.07,
-              duration: 0.28,
-              ease: "backOut",
-            }}
-            style={{ transformOrigin: `${c.cx}px ${c.cy}px` }}
+            transition={{ delay: 0.9 + i * 0.07, duration: 0.3, ease: "backOut" }}
+            style={{ transformBox: "fill-box", transformOrigin: "center" }}
           />
         ))}
 
-        {/* ── Central 'S' monogram ── */}
+        {/* ── Central ‘S’ in Fraunces serif ── */}
         <motion.text
-          x="97"
-          y="116"
+          x="97" y="116"
           textAnchor="middle"
-          fill="rgba(255,255,255,0.94)"
+          fill="rgba(255,255,255,0.95)"
           fontSize="58"
           fontFamily="var(--font-fraunces, Georgia, serif)"
           fontWeight="700"
-          filter="url(#ei-glow)"
+          filter="url(#ei-text-glow)"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
+          transition={{ delay: 0.42, duration: 0.6 }}
           style={{ letterSpacing: "-0.02em" }}
         >
           S
         </motion.text>
 
-        {/* ── '·I' IBM Plex subscript ── */}
+        {/* ── ·I subscript in IBM Plex ── */}
         <motion.text
-          x="126"
-          y="109"
+          x="125" y="109"
           textAnchor="start"
-          fill="rgba(251,191,36,0.65)"
+          fill="rgba(251,191,36,0.68)"
           fontSize="17"
           fontFamily="var(--font-ibm-plex, monospace)"
           fontWeight="400"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.74, duration: 0.45 }}
+          transition={{ delay: 0.76, duration: 0.45 }}
         >
           ·I
         </motion.text>
@@ -239,12 +243,11 @@ function IsekaiMonogram() {
 // ─── Main overlay ─────────────────────────────────────────────────────────────
 export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
   const [visible, setVisible] = useState(false);
-  const barRef = useRef<HTMLDivElement>(null);
-  const numRef = useRef<HTMLSpanElement>(null);
-  const rafRef = useRef<number>(0);
+  const barRef  = useRef<HTMLDivElement>(null);
+  const numRef  = useRef<HTMLSpanElement>(null);
+  const rafRef  = useRef<number>(0);
   const startRef = useRef<number>(0);
 
-  // Session gate: only show once per browser session
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (localStorage.getItem("senpai-intro-seen") === "true") {
@@ -255,11 +258,9 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
     return () => clearTimeout(t);
   }, [onComplete]);
 
-  // rAF-driven progress — zero React re-renders during fill
   useEffect(() => {
     if (!visible) return;
     startRef.current = 0;
-
     const tick = (now: number) => {
       if (!startRef.current) startRef.current = now;
       const p = Math.min(((now - startRef.current) / HOLD_MS) * 100, 100);
@@ -276,7 +277,6 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
         }, 60);
       }
     };
-
     rafRef.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(rafRef.current);
   }, [visible, onComplete]);
@@ -372,7 +372,7 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
               textAlign: "center",
             }}
           >
-            {/* "Welcome to" eyebrow */}
+            {/* “Welcome to” eyebrow */}
             <motion.p
               initial={{ opacity: 0, letterSpacing: "0.15em" }}
               animate={{ opacity: 0.65, letterSpacing: "0.42em" }}
@@ -388,7 +388,7 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
               Welcome to
             </motion.p>
 
-            {/* SVG Monogram graphic */}
+            {/* Animated SVG monogram */}
             <IsekaiMonogram />
 
             {/* Main title — clipped slide-up */}
