@@ -32,7 +32,7 @@ async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   
   const filterInput = {
-    series: searchParams.get("series"),
+    series: searchParams.get("series") || undefined,
     search: searchParams.get("search") || undefined,
     sortBy: searchParams.get("sortBy") || "date",
     sortOrder: searchParams.get("sortOrder") || "desc",
@@ -72,7 +72,7 @@ async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
       total,
       limit: filter.limit,
       offset: filter.offset,
-      hasMore: offset + images.length < total,
+      hasMore: filter.offset + images.length < total,
     },
   });
 }
