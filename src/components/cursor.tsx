@@ -315,6 +315,8 @@ export function CustomCursor() {
                 width: 10 + index,
                 height: 10 + index,
                 transform: "translate(-50%, -50%)",
+                contain: "layout style paint",
+                willChange: "transform, opacity",
               }}
             >
               {/* Gradient circle */}
@@ -346,6 +348,9 @@ export function CustomCursor() {
           opacity: state.isVisible ? 1 : 0,
           width: getCursorSize().width,
           height: getCursorSize().height,
+          contain: "layout style paint",
+          willChange: "transform, opacity, width, height",
+        }}
           borderRadius: getCursorRadius(),
           transition: "opacity 0.2s ease, background-color 0.15s ease, border-color 0.15s ease",
           willChange: "transform, opacity, width, height",
