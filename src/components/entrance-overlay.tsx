@@ -52,7 +52,11 @@ export function EntranceOverlay() {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black"
+          style={{ 
+            backgroundColor: '#000000',
+            color: '#ffffff'
+          }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center"
         >
           {/* Animated background grid */}
           <div className="absolute inset-0 opacity-20">
@@ -90,13 +94,13 @@ export function EntranceOverlay() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8 }}
             >
-              <h1 className="mb-2 font-serif text-5xl md:text-7xl font-bold text-white">
+              <h1 className="mb-2 font-serif text-5xl md:text-7xl font-bold" style={{ color: '#ffffff' }}>
                 Senpai's Isekai
               </h1>
-              <p className="text-lg md:text-xl text-gray-400 mb-2 font-light tracking-wider">
+              <p className="text-lg md:text-xl mb-2 font-light tracking-wider" style={{ color: '#9ca3af' }}>
                 ~ Thee Strongest ~
               </p>
-              <p className="text-base md:text-lg text-gray-500 mb-12 font-light tracking-wider">
+              <p className="text-base md:text-lg mb-12 font-light tracking-wider" style={{ color: '#6b7280' }}>
                 Open-Source Humanity
               </p>
             </motion.div>
@@ -116,7 +120,7 @@ export function EntranceOverlay() {
                   transition={{ duration: 0.3 }}
                 />
               </div>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm" style={{ color: '#6b7280' }}>
                 {progress < 100 ? "Loading experience..." : "Ready"}
               </p>
             </motion.div>
@@ -127,7 +131,8 @@ export function EntranceOverlay() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 onClick={handleEnter}
-                className="mt-12 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-full text-white font-light tracking-wider transition-all duration-300 hover:scale-105"
+                className="mt-12 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/20 rounded-full font-light tracking-wider transition-all duration-300 hover:scale-105"
+                style={{ color: '#ffffff' }}
               >
                 Enter
               </motion.button>
