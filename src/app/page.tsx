@@ -315,13 +315,14 @@ function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryIte
 }
 
 export default function HomePage() {
-  const [showContent, setShowContent] = useState(() => {
-    // Check if intro was already seen
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem("senpai-intro-seen") === "true";
+  const [showContent, setShowContent] = useState(false);
+  
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem("senpai-intro-seen") === "true") {
+      setShowContent(true);
     }
-    return false;
-  });
+  }, []);
+  
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
   const heroOpacity = useTransform(scrollY, [0, 300], [1, 0]);

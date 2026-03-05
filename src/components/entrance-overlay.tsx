@@ -54,7 +54,7 @@ export function EntranceOverlay({ onComplete }: { onComplete?: () => void }) {
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.1 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center [&]:!bg-black [&]:!text-white"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black text-white"
         >
           {/* Animated background grid */}
           <div className="absolute inset-0 opacity-20">
