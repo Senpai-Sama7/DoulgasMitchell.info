@@ -28,6 +28,16 @@ async function authenticateRequest(request: NextRequest): Promise<void> {
   }
 }
 
+async function cleanupOrphanTags(): Promise<void> {
+  await db.tag.deleteMany({
+    where: {
+      journals: {
+        none: {},
+      },
+    },
+  });
+}
+
 async function handleGetJournal(request: NextRequest): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
 
@@ -216,12 +226,46 @@ async function handleDeleteJournal(
   const { searchParams } = new URL(request.url);
   const id = searchParams.get("id");
   const ids = searchParams.get("ids");
+  const deleteAll = searchParams.get("all");
+
+  if (deleteAll === "1" || deleteAll === "true") {
+    const existingEntries = await db.journalEntry.findMany({
+      select: { id: true },
+    });
+
+    if (existingEntries.length === 0) {
+      return successResponse(undefined, "No entries to delete");
+    }
+
+    const idArray = existingEntries.map((entry) => entry.id);
+    await db.journalTag.deleteMany({ where: { journalEntryId: { in: idArray } } });
+    await db.journalEntry.deleteMany({ where: { id: { in: idArray } } });
+    await cleanupOrphanTags();
+
+    await db.activityLog.create({
+      data: {
+        action: "delete",
+        resource: "journal",
+        details: JSON.stringify({ count: idArray.length, mode: "delete_all" }),
+      },
+    });
+
+    return successResponse(undefined, `${idArray.length} entries deleted`);
+  }
 
   if (ids) {
-    const idArray = ids.split(",");
+    const idArray = ids
+      .split(",")
+      .map((entryId) => entryId.trim())
+      .filter(Boolean);
+
+    if (idArray.length === 0) {
+      throw new ValidationError("At least one entry ID is required");
+    }
 
     await db.journalTag.deleteMany({ where: { journalEntryId: { in: idArray } } });
     await db.journalEntry.deleteMany({ where: { id: { in: idArray } } });
+    await cleanupOrphanTags();
 
     await db.activityLog.create({
       data: {
@@ -240,6 +284,7 @@ async function handleDeleteJournal(
 
   await db.journalTag.deleteMany({ where: { journalEntryId: id } });
   await db.journalEntry.delete({ where: { id } });
+  await cleanupOrphanTags();
 
   await db.activityLog.create({
     data: {

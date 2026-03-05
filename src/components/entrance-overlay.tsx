@@ -35,7 +35,7 @@ interface EntranceOverlayProps {
 const TARGET  = "Senpai's Isekai";
 const GLYPHS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%?!·×";
 const GLYPH_N = GLYPHS.length;
-const LS_KEY  = "senpai-signal-seen";
+const LS_KEY  = "senpai-signal-seen-v2";
 
 // ── Mulberry32 — lightweight seeded PRNG ──────────────────────────────────────
 // 32-bit xorshift-multiply with strong avalanche characteristics.

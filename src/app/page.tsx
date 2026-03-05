@@ -11,7 +11,8 @@ import { heroImage, galleryImages } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
-const INTRO_SEEN_KEY = "senpai-signal-seen";
+const INTRO_SEEN_KEY = "senpai-signal-seen-v2";
+const LEGACY_INTRO_SEEN_KEY = "senpai-signal-seen";
 
 
 // Typing animation component
@@ -272,6 +273,7 @@ export default function HomePage() {
 
     if (introMode === "1" || introMode === "force" || introMode === "reset") {
       localStorage.removeItem(INTRO_SEEN_KEY);
+      localStorage.removeItem(LEGACY_INTRO_SEEN_KEY);
       setShowEntranceOverlay(true);
       return;
     }

@@ -727,6 +727,7 @@ export default function AdminPage() {
     passkeyCount: 0,
   });
   const [passkeyMessage, setPasskeyMessage] = useState("");
+  const [isDeletingAllPosts, setIsDeletingAllPosts] = useState(false);
 
   // Form states
   const [imageForm, setImageForm] = useState({
@@ -1172,6 +1173,49 @@ export default function AdminPage() {
     }
   };
 
+  const deleteAllJournalEntries = async () => {
+    if (journalEntries.length === 0) {
+      alert("No journal entries to delete.");
+      return;
+    }
+
+    const confirmation = prompt(
+      `Type DELETE ALL POSTS to permanently delete ${journalEntries.length} journal entries.`
+    );
+
+    if (confirmation !== "DELETE ALL POSTS") {
+      return;
+    }
+
+    try {
+      setIsDeletingAllPosts(true);
+      const res = await fetch("/api/journal?all=true", { method: "DELETE" });
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to delete all journal entries."
+        );
+        return;
+      }
+
+      fetchJournalEntries();
+      fetchActivityLog();
+      alert(
+        typeof data.message === "string"
+          ? data.message
+          : "All journal entries deleted."
+      );
+    } catch (error) {
+      console.error("Error deleting all entries:", error);
+      alert("Failed to delete all journal entries.");
+    } finally {
+      setIsDeletingAllPosts(false);
+    }
+  };
+
   const closeJournalModal = () => {
     setShowJournalModal(false);
     setEditingEntry(null);
@@ -1185,6 +1229,13 @@ export default function AdminPage() {
       imageAlt: "",
       tags: [],
     });
+  };
+
+  const replayEntranceOverlay = () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.open("/?intro=reset", "_blank", "noopener,noreferrer");
   };
 
   // Settings save
@@ -1651,14 +1702,30 @@ export default function AdminPage() {
                     aria-label="Search journal entries"
                   />
                 </div>
-                <button
-                  onClick={() => setShowJournalModal(true)}
-                  className="btn-premium flex items-center gap-2"
-                  type="button"
-                >
-                  <Plus className="w-4 h-4" />
-                  New Entry
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={deleteAllJournalEntries}
+                    className="px-3 py-2 rounded-xl border border-destructive/40 text-destructive text-sm font-medium hover:bg-destructive/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    type="button"
+                    disabled={isDeletingAllPosts || journalEntries.length === 0}
+                    aria-label="Delete all journal entries"
+                  >
+                    {isDeletingAllPosts ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                    {isDeletingAllPosts ? "Deleting..." : "Delete All Posts"}
+                  </button>
+                  <button
+                    onClick={() => setShowJournalModal(true)}
+                    className="btn-premium flex items-center gap-2"
+                    type="button"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Entry
+                  </button>
+                </div>
               </div>
 
               {/* Journal List */}
@@ -1879,6 +1946,24 @@ export default function AdminPage() {
                     {passkeyMessage && (
                       <p className="text-xs text-muted-foreground">{passkeyMessage}</p>
                     )}
+                  </div>
+
+                  <h3 className="font-serif text-lg flex items-center gap-2 pt-4 border-t border-border">
+                    <RotateCcw className="w-4 h-4" />
+                    Experience
+                  </h3>
+
+                  <div className="rounded-xl border border-border bg-background/60 p-4 space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Replay the home entrance overlay instantly on the main site.
+                    </p>
+                    <button
+                      onClick={replayEntranceOverlay}
+                      className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors"
+                      type="button"
+                    >
+                      Replay Entrance Overlay
+                    </button>
                   </div>
 
                   <button onClick={saveSettings} className="btn-premium w-full" type="button">
