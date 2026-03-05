@@ -10,7 +10,7 @@ import {
 } from "@/lib/middleware";
 import {
   createJournalEntrySchema,
-  updateJournalEntrySchema,
+  updateJournalEntryRequestSchema,
   journalFilterSchema,
 } from "@/lib/validations";
 
@@ -63,10 +63,23 @@ async function handleGetJournal(request: NextRequest): Promise<NextResponse> {
     }
   }
 
+  if (filter.tag) {
+    where.tags = {
+      some: {
+        tag: { name: filter.tag },
+      },
+    };
+  }
+
+  const orderBy =
+    filter.sortBy === "createdAt"
+      ? [{ createdAt: filter.sortOrder }, { order: "asc" as const }]
+      : [{ date: filter.sortOrder }, { order: "asc" as const }];
+
   const [entries, total] = await Promise.all([
     db.journalEntry.findMany({
       where,
-      orderBy: [{ order: "asc" }, { date: filter.sortOrder }],
+      orderBy,
       include: { tags: { include: { tag: true } } },
       take: filter.limit,
       skip: filter.offset,
@@ -117,18 +130,22 @@ async function handleCreateJournal(
     },
   });
 
-  if (data.tags && data.tags.length > 0) {
-    for (const tagName of data.tags) {
-      let tag = await db.tag.findUnique({ where: { name: tagName } });
+  const uniqueTags = [...new Set(data.tags)];
+  if (uniqueTags.length > 0) {
+    const tags = await Promise.all(
+      uniqueTags.map((tagName) =>
+        db.tag.upsert({
+          where: { name: tagName },
+          update: {},
+          create: { name: tagName },
+        })
+      )
+    );
 
-      if (!tag) {
-        tag = await db.tag.create({ data: { name: tagName } });
-      }
-
-      await db.journalTag.create({
-        data: { journalEntryId: entry.id, tagId: tag.id },
-      });
-    }
+    await db.journalTag.createMany({
+      data: tags.map((tag) => ({ journalEntryId: entry.id, tagId: tag.id })),
+      skipDuplicates: true,
+    });
   }
 
   await db.activityLog.create({
@@ -149,32 +166,32 @@ async function handleUpdateJournal(
   await authenticateRequest(request);
 
   const body = await request.json();
-  const { id, tags, ...updateData } = body;
-
-  if (!id) {
-    throw new ValidationError("Entry ID is required");
-  }
-
-  const data = validateInput(updateJournalEntrySchema, updateData);
-  const { tags: _ignoredTags, ...entryUpdateData } = data;
+  const data = validateInput(updateJournalEntryRequestSchema, body);
+  const { id, tags, ...entryUpdateData } = data;
 
   const entry = await db.journalEntry.update({
     where: { id },
     data: entryUpdateData,
   });
 
-  if (tags && Array.isArray(tags)) {
+  if (tags !== undefined) {
     await db.journalTag.deleteMany({ where: { journalEntryId: id } });
 
-    for (const tagName of tags) {
-      let tag = await db.tag.findUnique({ where: { name: tagName } });
+    const uniqueTags = [...new Set(tags)];
+    if (uniqueTags.length > 0) {
+      const upsertedTags = await Promise.all(
+        uniqueTags.map((tagName) =>
+          db.tag.upsert({
+            where: { name: tagName },
+            update: {},
+            create: { name: tagName },
+          })
+        )
+      );
 
-      if (!tag) {
-        tag = await db.tag.create({ data: { name: tagName } });
-      }
-
-      await db.journalTag.create({
-        data: { journalEntryId: id, tagId: tag.id },
+      await db.journalTag.createMany({
+        data: upsertedTags.map((tag) => ({ journalEntryId: id, tagId: tag.id })),
+        skipDuplicates: true,
       });
     }
   }

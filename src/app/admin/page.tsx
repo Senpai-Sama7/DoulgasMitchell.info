@@ -718,8 +718,12 @@ export default function AdminPage() {
       const res = await fetch("/api/gallery");
       const data = await res.json();
       if (data.success) {
+<<<<<<< HEAD
         const items = normalizeApiItems<GalleryImage>(data.data);
         setGalleryImages(items);
+=======
+        setGalleryImages(data.data?.items || []);
+>>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
       }
     } catch (error) {
       console.error("Error fetching gallery images:", error);
@@ -731,6 +735,7 @@ export default function AdminPage() {
       const res = await fetch("/api/journal");
       const data = await res.json();
       if (data.success) {
+<<<<<<< HEAD
         const items = normalizeApiItems<JournalEntry>(data.data).map((entry) => {
           const safeTags = Array.isArray(entry.tags)
             ? entry.tags.filter((tag): tag is string => typeof tag === "string")
@@ -756,6 +761,9 @@ export default function AdminPage() {
           };
         });
         setJournalEntries(items);
+=======
+        setJournalEntries(data.data?.items || []);
+>>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
       }
     } catch (error) {
       console.error("Error fetching journal entries:", error);
@@ -892,8 +900,8 @@ export default function AdminPage() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        return data.url;
+      if (data.success && data.data?.url) {
+        return data.data.url;
       }
       throw new Error("Upload failed");
     } catch (error) {
@@ -1248,7 +1256,7 @@ export default function AdminPage() {
         </motion.header>
 
         {/* Tabs */}
-        <div className="flex flex-wrap gap-2 mb-6 p-1 rounded-xl bg-accent/30">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mb-6 p-1 rounded-xl bg-accent/30">
           {[
             { key: "gallery", label: "Gallery", icon: ImageIcon },
             { key: "journal", label: "Library", icon: FileText },
@@ -1263,7 +1271,11 @@ export default function AdminPage() {
                 startTabTransition(() => setActiveTab(tab.key as Tab));
               }}
               className={cn(
+<<<<<<< HEAD
                 "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-150",
+=======
+                "flex items-center justify-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-all duration-300 min-h-10",
+>>>>>>> 6adf7ea839744bf6fc209c2a3c4c6ac9784f3dd6
                 activeTab === tab.key
                   ? "bg-primary text-primary-foreground"
                   : "hover:bg-accent"
@@ -1895,15 +1907,32 @@ export default function AdminPage() {
                 </div>
 
                 <div className="glass-card p-6">
-                  <h3 className="font-serif text-lg mb-4">Recent Activity</h3>
-                  <div className="text-center py-8 text-muted-foreground">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                    <p className="text-sm">
-                      Analytics integration coming soon
-                    </p>
-                    <p className="text-xs mt-1">
-                      Connect Google Analytics or Plausible
-                    </p>
+                  <h3 className="font-serif text-lg mb-4">Analytics</h3>
+                  <div className="space-y-4">
+                    <div className="text-center py-4 text-muted-foreground">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                      <p className="text-sm">Use an external analytics dashboard</p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <a
+                        href="https://analytics.google.com/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 text-sm font-medium text-center flex items-center justify-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Connect Google Analytics
+                      </a>
+                      <a
+                        href="https://plausible.io/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 rounded-lg bg-accent hover:bg-accent/80 text-sm font-medium text-center flex items-center justify-center gap-2"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        Connect Plausible
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
