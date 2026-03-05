@@ -21,6 +21,15 @@ interface CursorState {
 }
 
 export function CustomCursor() {
+  // Disable on mobile/touch devices
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
+  
+  if (isMobile) return null;
+  
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorDotRef = useRef<HTMLDivElement>(null);
   const [state, setState] = useState<CursorState>({
