@@ -21,11 +21,12 @@ interface CursorState {
 }
 
 export function CustomCursor() {
-  // Disable on mobile/touch devices
+  // Disable on mobile/touch devices or admin page
   const [isMobile, setIsMobile] = useState(false);
   
   useEffect(() => {
-    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0);
+    const isAdminPage = window.location.pathname.startsWith('/admin');
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0 || isAdminPage);
   }, []);
   
   if (isMobile) return null;

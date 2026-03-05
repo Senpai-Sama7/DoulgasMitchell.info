@@ -194,7 +194,12 @@ function FloatingDecorations() {
           animate={{ opacity: 0.4, scale: 1 }}
           transition={{ delay: dec.delay + 0.5, duration: 0.5 }}
           className="absolute pointer-events-none"
-          style={{ left: dec.x, top: dec.y }}
+          style={{ 
+            left: dec.x, 
+            top: dec.y,
+            contain: "layout style paint",
+            willChange: "transform",
+          }}
         >
           <motion.div
             animate={{
