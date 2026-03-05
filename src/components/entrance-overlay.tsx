@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-export function EntranceOverlay() {
+export function EntranceOverlay({ onComplete }: { onComplete?: () => void }) {
   const [isVisible, setIsVisible] = useState(true);
   const [progress, setProgress] = useState(0);
 
@@ -13,6 +13,7 @@ export function EntranceOverlay() {
     const seen = localStorage.getItem("hasSeenIntro");
     if (seen === "true") {
       setIsVisible(false);
+      onComplete?.();
       return;
     }
 
@@ -33,6 +34,7 @@ export function EntranceOverlay() {
   const handleEnter = () => {
     localStorage.setItem("hasSeenIntro", "true");
     setIsVisible(false);
+    onComplete?.();
   };
 
   // Auto-enter after loading completes
