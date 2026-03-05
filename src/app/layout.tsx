@@ -73,7 +73,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {/* Noise Texture Overlay */}
-          <div className="noise-overlay" aria-hidden="true" style={{ pointerEvents: 'none' }} />
+          <div className="noise-overlay" aria-hidden="true" />
           
           {/* Main Content */}
           {children}

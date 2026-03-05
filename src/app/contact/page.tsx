@@ -46,7 +46,7 @@ export default function ContactPage() {
 
   return (
     <MainLayout>
-      <main className="min-h-screen bg-black text-white py-20 px-4">
+      <div className="min-h-screen bg-black text-white py-20 px-4">
         <div className="max-w-3xl mx-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -80,7 +80,7 @@ export default function ContactPage() {
                 required
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
               />
-            </main>
+            </div>
 
             <div>
               <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
@@ -94,7 +94,7 @@ export default function ContactPage() {
                 required
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
               />
-            </main>
+            </div>
 
             <div>
               <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
@@ -107,7 +107,7 @@ export default function ContactPage() {
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
               />
-            </main>
+            </div>
 
             <div>
               <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
@@ -121,7 +121,7 @@ export default function ContactPage() {
                 rows={6}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors resize-none"
               />
-            </main>
+            </div>
 
             <motion.button
               type="submit"
@@ -162,8 +162,8 @@ export default function ContactPage() {
               </motion.div>
             )}
           </motion.form>
-        </main>
-      </main>
+        </div>
+      </div>
     </MainLayout>
   );
 }
