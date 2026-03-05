@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo, useTransition } from "react";
-import { motion, AnimatePresence, Reorder } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   startAuthentication,
   startRegistration,
@@ -63,7 +63,23 @@ import {
   Heading2,
   EyeOff,
   Fingerprint,
+  LayoutGrid,
 } from "lucide-react";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  DndContext,
+  DragEndEvent,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { MainLayout } from "@/components/main-layout";
 import { journalEntries as fallbackJournalEntries } from "@/lib/data";
 import { cn } from "@/lib/utils";
@@ -113,7 +129,19 @@ interface ActivityLog {
   createdAt: string;
 }
 
-type Tab = "gallery" | "journal" | "settings" | "activity" | "analytics" | "export";
+type Tab = "gallery" | "journal" | "layout" | "settings" | "activity" | "analytics" | "export";
+
+interface LayoutBlock {
+  id: string;
+  key: string;
+  label: string;
+  type: "hero" | "gallery" | "journal" | "custom";
+  gridX: number;
+  gridY: number;
+  width: number;
+  height: number;
+  metadata?: Record<string, unknown>;
+}
 
 function normalizeApiItems<T>(data: unknown): T[] {
   if (Array.isArray(data)) {
@@ -130,6 +158,50 @@ function normalizeApiItems<T>(data: unknown): T[] {
   }
 
   return [];
+}
+
+function extractApiErrorMessage(payload: unknown, fallback: string): string {
+  if (typeof payload !== "object" || payload === null) {
+    return fallback;
+  }
+
+  const response = payload as {
+    error?: unknown;
+    details?: unknown;
+  };
+
+  if (typeof response.error === "string" && response.error.trim().length > 0) {
+    if (response.error !== "Validation failed" && response.error !== "Internal server error") {
+      return response.error;
+    }
+  }
+
+  if (
+    typeof response.details === "object" &&
+    response.details !== null &&
+    "errors" in response.details
+  ) {
+    const errors = (response.details as { errors?: unknown }).errors;
+    if (Array.isArray(errors)) {
+      const firstError = errors.find(
+        (item): item is { message: string } =>
+          typeof item === "object" &&
+          item !== null &&
+          "message" in item &&
+          typeof (item as { message?: unknown }).message === "string"
+      );
+
+      if (firstError?.message) {
+        return firstError.message;
+      }
+    }
+  }
+
+  if (typeof response.error === "string" && response.error.trim().length > 0) {
+    return response.error;
+  }
+
+  return fallback;
 }
 
 function extractImportPayload(input: unknown): Record<string, unknown> {
@@ -177,6 +249,13 @@ const seriesOptions = [
   { value: "recent-post", label: "Recent Post" },
   { value: "tech-deck", label: "Tech Deck" },
   { value: "project", label: "Project" },
+] as const;
+
+const layoutTypeOptions = [
+  { value: "hero", label: "Hero/Intro" },
+  { value: "gallery", label: "Gallery" },
+  { value: "journal", label: "Journal" },
+  { value: "custom", label: "Custom Widget" },
 ] as const;
 
 // Action icons
@@ -298,12 +377,11 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
       const optionsData = await optionsRes.json();
 
       if (!optionsRes.ok || !optionsData.success || !optionsData.data?.options) {
-        const errorMessage =
-          typeof optionsData?.error === "string" ? optionsData.error : "";
         setError(
-          errorMessage === "Internal server error"
-            ? "Passkey login is currently unavailable. Use your password."
-            : errorMessage || "Passkey login is not available"
+          extractApiErrorMessage(
+            optionsData,
+            "Passkey login is currently unavailable. Use your password."
+          )
         );
         return;
       }
@@ -324,12 +402,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
         return;
       }
 
-      const verifyError = typeof verifyData?.error === "string" ? verifyData.error : "";
-      setError(
-        verifyError === "Internal server error"
-          ? "Passkey authentication failed."
-          : verifyError || "Passkey authentication failed"
-      );
+      setError(extractApiErrorMessage(verifyData, "Passkey authentication failed."));
     } catch (error) {
       if (error instanceof Error && error.name === "NotAllowedError") {
         setError("Passkey request was cancelled");
@@ -406,12 +479,14 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
             )}
           </button>
 
-          {isPasskeySupported && (
+        {isPasskeySupported && (
+          <>
             <button
               type="button"
               onClick={handlePasskeyLogin}
               disabled={isLoading || isPasskeyLoading}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-background hover:bg-accent transition-colors disabled:opacity-60"
+              aria-label="Sign in with Face ID or passkey"
             >
               {isPasskeyLoading ? (
                 <>
@@ -425,7 +500,11 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
                 </>
               )}
             </button>
-          )}
+            <p className="text-xs text-muted-foreground mt-2">
+              Passkeys work best inside Safari (iOS/macOS) or compatible browsers with WebAuthn. Use the same domain when registering and logging in: douglasmitchell.info or www.douglasmitchell.info.
+            </p>
+          </>
+        )}
         </form>
 
         <p className="text-xs text-muted-foreground text-center mt-6">
@@ -570,6 +649,136 @@ function ImagePreview({
   );
 }
 
+interface SortableLayoutBlockProps {
+  block: LayoutBlock;
+  onUpdate: (updates: Partial<LayoutBlock>) => void;
+  onRemove: () => void;
+}
+
+function SortableLayoutBlock({ block, onUpdate, onRemove }: SortableLayoutBlockProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: block.key,
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    transition,
+    opacity: isDragging ? 0.95 : 1,
+    zIndex: isDragging ? 20 : "auto",
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "glass-card space-y-3 p-4 border border-border transition-all",
+        isDragging
+          ? "ring-2 ring-primary/60 shadow-2xl bg-background"
+          : "shadow-lg bg-card"
+      )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            className="p-2 rounded-lg border border-border bg-accent/40 hover:bg-accent/60 transition-colors"
+            aria-label={`Drag layout block ${block.label}`}
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical className="w-4 h-4" />
+          </button>
+          <input
+            type="text"
+            value={block.label}
+            onChange={(e) => onUpdate({ label: e.target.value })}
+            className="form-input text-sm"
+            placeholder="Block label"
+            aria-label="Layout block label"
+          />
+        </div>
+        <button
+          onClick={onRemove}
+          className="text-xs uppercase tracking-widest text-destructive"
+          type="button"
+        >
+          Remove
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs text-muted-foreground uppercase tracking-wide">Type</label>
+        <select
+          value={block.type}
+          onChange={(e) =>
+            onUpdate({ type: e.target.value as LayoutBlock["type"] })
+          }
+          className="form-input"
+        >
+          {layoutTypeOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Width</label>
+          <input
+            type="number"
+            min={1}
+            max={12}
+            value={block.width}
+            onChange={(e) => onUpdate({ width: Number(e.target.value) || 1 })}
+            className="form-input"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Height</label>
+          <input
+            type="number"
+            min={1}
+            max={6}
+            value={block.height}
+            onChange={(e) => onUpdate({ height: Number(e.target.value) || 1 })}
+            className="form-input"
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        <div>
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Grid X</label>
+          <input
+            type="number"
+            min={0}
+            value={block.gridX}
+            onChange={(e) => onUpdate({ gridX: Number(e.target.value) || 0 })}
+            className="form-input"
+          />
+        </div>
+        <div>
+          <label className="text-xs text-muted-foreground uppercase tracking-wide">Grid Y</label>
+          <input
+            type="number"
+            min={0}
+            value={block.gridY}
+            onChange={(e) => onUpdate({ gridY: Number(e.target.value) || 0 })}
+            className="form-input"
+          />
+        </div>
+      </div>
+
+      <div className="text-xs text-muted-foreground">
+        Blocks with `gridY` will stack vertically; width/height determine proportion.
+      </div>
+    </div>
+  );
+}
+
 // Markdown Editor Component
 function MarkdownEditor({
   value,
@@ -708,6 +917,26 @@ export default function AdminPage() {
     siteDescription: "A personal blog exploring architecture, technology, and creative expression",
   });
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
+  const [layoutBlocks, setLayoutBlocks] = useState<LayoutBlock[]>([]);
+  const [layoutMessage, setLayoutMessage] = useState("");
+  const [layoutSaving, setLayoutSaving] = useState(false);
+  const layoutSensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    })
+  );
+
+  const handleLayoutDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    setLayoutBlocks((prev) => {
+      const oldIndex = prev.findIndex((block) => block.key === active.id);
+      const newIndex = prev.findIndex((block) => block.key === over.id);
+      if (oldIndex === -1 || newIndex === -1) return prev;
+      return arrayMove(prev, oldIndex, newIndex);
+    });
+  }, []);
 
   // Selection and filter states
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
@@ -782,6 +1011,7 @@ export default function AdminPage() {
       fetchSettings();
       fetchActivityLog();
       fetchPasskeyStatus();
+      fetchLayoutBlocks();
     }
   }, [isAuthenticated]);
 
@@ -928,13 +1158,7 @@ export default function AdminPage() {
       }
 
       setPasskeyStatus({ hasPasskey: false, passkeyCount: 0 });
-      if (typeof data?.error === "string") {
-        setPasskeyMessage(
-          data.error === "Internal server error"
-            ? "Passkey status is currently unavailable."
-            : data.error
-        );
-      }
+      setPasskeyMessage(extractApiErrorMessage(data, "Passkey status is currently unavailable."));
     } catch (error) {
       console.error("Error fetching passkey status:", error);
       setPasskeyStatus({ hasPasskey: false, passkeyCount: 0 });
@@ -952,12 +1176,8 @@ export default function AdminPage() {
       const optionsData = await optionsRes.json();
 
       if (!optionsRes.ok || !optionsData.success || !optionsData.data?.options) {
-        const errorMessage =
-          typeof optionsData?.error === "string" ? optionsData.error : "";
         setPasskeyMessage(
-          errorMessage === "Internal server error"
-            ? "Passkey registration is currently unavailable."
-            : errorMessage || "Unable to start passkey registration"
+          extractApiErrorMessage(optionsData, "Unable to start passkey registration")
         );
         return;
       }
@@ -974,12 +1194,7 @@ export default function AdminPage() {
       const verifyData = await verifyRes.json();
 
       if (!verifyRes.ok || !verifyData.success) {
-        const verifyError = typeof verifyData?.error === "string" ? verifyData.error : "";
-        setPasskeyMessage(
-          verifyError === "Internal server error"
-            ? "Passkey registration failed."
-            : verifyError || "Passkey registration failed"
-        );
+        setPasskeyMessage(extractApiErrorMessage(verifyData, "Passkey registration failed"));
         return;
       }
 
@@ -1283,7 +1498,7 @@ export default function AdminPage() {
         return;
       }
 
-      setPasswordMessage(typeof data.error === "string" ? data.error : "Unable to update password");
+      setPasswordMessage(extractApiErrorMessage(data, "Unable to update password"));
     } catch (error) {
       console.error("Password change failed:", error);
       setPasswordMessage("Unable to update password right now.");
@@ -1374,6 +1589,67 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error clearing activity log:", error);
     }
+  };
+
+  const fetchLayoutBlocks = useCallback(async () => {
+    try {
+      const res = await fetch("/api/layout");
+      const data = await res.json();
+      if (res.ok && Array.isArray(data.data)) {
+        setLayoutBlocks(data.data);
+      } else {
+        console.error("Failed to load layout blocks", data);
+      }
+    } catch (error) {
+      console.error("Error fetching layout", error);
+    }
+  }, []);
+
+  const saveLayoutBlocks = async () => {
+    try {
+      setLayoutSaving(true);
+      const res = await fetch("/api/layout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blocks: layoutBlocks }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setLayoutMessage("Layout saved.");
+        setLayoutBlocks(data.data);
+        return;
+      }
+      setLayoutMessage(typeof data.error === "string" ? data.error : "Failed to save layout");
+    } catch (error) {
+      console.error("Error saving layout", error);
+      setLayoutMessage("Unable to save layout right now.");
+    } finally {
+      setLayoutSaving(false);
+    }
+  };
+
+  const updateLayoutBlock = (key: string, updates: Partial<LayoutBlock>) => {
+    setLayoutBlocks((prev) =>
+      prev.map((block) => (block.key === key ? { ...block, ...updates } : block))
+    );
+  };
+
+  const addLayoutBlock = () => {
+    const newBlock: LayoutBlock = {
+      id: `temp-${Date.now()}`,
+      key: `block-${Date.now()}`,
+      label: "New block",
+      type: "custom",
+      gridX: 0,
+      gridY: layoutBlocks.length,
+      width: 4,
+      height: 2,
+    };
+    setLayoutBlocks((prev) => [...prev, newBlock]);
+  };
+
+  const removeLayoutBlock = (key: string) => {
+    setLayoutBlocks((prev) => prev.filter((block) => block.key !== key));
   };
 
   // Filtered data
@@ -1476,14 +1752,15 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 mb-6 p-1 rounded-xl bg-accent/30">
-          {[
-            { key: "gallery", label: "Gallery", icon: ImageIcon },
-            { key: "journal", label: "Library", icon: FileText },
-            { key: "settings", label: "Settings", icon: Settings },
-            { key: "activity", label: "Activity", icon: Activity },
-            { key: "analytics", label: "Analytics", icon: BarChart3 },
-            { key: "export", label: "Export/Import", icon: Download },
-          ].map((tab) => (
+        {[
+          { key: "gallery", label: "Gallery", icon: ImageIcon },
+          { key: "layout", label: "Custom Layout", icon: LayoutGrid },
+          { key: "journal", label: "Library", icon: FileText },
+          { key: "settings", label: "Settings", icon: Settings },
+          { key: "activity", label: "Activity", icon: Activity },
+          { key: "analytics", label: "Analytics", icon: BarChart3 },
+          { key: "export", label: "Export/Import", icon: Download },
+        ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => {
@@ -1708,6 +1985,75 @@ export default function AdminPage() {
                 <div className="text-center py-12">
                   <ImageIcon className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                   <p className="text-muted-foreground">No images found</p>
+                </div>
+              )}
+            </motion.div>
+          )}
+
+          {/* Layout Tab */}
+          {activeTab === "layout" && (
+            <motion.div
+              key="layout"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <h2 className="font-serif text-xl">Layout Builder</h2>
+                <div className="flex gap-2">
+                  <button
+                    onClick={addLayoutBlock}
+                    className="btn-premium border border-border bg-background text-foreground"
+                    type="button"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add Block
+                  </button>
+                  <button
+                    onClick={saveLayoutBlocks}
+                    className="btn-premium"
+                    type="button"
+                    disabled={layoutSaving}
+                  >
+                    {layoutSaving ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Save Layout"
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {layoutMessage && (
+                <div className="text-sm text-muted-foreground">{layoutMessage}</div>
+              )}
+
+              <DndContext
+                sensors={layoutSensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleLayoutDragEnd}
+              >
+                <SortableContext
+                  items={layoutBlocks.map((block) => block.key)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {layoutBlocks.map((block) => (
+                      <SortableLayoutBlock
+                        key={block.key}
+                        block={block}
+                        onUpdate={(updates) => updateLayoutBlock(block.key, updates)}
+                        onRemove={() => removeLayoutBlock(block.key)}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+
+              {layoutBlocks.length === 0 && (
+                <div className="text-center text-sm text-muted-foreground">
+                  No layout blocks defined yet. Add new ones above.
                 </div>
               )}
             </motion.div>

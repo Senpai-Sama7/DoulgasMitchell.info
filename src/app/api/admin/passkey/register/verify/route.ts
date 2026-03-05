@@ -2,11 +2,13 @@ import {
   verifyRegistrationResponse,
   type RegistrationResponseJSON,
 } from '@simplewebauthn/server';
+import { Prisma } from '@prisma/client';
 import { cookies } from 'next/headers';
 import type { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {
   AuthenticationError,
+  ServiceUnavailableError,
   ValidationError,
   successResponse,
   withMiddleware,
@@ -49,6 +51,13 @@ function isRegistrationPayloadError(error: unknown): boolean {
     message.includes('json') ||
     message.includes('parse') ||
     message.includes('malformed')
+  );
+}
+
+function isMissingPasskeyStorage(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2021'
   );
 }
 
@@ -128,34 +137,53 @@ async function handlePasskeyRegisterVerify(request: NextRequest): Promise<NextRe
     const publicKey = toBase64URL(verification.registrationInfo.credential.publicKey);
     const transports = serializeTransports(registrationResponse.response.transports);
 
-    const existingCredential = await db.passkeyCredential.findUnique({
-      where: { credentialID },
-    });
+    let existingCredential;
+    try {
+      existingCredential = await db.passkeyCredential.findUnique({
+        where: { credentialID },
+      });
+    } catch (error) {
+      if (isMissingPasskeyStorage(error)) {
+        throw new ServiceUnavailableError(
+          'Passkey storage is not ready. Run database schema sync for passkeys.'
+        );
+      }
+      throw error;
+    }
 
     if (existingCredential && existingCredential.adminUserId !== adminUser.id) {
       throw new AuthenticationError('Passkey is already registered to a different account');
     }
 
-    await db.passkeyCredential.upsert({
-      where: { credentialID },
-      update: {
-        adminUserId: adminUser.id,
-        publicKey,
-        counter: verification.registrationInfo.credential.counter,
-        transports,
-        deviceType: verification.registrationInfo.credentialDeviceType,
-        backedUp: verification.registrationInfo.credentialBackedUp,
-      },
-      create: {
-        adminUserId: adminUser.id,
-        credentialID,
-        publicKey,
-        counter: verification.registrationInfo.credential.counter,
-        transports,
-        deviceType: verification.registrationInfo.credentialDeviceType,
-        backedUp: verification.registrationInfo.credentialBackedUp,
-      },
-    });
+    try {
+      await db.passkeyCredential.upsert({
+        where: { credentialID },
+        update: {
+          adminUserId: adminUser.id,
+          publicKey,
+          counter: verification.registrationInfo.credential.counter,
+          transports,
+          deviceType: verification.registrationInfo.credentialDeviceType,
+          backedUp: verification.registrationInfo.credentialBackedUp,
+        },
+        create: {
+          adminUserId: adminUser.id,
+          credentialID,
+          publicKey,
+          counter: verification.registrationInfo.credential.counter,
+          transports,
+          deviceType: verification.registrationInfo.credentialDeviceType,
+          backedUp: verification.registrationInfo.credentialBackedUp,
+        },
+      });
+    } catch (error) {
+      if (isMissingPasskeyStorage(error)) {
+        throw new ServiceUnavailableError(
+          'Passkey storage is not ready. Run database schema sync for passkeys.'
+        );
+      }
+      throw error;
+    }
 
     await db.activityLog.create({
       data: {

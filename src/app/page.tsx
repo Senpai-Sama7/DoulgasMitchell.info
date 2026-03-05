@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
-import { heroImage, galleryImages } from "@/lib/data";
+import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
@@ -196,6 +196,58 @@ interface GalleryItemProps {
   isPopular?: boolean;
 }
 
+function normalizeGalleryItems(payload: unknown) {
+  if (typeof payload !== "object" || payload === null) {
+    return fallbackGalleryImages;
+  }
+
+  const data = (payload as { data?: unknown }).data;
+  const items =
+    Array.isArray(data)
+      ? data
+      : typeof data === "object" && data !== null && Array.isArray((data as { items?: unknown }).items)
+        ? (data as { items: unknown[] }).items
+        : [];
+
+  const normalized = items.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const candidate = item as Record<string, unknown>;
+    const series = candidate.series;
+    if (series !== "recent-post" && series !== "tech-deck" && series !== "project") {
+      return [];
+    }
+
+    if (
+      typeof candidate.id !== "string" ||
+      typeof candidate.src !== "string" ||
+      typeof candidate.alt !== "string" ||
+      typeof candidate.caption !== "string" ||
+      typeof candidate.width !== "number" ||
+      typeof candidate.height !== "number" ||
+      typeof candidate.date !== "string"
+    ) {
+      return [];
+    }
+
+    return [{
+      id: candidate.id,
+      src: candidate.src,
+      alt: candidate.alt,
+      caption: candidate.caption,
+      series,
+      width: candidate.width,
+      height: candidate.height,
+      date: candidate.date,
+      blurDataUrl: typeof candidate.blurDataUrl === "string" ? candidate.blurDataUrl : undefined,
+    }];
+  });
+
+  return normalized.length > 0 ? normalized : fallbackGalleryImages;
+}
+
 function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryItemProps) {
   return (
     <Link
@@ -254,7 +306,8 @@ function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryIte
 
 export default function HomePage() {
   const [showContent] = useState(true);
-  const [showEntranceOverlay, setShowEntranceOverlay] = useState(false);
+  const [showEntranceOverlay, setShowEntranceOverlay] = useState(true);
+  const [galleryImages, setGalleryImages] = useState(fallbackGalleryImages);
   
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
@@ -262,17 +315,68 @@ export default function HomePage() {
   const heroScale = useTransform(scrollY, [0, 500], [1, 1.1]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !window.matchMedia) return;
 
     const params = new URLSearchParams(window.location.search);
-    const introMode = params.get("intro");
+    const introMode = (params.get("intro") || "").toLowerCase();
+    const skipModes = new Set(["0", "off", "skip"]);
+    const forceModes = new Set(["reset", "1", "force", "on"]);
 
-    if (introMode === "0" || introMode === "off" || introMode === "skip") {
+    if (skipModes.has(introMode)) {
+      setShowEntranceOverlay(false);
+      return;
+    }
+
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced && !forceModes.has(introMode)) {
       setShowEntranceOverlay(false);
       return;
     }
 
     setShowEntranceOverlay(true);
+
+    if (params.has("intro") && !forceModes.has(introMode)) {
+      params.delete("intro");
+      const base = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+      window.history.replaceState({}, "", base);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadGallery = async () => {
+      try {
+        const response = await fetch("/api/gallery?limit=200&sortBy=date&sortOrder=desc", {
+          cache: "no-store",
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          return;
+        }
+
+        const normalized = normalizeGalleryItems(payload);
+        if (isMounted) {
+          setGalleryImages(normalized);
+        }
+      } catch {
+        // Keep fallback data
+      }
+    };
+
+    loadGallery();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleIntroComplete = useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("senpai-intro-seen", Date.now().toString());
+    }
+    setShowEntranceOverlay(false);
   }, []);
 
   const featuredImages = useMemo(
@@ -291,14 +395,12 @@ export default function HomePage() {
           isPopular: idx === 0 || idx === 2,
         };
       }),
-    []
+    [galleryImages]
   );
 
   return (
     <>
-      {showEntranceOverlay && (
-        <EntranceOverlay onComplete={() => setShowEntranceOverlay(false)} />
-      )}
+      {showEntranceOverlay && <EntranceOverlay onComplete={handleIntroComplete} />}
       <MainLayout>
         <main>
         {/* Hero Section */}

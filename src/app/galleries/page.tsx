@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MainLayout } from "@/components/main-layout";
 import { ImageCard } from "@/components/image-card";
 import { Lightbox } from "@/components/lightbox";
-import { galleryImages } from "@/lib/data";
+import { galleryImages as fallbackGalleryImages, type GalleryImage } from "@/lib/data";
 import { useLightboxStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Search, ArrowUpDown, Grid3X3, Loader2, Image as ImageIcon, Calendar, Layers } from "lucide-react";
@@ -15,13 +15,112 @@ type SortOrder = "newest" | "oldest";
 
 const ITEMS_PER_PAGE = 9;
 
+function normalizeGalleryItems(payload: unknown): GalleryImage[] {
+  if (typeof payload !== "object" || payload === null) {
+    return [];
+  }
+
+  const data = (payload as { data?: unknown }).data;
+  const items =
+    Array.isArray(data)
+      ? data
+      : typeof data === "object" && data !== null && Array.isArray((data as { items?: unknown }).items)
+        ? (data as { items: unknown[] }).items
+        : [];
+
+  return items.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const candidate = item as Record<string, unknown>;
+    const series = candidate.series;
+    if (series !== "recent-post" && series !== "tech-deck" && series !== "project") {
+      return [];
+    }
+
+    if (
+      typeof candidate.id !== "string" ||
+      typeof candidate.src !== "string" ||
+      typeof candidate.alt !== "string" ||
+      typeof candidate.caption !== "string" ||
+      typeof candidate.width !== "number" ||
+      typeof candidate.height !== "number" ||
+      typeof candidate.date !== "string"
+    ) {
+      return [];
+    }
+
+    return [{
+      id: candidate.id,
+      src: candidate.src,
+      alt: candidate.alt,
+      caption: candidate.caption,
+      series,
+      width: candidate.width,
+      height: candidate.height,
+      date: candidate.date,
+      blurDataUrl: typeof candidate.blurDataUrl === "string" ? candidate.blurDataUrl : undefined,
+    }];
+  });
+}
+
 export default function GalleriesPage() {
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>(fallbackGalleryImages);
+  const [isLoadingGallery, setIsLoadingGallery] = useState(true);
+  const [galleryLoadError, setGalleryLoadError] = useState("");
   const [activeSeries, setActiveSeries] = useState<SeriesKey | "all">("all");
   const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
   const [searchQuery, setSearchQuery] = useState("");
   const [displayCount, setDisplayCount] = useState(ITEMS_PER_PAGE);
   const { open, setCurrentIndex } = useLightboxStore();
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadGallery = async () => {
+      try {
+        setIsLoadingGallery(true);
+        setGalleryLoadError("");
+
+        const response = await fetch("/api/gallery?limit=500&sortBy=date&sortOrder=desc", {
+          cache: "no-store",
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const message =
+            typeof payload?.error === "string"
+              ? payload.error
+              : "Unable to load gallery images.";
+          throw new Error(message);
+        }
+
+        const normalized = normalizeGalleryItems(payload);
+        if (isMounted) {
+          setGalleryImages(normalized.length > 0 ? normalized : []);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setGalleryImages([]);
+          setGalleryLoadError(
+            error instanceof Error ? error.message : "Unable to load gallery images."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingGallery(false);
+        }
+      }
+    };
+
+    loadGallery();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter and sort images
   const filteredImages = useMemo(() => {
@@ -247,9 +346,25 @@ export default function GalleriesPage() {
           </div>
         </motion.div>
 
+        {galleryLoadError && (
+          <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {galleryLoadError}
+          </div>
+        )}
+
         {/* Gallery Masonry Grid */}
         <AnimatePresence mode="wait">
-          {displayedImages.length > 0 ? (
+          {isLoadingGallery ? (
+            <motion.div
+              key="gallery-loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex items-center justify-center py-16 text-muted-foreground"
+            >
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading gallery...
+            </motion.div>
+          ) : displayedImages.length > 0 ? (
             <motion.div
               key={filterKey}
               initial={{ opacity: 0 }}

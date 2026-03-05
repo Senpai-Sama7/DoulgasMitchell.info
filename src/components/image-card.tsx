@@ -147,9 +147,12 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
           </div>
         </div>
 
-        {/* Reactions - shown on hover */}
-        <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-95 group-hover:scale-100">
-          <div onClick={(e) => e.stopPropagation()}>
+        {/* Reactions - only surface on hover (desktop) to avoid covering imagery */}
+        <div className="absolute bottom-3 left-3 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="rounded-full bg-black/55 backdrop-blur-sm px-2.5 py-1 shadow-md"
+          >
             <Reactions itemId={image.id} variant="dark" compact />
           </div>
         </div>

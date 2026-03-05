@@ -6,7 +6,7 @@ import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { MainLayout } from "@/components/main-layout";
 import { Reactions } from "@/components/reactions";
-import { journalEntries, JournalEntry as JournalEntryType } from "@/lib/data";
+import type { JournalEntry as JournalEntryType } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -32,6 +32,7 @@ import {
   X,
   CalendarIcon,
   Clock,
+  Loader2,
   Twitter,
   Facebook,
   Linkedin,
@@ -47,6 +48,55 @@ function calculateReadingTime(content: string): number {
   const englishWords = (content.match(/[a-zA-Z]+/g) || []).length;
   const totalMinutes = (chineseChars / 200) + (englishWords / 200);
   return Math.max(1, Math.ceil(totalMinutes));
+}
+
+function normalizeJournalEntries(payload: unknown): JournalEntryType[] {
+  if (typeof payload !== "object" || payload === null) {
+    return [];
+  }
+
+  const data = (payload as { data?: unknown }).data;
+  const items =
+    Array.isArray(data)
+      ? data
+      : typeof data === "object" && data !== null && Array.isArray((data as { items?: unknown }).items)
+        ? (data as { items: unknown[] }).items
+        : [];
+
+  return items.flatMap((item) => {
+    if (typeof item !== "object" || item === null) {
+      return [];
+    }
+
+    const candidate = item as Record<string, unknown>;
+    const tags = Array.isArray(candidate.tags)
+      ? candidate.tags.filter((tag): tag is string => typeof tag === "string")
+      : [];
+
+    if (
+      typeof candidate.id !== "string" ||
+      typeof candidate.title !== "string" ||
+      typeof candidate.date !== "string" ||
+      typeof candidate.content !== "string" ||
+      typeof candidate.image !== "string"
+    ) {
+      return [];
+    }
+
+    return [{
+      id: candidate.id,
+      title: candidate.title,
+      date: candidate.date,
+      tags,
+      content: candidate.content,
+      quote: typeof candidate.quote === "string" ? candidate.quote : undefined,
+      image: candidate.image,
+      imageAlt:
+        typeof candidate.imageAlt === "string" && candidate.imageAlt.length > 0
+          ? candidate.imageAlt
+          : candidate.title,
+    }];
+  });
 }
 
 // Enhanced Journal Entry Component
@@ -545,10 +595,59 @@ export default function JournalPage() {
   const [shareEntry, setShareEntry] = useState<JournalEntryType | null>(null);
   const [activeEntryId, setActiveEntryId] = useState<string | null>(null);
   const [showReadingProgress, setShowReadingProgress] = useState(true);
+  const [journalEntries, setJournalEntries] = useState<JournalEntryType[]>([]);
+  const [isLoadingEntries, setIsLoadingEntries] = useState(true);
+  const [entriesLoadError, setEntriesLoadError] = useState("");
 
   // Refs
   const entriesContainerRef = useRef<HTMLDivElement>(null);
   const initialHashHandledRef = useRef(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadEntries = async () => {
+      try {
+        setIsLoadingEntries(true);
+        setEntriesLoadError("");
+
+        const response = await fetch("/api/journal?limit=200&sortBy=date&sortOrder=desc", {
+          cache: "no-store",
+        });
+        const payload = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          const message =
+            typeof payload?.error === "string"
+              ? payload.error
+              : "Unable to load journal entries.";
+          throw new Error(message);
+        }
+
+        const normalized = normalizeJournalEntries(payload);
+        if (isMounted) {
+          setJournalEntries(normalized);
+        }
+      } catch (error) {
+        if (isMounted) {
+          setJournalEntries([]);
+          setEntriesLoadError(
+            error instanceof Error ? error.message : "Unable to load journal entries."
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingEntries(false);
+        }
+      }
+    };
+
+    loadEntries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Filter entries
   const filteredEntries = useMemo(() => {
@@ -895,6 +994,12 @@ export default function JournalPage() {
           </motion.div>
         )}
 
+        {entriesLoadError && (
+          <div className="mb-4 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            {entriesLoadError}
+          </div>
+        )}
+
         {/* Main Content with Sidebar */}
         <div className="flex gap-8">
           {/* Table of Contents Sidebar */}
@@ -906,9 +1011,18 @@ export default function JournalPage() {
 
           {/* Journal Entries */}
           <div ref={entriesContainerRef} className="flex-1 space-y-3">
-            {filteredEntries.length === 0 ? (
+            {isLoadingEntries ? (
+              <div className="flex items-center justify-center py-12 text-muted-foreground">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Loading journal entries...
+              </div>
+            ) : filteredEntries.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>No entries found matching your criteria.</p>
+                <p>
+                  {searchQuery || dateRange.from
+                    ? "No entries found matching your criteria."
+                    : "No journal entries published yet."}
+                </p>
                 <Button
                   variant="link"
                   onClick={() => {

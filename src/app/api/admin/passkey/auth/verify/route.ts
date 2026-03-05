@@ -2,12 +2,14 @@ import {
   verifyAuthenticationResponse,
   type AuthenticationResponseJSON,
 } from '@simplewebauthn/server';
+import { Prisma } from '@prisma/client';
 import { cookies } from 'next/headers';
 import type { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import {
   AuthenticationError,
   RateLimitError,
+  ServiceUnavailableError,
   ValidationError,
   successResponse,
   withMiddleware,
@@ -28,6 +30,13 @@ import {
   recordLoginAttempt,
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/security';
+
+function isMissingPasskeyStorage(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === 'P2021'
+  );
+}
 
 function isAuthenticationResponseJSON(value: unknown): value is AuthenticationResponseJSON {
   if (typeof value !== 'object' || value === null) {
@@ -78,10 +87,20 @@ async function handlePasskeyAuthVerify(request: NextRequest): Promise<NextRespon
       throw new AuthenticationError('Passkey challenge is missing or expired. Please try again.');
     }
 
-    const credential = await db.passkeyCredential.findUnique({
-      where: { credentialID: authenticationResponse.id },
-      include: { adminUser: true },
-    });
+    let credential;
+    try {
+      credential = await db.passkeyCredential.findUnique({
+        where: { credentialID: authenticationResponse.id },
+        include: { adminUser: true },
+      });
+    } catch (error) {
+      if (isMissingPasskeyStorage(error)) {
+        throw new ServiceUnavailableError(
+          'Passkey storage is not ready. Run database schema sync for passkeys.'
+        );
+      }
+      throw error;
+    }
 
     if (!credential) {
       await recordLoginAttempt(ipAddress, false);
@@ -107,14 +126,23 @@ async function handlePasskeyAuthVerify(request: NextRequest): Promise<NextRespon
         throw new AuthenticationError('Passkey verification failed');
       }
 
-      await db.passkeyCredential.update({
-        where: { id: credential.id },
-        data: {
-          counter: verification.authenticationInfo.newCounter,
-          deviceType: verification.authenticationInfo.credentialDeviceType,
-          backedUp: verification.authenticationInfo.credentialBackedUp,
-        },
-      });
+      try {
+        await db.passkeyCredential.update({
+          where: { id: credential.id },
+          data: {
+            counter: verification.authenticationInfo.newCounter,
+            deviceType: verification.authenticationInfo.credentialDeviceType,
+            backedUp: verification.authenticationInfo.credentialBackedUp,
+          },
+        });
+      } catch (error) {
+        if (isMissingPasskeyStorage(error)) {
+          throw new ServiceUnavailableError(
+            'Passkey storage is not ready. Run database schema sync for passkeys.'
+          );
+        }
+        throw error;
+      }
 
       const token = generateToken({
         userId: credential.adminUser.id,

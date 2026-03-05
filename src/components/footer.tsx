@@ -17,11 +17,11 @@ export function Footer() {
             viewport={{ once: true }}
             className="flex items-center gap-3"
           >
-            <h3 className="font-serif text-lg font-semibold">
+            <h3 className="font-sans text-sm md:text-base font-semibold tracking-[0.12em] uppercase">
               Senpai&apos;s Isekai
             </h3>
-            <span className="font-handwritten text-lg text-muted-foreground">
-              ~ Thee Strongest ~
+            <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
+              Open-Source Humanity
             </span>
           </motion.div>
 

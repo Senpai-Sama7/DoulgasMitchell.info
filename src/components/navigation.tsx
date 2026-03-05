@@ -59,8 +59,8 @@ export function Navigation() {
           )}
         >
           {/* Logo */}
-          <Link href="/" className="mr-2 md:mr-3">
-            <span className="font-serif text-base md:text-lg font-semibold text-foreground">
+          <Link href="/" className="mr-2 md:mr-3 group">
+            <span className="font-sans text-[0.9rem] md:text-[1rem] font-semibold tracking-[0.18em] uppercase text-foreground transition-colors group-hover:text-primary">
               Senpai
             </span>
           </Link>

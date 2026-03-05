@@ -27,7 +27,7 @@ const LayoutContext = createContext<LayoutContextType>({
   isLoading: false,
   setIsLoading: () => {},
   showParticles: true,
-  showCustomCursor: true,
+  showCustomCursor: false,
   pageTransition: "slide",
   setPageTransition: () => {},
 });
@@ -85,7 +85,7 @@ const pageTransitionVariants = {
 function MainLayoutInner({ 
   children, 
   showParticles = true, 
-  showCustomCursor = true,
+  showCustomCursor = false,
   showReadingProgress = true,
   particleVariant = "balanced",
   defaultTransition = "slide",

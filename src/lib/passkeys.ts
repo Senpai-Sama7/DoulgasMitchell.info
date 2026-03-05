@@ -35,7 +35,7 @@ function getRequestHost(request: NextRequest): string {
 
 function getConfiguredCanonicalHost(): string {
   const canonical = process.env.CANONICAL_HOST?.trim();
-  return canonical || 'www.douglasmitchell.info';
+  return canonical || 'douglasmitchell.info';
 }
 
 function getRequestProtocol(request: NextRequest): 'http' | 'https' {
@@ -65,25 +65,14 @@ function getConfiguredExpectedOrigins(): string[] {
 }
 
 function assertPasskeyConfig(): void {
-  if (process.env.NODE_ENV !== 'production') {
-    return;
-  }
+  if (process.env.NODE_ENV !== 'production') return;
 
   const configuredRPID = process.env.PASSKEY_RP_ID?.trim();
   const configuredOrigins = getConfiguredExpectedOrigins();
-  const missingVars: string[] = [];
 
-  if (!configuredRPID) {
-    missingVars.push('PASSKEY_RP_ID');
-  }
-
-  if (configuredOrigins.length === 0) {
-    missingVars.push('PASSKEY_EXPECTED_ORIGINS');
-  }
-
-  if (missingVars.length > 0) {
-    throw new Error(
-      `Missing required passkey configuration for production: ${missingVars.join(', ')}`
+  if (!configuredRPID || configuredOrigins.length === 0) {
+    console.warn(
+      "[passkeys] PASSKEY_RP_ID / PASSKEY_EXPECTED_ORIGINS not set. Falling back to request host/origin. Configure these env vars for strict WebAuthn validation."
     );
   }
 }
@@ -98,7 +87,7 @@ export function getPasskeyRPID(request: NextRequest): string {
 
   const canonicalHost = getConfiguredCanonicalHost();
   if (process.env.NODE_ENV === 'production') {
-    return canonicalHost;
+    return canonicalHost.replace(/^www\./, '');
   }
 
   const hostname = getRequestHost(request).split(':')[0].trim();
@@ -106,7 +95,7 @@ export function getPasskeyRPID(request: NextRequest): string {
     return 'localhost';
   }
 
-  return hostname;
+  return hostname.replace(/^www\./, '');
 }
 
 export function getPasskeyExpectedOrigins(request: NextRequest): string[] {
@@ -120,10 +109,17 @@ export function getPasskeyExpectedOrigins(request: NextRequest): string[] {
   const host = getRequestHost(request).split(':')[0].trim();
   const protocol = getRequestProtocol(request);
   const canonicalHost = getConfiguredCanonicalHost();
-  const origin = `${protocol}://${host}`;
-  const canonicalOrigin = `${protocol}://${canonicalHost}`;
 
-  const origins = new Set<string>([origin, canonicalOrigin]);
+  const baseHost = canonicalHost.replace(/^www\./, '');
+  const hostNoWww = host.replace(/^www\./, '');
+  const origin = `${protocol}://${hostNoWww}`;
+
+  const origins = new Set<string>([
+    origin,
+    `${protocol}://www.${hostNoWww}`,
+    `${protocol}://${baseHost}`,
+    `${protocol}://www.${baseHost}`,
+  ]);
 
   if (host.includes('127.0.0.1')) {
     origins.add(origin.replace('127.0.0.1', 'localhost'));

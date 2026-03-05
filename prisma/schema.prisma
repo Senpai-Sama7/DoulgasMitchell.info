@@ -175,6 +175,20 @@ model RequestLog {
   @@index([createdAt])
 }
 
+model LayoutBlock {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  label     String
+  type      String
+  gridX     Int      @default(0)
+  gridY     Int      @default(0)
+  width     Int      @default(4)
+  height    Int      @default(2)
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Newsletter {
   id        String   @id @default(cuid())
   email     String   @unique

@@ -6,6 +6,7 @@ import {
   successResponse,
   AuthenticationError,
   ValidationError,
+  validateInput,
 } from '@/lib/middleware';
 import {
   verifyPassword,
@@ -38,8 +39,13 @@ async function getAuthenticatedUser(request: NextRequest) {
 async function handleChangePassword(request: NextRequest): Promise<NextResponse> {
   const adminUser = await getAuthenticatedUser(request);
 
-  const body = await request.json();
-  const data = changeAdminPasswordSchema.parse(body);
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    throw new ValidationError('Invalid JSON body');
+  }
+  const data = validateInput(changeAdminPasswordSchema, body);
 
   const isValid = await verifyPassword(data.currentPassword, adminUser.passwordHash);
   if (!isValid) {
