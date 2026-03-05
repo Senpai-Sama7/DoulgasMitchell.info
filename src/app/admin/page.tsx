@@ -221,7 +221,7 @@ function AdminLogin({ onLogin }: { onLogin: () => void }) {
         </form>
 
         <p className="text-xs text-muted-foreground text-center mt-6">
-          Default password: senpai2024
+          Password is configured by server-side <code>ADMIN_PASSWORD</code>
         </p>
       </motion.div>
     </div>

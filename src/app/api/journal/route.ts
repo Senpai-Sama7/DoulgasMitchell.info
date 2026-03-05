@@ -1,244 +1,238 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateSession } from "@/lib/security";
+import {
+  withMiddleware,
+  successResponse,
+  validateInput,
+} from "@/lib/middleware";
+import {
+  createJournalEntrySchema,
+  updateJournalEntrySchema,
+  journalFilterSchema,
+} from "@/lib/validations";
 
-// GET all journal entries
-export async function GET() {
-  try {
-    const entries = await db.journalEntry.findMany({
-      orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
-    });
+async function authenticateRequest(request: NextRequest): Promise<void> {
+  const cookieStore = await import("next/headers").then((m) => m.cookies());
+  const token = (await cookieStore).get("admin-session")?.value;
 
-    // Transform the data to include tag names
-    const transformedEntries = entries.map((entry) => ({
-      ...entry,
-      tags: entry.tags.map((t) => t.tag.name),
-    }));
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-    return NextResponse.json({ success: true, data: transformedEntries });
-  } catch (error) {
-    console.error("Error fetching journal entries:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch journal entries" },
-      { status: 500 }
-    );
+  const sessionResult = await validateSession(token);
+  if (!sessionResult.valid) {
+    throw new Error("Unauthorized");
   }
 }
 
-// POST create a new journal entry
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { title, date, content, quote, image, imageAlt, tags } = body;
+async function handleGetJournal(request: NextRequest): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url);
 
-    if (!title || !date || !content || !image) {
-      return NextResponse.json(
-        { success: false, error: "Missing required fields" },
-        { status: 400 }
-      );
+  const filterInput = {
+    search: searchParams.get("search") || undefined,
+    dateFrom: searchParams.get("dateFrom") || undefined,
+    dateTo: searchParams.get("dateTo") || undefined,
+    tag: searchParams.get("tag") || undefined,
+    sortBy: searchParams.get("sortBy") || "date",
+    sortOrder: searchParams.get("sortOrder") || "desc",
+    limit: parseInt(searchParams.get("limit") || "20", 10),
+    offset: parseInt(searchParams.get("offset") || "0", 10),
+  };
+
+  const filter = validateInput(journalFilterSchema, filterInput);
+
+  const where: Record<string, unknown> = {};
+
+  if (filter.search) {
+    where.OR = [
+      { title: { contains: filter.search, mode: "insensitive" } },
+      { content: { contains: filter.search, mode: "insensitive" } },
+    ];
+  }
+
+  if (filter.dateFrom || filter.dateTo) {
+    where.date = {};
+    if (filter.dateFrom) {
+      (where.date as Record<string, Date>).gte = filter.dateFrom;
     }
+    if (filter.dateTo) {
+      (where.date as Record<string, Date>).lte = filter.dateTo;
+    }
+  }
 
-    // Get the max order
-    const maxOrderEntry = await db.journalEntry.findFirst({
-      orderBy: { order: "desc" },
-      select: { order: true },
-    });
-    const order = (maxOrderEntry?.order || 0) + 1;
+  const [entries, total] = await Promise.all([
+    db.journalEntry.findMany({
+      where,
+      orderBy: [{ order: "asc" }, { date: filter.sortOrder }],
+      include: { tags: { include: { tag: true } } },
+      take: filter.limit,
+      skip: filter.offset,
+    }),
+    db.journalEntry.count({ where }),
+  ]);
 
-    // Create entry and handle tags
-    const entry = await db.journalEntry.create({
-      data: {
-        title,
-        date,
-        content,
-        quote,
-        image,
-        imageAlt: imageAlt || title,
-        order,
-      },
-    });
+  const transformedEntries = entries.map((entry) => ({
+    ...entry,
+    tags: entry.tags.map((t) => t.tag.name),
+  }));
 
-    // Handle tags
-    if (tags && Array.isArray(tags) && tags.length > 0) {
-      for (const tagName of tags) {
-        // Find or create tag
-        let tag = await db.tag.findUnique({
-          where: { name: tagName },
-        });
+  return NextResponse.json({
+    success: true,
+    data: {
+      items: transformedEntries,
+      total,
+      limit: filter.limit,
+      offset: filter.offset,
+      hasMore: filter.offset + entries.length < total,
+    },
+  });
+}
 
-        if (!tag) {
-          tag = await db.tag.create({
-            data: { name: tagName },
-          });
-        }
+async function handleCreateJournal(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-        // Create journal-tag relation
-        await db.journalTag.create({
-          data: {
-            journalEntryId: entry.id,
-            tagId: tag.id,
-          },
-        });
+  const body = await request.json();
+  const data = validateInput(createJournalEntrySchema, body);
+
+  const maxOrderEntry = await db.journalEntry.findFirst({
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
+  const order = (maxOrderEntry?.order || 0) + 1;
+
+  const entry = await db.journalEntry.create({
+    data: {
+      title: data.title,
+      date: data.date,
+      content: data.content,
+      quote: data.quote,
+      image: data.image,
+      imageAlt: data.imageAlt || data.title,
+      order,
+    },
+  });
+
+  if (data.tags && data.tags.length > 0) {
+    for (const tagName of data.tags) {
+      let tag = await db.tag.findUnique({ where: { name: tagName } });
+
+      if (!tag) {
+        tag = await db.tag.create({ data: { name: tagName } });
       }
+
+      await db.journalTag.create({
+        data: { journalEntryId: entry.id, tagId: tag.id },
+      });
     }
-
-    // Log activity
-    await db.activityLog.create({
-      data: {
-        action: "create",
-        resource: "journal",
-        resourceId: entry.id,
-        details: JSON.stringify({ title }),
-      },
-    });
-
-    return NextResponse.json({ success: true, data: entry });
-  } catch (error) {
-    console.error("Error creating journal entry:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to create journal entry" },
-      { status: 500 }
-    );
   }
+
+  await db.activityLog.create({
+    data: {
+      action: "create",
+      resource: "journal",
+      resourceId: entry.id,
+      details: JSON.stringify({ title: data.title }),
+    },
+  });
+
+  return successResponse(entry, "Entry created successfully");
 }
 
-// PUT update a journal entry
-export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, tags, ...data } = body;
+async function handleUpdateJournal(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Entry ID is required" },
-        { status: 400 }
-      );
-    }
+  const body = await request.json();
+  const { id, tags, ...updateData } = body;
 
-    // Update entry
-    const entry = await db.journalEntry.update({
-      where: { id },
-      data,
-    });
+  if (!id) {
+    throw new Error("Entry ID is required");
+  }
 
-    // Update tags if provided
-    if (tags && Array.isArray(tags)) {
-      // Remove existing tags
-      await db.journalTag.deleteMany({
-        where: { journalEntryId: id },
-      });
+  const data = validateInput(updateJournalEntrySchema, updateData);
 
-      // Add new tags
-      for (const tagName of tags) {
-        let tag = await db.tag.findUnique({
-          where: { name: tagName },
-        });
+  const entry = await db.journalEntry.update({
+    where: { id },
+    data,
+  });
 
-        if (!tag) {
-          tag = await db.tag.create({
-            data: { name: tagName },
-          });
-        }
+  if (tags && Array.isArray(tags)) {
+    await db.journalTag.deleteMany({ where: { journalEntryId: id } });
 
-        await db.journalTag.create({
-          data: {
-            journalEntryId: id,
-            tagId: tag.id,
-          },
-        });
+    for (const tagName of tags) {
+      let tag = await db.tag.findUnique({ where: { name: tagName } });
+
+      if (!tag) {
+        tag = await db.tag.create({ data: { name: tagName } });
       }
+
+      await db.journalTag.create({
+        data: { journalEntryId: id, tagId: tag.id },
+      });
     }
-
-    // Log activity
-    await db.activityLog.create({
-      data: {
-        action: "update",
-        resource: "journal",
-        resourceId: entry.id,
-        details: JSON.stringify({ title: entry.title }),
-      },
-    });
-
-    return NextResponse.json({ success: true, data: entry });
-  } catch (error) {
-    console.error("Error updating journal entry:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to update journal entry" },
-      { status: 500 }
-    );
   }
+
+  await db.activityLog.create({
+    data: {
+      action: "update",
+      resource: "journal",
+      resourceId: entry.id,
+      details: JSON.stringify({ title: entry.title }),
+    },
+  });
+
+  return successResponse(entry, "Entry updated successfully");
 }
 
-// DELETE a journal entry or multiple entries
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    const ids = searchParams.get("ids");
+async function handleDeleteJournal(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (ids) {
-      // Batch delete
-      const idArray = ids.split(",");
-      
-      // Delete journal tags first
-      await db.journalTag.deleteMany({
-        where: { journalEntryId: { in: idArray } },
-      });
-      
-      await db.journalEntry.deleteMany({
-        where: { id: { in: idArray } },
-      });
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  const ids = searchParams.get("ids");
 
-      // Log activity
-      await db.activityLog.create({
-        data: {
-          action: "delete",
-          resource: "journal",
-          details: JSON.stringify({ count: idArray.length, ids: idArray }),
-        },
-      });
+  if (ids) {
+    const idArray = ids.split(",");
 
-      return NextResponse.json({ success: true, message: `${idArray.length} entries deleted` });
-    }
+    await db.journalTag.deleteMany({ where: { journalEntryId: { in: idArray } } });
+    await db.journalEntry.deleteMany({ where: { id: { in: idArray } } });
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Entry ID is required" },
-        { status: 400 }
-      );
-    }
-
-    // Delete journal tags first
-    await db.journalTag.deleteMany({
-      where: { journalEntryId: id },
-    });
-
-    const entry = await db.journalEntry.delete({
-      where: { id },
-    });
-
-    // Log activity
     await db.activityLog.create({
       data: {
         action: "delete",
         resource: "journal",
-        resourceId: id,
-        details: JSON.stringify({ title: entry.title }),
+        details: JSON.stringify({ count: idArray.length, ids: idArray }),
       },
     });
 
-    return NextResponse.json({ success: true, message: "Entry deleted" });
-  } catch (error) {
-    console.error("Error deleting journal entry:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to delete journal entry" },
-      { status: 500 }
-    );
+    return successResponse(undefined, `${idArray.length} entries deleted`);
   }
+
+  if (!id) {
+    throw new Error("Entry ID is required");
+  }
+
+  await db.journalTag.deleteMany({ where: { journalEntryId: id } });
+  await db.journalEntry.delete({ where: { id } });
+
+  await db.activityLog.create({
+    data: {
+      action: "delete",
+      resource: "journal",
+      resourceId: id,
+    },
+  });
+
+  return successResponse(undefined, "Entry deleted successfully");
 }
+
+export const GET = withMiddleware(handleGetJournal);
+export const POST = withMiddleware(handleCreateJournal);
+export const PUT = withMiddleware(handleUpdateJournal);
+export const DELETE = withMiddleware(handleDeleteJournal);

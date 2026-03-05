@@ -21,15 +21,7 @@ interface CursorState {
 }
 
 export function CustomCursor() {
-  // Disable on mobile/touch devices or admin page
   const [isMobile, setIsMobile] = useState(false);
-  
-  useEffect(() => {
-    const isAdminPage = window.location.pathname.startsWith('/admin');
-    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0 || isAdminPage);
-  }, []);
-  
-  if (isMobile) return null;
   
   const cursorRef = useRef<HTMLDivElement>(null);
   const cursorDotRef = useRef<HTMLDivElement>(null);
@@ -55,22 +47,18 @@ export function CustomCursor() {
   const cursorXSpring = useSpring(cursorX, springConfig);
   const cursorYSpring = useSpring(cursorY, springConfig);
   
-  // Magnetic spring with more bounce
   const magneticSpringConfig = { damping: 15, stiffness: 200, mass: 0.8 };
   const magneticXSpring = useSpring(magneticX, magneticSpringConfig);
   const magneticYSpring = useSpring(magneticY, magneticSpringConfig);
 
-  // Check for reduced motion preference
   const prefersReducedMotion = typeof window !== "undefined" && 
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  // Add trail point with velocity-based sizing
   const addTrailPoint = useCallback((x: number, y: number) => {
     const now = Date.now();
     if (now - lastTrailTimeRef.current < 25) return;
     lastTrailTimeRef.current = now;
 
-    // Calculate velocity for dynamic trail sizing
     const dx = x - lastMousePosRef.current.x;
     const dy = y - lastMousePosRef.current.y;
     const velocity = Math.sqrt(dx * dx + dy * dy);
@@ -89,21 +77,17 @@ export function CustomCursor() {
         scale,
         timestamp: now 
       }];
-      // Keep only last 12 trail points
       return newTrail.slice(-12);
     });
 
-    // Remove trail point after animation
     setTimeout(() => {
       setTrail(prev => prev.filter(p => p.id !== id));
     }, 600);
   }, []);
 
-  // Detect element type for cursor styling
   const getHoverType = useCallback((element: Element): "default" | "link" | "button" | "image" | "text" | "input" | "video" => {
     const tagName = element.tagName.toLowerCase();
     
-    // Check for data attributes first
     const cursorType = element.getAttribute("data-cursor-type") as CursorState["hoverType"];
     if (cursorType) return cursorType;
     
@@ -117,7 +101,6 @@ export function CustomCursor() {
     return "default";
   }, []);
 
-  // Check if element has magnetic effect
   const isMagneticElement = useCallback((element: Element): boolean => {
     return element.hasAttribute("data-magnetic") || 
            element.classList.contains("magnetic") ||
@@ -125,7 +108,6 @@ export function CustomCursor() {
            element.closest(".magnetic") !== null;
   }, []);
 
-  // Handle magnetic effect
   const handleMagneticEffect = useCallback((e: MouseEvent, element: HTMLElement) => {
     const rect = element.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -140,18 +122,21 @@ export function CustomCursor() {
   }, [magneticX, magneticY]);
 
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    const isAdminPage = window.location.pathname.startsWith('/admin');
+    setIsMobile('ontouchstart' in window || navigator.maxTouchPoints > 0 || isAdminPage);
+  }, []);
+  
+  useEffect(() => {
+    if (prefersReducedMotion || isMobile) return;
 
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
       
-      // Handle magnetic effect
       if (magneticTargetRef.current && state.isMagnetic) {
         handleMagneticEffect(e, magneticTargetRef.current);
       }
       
-      // Add trail point only when moving and visible
       if (state.isVisible && !state.isMagnetic) {
         addTrailPoint(e.clientX, e.clientY);
       }
@@ -209,7 +194,6 @@ export function CustomCursor() {
     document.addEventListener("mousedown", handleMouseDown, { passive: true });
     document.addEventListener("mouseup", handleMouseUp, { passive: true });
 
-    // Add listeners for interactive elements with mutation observer for dynamic content
     const addInteractiveListeners = () => {
       const interactiveElements = document.querySelectorAll(
         "a, button, input, textarea, select, [role='button'], img, video, .image-card, [data-lightbox], [data-cursor-hover], [data-magnetic], .magnetic"
@@ -222,7 +206,6 @@ export function CustomCursor() {
 
     addInteractiveListeners();
 
-    // Mutation observer to detect new interactive elements
     const observer = new MutationObserver(() => {
       addInteractiveListeners();
     });
@@ -248,7 +231,9 @@ export function CustomCursor() {
         el.removeEventListener("mouseleave", handleElementLeave);
       });
     };
-  }, [cursorX, cursorY, state.isVisible, state.isMagnetic, addTrailPoint, getHoverType, isMagneticElement, handleMagneticEffect, magneticX, magneticY, prefersReducedMotion]);
+  }, [cursorX, cursorY, state.isVisible, state.isMagnetic, addTrailPoint, getHoverType, isMagneticElement, handleMagneticEffect, magneticX, magneticY, prefersReducedMotion, isMobile]);
+
+  if (prefersReducedMotion || isMobile) return null;
 
   // Get cursor size based on hover type
   const getCursorSize = () => {
@@ -349,13 +334,10 @@ export function CustomCursor() {
           opacity: state.isVisible ? 1 : 0,
           width: getCursorSize().width,
           height: getCursorSize().height,
+          borderRadius: getCursorRadius(),
           contain: "layout style paint",
           willChange: "transform, opacity, width, height",
-        }}
-          borderRadius: getCursorRadius(),
           transition: "opacity 0.2s ease, background-color 0.15s ease, border-color 0.15s ease",
-          willChange: "transform, opacity, width, height",
-          contain: "layout style",
         }}
       >
         {/* Hover indicator icons */}

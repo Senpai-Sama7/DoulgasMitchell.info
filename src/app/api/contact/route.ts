@@ -1,27 +1,32 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/security";
+import { withMiddleware, successResponse, RateLimitError } from "@/lib/middleware";
+import { contactFormSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
-  try {
-    const { name, email, subject, message } = await request.json();
-
-    if (!name || !email || !message) {
-      return NextResponse.json(
-        { error: "Name, email, and message are required" },
-        { status: 400 }
-      );
-    }
-
-    await db.contactMessage.create({
-      data: { name, email, subject, message },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Contact error:", error);
-    return NextResponse.json(
-      { error: "Failed to send message" },
-      { status: 500 }
+async function handleContact(request: NextRequest): Promise<NextResponse> {
+  const ipAddress = getClientIp(request);
+  const rateLimitResult = checkRateLimit(`contact:${ipAddress}`);
+  
+  if (!rateLimitResult.allowed) {
+    throw new RateLimitError(
+      Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
     );
   }
+
+  const body = await request.json();
+  const data = validateInput(contactFormSchema, body);
+
+  await db.contactMessage.create({
+    data: {
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+      message: data.message,
+    },
+  });
+
+  return successResponse(undefined, "Message sent successfully");
 }
+
+export const POST = withMiddleware(handleContact);

@@ -1,40 +1,35 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { NextRequest, NextResponse } from "next/server";
+import { db } from "@/lib/db";
+import { checkRateLimit, getClientIp } from "@/lib/security";
+import { withMiddleware, successResponse, validateInput, RateLimitError } from "@/lib/middleware";
+import { contactFormSchema } from "@/lib/validations";
 
-export async function POST(request: Request) {
-  try {
-    const { email } = await request.json();
-
-    if (!email || !email.includes("@")) {
-      return NextResponse.json(
-        { error: "Valid email is required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if email already exists
-    const existing = await db.newsletter.findUnique({
-      where: { email },
-    });
-
-    if (existing) {
-      return NextResponse.json(
-        { error: "Email already subscribed" },
-        { status: 400 }
-      );
-    }
-
-    // Create newsletter subscription
-    await db.newsletter.create({
-      data: { email },
-    });
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Newsletter error:", error);
-    return NextResponse.json(
-      { error: "Failed to subscribe" },
-      { status: 500 }
+async function handleSubscribe(request: NextRequest): Promise<NextResponse> {
+  const ipAddress = getClientIp(request);
+  const rateLimitResult = checkRateLimit(`newsletter:${ipAddress}`);
+  
+  if (!rateLimitResult.allowed) {
+    throw new RateLimitError(
+      Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
     );
   }
+
+  const body = await request.json();
+  const { email } = body;
+
+  if (!email || !email.includes("@")) {
+    throw new Error("Valid email is required");
+  }
+
+  const existing = await db.newsletter.findUnique({ where: { email } });
+
+  if (existing) {
+    throw new Error("Email already subscribed");
+  }
+
+  await db.newsletter.create({ data: { email } });
+
+  return successResponse(undefined, "Successfully subscribed to newsletter");
 }
+
+export const POST = withMiddleware(handleSubscribe);

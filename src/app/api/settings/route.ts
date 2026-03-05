@@ -1,74 +1,68 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateSession } from "@/lib/security";
+import { withMiddleware, successResponse, validateInput } from "@/lib/middleware";
+import { settingsSchema } from "@/lib/validations";
 
-// GET settings
-export async function GET() {
-  try {
-    let settings = await db.settings.findFirst();
+async function authenticateRequest(request: NextRequest): Promise<void> {
+  const cookieStore = await import("next/headers").then((m) => m.cookies());
+  const token = (await cookieStore).get("admin-session")?.value;
 
-    // Create default settings if not exists
-    if (!settings) {
-      settings = await db.settings.create({
-        data: {
-          siteTitle: "Senpai's Isekai",
-          siteDescription: "A personal blog exploring architecture, technology, and creative expression",
-        },
-      });
-    }
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-    return NextResponse.json({ success: true, data: settings });
-  } catch (error) {
-    console.error("Error fetching settings:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch settings" },
-      { status: 500 }
-    );
+  const sessionResult = await validateSession(token);
+  if (!sessionResult.valid) {
+    throw new Error("Unauthorized");
   }
 }
 
-// PUT update settings
-export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, ...data } = body;
+async function handleGetSettings(request: NextRequest): Promise<NextResponse> {
+  let settings = await db.settings.findFirst();
 
-    let settings;
-
-    if (id) {
-      settings = await db.settings.update({
-        where: { id },
-        data,
-      });
-    } else {
-      // Create or update the first settings record
-      const existing = await db.settings.findFirst();
-      if (existing) {
-        settings = await db.settings.update({
-          where: { id: existing.id },
-          data,
-        });
-      } else {
-        settings = await db.settings.create({
-          data,
-        });
-      }
-    }
-
-    // Log activity
-    await db.activityLog.create({
+  if (!settings) {
+    settings = await db.settings.create({
       data: {
-        action: "update",
-        resource: "settings",
-        details: JSON.stringify({ fields: Object.keys(data) }),
+        siteTitle: "Senpai's Isekai",
+        siteDescription: "A personal blog exploring architecture, technology, and creative expression",
       },
     });
-
-    return NextResponse.json({ success: true, data: settings });
-  } catch (error) {
-    console.error("Error updating settings:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to update settings" },
-      { status: 500 }
-    );
   }
+
+  return successResponse(settings);
 }
+
+async function handleUpdateSettings(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
+
+  const body = await request.json();
+  const data = validateInput(settingsSchema, body);
+
+  let settings;
+
+  const existing = await db.settings.findFirst();
+  if (existing) {
+    settings = await db.settings.update({
+      where: { id: existing.id },
+      data,
+    });
+  } else {
+    settings = await db.settings.create({ data });
+  }
+
+  await db.activityLog.create({
+    data: {
+      action: "update",
+      resource: "settings",
+      details: JSON.stringify({ fields: Object.keys(data) }),
+    },
+  });
+
+  return successResponse(settings, "Settings updated successfully");
+}
+
+export const GET = withMiddleware(handleGetSettings);
+export const PUT = withMiddleware(handleUpdateSettings);

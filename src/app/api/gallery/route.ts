@@ -1,168 +1,199 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateSession } from "@/lib/security";
+import {
+  withMiddleware,
+  errorResponse,
+  successResponse,
+  validateInput,
+  NotFoundError,
+} from "@/lib/middleware";
+import {
+  createGalleryImageSchema,
+  updateGalleryImageSchema,
+  galleryFilterSchema,
+} from "@/lib/validations";
 
-// GET all gallery images
-export async function GET() {
-  try {
-    const images = await db.galleryImage.findMany({
+async function authenticateRequest(request: NextRequest): Promise<void> {
+  const cookieStore = await import("next/headers").then((m) => m.cookies());
+  const token = (await cookieStore).get("admin-session")?.value;
+
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
+
+  const sessionResult = await validateSession(token);
+  if (!sessionResult.valid) {
+    throw new Error("Unauthorized");
+  }
+}
+
+async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
+  const { searchParams } = new URL(request.url);
+  
+  const filterInput = {
+    series: searchParams.get("series"),
+    search: searchParams.get("search") || undefined,
+    sortBy: searchParams.get("sortBy") || "date",
+    sortOrder: searchParams.get("sortOrder") || "desc",
+    limit: parseInt(searchParams.get("limit") || "20", 10),
+    offset: parseInt(searchParams.get("offset") || "0", 10),
+  };
+
+  const filter = validateInput(galleryFilterSchema, filterInput);
+
+  const where: Record<string, unknown> = {};
+  
+  if (filter.series) {
+    where.series = filter.series;
+  }
+  
+  if (filter.search) {
+    where.OR = [
+      { alt: { contains: filter.search, mode: "insensitive" } },
+      { caption: { contains: filter.search, mode: "insensitive" } },
+    ];
+  }
+
+  const [images, total] = await Promise.all([
+    db.galleryImage.findMany({
+      where,
       orderBy: [{ order: "asc" }, { createdAt: "desc" }],
-    });
+      take: filter.limit,
+      skip: filter.offset,
+    }),
+    db.galleryImage.count({ where }),
+  ]);
 
-    return NextResponse.json({ success: true, data: images });
-  } catch (error) {
-    console.error("Error fetching gallery images:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch gallery images" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json({
+    success: true,
+    data: {
+      items: images,
+      total,
+      limit: filter.limit,
+      offset: filter.offset,
+      hasMore: offset + images.length < total,
+    },
+  });
 }
 
-// POST create a new gallery image
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { src, alt, caption, series, width, height, date, blurDataUrl } = body;
+async function handleCreateGallery(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (!src || !alt || !caption || !series || !date) {
-      return NextResponse.json(
-        { success: false, error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
+  const body = await request.json();
+  const data = validateInput(createGalleryImageSchema, body);
 
-    // Get the max order
-    const maxOrderImage = await db.galleryImage.findFirst({
-      orderBy: { order: "desc" },
-      select: { order: true },
-    });
-    const order = (maxOrderImage?.order || 0) + 1;
+  const maxOrderImage = await db.galleryImage.findFirst({
+    orderBy: { order: "desc" },
+    select: { order: true },
+  });
+  const order = (maxOrderImage?.order || 0) + 1;
 
-    const image = await db.galleryImage.create({
-      data: {
-        src,
-        alt,
-        caption,
-        series,
-        width: width || 1344,
-        height: height || 768,
-        date,
-        blurDataUrl,
-        order,
-      },
-    });
+  const image = await db.galleryImage.create({
+    data: {
+      src: data.src,
+      alt: data.alt,
+      caption: data.caption,
+      series: data.series,
+      width: data.width,
+      height: data.height,
+      date: data.date,
+      blurDataUrl: data.blurDataUrl,
+      order,
+    },
+  });
 
-    // Log activity
-    await db.activityLog.create({
-      data: {
-        action: "create",
-        resource: "gallery",
-        resourceId: image.id,
-        details: JSON.stringify({ alt, series }),
-      },
-    });
+  await db.activityLog.create({
+    data: {
+      action: "create",
+      resource: "gallery",
+      resourceId: image.id,
+      details: JSON.stringify({ alt: data.alt, series: data.series }),
+    },
+  });
 
-    return NextResponse.json({ success: true, data: image });
-  } catch (error) {
-    console.error("Error creating gallery image:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to create gallery image" },
-      { status: 500 }
-    );
-  }
+  return successResponse(image, "Image created successfully");
 }
 
-// PUT update a gallery image
-export async function PUT(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { id, ...data } = body;
+async function handleUpdateGallery(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Image ID is required" },
-        { status: 400 }
-      );
-    }
+  const body = await request.json();
+  const { id, ...updateData } = body;
 
-    const image = await db.galleryImage.update({
-      where: { id },
-      data,
-    });
-
-    // Log activity
-    await db.activityLog.create({
-      data: {
-        action: "update",
-        resource: "gallery",
-        resourceId: image.id,
-        details: JSON.stringify({ alt: image.alt, series: image.series }),
-      },
-    });
-
-    return NextResponse.json({ success: true, data: image });
-  } catch (error) {
-    console.error("Error updating gallery image:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to update gallery image" },
-      { status: 500 }
-    );
+  if (!id) {
+    throw new Error("Image ID is required");
   }
+
+  const data = validateInput(updateGalleryImageSchema, updateData);
+
+  const image = await db.galleryImage.update({
+    where: { id },
+    data,
+  });
+
+  await db.activityLog.create({
+    data: {
+      action: "update",
+      resource: "gallery",
+      resourceId: image.id,
+      details: JSON.stringify({ alt: image.alt, series: image.series }),
+    },
+  });
+
+  return successResponse(image, "Image updated successfully");
 }
 
-// DELETE a gallery image or multiple images
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    const ids = searchParams.get("ids");
+async function handleDeleteGallery(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (ids) {
-      // Batch delete
-      const idArray = ids.split(",");
-      await db.galleryImage.deleteMany({
-        where: { id: { in: idArray } },
-      });
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get("id");
+  const ids = searchParams.get("ids");
 
-      // Log activity
-      await db.activityLog.create({
-        data: {
-          action: "delete",
-          resource: "gallery",
-          details: JSON.stringify({ count: idArray.length, ids: idArray }),
-        },
-      });
-
-      return NextResponse.json({ success: true, message: `${idArray.length} images deleted` });
-    }
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, error: "Image ID is required" },
-        { status: 400 }
-      );
-    }
-
-    const image = await db.galleryImage.delete({
-      where: { id },
+  if (ids) {
+    const idArray = ids.split(",");
+    await db.galleryImage.deleteMany({
+      where: { id: { in: idArray } },
     });
 
-    // Log activity
     await db.activityLog.create({
       data: {
         action: "delete",
         resource: "gallery",
-        resourceId: id,
-        details: JSON.stringify({ alt: image.alt }),
+        details: JSON.stringify({ count: idArray.length, ids: idArray }),
       },
     });
 
-    return NextResponse.json({ success: true, message: "Image deleted" });
-  } catch (error) {
-    console.error("Error deleting gallery image:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to delete gallery image" },
-      { status: 500 }
-    );
+    return successResponse(undefined, `${idArray.length} images deleted`);
   }
+
+  if (!id) {
+    throw new Error("Image ID is required");
+  }
+
+  await db.galleryImage.delete({
+    where: { id },
+  });
+
+  await db.activityLog.create({
+    data: {
+      action: "delete",
+      resource: "gallery",
+      resourceId: id,
+    },
+  });
+
+  return successResponse(undefined, "Image deleted successfully");
 }
+
+export const GET = withMiddleware(handleGetGallery);
+export const POST = withMiddleware(handleCreateGallery);
+export const PUT = withMiddleware(handleUpdateGallery);
+export const DELETE = withMiddleware(handleDeleteGallery);

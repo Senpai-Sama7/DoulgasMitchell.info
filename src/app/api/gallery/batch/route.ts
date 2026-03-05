@@ -1,86 +1,81 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateSession } from "@/lib/security";
+import { withMiddleware, successResponse, validateInput } from "@/lib/middleware";
+import { batchMoveSchema, reorderSchema } from "@/lib/validations";
 
-// POST batch operations (move to series, reorder)
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { action, ids, data } = body;
+async function authenticateRequest(request: NextRequest): Promise<void> {
+  const cookieStore = await import("next/headers").then((m) => m.cookies());
+  const token = (await cookieStore).get("admin-session")?.value;
 
-    if (!action || !ids || !Array.isArray(ids)) {
-      return NextResponse.json(
-        { success: false, error: "Invalid request" },
-        { status: 400 }
-      );
-    }
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-    switch (action) {
-      case "moveToSeries": {
-        const { series } = data;
-        if (!series) {
-          return NextResponse.json(
-            { success: false, error: "Series is required" },
-            { status: 400 }
-          );
-        }
-
-        await db.galleryImage.updateMany({
-          where: { id: { in: ids } },
-          data: { series },
-        });
-
-        await db.activityLog.create({
-          data: {
-            action: "update",
-            resource: "gallery",
-            details: JSON.stringify({ action: "moveToSeries", count: ids.length, series }),
-          },
-        });
-
-        return NextResponse.json({ success: true, message: `${ids.length} images moved to ${series}` });
-      }
-
-      case "reorder": {
-        const { orders } = data; // Array of { id, order }
-        if (!orders || !Array.isArray(orders)) {
-          return NextResponse.json(
-            { success: false, error: "Orders array is required" },
-            { status: 400 }
-          );
-        }
-
-        // Update each image's order
-        await Promise.all(
-          orders.map(({ id, order }: { id: string; order: number }) =>
-            db.galleryImage.update({
-              where: { id },
-              data: { order },
-            })
-          )
-        );
-
-        await db.activityLog.create({
-          data: {
-            action: "update",
-            resource: "gallery",
-            details: JSON.stringify({ action: "reorder", count: orders.length }),
-          },
-        });
-
-        return NextResponse.json({ success: true, message: "Order updated" });
-      }
-
-      default:
-        return NextResponse.json(
-          { success: false, error: "Unknown action" },
-          { status: 400 }
-        );
-    }
-  } catch (error) {
-    console.error("Error in batch operation:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to perform batch operation" },
-      { status: 500 }
-    );
+  const sessionResult = await validateSession(token);
+  if (!sessionResult.valid) {
+    throw new Error("Unauthorized");
   }
 }
+
+async function handleBatchOperation(
+  request: NextRequest
+): Promise<NextResponse> {
+  await authenticateRequest(request);
+
+  const body = await request.json();
+  const { action, ids, data } = body;
+
+  if (!action || !ids || !Array.isArray(ids)) {
+    throw new Error("Invalid request: action and ids are required");
+  }
+
+  switch (action) {
+    case "moveToSeries": {
+      const validatedData = validateInput(batchMoveSchema, { ids, series: data.series });
+
+      await db.galleryImage.updateMany({
+        where: { id: { in: validatedData.ids } },
+        data: { series: validatedData.series },
+      });
+
+      await db.activityLog.create({
+        data: {
+          action: "update",
+          resource: "gallery",
+          details: JSON.stringify({ action: "moveToSeries", count: validatedData.ids.length, series: validatedData.series }),
+        },
+      });
+
+      return successResponse(undefined, `${validatedData.ids.length} images moved to ${validatedData.series}`);
+    }
+
+    case "reorder": {
+      const validatedData = validateInput(reorderSchema, { items: data.orders });
+
+      await Promise.all(
+        validatedData.items.map(({ id, order }) =>
+          db.galleryImage.update({
+            where: { id },
+            data: { order },
+          })
+        )
+      );
+
+      await db.activityLog.create({
+        data: {
+          action: "update",
+          resource: "gallery",
+          details: JSON.stringify({ action: "reorder", count: validatedData.items.length }),
+        },
+      });
+
+      return successResponse(undefined, "Order updated");
+    }
+
+    default:
+      throw new Error(`Unknown action: ${action}`);
+  }
+}
+
+export const POST = withMiddleware(handleBatchOperation);

@@ -292,5 +292,6 @@ export async function initializeAdminUser(): Promise<void> {
       },
     });
     console.log('Admin user created successfully');
+    return;
   }
 }

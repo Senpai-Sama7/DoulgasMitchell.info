@@ -1,68 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { validateSession } from "@/lib/security";
+import { withMiddleware, successResponse } from "@/lib/middleware";
 
-// GET activity log with pagination
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
-    const resource = searchParams.get("resource");
+async function authenticateRequest(request: NextRequest): Promise<void> {
+  const cookieStore = await import("next/headers").then((m) => m.cookies());
+  const token = (await cookieStore).get("admin-session")?.value;
 
-    const where = resource ? { resource } : {};
+  if (!token) {
+    throw new Error("Unauthorized");
+  }
 
-    const logs = await db.activityLog.findMany({
+  const sessionResult = await validateSession(token);
+  if (!sessionResult.valid) {
+    throw new Error("Unauthorized");
+  }
+}
+
+async function handleGetActivity(request: NextRequest): Promise<NextResponse> {
+  await authenticateRequest(request);
+
+  const { searchParams } = new URL(request.url);
+  const limit = parseInt(searchParams.get("limit") || "50", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const resource = searchParams.get("resource");
+
+  const where = resource ? { resource } : {};
+
+  const [logs, total] = await Promise.all([
+    db.activityLog.findMany({
       where,
       orderBy: { createdAt: "desc" },
       take: limit,
       skip: offset,
-    });
+    }),
+    db.activityLog.count({ where }),
+  ]);
 
-    const total = await db.activityLog.count({ where });
-
-    return NextResponse.json({
-      success: true,
-      data: logs,
-      pagination: {
-        total,
-        limit,
-        offset,
-        hasMore: offset + logs.length < total,
-      },
-    });
-  } catch (error) {
-    console.error("Error fetching activity log:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch activity log" },
-      { status: 500 }
-    );
-  }
+  return successResponse({
+    items: logs,
+    total,
+    limit,
+    offset,
+    hasMore: offset + logs.length < total,
+  });
 }
 
-// DELETE activity log (clear all or by date range)
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const before = searchParams.get("before");
+async function handleDeleteActivity(request: NextRequest): Promise<NextResponse> {
+  await authenticateRequest(request);
 
-    if (before) {
-      await db.activityLog.deleteMany({
-        where: {
-          createdAt: {
-            lt: new Date(before),
-          },
-        },
-      });
-    } else {
-      await db.activityLog.deleteMany();
-    }
+  const { searchParams } = new URL(request.url);
+  const before = searchParams.get("before");
 
-    return NextResponse.json({ success: true, message: "Activity log cleared" });
-  } catch (error) {
-    console.error("Error clearing activity log:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to clear activity log" },
-      { status: 500 }
-    );
+  if (before) {
+    await db.activityLog.deleteMany({
+      where: { createdAt: { lt: new Date(before) } },
+    });
+  } else {
+    await db.activityLog.deleteMany();
   }
+
+  return successResponse(undefined, "Activity log cleared");
 }
+
+export const GET = withMiddleware(handleGetActivity);
+export const DELETE = withMiddleware(handleDeleteActivity);
