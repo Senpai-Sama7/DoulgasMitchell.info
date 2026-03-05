@@ -727,7 +727,14 @@ export default function AdminPage() {
     passkeyCount: 0,
   });
   const [passkeyMessage, setPasskeyMessage] = useState("");
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [isDeletingAllPosts, setIsDeletingAllPosts] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
   // Form states
   const [imageForm, setImageForm] = useState({
@@ -1254,6 +1261,34 @@ export default function AdminPage() {
       }
     } catch (error) {
       console.error("Error saving settings:", error);
+    }
+  };
+
+  const changePassword = async () => {
+    if (isChangingPassword) return;
+    setPasswordMessage("");
+
+    try {
+      setIsChangingPassword(true);
+      const res = await fetch("/api/admin/auth/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(passwordForm),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setPasswordMessage("Password updated. Use it on your next login.");
+        setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+        return;
+      }
+
+      setPasswordMessage(typeof data.error === "string" ? data.error : "Unable to update password");
+    } catch (error) {
+      console.error("Password change failed:", error);
+      setPasswordMessage("Unable to update password right now.");
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -1945,6 +1980,56 @@ export default function AdminPage() {
 
                     {passkeyMessage && (
                       <p className="text-xs text-muted-foreground">{passkeyMessage}</p>
+                    )}
+                  </div>
+
+                  <div className="rounded-xl border border-border bg-background/70 p-4 space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                      Update the admin password. Provide the current password to confirm.
+                    </p>
+                    <div className="grid gap-2">
+                      <input
+                        type="password"
+                        placeholder="Current password"
+                        value={passwordForm.currentPassword}
+                        onChange={(e) =>
+                          setPasswordForm((p) => ({ ...p, currentPassword: e.target.value }))
+                        }
+                        className="form-input"
+                      />
+                      <input
+                        type="password"
+                        placeholder="New password"
+                        value={passwordForm.newPassword}
+                        onChange={(e) =>
+                          setPasswordForm((p) => ({ ...p, newPassword: e.target.value }))
+                        }
+                        className="form-input"
+                      />
+                      <input
+                        type="password"
+                        placeholder="Confirm new password"
+                        value={passwordForm.confirmPassword}
+                        onChange={(e) =>
+                          setPasswordForm((p) => ({ ...p, confirmPassword: e.target.value }))
+                        }
+                        className="form-input"
+                      />
+                    </div>
+                    <button
+                      onClick={changePassword}
+                      className="w-full rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                      type="button"
+                      disabled={isChangingPassword}
+                    >
+                      {isChangingPassword ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        "Change password"
+                      )}
+                    </button>
+                    {passwordMessage && (
+                      <p className="text-xs text-muted-foreground">{passwordMessage}</p>
                     )}
                   </div>
 

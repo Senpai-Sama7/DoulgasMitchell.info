@@ -16,6 +16,19 @@ export const loginSchema = z.object({
 
 export type LoginInput = z.infer<typeof loginSchema>;
 
+export const changeAdminPasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required').max(100),
+    newPassword: z.string().min(10, 'New password must be at least 10 characters'),
+    confirmPassword: z.string().min(1, 'Confirm the new password'),
+  })
+  .refine((values) => values.newPassword === values.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
+
+export type ChangeAdminPasswordInput = z.infer<typeof changeAdminPasswordSchema>;
+
 // Gallery validation schemas
 export const gallerySeriesSchema = z.enum(['recent-post', 'tech-deck', 'project']);
 

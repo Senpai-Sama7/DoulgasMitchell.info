@@ -33,6 +33,11 @@ function getRequestHost(request: NextRequest): string {
   return request.headers.get('host') ?? request.nextUrl.host;
 }
 
+function getConfiguredCanonicalHost(): string {
+  const canonical = process.env.CANONICAL_HOST?.trim();
+  return canonical || 'www.douglasmitchell.info';
+}
+
 function getRequestProtocol(request: NextRequest): 'http' | 'https' {
   const forwardedProto = request.headers.get('x-forwarded-proto');
   if (forwardedProto) {
@@ -91,6 +96,11 @@ export function getPasskeyRPID(request: NextRequest): string {
     return configuredRPID;
   }
 
+  const canonicalHost = getConfiguredCanonicalHost();
+  if (process.env.NODE_ENV === 'production') {
+    return canonicalHost;
+  }
+
   const hostname = getRequestHost(request).split(':')[0].trim();
   if (hostname === '127.0.0.1') {
     return 'localhost';
@@ -107,11 +117,13 @@ export function getPasskeyExpectedOrigins(request: NextRequest): string[] {
     return configuredOrigins;
   }
 
-  const host = getRequestHost(request);
+  const host = getRequestHost(request).split(':')[0].trim();
   const protocol = getRequestProtocol(request);
+  const canonicalHost = getConfiguredCanonicalHost();
   const origin = `${protocol}://${host}`;
+  const canonicalOrigin = `${protocol}://${canonicalHost}`;
 
-  const origins = new Set<string>([origin]);
+  const origins = new Set<string>([origin, canonicalOrigin]);
 
   if (host.includes('127.0.0.1')) {
     origins.add(origin.replace('127.0.0.1', 'localhost'));
