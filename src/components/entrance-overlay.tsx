@@ -9,6 +9,234 @@ interface EntranceOverlayProps {
   onComplete?: () => void;
 }
 
+// ─── Animated SVG monogram ────────────────────────────────────────────────────
+function IsekaiMonogram() {
+  const outerR = 85;
+  const outerC = 2 * Math.PI * outerR; // ≈ 534
+
+  // 8 tick marks evenly around the outer ring
+  const ticks = Array.from({ length: 8 }, (_, i) => {
+    const angle = (i * 45 - 90) * (Math.PI / 180);
+    const r1 = outerR - 13;
+    const r2 = outerR - 4;
+    return {
+      x1: 100 + r1 * Math.cos(angle),
+      y1: 100 + r1 * Math.sin(angle),
+      x2: 100 + r2 * Math.cos(angle),
+      y2: 100 + r2 * Math.sin(angle),
+    };
+  });
+
+  // 4 glowing dots at cardinal points
+  const cardinals = [0, 90, 180, 270].map((deg) => {
+    const rad = (deg - 90) * (Math.PI / 180);
+    return { cx: 100 + outerR * Math.cos(rad), cy: 100 + outerR * Math.sin(rad) };
+  });
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.78 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ delay: 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+      style={{ position: "relative", width: 190, height: 190, flexShrink: 0 }}
+    >
+      {/* Pulsing ambient glow halo */}
+      <motion.div
+        animate={{ opacity: [0.35, 0.72, 0.35], scale: [1, 1.12, 1] }}
+        transition={{ duration: 2.8, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(217,119,6,0.35) 0%, transparent 68%)",
+          filter: "blur(22px)",
+          pointerEvents: "none",
+        }}
+      />
+
+      <svg
+        viewBox="0 0 200 200"
+        width="190"
+        height="190"
+        style={{ display: "block", overflow: "visible" }}
+      >
+        <defs>
+          <radialGradient id="ei-inner" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#1c0e04" stopOpacity="0.96" />
+            <stop offset="100%" stopColor="#080503" stopOpacity="0.99" />
+          </radialGradient>
+          <filter id="ei-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="2.5" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+          <filter id="ei-dot-glow" x="-150%" y="-150%" width="400%" height="400%">
+            <feGaussianBlur stdDeviation="2" result="b" />
+            <feMerge>
+              <feMergeNode in="b" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        {/* ── Breathe / pulse ring expanding from center ── */}
+        <motion.circle
+          cx="100" cy="100" r="52"
+          fill="none"
+          stroke="rgba(217,119,6,0.25)"
+          strokeWidth="1"
+          animate={{ r: [52, 90, 52], opacity: [0, 0.35, 0] }}
+          transition={{ delay: 1.1, duration: 2.2, repeat: Infinity, ease: "easeOut" }}
+        />
+
+        {/* ── Outer dashed ring: draws in, then slow CW spin ── */}
+        <motion.g
+          animate={{ rotate: 360 }}
+          transition={{
+            delay: 1.08,
+            duration: 22,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          style={{ transformOrigin: "100px 100px" }}
+        >
+          <motion.circle
+            cx="100" cy="100"
+            r={outerR}
+            fill="none"
+            stroke="rgba(251,191,36,0.42)"
+            strokeWidth="0.8"
+            strokeDasharray="6 3.5"
+            initial={{ strokeDashoffset: outerC, opacity: 0 }}
+            animate={{ strokeDashoffset: 0, opacity: 1 }}
+            transition={{
+              strokeDashoffset: { delay: 0.18, duration: 0.88, ease: [0.22, 1, 0.36, 1] },
+              opacity: { delay: 0.18, duration: 0.3 },
+            }}
+          />
+        </motion.g>
+
+        {/* ── Inner counter-rotating dashed ring ── */}
+        <motion.g
+          animate={{ rotate: -360 }}
+          transition={{
+            delay: 0.52,
+            duration: 14,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          style={{ transformOrigin: "100px 100px" }}
+        >
+          <motion.circle
+            cx="100" cy="100" r="65"
+            fill="none"
+            stroke="rgba(180,83,9,0.28)"
+            strokeWidth="0.55"
+            strokeDasharray="3 7"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.52, duration: 0.35 }}
+          />
+        </motion.g>
+
+        {/* ── Frosted inner disc ── */}
+        <motion.circle
+          cx="100" cy="100" r="52"
+          fill="url(#ei-inner)"
+          stroke="rgba(251,191,36,0.16)"
+          strokeWidth="0.75"
+          initial={{ scale: 0.55, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.3, duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          style={{ transformOrigin: "100px 100px" }}
+        />
+
+        {/* ── 8 tick marks ── */}
+        {ticks.map((t, i) => (
+          <motion.line
+            key={i}
+            x1={t.x1} y1={t.y1}
+            x2={t.x2} y2={t.y2}
+            stroke={
+              i % 2 === 0
+                ? "rgba(251,191,36,0.75)"
+                : "rgba(251,191,36,0.32)"
+            }
+            strokeWidth={i % 2 === 0 ? 1.2 : 0.65}
+            strokeLinecap="round"
+            initial={{ opacity: 0, scaleY: 0 }}
+            animate={{ opacity: 1, scaleY: 1 }}
+            transition={{
+              delay: 0.58 + i * 0.045,
+              duration: 0.22,
+              ease: "easeOut",
+            }}
+            style={{
+              transformOrigin: `${t.x1}px ${t.y1}px`,
+            }}
+          />
+        ))}
+
+        {/* ── 4 cardinal amber dots ── */}
+        {cardinals.map((c, i) => (
+          <motion.circle
+            key={i}
+            cx={c.cx} cy={c.cy} r="3"
+            fill="rgba(251,191,36,0.92)"
+            filter="url(#ei-dot-glow)"
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{
+              delay: 0.9 + i * 0.07,
+              duration: 0.28,
+              ease: "backOut",
+            }}
+            style={{ transformOrigin: `${c.cx}px ${c.cy}px` }}
+          />
+        ))}
+
+        {/* ── Central 'S' monogram ── */}
+        <motion.text
+          x="97"
+          y="116"
+          textAnchor="middle"
+          fill="rgba(255,255,255,0.94)"
+          fontSize="58"
+          fontFamily="var(--font-fraunces, Georgia, serif)"
+          fontWeight="700"
+          filter="url(#ei-glow)"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4, duration: 0.6 }}
+          style={{ letterSpacing: "-0.02em" }}
+        >
+          S
+        </motion.text>
+
+        {/* ── '·I' IBM Plex subscript ── */}
+        <motion.text
+          x="126"
+          y="109"
+          textAnchor="start"
+          fill="rgba(251,191,36,0.65)"
+          fontSize="17"
+          fontFamily="var(--font-ibm-plex, monospace)"
+          fontWeight="400"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.74, duration: 0.45 }}
+        >
+          ·I
+        </motion.text>
+      </svg>
+    </motion.div>
+  );
+}
+
+// ─── Main overlay ─────────────────────────────────────────────────────────────
 export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
   const [visible, setVisible] = useState(false);
   const barRef = useRef<HTMLDivElement>(null);
@@ -27,7 +255,7 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
     return () => clearTimeout(t);
   }, [onComplete]);
 
-  // rAF-driven progress — zero React re-renders during animation
+  // rAF-driven progress — zero React re-renders during fill
   useEffect(() => {
     if (!visible) return;
     startRef.current = 0;
@@ -83,8 +311,8 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
               position: "absolute",
               inset: 0,
               background:
-                "radial-gradient(circle at 34% 40%, rgba(217,119,6,0.13) 0%, transparent 55%), " +
-                "radial-gradient(circle at 68% 62%, rgba(180,83,9,0.09) 0%, transparent 50%)",
+                "radial-gradient(circle at 34% 40%, rgba(217,119,6,0.12) 0%, transparent 55%), " +
+                "radial-gradient(circle at 68% 62%, rgba(180,83,9,0.08) 0%, transparent 50%)",
             }}
           />
 
@@ -133,42 +361,45 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
             />
           ))}
 
-          {/* ── Center content ── */}
+          {/* ── Center stack ── */}
           <div
             style={{
               position: "relative",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 18,
+              gap: 14,
               textAlign: "center",
             }}
           >
             {/* "Welcome to" eyebrow */}
             <motion.p
               initial={{ opacity: 0, letterSpacing: "0.15em" }}
-              animate={{ opacity: 0.72, letterSpacing: "0.42em" }}
-              transition={{ delay: 0.1, duration: 0.95 }}
+              animate={{ opacity: 0.65, letterSpacing: "0.42em" }}
+              transition={{ delay: 0.08, duration: 0.95 }}
               style={{
                 fontFamily: "var(--font-ibm-plex, monospace)",
-                fontSize: "0.65rem",
+                fontSize: "0.62rem",
                 textTransform: "uppercase",
-                color: "rgba(251,191,36,0.72)",
+                color: "rgba(251,191,36,0.65)",
                 margin: 0,
               }}
             >
               Welcome to
             </motion.p>
 
-            {/* Main title — clipped slide-up reveal */}
+            {/* SVG Monogram graphic */}
+            <IsekaiMonogram />
+
+            {/* Main title — clipped slide-up */}
             <div style={{ overflow: "hidden", paddingBottom: 4 }}>
               <motion.h1
-                initial={{ y: 80, opacity: 0 }}
+                initial={{ y: 72, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.32, duration: 1.05, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ delay: 0.38, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
                 style={{
                   fontFamily: "var(--font-fraunces, Georgia, serif)",
-                  fontSize: "clamp(2.6rem, 9vw, 5.5rem)",
+                  fontSize: "clamp(2.4rem, 8vw, 5rem)",
                   fontWeight: 700,
                   color: "#ffffff",
                   margin: 0,
@@ -183,15 +414,15 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
 
             {/* Tagline */}
             <motion.p
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 0.72, y: 0 }}
-              transition={{ delay: 0.68, duration: 0.7, ease: "easeOut" }}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 0.7, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.65, ease: "easeOut" }}
               style={{
                 fontFamily: "var(--font-manrope, sans-serif)",
-                fontSize: "clamp(0.65rem, 2vw, 0.82rem)",
+                fontSize: "clamp(0.62rem, 1.8vw, 0.78rem)",
                 letterSpacing: "0.3em",
                 textTransform: "uppercase",
-                color: "rgba(255,255,255,0.72)",
+                color: "rgba(255,255,255,0.7)",
                 margin: 0,
               }}
             >
@@ -201,14 +432,14 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
             {/* Handwritten sub-tagline */}
             <motion.p
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.5 }}
-              transition={{ delay: 0.92, duration: 0.6 }}
+              animate={{ opacity: 0.48 }}
+              transition={{ delay: 0.92, duration: 0.55 }}
               style={{
                 fontFamily: "var(--font-caveat, cursive)",
-                fontSize: "clamp(1.1rem, 3.5vw, 1.55rem)",
+                fontSize: "clamp(1.05rem, 3vw, 1.45rem)",
                 color: "rgba(251,191,36,0.5)",
                 margin: 0,
-                marginTop: -4,
+                marginTop: -2,
               }}
             >
               ~ Thee Strongest ~
@@ -219,7 +450,7 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
           <div
             style={{
               position: "absolute",
-              bottom: "8.5%",
+              bottom: "7.5%",
               left: "50%",
               transform: "translateX(-50%)",
               width: 220,
@@ -232,13 +463,13 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
             <motion.span
               ref={numRef}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.42 }}
-              transition={{ delay: 0.4 }}
+              animate={{ opacity: 0.4 }}
+              transition={{ delay: 0.38 }}
               style={{
                 fontFamily: "var(--font-ibm-plex, monospace)",
                 fontSize: "0.58rem",
                 letterSpacing: "0.22em",
-                color: "rgba(251,191,36,0.7)",
+                color: "rgba(251,191,36,0.68)",
                 fontVariantNumeric: "tabular-nums",
                 display: "block",
                 textAlign: "right",
