@@ -60,18 +60,40 @@ export function ContactForm() {
 
     setIsSubmitting(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          subject: "Website Contact Request",
+          message: formData.notes,
+          preferredContact: "email",
+        }),
+      });
 
-    addDraft(formData);
-    setIsSuccess(true);
-    setIsSubmitting(false);
+      const result = await response.json();
 
-    // Reset form after success
-    setTimeout(() => {
-      setFormData({ name: "", email: "", notes: "" });
-      setIsSuccess(false);
-    }, 3000);
+      if (!result.success) {
+        throw new Error("Failed to send message");
+      }
+
+      addDraft(formData);
+      setIsSuccess(true);
+
+      setTimeout(() => {
+        setFormData({ name: "", email: "", notes: "" });
+        setIsSuccess(false);
+      }, 3000);
+    } catch {
+      setErrors((prev) => ({
+        ...prev,
+        notes: "Unable to send right now. Please try again in a moment.",
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleChange = (field: keyof FormData, value: string) => {

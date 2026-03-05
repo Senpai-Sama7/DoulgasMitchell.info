@@ -72,7 +72,7 @@ async function handleGetGallery(request: NextRequest): Promise<NextResponse> {
       total,
       limit: filter.limit,
       offset: filter.offset,
-      hasMore: offset + images.length < total,
+      hasMore: filter.offset + images.length < total,
     },
   });
 }
