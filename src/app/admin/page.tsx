@@ -611,8 +611,8 @@ export default function AdminPage() {
       });
 
       const data = await res.json();
-      if (data.success) {
-        return data.url;
+      if (data.success && data.data?.url) {
+        return data.data.url;
       }
       throw new Error("Upload failed");
     } catch (error) {

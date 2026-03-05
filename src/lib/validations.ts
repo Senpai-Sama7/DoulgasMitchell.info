@@ -14,7 +14,11 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export const gallerySeriesSchema = z.enum(['recent-post', 'tech-deck', 'project']);
 
 export const createGalleryImageSchema = z.object({
-  src: z.string().url('Invalid image URL').or(z.string().startsWith('/images/', 'Invalid image path')),
+  src: z
+    .string()
+    .url('Invalid image URL')
+    .or(z.string().startsWith('/images/', 'Invalid image path'))
+    .or(z.string().startsWith('/uploads/', 'Invalid image path')),
   alt: z.string().min(1, 'Alt text is required').max(200, 'Alt text is too long'),
   caption: z.string().min(1, 'Caption is required').max(500, 'Caption is too long'),
   series: gallerySeriesSchema,
@@ -35,7 +39,11 @@ export const createJournalEntrySchema = z.object({
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format (YYYY-MM-DD)'),
   content: z.string().min(1, 'Content is required'),
   quote: z.string().max(500, 'Quote is too long').optional(),
-  image: z.string().url('Invalid image URL').or(z.string().startsWith('/images/', 'Invalid image path')),
+  image: z
+    .string()
+    .url('Invalid image URL')
+    .or(z.string().startsWith('/images/', 'Invalid image path'))
+    .or(z.string().startsWith('/uploads/', 'Invalid image path')),
   imageAlt: z.string().min(1, 'Image alt text is required').max(200, 'Image alt text is too long'),
   tags: z.array(z.string()).default([]),
 });

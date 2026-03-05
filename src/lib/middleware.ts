@@ -204,10 +204,10 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
 // Input validation wrapper
 import { ZodSchema } from 'zod';
 
-export async function validateInput<T>(
+export function validateInput<T>(
   schema: ZodSchema<T>,
   data: unknown
-): Promise<T> {
+): T {
   try {
     return schema.parse(data);
   } catch (error) {
