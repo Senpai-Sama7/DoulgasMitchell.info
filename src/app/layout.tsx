@@ -1,36 +1,41 @@
 import type { Metadata } from "next";
-import { Fraunces, Manrope, IBM_Plex_Mono, Caveat } from "next/font/google";
+import {
+  JetBrains_Mono,
+  Plus_Jakarta_Sans,
+  Sora,
+  Space_Grotesk,
+} from "next/font/google";
 import "./globals.css";
 
-// Fraunces - Sophisticated Serif for Headlines
-const fraunces = Fraunces({
+// Space Grotesk - Modern display font for headings
+const spaceGrotesk = Space_Grotesk({
   variable: "--font-fraunces",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-// Manrope - Sans-serif UI Font
-const manrope = Manrope({
+// Plus Jakarta Sans - Sleek professional UI font
+const plusJakartaSans = Plus_Jakarta_Sans({
   variable: "--font-manrope",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
-// IBM Plex Mono - Monospace for dates/numbers
-const ibmPlexMono = IBM_Plex_Mono({
+// JetBrains Mono - Monospace for technical metadata
+const jetBrainsMono = JetBrains_Mono({
   variable: "--font-ibm-plex",
   subsets: ["latin"],
   weight: ["400", "500", "600"],
   display: "swap",
 });
 
-// Caveat - Handwritten font for quotes
-const caveat = Caveat({
+// Sora - Modern accent font for callouts
+const sora = Sora({
   variable: "--font-caveat",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -47,7 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${fraunces.variable} ${manrope.variable} ${ibmPlexMono.variable} ${caveat.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${sora.variable} antialiased`}
       >
         {/* Noise Texture Overlay */}
         <div className="noise-overlay" aria-hidden="true" />

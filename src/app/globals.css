@@ -238,7 +238,7 @@
   
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-manrope), system-ui, sans-serif;
+    font-family: var(--font-manrope), "SF Pro Text", "Segoe UI", sans-serif;
     font-variant-numeric: tabular-nums;
     background-image: 
       radial-gradient(ellipse at 20% 0%, oklch(0.98 0.008 85) 0%, transparent 50%),
@@ -256,9 +256,9 @@
   
   /* Typography Hierarchy */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-fraunces), Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.02em;
+    font-family: var(--font-fraunces), var(--font-manrope), sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.025em;
   }
   
   h1 {
@@ -283,13 +283,15 @@
   
   /* Monospace for dates/numbers */
   .font-mono, code, time {
-    font-family: var(--font-ibm-plex), ui-monospace, monospace;
+    font-family: var(--font-ibm-plex), "SFMono-Regular", ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
   }
   
-  /* Handwritten font for quotes */
+  /* Accent font for quotes */
   .font-handwritten, blockquote {
-    font-family: var(--font-caveat), cursive;
+    font-family: var(--font-caveat), var(--font-manrope), sans-serif;
+    font-style: italic;
+    letter-spacing: -0.01em;
   }
   
   /* Selection styling */
