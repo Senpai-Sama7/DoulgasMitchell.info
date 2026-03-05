@@ -155,11 +155,13 @@ async function handleLogout(request: NextRequest): Promise<NextResponse> {
   const ipAddress = getClientIp(request);
 
   if (token) {
+    // Get userId before invalidating
+    const sessionResult = await validateSession(token);
+    
     // Invalidate session in database
     await invalidateSession(token);
 
     // Log activity
-    const sessionResult = await validateSession(token);
     if (sessionResult.valid) {
       await db.activityLog.create({
         data: {

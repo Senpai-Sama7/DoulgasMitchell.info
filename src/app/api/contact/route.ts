@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    await prisma.contactMessage.create({
+    await db.contactMessage.create({
       data: { name, email, subject, message },
     });
 

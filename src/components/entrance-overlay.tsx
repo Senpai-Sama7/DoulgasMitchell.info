@@ -10,7 +10,7 @@ export function EntranceOverlay({ onComplete }: { onComplete?: () => void }) {
 
   useEffect(() => {
     // Check if user has seen intro
-    const seen = localStorage.getItem("hasSeenIntro");
+    const seen = localStorage.getItem("senpai-intro-seen");
     if (seen === "true") {
       setIsVisible(false);
       onComplete?.();
@@ -32,7 +32,7 @@ export function EntranceOverlay({ onComplete }: { onComplete?: () => void }) {
   }, []);
 
   const handleEnter = () => {
-    localStorage.setItem("hasSeenIntro", "true");
+    localStorage.setItem("senpai-intro-seen", "true");
     setIsVisible(false);
     onComplete?.();
   };

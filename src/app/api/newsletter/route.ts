@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     }
 
     // Check if email already exists
-    const existing = await prisma.newsletter.findUnique({
+    const existing = await db.newsletter.findUnique({
       where: { email },
     });
 
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     }
 
     // Create newsletter subscription
-    await prisma.newsletter.create({
+    await db.newsletter.create({
       data: { email },
     });
 
