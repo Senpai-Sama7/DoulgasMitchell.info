@@ -43,8 +43,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.douglasmitchell.info"),
   title: "Senpai's Isekai | Open-Source Humanity",
   description: "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+  metadataBase: new URL(process.env.SITE_URL || 'https://www.douglasmitchell.info'),
   alternates: {
-    canonical: "/",
+    canonical: '/',
   },
   openGraph: {
     title: "Senpai's Isekai | Open-Source Humanity",

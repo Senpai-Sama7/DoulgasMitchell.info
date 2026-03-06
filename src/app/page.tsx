@@ -7,6 +7,7 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
+import type { GalleryImage } from "@/lib/data";
 import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
 import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
@@ -210,7 +211,7 @@ function normalizeGalleryItems(payload: unknown): GalleryImage[] {
         ? (data as { items: unknown[] }).items
         : [];
 
-  const normalized = items.flatMap((item) => {
+  const normalized = items.flatMap<GalleryImage>((item) => {
     if (typeof item !== "object" || item === null) {
       return [];
     }

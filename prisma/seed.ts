@@ -337,7 +337,7 @@ async function main() {
   console.log('Creating admin user...');
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
-    throw new Error('ADMIN_PASSWORD is required to run the seed script');
+    throw new Error('ADMIN_PASSWORD is required for seeding. Refusing to use an insecure default password.');
   }
   const passwordHash = await bcrypt.hash(adminPassword, 10);
 
