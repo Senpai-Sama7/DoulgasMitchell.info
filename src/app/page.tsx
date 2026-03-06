@@ -513,6 +513,14 @@ export default function HomePage() {
                       Read Journal
                     </Link>
                   </Magnetic>
+                  <Magnetic strength={0.08}>
+                    <Link
+                      href="/about"
+                      className="px-5 py-2.5 rounded-lg text-sm text-white/60 hover:text-white transition-colors"
+                    >
+                      About
+                    </Link>
+                  </Magnetic>
                 </motion.div>
               </motion.div>
 
