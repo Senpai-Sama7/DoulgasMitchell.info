@@ -130,7 +130,7 @@ export const galleryFilterSchema = z.object({
   search: z.string().max(100).optional(),
   sortBy: z.enum(['date', 'createdAt']).default('date'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  limit: z.number().int().positive().max(100).default(20),
+  limit: z.number().int().positive().max(1000).default(20),
   offset: z.number().int().nonnegative().default(0),
 });
 
@@ -141,7 +141,7 @@ export const journalFilterSchema = z.object({
   tag: z.string().max(50).optional(),
   sortBy: z.enum(['date', 'createdAt']).default('date'),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
-  limit: z.number().int().positive().max(100).default(20),
+  limit: z.number().int().positive().max(1000).default(20),
   offset: z.number().int().nonnegative().default(0),
 });
 
