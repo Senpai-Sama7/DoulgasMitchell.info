@@ -339,7 +339,7 @@ export const heroImage = {
 // Social Links
 export const socialLinks = {
   linkedin: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
-  github: 'https://github.com/Senpai-Sama7',
+  github: 'https://github.com/douglasmitchell',
   telegram: '#',
   whatsapp: '#',
 };
@@ -563,15 +563,15 @@ export async function getSettings() {
       };
     }
     return {
-      siteTitle: "Senpai's Isekai",
-      siteDescription: 'A personal blog exploring architecture, technology, and creative expression',
+      siteTitle: "Douglas Mitchell",
+      siteDescription: 'A personal portfolio exploring architecture, technology, and creative expression',
       ...socialLinks,
     };
   } catch (error) {
     console.error('Error fetching settings:', error);
     return {
-      siteTitle: "Senpai's Isekai",
-      siteDescription: 'A personal blog exploring architecture, technology, and creative expression',
+      siteTitle: "Douglas Mitchell",
+      siteDescription: 'A personal portfolio exploring architecture, technology, and creative expression',
       ...socialLinks,
     };
   }

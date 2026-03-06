@@ -390,7 +390,7 @@ export default function HomePage() {
 
   const handleIntroComplete = useCallback(() => {
     if (typeof window !== "undefined") {
-      window.sessionStorage.setItem("senpai-intro-seen", Date.now().toString());
+      window.sessionStorage.setItem("douglas-intro-seen", Date.now().toString());
     }
     setShowEntranceOverlay(false);
   }, []);
@@ -453,7 +453,7 @@ export default function HomePage() {
                 >
                   <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
                   <span className="font-mono text-xs text-muted-foreground tracking-wider">
-                    SENPAI&apos;S ISEKAI
+                    DOUGLAS MITCHELL
                   </span>
                 </motion.div>
 

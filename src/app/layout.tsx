@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://www.douglasmitchell.info",
-    siteName: "Senpai's Isekai",
+    siteName: "Douglas Mitchell",
     title: "Douglas Mitchell | Photography & Creative Work",
     description: "Exploring architecture, light, technology, and creative expression through photography and writing.",
     images: [
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
         url: "/images/hero/hero-main.png",
         width: 1344,
         height: 768,
-        alt: "Hero image from Senpai's Isekai",
+        alt: "Hero image from Douglas Mitchell portfolio",
       },
     ],
   },

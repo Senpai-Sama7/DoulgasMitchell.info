@@ -120,7 +120,7 @@ model JournalTag {
 
 model Settings {
   id          String @id @default(cuid())
-  siteTitle   String @default("Senpai's Isekai")
+  siteTitle   String @default("Douglas Mitchell")
   siteDescription String @default("A personal blog exploring architecture, technology, and creative expression")
   linkedin    String?
   github      String?

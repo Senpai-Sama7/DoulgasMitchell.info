@@ -388,7 +388,7 @@ export async function initializeAdminUser(): Promise<void> {
       data: {
         username: 'admin',
         passwordHash,
-        email: 'admin@senpai-isekai.com',
+        email: 'admin@douglasmitchell.info',
       },
     });
     console.log('Admin user created successfully');

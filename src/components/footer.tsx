@@ -18,10 +18,10 @@ export function Footer() {
             className="flex items-center gap-3"
           >
             <h3 className="font-sans text-sm md:text-base font-semibold tracking-[0.12em] uppercase">
-              Senpai&apos;s Isekai
+              Douglas Mitchell
             </h3>
             <span className="font-mono text-[11px] text-muted-foreground uppercase tracking-[0.2em]">
-              Open-Source Humanity
+              Photography & Creative Work
             </span>
           </motion.div>
 
@@ -61,7 +61,7 @@ export function Footer() {
 
           {/* Copyright */}
           <p className="text-[10px] text-muted-foreground font-mono w-full text-center md:w-auto md:text-right">
-            © {new Date().getFullYear()} Senpai&apos;s Isekai
+            © {new Date().getFullYear()} Douglas Mitchell
           </p>
         </div>
       </div>

@@ -907,14 +907,15 @@ export default function AdminPage() {
   const [isChecking, setIsChecking] = useState(true);
   const [activeTab, setActiveTab] = useState<Tab>("gallery");
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string>("");
   const [, startTabTransition] = useTransition();
 
   // Data states
   const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
   const [settings, setSettings] = useState<Settings>({
-    siteTitle: "Senpai's Isekai",
-    siteDescription: "A personal blog exploring architecture, technology, and creative expression",
+    siteTitle: "Douglas Mitchell",
+    siteDescription: "A personal portfolio exploring architecture, technology, and creative expression",
   });
   const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
   const [layoutBlocks, setLayoutBlocks] = useState<LayoutBlock[]>([]);
@@ -1247,6 +1248,7 @@ export default function AdminPage() {
   // File upload
   const handleFileUpload = useCallback(async (file: File): Promise<string> => {
     setIsUploading(true);
+    setUploadError("");
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -1261,8 +1263,12 @@ export default function AdminPage() {
       if (data.success && data.data?.url) {
         return data.data.url;
       }
-      throw new Error("Upload failed");
+      const errorMsg = data.error || "Upload failed";
+      setUploadError(errorMsg);
+      throw new Error(errorMsg);
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Upload failed";
+      setUploadError(message);
       console.error("Upload failed:", error);
       throw error;
     } finally {
@@ -1545,7 +1551,7 @@ export default function AdminPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `senpai-isekai-export-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `douglas-mitchell-export-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
 
@@ -2705,6 +2711,13 @@ export default function AdminPage() {
                     </div>
                   )}
 
+                  {uploadError && (
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                      <AlertCircle className="w-4 h-4" />
+                      {uploadError}
+                    </div>
+                  )}
+
                   {/* Form Fields */}
                   <div>
                     <label htmlFor="gallery-alt" className="block text-sm font-medium mb-2">
@@ -2855,6 +2868,13 @@ export default function AdminPage() {
                     <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                       <Loader2 className="w-4 h-4 animate-spin" />
                       Uploading...
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/10 p-3 rounded-lg">
+                      <AlertCircle className="w-4 h-4" />
+                      {uploadError}
                     </div>
                   )}
 

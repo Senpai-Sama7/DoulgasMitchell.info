@@ -311,7 +311,7 @@ export function ContactForm() {
               </div>
               <div>
                 <p className="font-medium">GitHub</p>
-                <p className="text-sm text-muted-foreground">Senpai-Sama7</p>
+                <p className="text-sm text-muted-foreground">douglasmitchell</p>
               </div>
             </a>
             <a
@@ -325,7 +325,7 @@ export function ContactForm() {
               </div>
               <div>
                 <p className="font-medium">Telegram</p>
-                <p className="text-sm text-muted-foreground">@senpai_isekai</p>
+                <p className="text-sm text-muted-foreground">@douglasmitchell</p>
               </div>
             </a>
             <a

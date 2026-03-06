@@ -61,7 +61,7 @@ export function Navigation() {
           {/* Logo */}
           <Link href="/" className="mr-2 md:mr-3 group">
             <span className="font-sans text-[0.9rem] md:text-[1rem] font-semibold tracking-[0.18em] uppercase text-foreground transition-colors group-hover:text-primary">
-              Senpai
+              Douglas Mitchell
             </span>
           </Link>
 

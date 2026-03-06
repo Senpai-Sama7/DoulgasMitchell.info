@@ -6,8 +6,8 @@ import { settingsSchema } from "@/lib/validations";
 
 const SETTINGS_SINGLETON_ID = "settings-singleton";
 const DEFAULT_SETTINGS = {
-  siteTitle: "Senpai's Isekai",
-  siteDescription: "A personal blog exploring architecture, technology, and creative expression",
+  siteTitle: "Douglas Mitchell",
+  siteDescription: "A personal portfolio exploring architecture, technology, and creative expression",
 };
 
 async function authenticateRequest(request: NextRequest): Promise<void> {
