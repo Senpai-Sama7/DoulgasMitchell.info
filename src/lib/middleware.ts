@@ -2,6 +2,40 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ZodError, ZodSchema } from 'zod';
 import { getCorsHeaders, logRequest, getClientIp, getUserAgent } from './security';
 
+// Security headers for all responses
+export function getSecurityHeaders(): Record<string, string> {
+  return {
+    // Prevent clickjacking
+    'X-Frame-Options': 'SAMEORIGIN',
+    // Prevent MIME type sniffing
+    'X-Content-Type-Options': 'nosniff',
+    // Enable XSS protection in browsers
+    'X-XSS-Protection': '1; mode=block',
+    // Referrer policy
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    // Content Security Policy - allow self and common safe sources
+    'Content-Security-Policy': [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob: https:",
+      "font-src 'self' data:",
+      "connect-src 'self' https:",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join('; '),
+    // Permissions policy - restrict powerful features
+    'Permissions-Policy': [
+      'camera=()',
+      'microphone=()',
+      'geolocation=()',
+      'payment=()',
+      'usb=()',
+    ].join(', '),
+  };
+}
+
 // Error types
 export class AppError extends Error {
   constructor(
@@ -282,13 +316,24 @@ export function withCors(response: NextResponse, request: NextRequest): NextResp
   return response;
 }
 
+// Add security headers to response
+export function withSecurityHeaders(response: NextResponse): NextResponse {
+  const securityHeaders = getSecurityHeaders();
+
+  Object.entries(securityHeaders).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+
+  return response;
+}
+
 // Combined middleware wrapper
 export function withMiddleware(handler: ApiHandler): ApiHandler {
   return async (request: NextRequest, context) => {
     // Handle CORS preflight
     const corsResponse = handleCors(request);
     if (corsResponse) {
-      return corsResponse;
+      return withSecurityHeaders(corsResponse);
     }
 
     validateRequestOrigin(request);
@@ -296,10 +341,10 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
     try {
       validateCsrfRequest(request);
       const response = await withRequestLogging(handler)(request, context);
-      return withCors(response, request);
+      return withSecurityHeaders(withCors(response, request));
     } catch (error) {
       const response = errorResponse(error);
-      return withCors(response, request);
+      return withSecurityHeaders(withCors(response, request));
     }
   };
 }

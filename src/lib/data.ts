@@ -2,6 +2,10 @@ import { db } from './db';
 
 const SETTINGS_SINGLETON_ID = 'settings-singleton';
 
+// Whether to use static fallback data when database is empty or errors occur
+// In production, you may want to set this to false to surface issues
+const USE_STATIC_FALLBACKS = process.env.USE_STATIC_FALLBACKS !== 'false';
+
 // Gallery Images Data
 export interface GalleryImage {
   id: string;
@@ -370,7 +374,7 @@ export const reactionEmojis: Record<ReactionType, string> = {
 
 /**
  * Fetch gallery images from database
- * Falls back to static data if database is empty
+ * Falls back to static data if database is empty (and USE_STATIC_FALLBACKS is true)
  */
 export async function getGalleryImages(filters?: {
   series?: string;
@@ -412,8 +416,8 @@ export async function getGalleryImages(filters?: {
       db.galleryImage.count({ where }),
     ]);
 
-    // If database is empty, return static data
-    if (dbImages.length === 0 && total === 0) {
+    // If database is empty, return static data (if enabled)
+    if (dbImages.length === 0 && total === 0 && USE_STATIC_FALLBACKS) {
       return {
         items: galleryImages,
         total: galleryImages.length,
@@ -436,17 +440,32 @@ export async function getGalleryImages(filters?: {
     };
   } catch (error) {
     console.error('Error fetching gallery images:', error);
-    // Return static data on error
-    return {
-      items: galleryImages,
-      total: galleryImages.length,
-    };
+    
+    // In production, log to external monitoring service
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Send to error monitoring service (e.g., Sentry, LogRocket)
+      console.error('[PRODUCTION ERROR] Gallery fetch failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    }
+    
+    // Return static data on error (if enabled)
+    if (USE_STATIC_FALLBACKS) {
+      return {
+        items: galleryImages,
+        total: galleryImages.length,
+      };
+    }
+    
+    // Re-throw in production if fallbacks are disabled
+    throw error;
   }
 }
 
 /**
  * Fetch journal entries from database
- * Falls back to static data if database is empty
+ * Falls back to static data if database is empty (and USE_STATIC_FALLBACKS is true)
  */
 export async function getJournalEntries(filters?: {
   search?: string;
@@ -514,8 +533,8 @@ export async function getJournalEntries(filters?: {
       db.journalEntry.count({ where }),
     ]);
 
-    // If database is empty, return static data
-    if (dbEntries.length === 0 && total === 0) {
+    // If database is empty, return static data (if enabled)
+    if (dbEntries.length === 0 && total === 0 && USE_STATIC_FALLBACKS) {
       return {
         items: journalEntries,
         total: journalEntries.length,
@@ -537,11 +556,26 @@ export async function getJournalEntries(filters?: {
     };
   } catch (error) {
     console.error('Error fetching journal entries:', error);
-    // Return static data on error
-    return {
-      items: journalEntries,
-      total: journalEntries.length,
-    };
+    
+    // In production, log to external monitoring service
+    if (process.env.NODE_ENV === 'production') {
+      // TODO: Send to error monitoring service (e.g., Sentry, LogRocket)
+      console.error('[PRODUCTION ERROR] Journal fetch failed:', {
+        error: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+    }
+    
+    // Return static data on error (if enabled)
+    if (USE_STATIC_FALLBACKS) {
+      return {
+        items: journalEntries,
+        total: journalEntries.length,
+      };
+    }
+    
+    // Re-throw in production if fallbacks are disabled
+    throw error;
   }
 }
 

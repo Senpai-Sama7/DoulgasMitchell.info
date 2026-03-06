@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, CheckCircle, AlertCircle, Clock, MessageSquare } from "lucide-react";
-import { useContactStore } from "@/lib/store";
 import { socialLinks, availableTimeSlots } from "@/lib/data";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +18,30 @@ interface FormErrors {
   notes?: string;
 }
 
+// Local storage for recent submissions (replaces removed store)
+const RECENT_SUBMISSIONS_KEY = "contact-recent-submissions";
+
+function getRecentSubmissions(): Array<{ name: string; email: string; notes: string; createdAt: string }> {
+  if (typeof window === "undefined") return [];
+  try {
+    const stored = localStorage.getItem(RECENT_SUBMISSIONS_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentSubmission(data: { name: string; email: string; notes: string }): void {
+  try {
+    const submissions = getRecentSubmissions();
+    const newSubmission = { ...data, createdAt: new Date().toISOString() };
+    const updated = [newSubmission, ...submissions].slice(0, 5); // Keep last 5
+    localStorage.setItem(RECENT_SUBMISSIONS_KEY, JSON.stringify(updated));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export function ContactForm() {
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -28,7 +51,12 @@ export function ContactForm() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const { drafts, addDraft } = useContactStore();
+  const [recentSubmission, setRecentSubmission] = useState<{
+    name: string;
+    email: string;
+    notes: string;
+    createdAt: string;
+  } | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -79,7 +107,12 @@ export function ContactForm() {
         throw new Error("Failed to send message");
       }
 
-      addDraft(formData);
+      // Save to local storage
+      saveRecentSubmission(formData);
+      setRecentSubmission({
+        ...formData,
+        createdAt: new Date().toISOString(),
+      });
       setIsSuccess(true);
 
       setTimeout(() => {
@@ -102,8 +135,6 @@ export function ContactForm() {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   };
-
-  const recentDraft = drafts[0];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -245,9 +276,9 @@ export function ContactForm() {
             </motion.button>
           </form>
 
-          {/* Recent Draft */}
+          {/* Recent Submission */}
           <AnimatePresence>
-            {recentDraft && (
+            {recentSubmission && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -259,11 +290,11 @@ export function ContactForm() {
                   <span className="text-sm font-medium">Most Recent Request</span>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  <span className="font-medium">{recentDraft.name}</span> ({recentDraft.email})
+                  <span className="font-medium">{recentSubmission.name}</span> ({recentSubmission.email})
                 </p>
-                <p className="text-sm mt-1 line-clamp-2">{recentDraft.notes}</p>
+                <p className="text-sm mt-1 line-clamp-2">{recentSubmission.notes}</p>
                 <p className="text-xs text-muted-foreground font-mono mt-2">
-                  {new Date(recentDraft.createdAt).toLocaleString()}
+                  {new Date(recentSubmission.createdAt).toLocaleString()}
                 </p>
               </motion.div>
             )}

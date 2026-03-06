@@ -83,6 +83,8 @@ model GalleryImage {
 
   @@index([series])
   @@index([date])
+  @@index([series, date])  // Composite index for series + date filtering
+  @@index([order])         // For ordering
 }
 
 model JournalEntry {
@@ -99,6 +101,7 @@ model JournalEntry {
   updatedAt DateTime @updatedAt
 
   @@index([date])
+  @@index([date, order])  // Composite index for date ordering
 }
 
 model Tag {

@@ -36,6 +36,32 @@ export const usePageStore = create<PageState>((set) => ({
   setCurrentPage: (page) => set({ currentPage: page }),
 }));
 
+// Seeded random number generator for consistent reaction counts
+// This ensures the same item always shows the same initial reaction counts
+function seededRandom(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  // Normalize to 0-1 range
+  return Math.abs(hash) / 2147483647;
+}
+
+// Generate consistent initial reactions based on item ID
+function generateInitialReactions(itemId: string): Record<ReactionType, number> {
+  const baseSeed = itemId;
+  return {
+    like: Math.floor(seededRandom(baseSeed + 'like') * 20) + 5,
+    love: Math.floor(seededRandom(baseSeed + 'love') * 15) + 3,
+    laugh: Math.floor(seededRandom(baseSeed + 'laugh') * 10) + 2,
+    shocked: Math.floor(seededRandom(baseSeed + 'shocked') * 8) + 1,
+    mad: Math.floor(seededRandom(baseSeed + 'mad') * 5) + 1,
+    care: Math.floor(seededRandom(baseSeed + 'care') * 12) + 4,
+  };
+}
+
 // Reactions Store
 interface ReactionState {
   reactions: Record<string, Record<ReactionType, number>>;
@@ -60,14 +86,7 @@ export const useReactionStore = create<ReactionState>()(
           
           // Initialize if needed
           if (!newReactions[itemId]) {
-            newReactions[itemId] = {
-              like: 0,
-              love: 0,
-              laugh: 0,
-              shocked: 0,
-              mad: 0,
-              care: 0,
-            };
+            newReactions[itemId] = generateInitialReactions(itemId);
           }
           
           // Remove previous reaction if exists
@@ -107,14 +126,7 @@ export const useReactionStore = create<ReactionState>()(
           set((state) => ({
             reactions: {
               ...state.reactions,
-              [itemId]: {
-                like: Math.floor(Math.random() * 20) + 5,
-                love: Math.floor(Math.random() * 15) + 3,
-                laugh: Math.floor(Math.random() * 10) + 2,
-                shocked: Math.floor(Math.random() * 8) + 1,
-                mad: Math.floor(Math.random() * 5) + 1,
-                care: Math.floor(Math.random() * 12) + 4,
-              },
+              [itemId]: generateInitialReactions(itemId),
             },
           }));
         }
@@ -122,105 +134,6 @@ export const useReactionStore = create<ReactionState>()(
     }),
     {
       name: 'reactions-storage',
-    }
-  )
-);
-
-// Contact Form Store
-interface ContactDraft {
-  id: string;
-  name: string;
-  email: string;
-  notes: string;
-  createdAt: string;
-}
-
-interface ContactState {
-  drafts: ContactDraft[];
-  addDraft: (draft: Omit<ContactDraft, 'id' | 'createdAt'>) => void;
-}
-
-export const useContactStore = create<ContactState>()(
-  persist(
-    (set) => ({
-      drafts: [],
-      addDraft: (draft) => {
-        const newDraft: ContactDraft = {
-          ...draft,
-          id: `draft-${Date.now()}`,
-          createdAt: new Date().toISOString(),
-        };
-        set((state) => ({
-          drafts: [newDraft, ...state.drafts].slice(0, 10), // Keep last 10
-        }));
-      },
-    }),
-    {
-      name: 'connectDrafts',
-    }
-  )
-);
-
-// Admin Store
-interface ContentItem {
-  id: string;
-  type: 'text' | 'image' | 'video' | 'audio' | 'file' | 'pdf' | 'zip' | 'code';
-  content: string;
-  title?: string;
-  description?: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface AdminState {
-  items: ContentItem[];
-  addItem: (item: Omit<ContentItem, 'id' | 'order' | 'createdAt' | 'updatedAt'>) => void;
-  updateItem: (id: string, updates: Partial<ContentItem>) => void;
-  deleteItem: (id: string) => void;
-  reorderItems: (items: ContentItem[]) => void;
-}
-
-export const useAdminStore = create<AdminState>()(
-  persist(
-    (set) => ({
-      items: [],
-      addItem: (item) => {
-        const newItem: ContentItem = {
-          ...item,
-          id: `item-${Date.now()}`,
-          order: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        set((state) => {
-          const items = [...state.items, newItem].map((item, index) => ({
-            ...item,
-            order: index,
-          }));
-          return { items };
-        });
-      },
-      updateItem: (id, updates) => {
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.id === id
-              ? { ...item, ...updates, updatedAt: new Date().toISOString() }
-              : item
-          ),
-        }));
-      },
-      deleteItem: (id) => {
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== id),
-        }));
-      },
-      reorderItems: (items) => {
-        set({ items });
-      },
-    }),
-    {
-      name: 'admin-content',
     }
   )
 );

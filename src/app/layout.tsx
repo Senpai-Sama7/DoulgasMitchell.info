@@ -1,10 +1,11 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   JetBrains_Mono,
   Plus_Jakarta_Sans,
   Sora,
   Space_Grotesk,
 } from "next/font/google";
+import { Providers } from "@/components/providers";
 import "./globals.css";
 
 // Space Grotesk - Modern display font for headings
@@ -39,6 +40,17 @@ const sora = Sora({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0f" },
+  ],
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.douglasmitchell.info"),
   title: {
@@ -52,6 +64,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -87,14 +100,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" href="/icons/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      </head>
       <body
         className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${sora.variable} antialiased`}
       >
-        {/* Noise Texture Overlay */}
-        <div className="noise-overlay" aria-hidden="true" />
-        
-        {/* Main Content */}
-        {children}
+        <Providers>
+          {/* Noise Texture Overlay */}
+          <div className="noise-overlay" aria-hidden="true" />
+          
+          {/* Main Content */}
+          {children}
+        </Providers>
       </body>
     </html>
   );
