@@ -293,7 +293,12 @@ export default function AboutPage() {
 
           {/* Featured Certificate */}
           <ScrollReveal>
-            <div className="glass-card p-6 md:p-8 mb-6 flex flex-col md:flex-row items-center gap-6">
+            <a 
+              href="https://www.credly.com/users/douglas-mitchell.887417ae/badges#credly"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="glass-card p-6 md:p-8 mb-6 flex flex-col md:flex-row items-center gap-6 hover:bg-accent/5 transition-colors group"
+            >
               <div className="relative w-32 h-32 md:w-40 md:h-40 flex-shrink-0">
                 <Image
                   src={certifications[0].image}
@@ -302,15 +307,19 @@ export default function AboutPage() {
                   className="object-contain"
                 />
               </div>
-              <div className="text-center md:text-left">
+              <div className="text-center md:text-left flex-1">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs mb-2">
                   <Award className="w-3 h-3" />
                   Professional Certification
                 </div>
                 <h3 className="font-serif text-xl font-semibold mb-1">{certifications[0].name}</h3>
                 <p className="text-sm text-muted-foreground">{certifications[0].description}</p>
+                <p className="text-xs text-primary mt-2 inline-flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  View on Credly
+                  <ExternalLink className="w-3 h-3" />
+                </p>
               </div>
-            </div>
+            </a>
           </ScrollReveal>
 
           {/* Course Certificates - Compact Grid */}

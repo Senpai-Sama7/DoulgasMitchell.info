@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { GalleryImage } from "@/lib/data";
 import { Reactions } from "./reactions";
 import { cn } from "@/lib/utils";
+import { ExternalLink } from "lucide-react";
 
 interface ImageCardProps {
   image: GalleryImage;
@@ -32,6 +33,9 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
   // Determine if image is portrait or landscape for masonry
   const isPortrait = image.height > image.width;
   const isSquare = Math.abs(aspectRatio - 1) < 0.1;
+
+  // Check if this image has an external link
+  const hasLink = !!image.link;
 
   // Intersection observer for lazy loading
   useEffect(() => {
@@ -62,104 +66,88 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      onImageClick(index);
+      if (!hasLink) {
+        onImageClick(index);
+      }
     }
   };
 
-  return (
-    <motion.div
-      ref={cardRef}
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-30px" }}
-      transition={{ duration: 0.4, delay: (index % 6) * 0.05 }}
-      className="masonry-item group"
-    >
-      <div
-        onClick={() => onImageClick(index)}
-        onKeyDown={handleCardKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-label={`Open image: ${image.alt}`}
-        className={cn(
-          "image-card relative overflow-hidden rounded-xl cursor-pointer bg-accent/30",
-          "transform transition-all duration-500 ease-out",
-          "hover:shadow-2xl hover:shadow-primary/10"
-        )}
-        style={{
-          aspectRatio: `${image.width} / ${image.height}`,
-        }}
-      >
-        {/* Loading Skeleton */}
-        {!isLoaded && (
-          <div className="absolute inset-0 animate-pulse bg-accent/50" />
-        )}
+  // Card content that's shared between link and button versions
+  const cardContent = (
+    <>
+      {/* Loading Skeleton */}
+      {!isLoaded && (
+        <div className="absolute inset-0 animate-pulse bg-accent/50" />
+      )}
 
-        {/* Lazy Loaded Image with Blur Placeholder */}
-        {isInView && (
-          <Image
-            src={image.src}
-            alt={image.alt}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1280px) 25vw, 25vw"
-            className={cn(
-              "object-cover transition-all duration-700",
-              isLoaded ? "blur-0 scale-100" : "blur-lg scale-105",
-              "group-hover:scale-110 group-hover:rotate-1"
-            )}
-            loading="lazy"
-            placeholder="blur"
-            blurDataURL={generateBlurPlaceholder(image.width, image.height)}
-            onLoad={() => setIsLoaded(true)}
-          />
-        )}
+      {/* Lazy Loaded Image with Blur Placeholder */}
+      {isInView && (
+        <Image
+          src={image.src}
+          alt={image.alt}
+          fill
+          sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1280px) 25vw, 25vw"
+          className={cn(
+            "object-cover transition-all duration-700",
+            isLoaded ? "blur-0 scale-100" : "blur-lg scale-105",
+            "group-hover:scale-110 group-hover:rotate-1"
+          )}
+          loading="lazy"
+          placeholder="blur"
+          blurDataURL={generateBlurPlaceholder(image.width, image.height)}
+          onLoad={() => setIsLoaded(true)}
+        />
+      )}
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      {/* Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-        {/* Shine Effect on Hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
-        </div>
+      {/* Shine Effect on Hover */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+      </div>
 
-        {/* Content Overlay */}
-        <div className="absolute inset-0 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-          <div className="p-4">
-            <h3 className="text-white font-serif text-base mb-1 line-clamp-2">
-              {image.alt}
-            </h3>
-            <p className="text-white/70 text-xs line-clamp-2 mb-2">
-              {image.caption}
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-white/50 text-xs font-mono">
-                {new Date(image.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white/80">
-                {image.series === "recent-post" ? "Recent" : 
-                 image.series === "tech-deck" ? "Tech" : "Project"}
-              </span>
-            </div>
+      {/* Content Overlay */}
+      <div className="absolute inset-0 flex flex-col justify-end opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+        <div className="p-4">
+          <h3 className="text-white font-serif text-base mb-1 line-clamp-2">
+            {image.alt}
+          </h3>
+          <p className="text-white/70 text-xs line-clamp-2 mb-2">
+            {image.caption}
+          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-white/50 text-xs font-mono">
+              {new Date(image.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </span>
+            <span className="text-xs px-2 py-0.5 rounded-full bg-white/20 text-white/80">
+              {image.series === "recent-post" ? "Recent" : 
+               image.series === "tech-deck" ? "Tech" : "Project"}
+            </span>
           </div>
         </div>
+      </div>
 
-        {/* Reactions - only surface on hover (desktop) to avoid covering imagery */}
-        <div className="absolute bottom-3 left-3 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="rounded-full bg-black/55 backdrop-blur-sm px-2.5 py-1 shadow-md"
-          >
-            <Reactions itemId={image.id} variant="dark" compact />
-          </div>
+      {/* Reactions - only surface on hover (desktop) to avoid covering imagery */}
+      <div className="absolute bottom-3 left-3 z-10 hidden md:block opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-1 group-hover:translate-y-0">
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="rounded-full bg-black/55 backdrop-blur-sm px-2.5 py-1 shadow-md"
+        >
+          <Reactions itemId={image.id} variant="dark" compact />
         </div>
+      </div>
 
-        {/* Zoom Icon Indicator */}
-        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
-          <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+      {/* Link or Zoom Icon Indicator */}
+      <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100">
+        <div className="w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
+          {hasLink ? (
+            <ExternalLink className="w-4 h-4 text-white" />
+          ) : (
             <svg
               className="w-4 h-4 text-white"
               fill="none"
@@ -173,9 +161,59 @@ export function ImageCard({ image, index, onImageClick }: ImageCardProps) {
                 d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
               />
             </svg>
-          </div>
+          )}
         </div>
       </div>
+    </>
+  );
+
+  return (
+    <motion.div
+      ref={cardRef}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-30px" }}
+      transition={{ duration: 0.4, delay: (index % 6) * 0.05 }}
+      className="masonry-item group"
+    >
+      {hasLink ? (
+        // External link version
+        <a
+          href={image.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={`View project: ${image.alt}`}
+          className={cn(
+            "image-card relative overflow-hidden rounded-xl bg-accent/30 block",
+            "transform transition-all duration-500 ease-out",
+            "hover:shadow-2xl hover:shadow-primary/10"
+          )}
+          style={{
+            aspectRatio: `${image.width} / ${image.height}`,
+          }}
+        >
+          {cardContent}
+        </a>
+      ) : (
+        // Lightbox version
+        <div
+          onClick={() => onImageClick(index)}
+          onKeyDown={handleCardKeyDown}
+          role="button"
+          tabIndex={0}
+          aria-label={`Open image: ${image.alt}`}
+          className={cn(
+            "image-card relative overflow-hidden rounded-xl cursor-pointer bg-accent/30",
+            "transform transition-all duration-500 ease-out",
+            "hover:shadow-2xl hover:shadow-primary/10"
+          )}
+          style={{
+            aspectRatio: `${image.width} / ${image.height}`,
+          }}
+        >
+          {cardContent}
+        </div>
+      )}
     </motion.div>
   );
 }

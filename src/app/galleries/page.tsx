@@ -61,6 +61,7 @@ function normalizeGalleryItems(payload: unknown): GalleryImage[] {
       height: candidate.height,
       date: candidate.date,
       blurDataUrl: typeof candidate.blurDataUrl === "string" ? candidate.blurDataUrl : undefined,
+      link: typeof candidate.link === "string" ? candidate.link : undefined,
     }];
   });
 }

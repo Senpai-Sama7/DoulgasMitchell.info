@@ -433,6 +433,7 @@ async function main() {
           height: entry.height,
           date: entry.date,
           order: 0,
+          link: entry.link,
         },
       });
       console.log(`  ✓ Gallery: ${entry.alt}`);
