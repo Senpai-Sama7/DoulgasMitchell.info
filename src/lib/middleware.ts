@@ -165,6 +165,26 @@ type ApiHandler = (
   context?: { params: Promise<Record<string, string | string[]>> }
 ) => Promise<NextResponse>;
 
+const mutatingMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
+
+function validateOriginForMutation(request: NextRequest): void {
+  if (!mutatingMethods.has(request.method.toUpperCase())) {
+    return;
+  }
+
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+
+  if (!origin || !host) {
+    throw new AuthenticationError('Invalid request origin');
+  }
+
+  const originHost = new URL(origin).host;
+  if (originHost !== host) {
+    throw new AuthenticationError('Cross-site requests are not allowed');
+  }
+}
+
 export function withRequestLogging(handler: ApiHandler): ApiHandler {
   return async (request: NextRequest, context) => {
     const startTime = Date.now();

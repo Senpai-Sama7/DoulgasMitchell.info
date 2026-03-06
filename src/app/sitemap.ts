@@ -15,12 +15,13 @@ const routes = [
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  const baseUrl = "https://www.douglasmitchell.info";
   const lastModified = new Date();
 
-  return routes.map((route) => ({
-    url: `${siteUrl}${route}`,
+  return staticRoutes.map((route) => ({
+    url: `${baseUrl}${route}`,
     lastModified,
     changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : 0.8,
+    priority: route === "" ? 1 : 0.7,
   }));
 }

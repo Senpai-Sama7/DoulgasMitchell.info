@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { type FormEvent, useState } from "react";
 import { MainLayout } from "@/components/main-layout";
 import { motion } from "framer-motion";
 import { Mail, User, MessageSquare, Send, Check, AlertCircle } from "lucide-react";
@@ -14,9 +14,41 @@ export default function ContactPage() {
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const validateForm = () => {
+    const errors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      errors.name = "Please enter your name.";
+    }
+
+    if (!formData.email.trim()) {
+      errors.email = "Please enter your email address.";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = "Please enter a valid email address.";
+    }
+
+    if (!formData.subject.trim()) {
+      errors.subject = "Please enter a subject.";
+    }
+
+    if (!formData.message.trim()) {
+      errors.message = "Please enter a message.";
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) {
+      setStatus("error");
+      setMessage("Please fix the highlighted fields and try again.");
+      return;
+    }
+
     setStatus("loading");
 
     try {
@@ -35,6 +67,7 @@ export default function ContactPage() {
         setStatus("success");
         setMessage("Message sent successfully! I'll get back to you soon.");
         setFormData({ name: "", email: "", subject: "", message: "" });
+        setFieldErrors({});
       } else {
         setStatus("error");
         setMessage(data.error || "Something went wrong");
@@ -72,59 +105,91 @@ export default function ContactPage() {
             className="bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12 space-y-6"
           >
             <div>
-              <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <label htmlFor="contact-name" className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <User className="w-4 h-4" />
                 Name
               </label>
               <input
+                id="contact-name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
+                aria-invalid={Boolean(fieldErrors.name)}
+                aria-describedby={fieldErrors.name ? "contact-name-error" : undefined}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
               />
+              {fieldErrors.name && (
+                <p id="contact-name-error" className="mt-2 text-sm text-red-400">
+                  {fieldErrors.name}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <label htmlFor="contact-email" className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <Mail className="w-4 h-4" />
                 Email
               </label>
               <input
+                id="contact-email"
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
+                aria-invalid={Boolean(fieldErrors.email)}
+                aria-describedby={fieldErrors.email ? "contact-email-error" : undefined}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
               />
+              {fieldErrors.email && (
+                <p id="contact-email-error" className="mt-2 text-sm text-red-400">
+                  {fieldErrors.email}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <label htmlFor="contact-subject" className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <MessageSquare className="w-4 h-4" />
                 Subject
               </label>
               <input
+                id="contact-subject"
                 type="text"
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors"
                 required
+                aria-invalid={Boolean(fieldErrors.subject)}
+                aria-describedby={fieldErrors.subject ? "contact-subject-error" : undefined}
               />
+              {fieldErrors.subject && (
+                <p id="contact-subject-error" className="mt-2 text-sm text-red-400">
+                  {fieldErrors.subject}
+                </p>
+              )}
             </div>
 
             <div>
-              <label className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+              <label htmlFor="contact-message" className="flex items-center gap-2 text-sm text-gray-400 mb-2">
                 <MessageSquare className="w-4 h-4" />
                 Message
               </label>
               <textarea
+                id="contact-message"
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 required
                 rows={6}
+                aria-invalid={Boolean(fieldErrors.message)}
+                aria-describedby={fieldErrors.message ? "contact-message-error" : undefined}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white focus:outline-none focus:border-white/30 transition-colors resize-none"
               />
+              {fieldErrors.message && (
+                <p id="contact-message-error" className="mt-2 text-sm text-red-400">
+                  {fieldErrors.message}
+                </p>
+              )}
             </div>
 
             <motion.button
@@ -149,6 +214,7 @@ export default function ContactPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-2 text-green-400 bg-green-400/10 border border-green-400/20 rounded-lg p-4"
+                aria-live="polite"
               >
                 <Check className="w-5 h-5" />
                 <span>{message}</span>
@@ -160,6 +226,7 @@ export default function ContactPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="flex items-center gap-2 text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg p-4"
+                aria-live="assertive"
               >
                 <AlertCircle className="w-5 h-5" />
                 <span>{message}</span>

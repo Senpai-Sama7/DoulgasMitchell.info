@@ -1,15 +1,14 @@
-import type { MetadataRoute } from 'next';
-
-const siteUrl = process.env.SITE_URL || 'https://www.douglasmitchell.info';
+import type { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
+  const siteUrl = "https://www.douglasmitchell.info";
+
   return {
-    rules: [
-      {
-        userAgent: '*',
-        allow: '/',
-      },
-    ],
+    rules: {
+      userAgent: "*",
+      allow: "/",
+    },
     sitemap: `${siteUrl}/sitemap.xml`,
+    host: siteUrl,
   };
 }
