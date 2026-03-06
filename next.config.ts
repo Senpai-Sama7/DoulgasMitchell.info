@@ -13,7 +13,19 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: "https",
-        hostname: "**",
+        hostname: "douglasmitchell.info",
+      },
+      {
+        protocol: "https",
+        hostname: "www.douglasmitchell.info",
+      },
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "*.vercel.app",
       },
     ],
     unoptimized: false,

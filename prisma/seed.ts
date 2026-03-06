@@ -1,331 +1,17 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-// Gallery images data
-const galleryImages = [
-  // Recent Post Series
-  {
-    id: 'rp-1',
-    src: '/images/gallery/recent-post/rp-1.png',
-    alt: 'Glass Facade Architecture',
-    caption: 'Modern glass facade reflecting the warm sunset sky, where structure meets natural beauty.',
-    series: 'recent-post',
-    width: 1344,
-    height: 768,
-    date: '2024-12-15',
-    order: 1,
-  },
-  {
-    id: 'rp-2',
-    src: '/images/gallery/recent-post/rp-2.png',
-    alt: 'Concrete Textures',
-    caption: 'A study in concrete textures, where light and shadow dance across minimalist surfaces.',
-    series: 'recent-post',
-    width: 768,
-    height: 1344,
-    date: '2024-12-12',
-    order: 2,
-  },
-  {
-    id: 'rp-3',
-    src: '/images/gallery/recent-post/rp-3.png',
-    alt: 'Modern Staircase',
-    caption: 'Clean lines of a modern staircase, illuminated by soft natural light.',
-    series: 'recent-post',
-    width: 1344,
-    height: 768,
-    date: '2024-12-10',
-    order: 3,
-  },
-  {
-    id: 'rp-4',
-    src: '/images/gallery/recent-post/rp-4.png',
-    alt: 'Geometric Patterns',
-    caption: 'Architectural abstraction through geometric patterns of light and shadow.',
-    series: 'recent-post',
-    width: 1344,
-    height: 768,
-    date: '2024-12-08',
-    order: 4,
-  },
-  {
-    id: 'rp-5',
-    src: '/images/gallery/recent-post/rp-5.png',
-    alt: 'Vertical Architecture',
-    caption: 'Vertical lines of glass and steel reaching toward the warm afternoon sky.',
-    series: 'recent-post',
-    width: 768,
-    height: 1344,
-    date: '2024-12-05',
-    order: 5,
-  },
-  {
-    id: 'rp-6',
-    src: '/images/gallery/recent-post/rp-6.png',
-    alt: 'Museum Interior',
-    caption: 'The serene interior of a contemporary museum, where space becomes art.',
-    series: 'recent-post',
-    width: 1344,
-    height: 768,
-    date: '2024-12-01',
-    order: 6,
-  },
-
-  // Tech Deck Series
-  {
-    id: 'td-1',
-    src: '/images/gallery/tech-deck/td-1.png',
-    alt: 'Developer Workspace',
-    caption: 'A clean developer setup where ideas transform into code.',
-    series: 'tech-deck',
-    width: 1344,
-    height: 768,
-    date: '2024-11-28',
-    order: 7,
-  },
-  {
-    id: 'td-2',
-    src: '/images/gallery/tech-deck/td-2.png',
-    alt: 'Mechanical Keyboard',
-    caption: 'The tactile beauty of mechanical precision, crafted for creators.',
-    series: 'tech-deck',
-    width: 1024,
-    height: 1024,
-    date: '2024-11-25',
-    order: 8,
-  },
-  {
-    id: 'td-3',
-    src: '/images/gallery/tech-deck/td-3.png',
-    alt: 'Server Infrastructure',
-    caption: 'The backbone of digital infrastructure, where data flows silently.',
-    series: 'tech-deck',
-    width: 1344,
-    height: 768,
-    date: '2024-11-20',
-    order: 9,
-  },
-  {
-    id: 'td-4',
-    src: '/images/gallery/tech-deck/td-4.png',
-    alt: 'Laptop Workspace',
-    caption: 'A moment of focused creation, where coffee and code intertwine.',
-    series: 'tech-deck',
-    width: 768,
-    height: 1344,
-    date: '2024-11-15',
-    order: 10,
-  },
-  {
-    id: 'td-5',
-    src: '/images/gallery/tech-deck/td-5.png',
-    alt: 'Abstract Technology',
-    caption: 'Floating geometries representing the ethereal nature of digital design.',
-    series: 'tech-deck',
-    width: 1344,
-    height: 768,
-    date: '2024-11-10',
-    order: 11,
-  },
-  {
-    id: 'td-6',
-    src: '/images/gallery/tech-deck/td-6.png',
-    alt: 'Code Editor',
-    caption: 'Syntax highlighted in warm tones, where logic becomes poetry.',
-    series: 'tech-deck',
-    width: 1344,
-    height: 768,
-    date: '2024-11-05',
-    order: 12,
-  },
-
-  // Project Series
-  {
-    id: 'pj-1',
-    src: '/images/gallery/project/pj-1.png',
-    alt: 'Dashboard Design',
-    caption: 'A modern dashboard interface, balancing function and aesthetics.',
-    series: 'project',
-    width: 1344,
-    height: 768,
-    date: '2024-10-28',
-    order: 13,
-  },
-  {
-    id: 'pj-2',
-    src: '/images/gallery/project/pj-2.png',
-    alt: 'Mobile App Design',
-    caption: 'Minimalist mobile interface, designed for intuitive interaction.',
-    series: 'project',
-    width: 768,
-    height: 1344,
-    date: '2024-10-22',
-    order: 14,
-  },
-  {
-    id: 'pj-3',
-    src: '/images/gallery/project/pj-3.png',
-    alt: 'Creative Workspace',
-    caption: "Where ideas take form - a designer's creative sanctuary.",
-    series: 'project',
-    width: 1344,
-    height: 768,
-    date: '2024-10-15',
-    order: 15,
-  },
-  {
-    id: 'pj-4',
-    src: '/images/gallery/project/pj-4.png',
-    alt: 'Geometric Composition',
-    caption: 'Abstract geometric composition exploring form and space.',
-    series: 'project',
-    width: 1344,
-    height: 768,
-    date: '2024-10-08',
-    order: 16,
-  },
-  {
-    id: 'pj-5',
-    src: '/images/gallery/project/pj-5.png',
-    alt: 'Brand Identity',
-    caption: 'Tactile brand materials, where identity meets craft.',
-    series: 'project',
-    width: 768,
-    height: 1344,
-    date: '2024-10-01',
-    order: 17,
-  },
-  {
-    id: 'pj-6',
-    src: '/images/gallery/project/pj-6.png',
-    alt: 'Design Process',
-    caption: 'The beautiful mess of creation - wireframes and sketches in progress.',
-    series: 'project',
-    width: 1344,
-    height: 768,
-    date: '2024-09-25',
-    order: 18,
-  },
-];
-
-// Journal entries data
-const journalEntries = [
-  {
-    id: 'jr-1',
-    title: 'Morning Ritual',
-    date: '2024-12-15',
-    content: `The first light of the day slipped through the curtains and landed on the steam from my pour-over. For a moment, everything felt quiet and intentional.
-
-The aroma of coffee and the weight of a good book made a steady start to the morning.
-
-Every sip felt like a reset. Every minute felt like \`time reclaimed\`.
-
-> A simple morning ritual is one of the best investments in yourself.`,
-    quote: 'Do not wait for better days. Build them, one habit at a time.',
-    image: '/images/journal/jr-1.png',
-    imageAlt: 'Morning coffee ritual',
-    order: 1,
-    tags: ['lifestyle', 'coffee'],
-  },
-  {
-    id: 'jr-2',
-    title: 'Reading Hour',
-    date: '2024-12-10',
-    content: `A dried flower bookmark fell from the page as I opened the book. The room was calm, the tea was warm, and the pace of the day slowed down.
-
-Good writing has a way of making the world feel larger and more personal at the same time.
-
-**Current shelf**:
-- *The Little Prince*
-- *One Hundred Years of Solitude*
-- *Norwegian Wood*`,
-    image: '/images/journal/jr-2.png',
-    imageAlt: 'Reading with dried flowers bookmark',
-    order: 2,
-    tags: ['reading', 'quiet'],
-  },
-  {
-    id: 'jr-3',
-    title: 'City Walk',
-    date: '2024-12-05',
-    content: `At golden hour, the city softened. Concrete became warm, windows caught fire with reflected light, and familiar streets felt new again.
-
-Most people rushed past. I slowed down and watched the details.
-
-**Walk route**:
-1. Coffee shop in the old district
-2. Riverside avenue
-3. Main square at sunset`,
-    quote: 'The best views are often waiting around ordinary corners.',
-    image: '/images/journal/jr-3.png',
-    imageAlt: 'City street at golden hour',
-    order: 3,
-    tags: ['travel', 'city'],
-  },
-  {
-    id: 'jr-4',
-    title: 'Small Green Things',
-    date: '2024-11-28',
-    content: `A few plants on the windowsill changed the atmosphere of the room more than I expected.
-
-Watching new leaves unfold is a quiet reminder that progress can be slow and still meaningful.
-
-**Care notes**:
-- Water twice a week
-- Keep in bright, indirect light
-- Wipe leaves regularly`,
-    image: '/images/journal/jr-4.png',
-    imageAlt: 'Minimalist desk plant',
-    order: 4,
-    tags: ['plants', 'lifestyle'],
-  },
-  {
-    id: 'jr-5',
-    title: 'Light and Memory',
-    date: '2024-11-20',
-    content: `I picked up an older camera today and listened to the shutter click with that mechanical certainty digital cameras rarely have.
-
-Film slows everything down. You compose with care, wait with patience, and trust your instincts.
-
-In a fast world, **slow photography feels like respect for time**.
-
-\`ISO 400\` • \`f/2.8\` • \`1/125s\``,
-    quote: 'Photography is memory with light attached to it.',
-    image: '/images/journal/jr-5.png',
-    imageAlt: 'Vintage camera on wooden surface',
-    order: 5,
-    tags: ['photography', 'memory'],
-  },
-  {
-    id: 'jr-6',
-    title: 'Gentle Dusk',
-    date: '2024-11-15',
-    content: `By the window at dusk, the sky turned soft orange and rose. Plant shadows stretched across the wall like a hand-drawn sketch.
-
-Outside, the city stayed loud. Inside, the room settled into silence.
-
-> Dusk is a daily reminder that endings can still be beautiful.`,
-    image: '/images/journal/jr-6.png',
-    imageAlt: 'Sunset through window with plants',
-    order: 6,
-    tags: ['sunset', 'calm'],
-  },
-];
-
-// Tags to create
-const allTags = [...new Set(journalEntries.flatMap((entry) => entry.tags))];
-
 async function main() {
-  console.log('Starting seed...');
+  console.log("Seeding database...");
 
   // Clean existing data
-  console.log('Cleaning existing data...');
   await prisma.journalTag.deleteMany();
   await prisma.tag.deleteMany();
   await prisma.journalEntry.deleteMany();
   await prisma.galleryImage.deleteMany();
+  await prisma.passkeyCredential.deleteMany();
   await prisma.session.deleteMany();
   await prisma.loginAttempt.deleteMany();
   await prisma.adminUser.deleteMany();
@@ -334,71 +20,165 @@ async function main() {
   await prisma.requestLog.deleteMany();
 
   // Create admin user
-  console.log('Creating admin user...');
+  console.log("Creating admin user...");
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
-    throw new Error('ADMIN_PASSWORD environment variable is required for security reasons to set a strong admin password during seeding.');
+    throw new Error("ADMIN_PASSWORD environment variable is required for security reasons to set a strong admin password during seeding.");
   }
   const passwordHash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.adminUser.create({
     data: {
-      username: 'admin',
+      username: "admin",
       passwordHash,
-      email: 'admin@senpai-isekai.com',
+      email: "admin@senpai-isekai.com",
     },
   });
 
   // Create tags
-  console.log('Creating tags...');
-  for (const tagName of allTags) {
-    await prisma.tag.create({
-      data: { name: tagName },
-    });
-  }
+  console.log("Creating tags...");
+  const tags = await Promise.all([
+    prisma.tag.create({ data: { name: "architecture" } }),
+    prisma.tag.create({ data: { name: "photography" } }),
+    prisma.tag.create({ data: { name: "light" } }),
+    prisma.tag.create({ data: { name: "shadows" } }),
+    prisma.tag.create({ data: { name: "urban" } }),
+    prisma.tag.create({ data: { name: "creative" } }),
+    prisma.tag.create({ data: { name: "reflection" } }),
+    prisma.tag.create({ data: { name: "perspective" } }),
+  ]);
 
   // Create gallery images
-  console.log('Creating gallery images...');
-  for (const image of galleryImages) {
+  console.log("Creating gallery images...");
+  const galleryImages = [
+    {
+      src: "/images/gallery/recent-post/gal-1.png",
+      alt: "Urban Reflections",
+      caption: "Morning light dancing on glass facades",
+      series: "recent-post" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-28",
+    },
+    {
+      src: "/images/gallery/recent-post/gal-2.png",
+      alt: "Shadows and Light",
+      caption: "The interplay of shadow and illumination",
+      series: "recent-post" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-25",
+    },
+    {
+      src: "/images/gallery/recent-post/gal-3.png",
+      alt: "Geometric Harmony",
+      caption: "Finding patterns in urban architecture",
+      series: "recent-post" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-22",
+    },
+    {
+      src: "/images/gallery/tech-deck/gal-4.png",
+      alt: "Workspace Stories",
+      caption: "The creative sanctuary where ideas take form",
+      series: "tech-deck" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-20",
+    },
+    {
+      src: "/images/gallery/tech-deck/gal-5.png",
+      alt: "Digital Garden",
+      caption: "Tools of the modern craft",
+      series: "tech-deck" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-18",
+    },
+    {
+      src: "/images/gallery/project/gal-6.png",
+      alt: "Project Vision",
+      caption: "Conceptualizing spaces yet to exist",
+      series: "project" as const,
+      width: 1344,
+      height: 768,
+      date: "2024-12-15",
+    },
+  ];
+
+  for (let i = 0; i < galleryImages.length; i++) {
     await prisma.galleryImage.create({
       data: {
-        id: image.id,
-        src: image.src,
-        alt: image.alt,
-        caption: image.caption,
-        series: image.series,
-        width: image.width,
-        height: image.height,
-        date: image.date,
-        order: image.order,
+        ...galleryImages[i],
+        order: i,
       },
     });
   }
 
   // Create journal entries
-  console.log('Creating journal entries...');
-  for (const entry of journalEntries) {
-    const { tags, ...entryData } = entry;
+  console.log("Creating journal entries...");
+  const journalEntries = [
+    {
+      title: "The Quiet Beauty of Concrete",
+      date: "2024-12-28",
+      content: `There's a certain poetry in concrete structures that many overlook. The way light plays across brutalist facades, creating dramatic shadows that shift throughout the day. Each surface tells a story of intention and function.
+
+I've been spending my mornings documenting these interactions between natural light and human-made geometry. The results have been surprising—what initially seemed cold and uninviting reveals itself to be warm and dynamic when observed patiently.
+
+The key is to arrive early, when the sun is still low and the shadows are long. This is when the architecture truly speaks, revealing its secrets to those willing to listen.`,
+      quote: "Architecture is the learned game, correct and magnificent, of forms assembled in the light.",
+      image: "/images/journal/jr-1.png",
+      imageAlt: "Concrete architecture in morning light",
+      tags: ["architecture", "light", "perspective"],
+    },
+    {
+      title: "Reflections on Urban Spaces",
+      date: "2024-12-22",
+      content: `Cities are mirrors. They reflect not just the physical world around us, but our collective aspirations, our relationship with space, and our endless desire to reach toward the sky.
+
+Walking through downtown at golden hour, I'm struck by how glass buildings transform into canvases of light. The sunset doesn't just illuminate these structures—it turns them into participants in a daily performance that few pause to appreciate.
+
+My challenge this month has been to capture these fleeting moments, to freeze in time the ephemeral beauty that exists between day and night.`,
+      quote: "The city is not a problem to be solved, but a reality to be experienced.",
+      image: "/images/journal/jr-2.png",
+      imageAlt: "Urban skyline at golden hour",
+      tags: ["urban", "photography", "light"],
+    },
+    {
+      title: "Shadows as Subject",
+      date: "2024-12-15",
+      content: `We've been taught to fear shadows in photography, to always seek the light. But what happens when we make shadow our primary subject?
+
+This question has driven my recent work. By exposing for the highlights and letting shadows fall where they may, I've discovered a new visual language. The absence of light becomes as important as its presence.
+
+In these images, shadow isn't merely background—it's the protagonist. The light exists to give form to darkness, to carve out negative space that speaks as loudly as any illuminated subject.`,
+      quote: "Where there is much light, the shadow is deep.",
+      image: "/images/journal/jr-3.png",
+      imageAlt: "Dramatic shadows in architectural space",
+      tags: ["shadows", "creative", "architecture"],
+    },
+  ];
+
+  for (let i = 0; i < journalEntries.length; i++) {
+    const entry = journalEntries[i];
+    const tagNames = entry.tags;
 
     const createdEntry = await prisma.journalEntry.create({
       data: {
-        id: entry.id,
-        title: entryData.title,
-        date: entryData.date,
-        content: entryData.content,
-        quote: entryData.quote,
-        image: entryData.image,
-        imageAlt: entryData.imageAlt,
-        order: entryData.order,
+        title: entry.title,
+        date: entry.date,
+        content: entry.content,
+        quote: entry.quote,
+        image: entry.image,
+        imageAlt: entry.imageAlt,
+        order: i,
       },
     });
 
-    // Create tag relations
-    for (const tagName of tags) {
-      const tag = await prisma.tag.findUnique({
-        where: { name: tagName },
-      });
-
+    // Connect tags
+    for (const tagName of tagNames) {
+      const tag = tags.find((t) => t.name === tagName);
       if (tag) {
         await prisma.journalTag.create({
           data: {
@@ -410,41 +190,34 @@ async function main() {
     }
   }
 
-  // Create default settings
-  console.log('Creating settings...');
+  // Create settings
+  console.log("Creating settings...");
   await prisma.settings.create({
     data: {
       siteTitle: "Senpai's Isekai",
       siteDescription:
-        'A personal blog exploring architecture, technology, and creative expression',
-      linkedin: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
-      github: 'https://github.com/Senpai-Sama7',
+        "A personal blog exploring architecture, technology, and creative expression",
+      linkedin: "https://linkedin.com/in/douglasmitchell",
+      github: "https://github.com/douglasmitchell",
     },
   });
 
-  // Log activity
+  // Create initial activity log
+  console.log("Creating activity log...");
   await prisma.activityLog.create({
     data: {
-      action: 'import',
-      resource: 'system',
-      details: JSON.stringify({
-        galleryCount: galleryImages.length,
-        journalCount: journalEntries.length,
-        tagCount: allTags.length,
-      }),
+      action: "create",
+      resource: "system",
+      details: "Database seeded with initial data",
     },
   });
 
-  console.log('Seed completed successfully!');
-  console.log(`- Admin user: admin (password: ${adminPassword})`);
-  console.log(`- Gallery images: ${galleryImages.length}`);
-  console.log(`- Journal entries: ${journalEntries.length}`);
-  console.log(`- Tags: ${allTags.length}`);
+  console.log("Seeding completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error('Seed failed:', e);
+    console.error("Seeding failed:", e);
     process.exit(1);
   })
   .finally(async () => {

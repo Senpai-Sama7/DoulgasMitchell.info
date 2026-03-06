@@ -25,6 +25,10 @@ import { useEffect, useRef, useCallback } from "react";
 // React reconciler never touches the component after mount. This eliminates
 // reconciler overhead on animation-critical frames and avoids the
 // animation-fill-mode/iframe sandbox pathologies of the previous iteration.
+//
+// Reduced motion: when prefers-reduced-motion is enabled, the component
+// renders the final state immediately with a brief fade-out, respecting
+// user accessibility preferences while still signaling the brand identity.
 // ─────────────────────────────────────────────────────────────────────────────
 
 interface EntranceOverlayProps {
@@ -96,6 +100,12 @@ interface ScrambleChar {
   glyph: string;
 }
 
+// ── Reduced motion detection ──────────────────────────────────────────────────
+function prefersReducedMotion(): boolean {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
 
@@ -114,6 +124,51 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
   const timersRef  = useRef<ReturnType<typeof setTimeout>[]>([]);
   const ptxRafRef  = useRef<number>(0);
   const sRafRef    = useRef<number>(0);
+
+  // ── Reduced motion play — fast fade to complete ─────────────────────────────
+  const playReducedMotion = useCallback((): void => {
+    // Show static content immediately with minimal animation
+    const css = (
+      el: HTMLElement | null,
+      props: Partial<CSSStyleDeclaration>
+    ): void => {
+      if (!el) return;
+      Object.assign(el.style, props);
+    };
+
+    // Set all elements to visible final state
+    css(wrapperRef.current, { opacity: "1" });
+    css(eyebrowRef.current, { opacity: "1", transition: "opacity 200ms ease" });
+    css(nameRef.current, { 
+      opacity: "1", 
+      textShadow: "0 0 40px rgba(251,191,36,0.18)",
+      transition: "opacity 200ms ease"
+    });
+    if (nameRef.current) nameRef.current.textContent = TARGET;
+    css(ruleRef.current, { 
+      transform: "scaleX(1)", 
+      opacity: "1",
+      transition: "opacity 200ms ease, transform 300ms ease"
+    });
+    css(tagRef.current, { opacity: "1", transition: "opacity 200ms ease" });
+    css(subTagRef.current, { opacity: "1", transition: "opacity 200ms ease" });
+
+    // Brief pause for readability, then fade out
+    const T = (fn: () => void, ms: number) =>
+      timersRef.current.push(setTimeout(fn, ms));
+
+    // Fade out after 800ms (enough to read, short enough to not block)
+    T(() => {
+      css(wrapperRef.current, {
+        transition: "opacity 400ms ease-in",
+        opacity: "0",
+      });
+    }, 800);
+
+    T(() => {
+      onComplete?.();
+    }, 1200);
+  }, [onComplete]);
 
   // ── Particle field ────────────────────────────────────────────────────────
   // 55 dim amber-tinted particles drifting slowly across the dark bg.
@@ -365,14 +420,19 @@ export function EntranceOverlay({ onComplete }: EntranceOverlayProps) {
       document.head.appendChild(s);
     }
 
-    play();
+    // Choose animation path based on user preference
+    if (prefersReducedMotion()) {
+      playReducedMotion();
+    } else {
+      play();
+    }
 
     return () => {
       timersRef.current.forEach(clearTimeout);
       cancelAnimationFrame(ptxRafRef.current);
       cancelAnimationFrame(sRafRef.current);
     };
-  }, [play, onComplete]);
+  }, [play, playReducedMotion, onComplete]);
 
   // ── Render ─────────────────────────────────────────────────────────────────
   // JSX is a static structural skeleton — zero dynamic expressions that

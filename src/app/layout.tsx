@@ -40,20 +40,25 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.douglasmitchell.info"),
-  title: "Senpai's Isekai | Open-Source Humanity",
-  description: "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
-  metadataBase: new URL(process.env.SITE_URL || 'https://www.douglasmitchell.info'),
+  metadataBase: new URL("https://www.douglasmitchell.info"),
+  title: {
+    default: "Douglas Mitchell | Photography & Creative Work",
+    template: "%s | Douglas Mitchell",
+  },
+  description: "Douglas Mitchell's personal portfolio — exploring architecture, light, technology, and creative expression through photography and writing.",
+  keywords: ["Douglas Mitchell", "photography", "architecture", "portfolio", "blog", "creative"],
+  authors: [{ name: "Douglas Mitchell" }],
+  creator: "Douglas Mitchell",
   alternates: {
-    canonical: '/',
+    canonical: "/",
   },
   openGraph: {
-    title: "Senpai's Isekai | Open-Source Humanity",
-    description:
-      "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
-    url: "/",
-    siteName: "Senpai's Isekai",
     type: "website",
+    locale: "en_US",
+    url: "https://www.douglasmitchell.info",
+    siteName: "Senpai's Isekai",
+    title: "Douglas Mitchell | Photography & Creative Work",
+    description: "Exploring architecture, light, technology, and creative expression through photography and writing.",
     images: [
       {
         url: "/images/hero/hero-main.png",
@@ -65,10 +70,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Senpai's Isekai | Open-Source Humanity",
-    description:
-      "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+    title: "Douglas Mitchell | Photography & Creative Work",
+    description: "Exploring architecture, light, technology, and creative expression through photography and writing.",
     images: ["/images/hero/hero-main.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -82,11 +90,11 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${sora.variable} antialiased`}
       >
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
+        {/* Noise Texture Overlay */}
         <div className="noise-overlay" aria-hidden="true" />
-        <main id="main-content">{children}</main>
+        
+        {/* Main Content */}
+        {children}
       </body>
     </html>
   );

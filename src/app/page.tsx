@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
@@ -13,12 +13,20 @@ import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
-// Typing animation component
+// Typing animation component with reduced-motion support
 function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?: number; speed?: number }) {
   const [displayText, setDisplayText] = useState("");
   const [isComplete, setIsComplete] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Skip animation for reduced-motion preference
+    if (prefersReducedMotion) {
+      setDisplayText(text);
+      setIsComplete(true);
+      return;
+    }
+
     let timeout: NodeJS.Timeout;
     let charIndex = 0;
 
@@ -40,12 +48,12 @@ function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?
       clearTimeout(delayTimeout);
       clearInterval(timeout);
     };
-  }, [text, delay, speed]);
+  }, [text, delay, speed, prefersReducedMotion]);
 
   return (
     <span>
       {displayText}
-      {!isComplete && (
+      {!isComplete && !prefersReducedMotion && (
         <motion.span
           animate={{ opacity: [1, 0] }}
           transition={{ repeat: Infinity, duration: 0.8 }}
@@ -56,9 +64,10 @@ function TypingAnimation({ text, delay = 0, speed = 80 }: { text: string; delay?
   );
 }
 
-// Scroll to explore indicator
+// Scroll to explore indicator with reduced-motion support
 function ScrollIndicator() {
   const [isVisible, setIsVisible] = useState(true);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -80,7 +89,7 @@ function ScrollIndicator() {
         >
           <span className="text-xs text-white/60 font-mono tracking-widest">SCROLL TO EXPLORE</span>
           <motion.div
-            animate={{ y: [0, 8, 0] }}
+            animate={prefersReducedMotion ? {} : { y: [0, 8, 0] }}
             transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
             className="flex flex-col items-center"
           >
@@ -93,9 +102,10 @@ function ScrollIndicator() {
   );
 }
 
-// Back to top button
+// Back to top button with reduced-motion support
 function BackToTop() {
   const [isVisible, setIsVisible] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,7 +116,7 @@ function BackToTop() {
   }, []);
 
   const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: prefersReducedMotion ? "auto" : "smooth" });
   };
 
   return (
@@ -118,7 +128,7 @@ function BackToTop() {
           exit={{ opacity: 0, scale: 0.8, y: 20 }}
           onClick={scrollToTop}
           className="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full glass-card flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow group"
-          whileHover={{ scale: 1.1 }}
+          whileHover={prefersReducedMotion ? {} : { scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
           type="button"
           aria-label="Back to top"
@@ -131,8 +141,10 @@ function BackToTop() {
   );
 }
 
-// Floating decorative elements
+// Floating decorative elements with reduced-motion support
 function FloatingDecorations() {
+  const prefersReducedMotion = useReducedMotion();
+  
   const decorations = [
     { icon: Star, delay: 0, x: "10%", y: "20%", size: "sm" },
     { icon: Heart, delay: 0.5, x: "85%", y: "15%", size: "md" },
@@ -165,7 +177,7 @@ function FloatingDecorations() {
           }}
         >
           <motion.div
-            animate={{
+            animate={prefersReducedMotion ? {} : {
               y: [0, -15, 0],
               rotate: [0, 10, -10, 0],
               scale: [1, 1.1, 1],
@@ -313,6 +325,7 @@ export default function HomePage() {
   const [showContent] = useState(true);
   const [showEntranceOverlay, setShowEntranceOverlay] = useState(true);
   const [galleryImages, setGalleryImages] = useState(fallbackGalleryImages);
+  const prefersReducedMotion = useReducedMotion();
   
   const { scrollY } = useScroll();
   const heroY = useTransform(scrollY, [0, 500], [0, 150]);
@@ -332,8 +345,7 @@ export default function HomePage() {
       return;
     }
 
-    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReduced && !forceModes.has(introMode)) {
+    if (prefersReducedMotion && !forceModes.has(introMode)) {
       setShowEntranceOverlay(false);
       return;
     }
@@ -345,7 +357,7 @@ export default function HomePage() {
       const base = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
       window.history.replaceState({}, "", base);
     }
-  }, []);
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     let isMounted = true;
@@ -409,7 +421,7 @@ export default function HomePage() {
       <MainLayout>
         <main>
         {/* Hero Section */}
-        <section className="relative overflow-visible">
+        <section className="relative overflow-visible" aria-labelledby="hero-heading">
           <div className="max-w-7xl mx-auto px-4 py-4 md:py-6">
             {/* Centered Title with Visualization Background */}
             <div className="relative min-h-[280px] md:min-h-[320px] lg:min-h-[360px] flex items-center justify-center mb-4 md:mb-6">
@@ -433,6 +445,7 @@ export default function HomePage() {
                 transition={{ duration: 0.6, delay: 0.2 }}
                 className="relative z-10 text-center"
               >
+                {/* Secondary branding */}
                 <motion.div
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -441,46 +454,41 @@ export default function HomePage() {
                 >
                   <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
                   <span className="font-mono text-xs text-muted-foreground tracking-wider">
-                    WELCOME TO
+                    SENPAI&apos;S ISEKAI
                   </span>
                 </motion.div>
 
+                {/* Main heading - Douglas Mitchell with role */}
                 <motion.h1
+                  id="hero-heading"
                   initial={{ opacity: 0, y: 30 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2, duration: 0.5 }}
                   className="font-serif font-bold tracking-tight"
                 >
-                  <span className="block text-5xl md:text-6xl lg:text-7xl text-white drop-shadow-lg" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
-                    Senpai&apos;s
+                  <span className="block text-4xl md:text-5xl lg:text-6xl text-white drop-shadow-lg" style={{ textShadow: "0 2px 20px rgba(0,0,0,0.3)" }}>
+                    Douglas Mitchell
                   </span>
-                  <motion.span
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3, duration: 0.5 }}
-                    className="block text-5xl md:text-6xl lg:text-7xl text-primary/90 drop-shadow-lg"
-                    style={{ textShadow: "0 2px 20px rgba(0,0,0,0.2)" }}
-                  >
-                    Isekai
-                  </motion.span>
                 </motion.h1>
 
+                {/* Role / Value proposition */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 }}
+                  transition={{ delay: 0.4 }}
                   className="mt-3 text-lg md:text-xl text-white/80 font-light tracking-wider"
                 >
-                  <TypingAnimation text="Open-Source Humanity" delay={600} speed={70} />
+                  <TypingAnimation text="Photography & Creative Expression" delay={400} speed={60} />
                 </motion.div>
 
+                {/* Tagline */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.7 }}
+                  transition={{ delay: 0.6 }}
                   className="mt-2 font-handwritten text-2xl md:text-3xl text-white/60"
                 >
-                  ~ Thee Strongest ~
+                  ~ Exploring Light & Architecture ~
                 </motion.div>
 
                 <motion.div
@@ -511,7 +519,7 @@ export default function HomePage() {
 
               {/* Floating accent elements */}
               <motion.div
-                animate={{ y: [0, -6, 0], rotate: [0, 3, 0] }}
+                animate={prefersReducedMotion ? {} : { y: [0, -6, 0], rotate: [0, 3, 0] }}
                 transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
                 className="absolute top-4 right-4 w-10 h-10 rounded-lg glass-card flex items-center justify-center"
               >
@@ -519,7 +527,7 @@ export default function HomePage() {
               </motion.div>
 
               <motion.div
-                animate={{ y: [0, 6, 0], rotate: [0, -3, 0] }}
+                animate={prefersReducedMotion ? {} : { y: [0, 6, 0], rotate: [0, -3, 0] }}
                 transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
                 className="absolute bottom-4 left-4 w-8 h-8 rounded-full glass-card flex items-center justify-center"
               >

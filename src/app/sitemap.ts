@@ -1,27 +1,24 @@
 import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.douglasmitchell.info";
+const siteUrl = "https://www.douglasmitchell.info";
 
-const routes = [
-  "",
-  "/about",
-  "/contact",
-  "/events",
-  "/faq",
-  "/galleries",
-  "/journal",
-  "/press-kit",
-  "/samples",
+const publicRoutes = [
+  { path: "", priority: 1.0 },
+  { path: "/about", priority: 0.8 },
+  { path: "/galleries", priority: 0.9 },
+  { path: "/journal", priority: 0.8 },
+  { path: "/contact", priority: 0.7 },
+  { path: "/faq", priority: 0.6 },
+  { path: "/events", priority: 0.6 },
+  { path: "/press-kit", priority: 0.5 },
+  { path: "/samples", priority: 0.5 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.douglasmitchell.info";
-  const lastModified = new Date();
-
-  return staticRoutes.map((route) => ({
-    url: `${baseUrl}${route}`,
-    lastModified,
-    changeFrequency: route === "" ? "weekly" : "monthly",
-    priority: route === "" ? 1 : 0.7,
+  return publicRoutes.map((route) => ({
+    url: `${siteUrl}${route.path}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: route.priority,
   }));
 }

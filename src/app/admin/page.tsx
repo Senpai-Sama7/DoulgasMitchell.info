@@ -1003,6 +1003,32 @@ export default function AdminPage() {
     checkAuth();
   }, []);
 
+  // Handle session expiry during active session
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleApiError = async (response: Response) => {
+      if (response.status === 401) {
+        // Session expired or invalid
+        setIsAuthenticated(false);
+      }
+    };
+
+    // Intercept fetch calls to detect 401s
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      if (args[0] && typeof args[0] === "string" && args[0].startsWith("/api/")) {
+        await handleApiError(response.clone());
+      }
+      return response;
+    };
+
+    return () => {
+      window.fetch = originalFetch;
+    };
+  }, [isAuthenticated]);
+
   // Fetch data when authenticated
   useEffect(() => {
     if (isAuthenticated) {
