@@ -204,6 +204,40 @@ export function withRequestLogging(handler: ApiHandler): ApiHandler {
   };
 }
 
+
+function isStateChangingMethod(method: string): boolean {
+  return method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
+}
+
+function validateCsrfRequest(request: NextRequest): void {
+  if (!isStateChangingMethod(request.method)) {
+    return;
+  }
+
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+  const secFetchSite = request.headers.get('sec-fetch-site');
+
+  if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') {
+    throw new AuthorizationError('Cross-site state-changing requests are blocked');
+  }
+
+  if (!origin || !host) {
+    return;
+  }
+
+  let originHost: string;
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    throw new AuthorizationError('Invalid request origin');
+  }
+
+  if (originHost !== host) {
+    throw new AuthorizationError('Cross-site state-changing requests are blocked');
+  }
+}
+
 // CORS middleware for OPTIONS requests
 export function handleCors(request: NextRequest): NextResponse | null {
   if (request.method === 'OPTIONS') {
@@ -240,6 +274,7 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
     validateRequestOrigin(request);
 
     try {
+      validateCsrfRequest(request);
       const response = await withRequestLogging(handler)(request, context);
       return withCors(response, request);
     } catch (error) {

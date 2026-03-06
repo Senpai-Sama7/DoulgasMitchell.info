@@ -1,14 +1,26 @@
-import type { MetadataRoute } from 'next';
+import type { MetadataRoute } from "next";
 
-const siteUrl = process.env.SITE_URL || 'https://www.douglasmitchell.info';
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.douglasmitchell.info";
+
+const routes = [
+  "",
+  "/about",
+  "/contact",
+  "/events",
+  "/faq",
+  "/galleries",
+  "/journal",
+  "/press-kit",
+  "/samples",
+];
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ['', '/about', '/galleries', '/journal', '/contact', '/faq', '/events', '/press-kit', '/samples'];
+  const lastModified = new Date();
 
   return routes.map((route) => ({
     url: `${siteUrl}${route}`,
-    lastModified: new Date(),
-    changeFrequency: route === '' ? 'weekly' : 'monthly',
-    priority: route === '' ? 1 : 0.7,
+    lastModified,
+    changeFrequency: route === "" ? "weekly" : "monthly",
+    priority: route === "" ? 1 : 0.8,
   }));
 }

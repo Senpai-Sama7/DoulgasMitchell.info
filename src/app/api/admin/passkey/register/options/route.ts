@@ -72,6 +72,8 @@ async function handlePasskeyRegisterOptions(request: NextRequest): Promise<NextR
   const { adminUser, passkeys } = await getAuthenticatedAdmin(request);
   const encoder = new TextEncoder();
 
+  const userID = new TextEncoder().encode(adminUser.id);
+
   const options = await generateRegistrationOptions({
     rpName: getPasskeyRPName(),
     rpID: getPasskeyRPID(request),

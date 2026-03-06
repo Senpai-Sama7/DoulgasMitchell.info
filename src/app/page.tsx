@@ -9,6 +9,7 @@ import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
 import type { GalleryImage } from "@/lib/data";
 import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
+import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
@@ -221,6 +222,8 @@ function normalizeGalleryItems(payload: unknown): GalleryImage[] {
       return [];
     }
 
+    const typedSeries: GalleryImage["series"] = series;
+
     if (
       typeof candidate.id !== "string" ||
       typeof candidate.src !== "string" ||
@@ -238,7 +241,7 @@ function normalizeGalleryItems(payload: unknown): GalleryImage[] {
       src: candidate.src,
       alt: candidate.alt,
       caption: candidate.caption,
-      series,
+      series: typedSeries,
       width: candidate.width,
       height: candidate.height,
       date: candidate.date,
@@ -248,6 +251,7 @@ function normalizeGalleryItems(payload: unknown): GalleryImage[] {
 
   return normalized.length > 0 ? normalized : fallbackGalleryImages;
 }
+
 
 function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryItemProps) {
   return (

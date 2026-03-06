@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     root: process.cwd(),
   },
   reactStrictMode: true,
+  experimental: {
+    turbopackUseSystemTlsCerts: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -13,7 +16,6 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
-    unoptimized: true,
   },
 };
 
