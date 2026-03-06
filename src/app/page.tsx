@@ -8,6 +8,7 @@ import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, Trendin
 import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
 import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
+import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
@@ -196,7 +197,7 @@ interface GalleryItemProps {
   isPopular?: boolean;
 }
 
-function normalizeGalleryItems(payload: unknown) {
+function normalizeGalleryItems(payload: unknown): GalleryImage[] {
   if (typeof payload !== "object" || payload === null) {
     return fallbackGalleryImages;
   }
@@ -220,6 +221,8 @@ function normalizeGalleryItems(payload: unknown) {
       return [];
     }
 
+    const typedSeries: GalleryImage["series"] = series;
+
     if (
       typeof candidate.id !== "string" ||
       typeof candidate.src !== "string" ||
@@ -237,7 +240,7 @@ function normalizeGalleryItems(payload: unknown) {
       src: candidate.src,
       alt: candidate.alt,
       caption: candidate.caption,
-      series,
+      series: typedSeries,
       width: candidate.width,
       height: candidate.height,
       date: candidate.date,
@@ -247,6 +250,7 @@ function normalizeGalleryItems(payload: unknown) {
 
   return normalized.length > 0 ? normalized : fallbackGalleryImages;
 }
+
 
 function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryItemProps) {
   return (

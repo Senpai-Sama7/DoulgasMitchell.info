@@ -5,10 +5,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   reactStrictMode: true,
+  experimental: {
+    turbopackUseSystemTlsCerts: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
         hostname: "**",
       },
     ],
-    unoptimized: true,
   },
 };
 
