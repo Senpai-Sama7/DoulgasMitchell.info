@@ -32,8 +32,8 @@ interface EntranceOverlayProps {
 }
 
 // ── Scramble constants ────────────────────────────────────────────────────────
-const TARGET  = "Senpai's Isekai";
-const GLYPHS  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#@%?!·×";
+const TARGET  = "Douglas Mitchell";
+const GLYPHS  = "WhoDecided?LionSinOfPrideIDonovanChooses#@%?!·×";
 const GLYPH_N = GLYPHS.length;
 // ── Mulberry32 — lightweight seeded PRNG ──────────────────────────────────────
 // 32-bit xorshift-multiply with strong avalanche characteristics.
