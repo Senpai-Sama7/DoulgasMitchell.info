@@ -40,25 +40,35 @@ const sora = Sora({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.douglasmitchell.info"),
   title: "Senpai's Isekai | Open-Source Humanity",
   description: "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
-  metadataBase: new URL("https://www.douglasmitchell.info"),
+  metadataBase: new URL(process.env.SITE_URL || 'https://www.douglasmitchell.info'),
   alternates: {
-    canonical: "/",
+    canonical: '/',
   },
   openGraph: {
-    type: "website",
-    url: "https://www.douglasmitchell.info",
     title: "Senpai's Isekai | Open-Source Humanity",
     description:
       "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+    url: "/",
     siteName: "Senpai's Isekai",
+    type: "website",
+    images: [
+      {
+        url: "/images/hero/hero-main.png",
+        width: 1344,
+        height: 768,
+        alt: "Hero image from Senpai's Isekai",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Senpai's Isekai | Open-Source Humanity",
     description:
       "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+    images: ["/images/hero/hero-main.png"],
   },
 };
 
@@ -72,11 +82,11 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} ${jetBrainsMono.variable} ${sora.variable} antialiased`}
       >
-        {/* Noise Texture Overlay */}
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <div className="noise-overlay" aria-hidden="true" />
-        
-        {/* Main Content */}
-        {children}
+        <main id="main-content">{children}</main>
       </body>
     </html>
   );

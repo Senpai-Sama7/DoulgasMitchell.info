@@ -57,6 +57,47 @@ export class ServiceUnavailableError extends AppError {
   }
 }
 
+export class CsrfError extends AppError {
+  constructor(message: string = 'Cross-site request blocked') {
+    super(message, 403, 'CSRF_ERROR');
+    this.name = 'CsrfError';
+  }
+}
+
+function isMutationMethod(method: string): boolean {
+  return ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+}
+
+function validateRequestOrigin(request: NextRequest): void {
+  if (!isMutationMethod(request.method)) {
+    return;
+  }
+
+  const requestOrigin = request.nextUrl.origin;
+  const origin = request.headers.get('origin');
+  const referer = request.headers.get('referer');
+
+  if (origin) {
+    if (origin !== requestOrigin) {
+      throw new CsrfError('Origin validation failed');
+    }
+    return;
+  }
+
+  if (referer) {
+    try {
+      if (new URL(referer).origin !== requestOrigin) {
+        throw new CsrfError('Referer validation failed');
+      }
+      return;
+    } catch {
+      throw new CsrfError('Referer validation failed');
+    }
+  }
+
+  throw new CsrfError('Missing Origin/Referer header for state-changing request');
+}
+
 // Error response formatter
 export function errorResponse(error: unknown): NextResponse {
   console.error('API Error:', error);
@@ -183,6 +224,40 @@ export function withRequestLogging(handler: ApiHandler): ApiHandler {
   };
 }
 
+
+function isStateChangingMethod(method: string): boolean {
+  return method === 'POST' || method === 'PUT' || method === 'PATCH' || method === 'DELETE';
+}
+
+function validateCsrfRequest(request: NextRequest): void {
+  if (!isStateChangingMethod(request.method)) {
+    return;
+  }
+
+  const origin = request.headers.get('origin');
+  const host = request.headers.get('host');
+  const secFetchSite = request.headers.get('sec-fetch-site');
+
+  if (secFetchSite && secFetchSite !== 'same-origin' && secFetchSite !== 'none') {
+    throw new AuthorizationError('Cross-site state-changing requests are blocked');
+  }
+
+  if (!origin || !host) {
+    return;
+  }
+
+  let originHost: string;
+  try {
+    originHost = new URL(origin).host;
+  } catch {
+    throw new AuthorizationError('Invalid request origin');
+  }
+
+  if (originHost !== host) {
+    throw new AuthorizationError('Cross-site state-changing requests are blocked');
+  }
+}
+
 // CORS middleware for OPTIONS requests
 export function handleCors(request: NextRequest): NextResponse | null {
   if (request.method === 'OPTIONS') {
@@ -216,8 +291,10 @@ export function withMiddleware(handler: ApiHandler): ApiHandler {
       return corsResponse;
     }
 
+    validateRequestOrigin(request);
+
     try {
-      validateOriginForMutation(request);
+      validateCsrfRequest(request);
       const response = await withRequestLogging(handler)(request, context);
       return withCors(response, request);
     } catch (error) {

@@ -1,9 +1,66 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const SECURITY_HEADERS: Record<string, string> = {
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Strict-Transport-Security": "max-age=31536000; includeSubDomains; preload",
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "img-src 'self' data: blob: https:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "connect-src 'self' https:",
+  ].join('; '),
+};
+
+function applySecurityHeaders(response: NextResponse): NextResponse {
+  for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
+    response.headers.set(header, value);
+  }
+
+  return response;
+}
+
 const CANONICAL_HOST = (
   process.env.CANONICAL_HOST || "www.douglasmitchell.info"
 ).toLowerCase();
+
+function buildCspHeader(): string {
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "frame-ancestors 'none'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+    "connect-src 'self' https:",
+    "object-src 'none'",
+    "form-action 'self'",
+    "upgrade-insecure-requests",
+  ].join('; ');
+}
+
+function withSecurityHeaders(response: NextResponse): NextResponse {
+  response.headers.set('Content-Security-Policy', buildCspHeader());
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  }
+
+  return response;
+}
 
 function shouldRedirectToCanonicalHost(host: string): boolean {
   const normalizedHost = host.toLowerCase();

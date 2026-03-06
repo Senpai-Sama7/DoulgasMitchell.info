@@ -337,7 +337,7 @@ async function main() {
   console.log('Creating admin user...');
   const adminPassword = process.env.ADMIN_PASSWORD;
   if (!adminPassword) {
-    throw new Error('ADMIN_PASSWORD must be set before running seed');
+    throw new Error('ADMIN_PASSWORD environment variable is required for security reasons to set a strong admin password during seeding.');
   }
   const passwordHash = await bcrypt.hash(adminPassword, 10);
 

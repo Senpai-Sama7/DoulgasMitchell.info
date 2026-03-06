@@ -70,11 +70,14 @@ async function getAuthenticatedAdmin(request: NextRequest) {
 
 async function handlePasskeyRegisterOptions(request: NextRequest): Promise<NextResponse> {
   const { adminUser, passkeys } = await getAuthenticatedAdmin(request);
+  const encoder = new TextEncoder();
+
+  const userID = new TextEncoder().encode(adminUser.id);
 
   const options = await generateRegistrationOptions({
     rpName: getPasskeyRPName(),
     rpID: getPasskeyRPID(request),
-    userID: adminUser.id,
+    userID: encoder.encode(adminUser.id),
     userName: adminUser.username,
     userDisplayName: adminUser.username,
     timeout: 60_000,

@@ -7,7 +7,9 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { ArrowRight, ArrowUp, Camera, Code, Palette, Sparkles, Zap, Eye, TrendingUp, ChevronDown, Star, Heart } from "lucide-react";
 import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
+import type { GalleryImage } from "@/lib/data";
 import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
+import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
@@ -196,7 +198,7 @@ interface GalleryItemProps {
   isPopular?: boolean;
 }
 
-function normalizeGalleryItems(payload: unknown) {
+function normalizeGalleryItems(payload: unknown): GalleryImage[] {
   if (typeof payload !== "object" || payload === null) {
     return fallbackGalleryImages;
   }
@@ -209,7 +211,7 @@ function normalizeGalleryItems(payload: unknown) {
         ? (data as { items: unknown[] }).items
         : [];
 
-  const normalized = items.flatMap((item) => {
+  const normalized = items.flatMap<GalleryImage>((item) => {
     if (typeof item !== "object" || item === null) {
       return [];
     }
@@ -219,6 +221,8 @@ function normalizeGalleryItems(payload: unknown) {
     if (series !== "recent-post" && series !== "tech-deck" && series !== "project") {
       return [];
     }
+
+    const typedSeries: GalleryImage["series"] = series;
 
     if (
       typeof candidate.id !== "string" ||
@@ -237,7 +241,7 @@ function normalizeGalleryItems(payload: unknown) {
       src: candidate.src,
       alt: candidate.alt,
       caption: candidate.caption,
-      series,
+      series: typedSeries,
       width: candidate.width,
       height: candidate.height,
       date: candidate.date,
@@ -247,6 +251,7 @@ function normalizeGalleryItems(payload: unknown) {
 
   return normalized.length > 0 ? normalized : fallbackGalleryImages;
 }
+
 
 function GalleryItem({ image, index, isLarge, viewCount, isPopular }: GalleryItemProps) {
   return (

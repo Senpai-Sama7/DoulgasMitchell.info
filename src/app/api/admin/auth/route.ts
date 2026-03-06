@@ -43,6 +43,11 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
   try {
     await ensureAdminInitialized();
 
+    const failedAttempts = await getRecentFailedAttempts(ipAddress);
+    if (failedAttempts >= 5) {
+      throw new RateLimitError(60);
+    }
+
     // Check rate limit
     const rateLimitResult = checkRateLimit(ipAddress);
     if (!rateLimitResult.allowed) {
