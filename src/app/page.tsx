@@ -9,7 +9,6 @@ import { MainLayout } from "@/components/main-layout";
 import { EntranceOverlay } from "@/components/entrance-overlay";
 import type { GalleryImage } from "@/lib/data";
 import { heroImage, galleryImages as fallbackGalleryImages } from "@/lib/data";
-import type { GalleryImage } from "@/lib/data";
 import { Reactions } from "@/components/reactions";
 import { ScrollReveal, Magnetic, StaggerContainer, StaggerItem } from "@/components/animations";
 
