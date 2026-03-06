@@ -2,7 +2,7 @@ import { MainLayout } from "@/components/main-layout";
 import { Metadata } from "next";
 import Image from "next/image";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations";
-import { ConfidenceTerminal } from "@/components/confidence-terminal";
+
 import { 
   Code, 
   BookOpen, 
@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Douglas Mitchell | Software Architect & Author",
+  title: "About Douglas Mitchell | Operations Analyst & Author",
   description: "Software architect, Google AI certified professional, and author of 'The Confident Mind'. Exploring the intersection of technology and human potential.",
 };
 
@@ -24,6 +24,24 @@ const skills = [
   { category: "Backend", items: ["Node.js", "Python", "PostgreSQL", "GraphQL", "REST APIs"] },
   { category: "Cloud & DevOps", items: ["AWS", "Docker", "CI/CD", "Git", "Vercel"] },
   { category: "AI & Emerging", items: ["Google AI", "LLM Integration", "System Design", "Web3"] },
+];
+
+const anthropicCerts = [
+  {
+    name: "AI Fluency: Framework & Foundations",
+    image: "/images/certs/anthropic-ai-fluency-foundations.png",
+    description: "Core AI frameworks from Anthropic",
+  },
+  {
+    name: "Claude 101",
+    image: "/images/certs/anthropic-claude-101.png",
+    description: "Claude fundamentals and best practices",
+  },
+  {
+    name: "AI Fluency for Educators",
+    image: "/images/certs/anthropic-ai-fluency-educators.png",
+    description: "Teaching AI concepts effectively",
+  },
 ];
 
 const certifications = [
@@ -70,6 +88,20 @@ const certifications = [
   },
 ];
 
+const book = {
+  title: "The Confident Mind",
+  subtitle: "A Practical Guide to Authentic Confidence",
+  description: "Drawing from psychology, personal experience, and real-world application, this book offers a practical framework for building lasting confidence without the toxic self-help baggage.",
+  cover: "/images/book-cover.jpg",
+  link: "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+  highlights: [
+    "Psychology-backed confidence framework",
+    "Actionable exercises and reflections",
+    "Real-world application strategies",
+    "No toxic positivity, just results"
+  ]
+};
+
 export default function AboutPage() {
   return (
     <MainLayout>
@@ -89,7 +121,7 @@ export default function AboutPage() {
               </h1>
               
               <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                Software Architect, AI Practitioner, and Author crafting digital experiences 
+                Operations Analyst, AI Practitioner, and Author crafting digital experiences 
                 at the intersection of technology and human potential.
               </p>
             </div>
@@ -102,10 +134,10 @@ export default function AboutPage() {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                   <Code className="w-6 h-6 text-primary" />
                 </div>
-                <h3 className="font-serif text-lg font-semibold mb-2">Software Architect</h3>
+                <h3 className="font-serif text-lg font-semibold mb-2">Operations Analyst</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Building exceptional digital experiences with modern technologies. 
-                  Passionate about clean code, thoughtful design, and scalable solutions.
+                  Optimizing business processes through data analysis and technology. 
+                  Passionate about operational efficiency, workflow automation, and data-driven decision making.
                 </p>
               </div>
             </StaggerItem>
@@ -117,7 +149,7 @@ export default function AboutPage() {
                 </div>
                 <h3 className="font-serif text-lg font-semibold mb-2">AI Professional</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Google AI certified professional leveraging artificial intelligence 
+                  Google AI & Anthropic certified professional leveraging artificial intelligence 
                   to create intelligent, adaptive systems and workflows.
                 </p>
               </div>
@@ -151,8 +183,8 @@ export default function AboutPage() {
                     meaningful impact.
                   </p>
                   <p>
-                    With a foundation in software engineering and a certification in 
-                    Google AI technologies, I bridge the gap between cutting-edge 
+                    With a foundation in software engineering and certifications in 
+                    Google AI & Anthropic technologies, I bridge the gap between cutting-edge 
                     technology and practical application.
                   </p>
                   <p>
@@ -184,32 +216,66 @@ export default function AboutPage() {
                 </div>
               </div>
 
-              {/* Interactive Confidence Terminal */}
+              {/* The Confident Mind Book */}
               <div className="lg:sticky lg:top-24">
-                <div className="mb-4">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs mb-2">
-                    <Award className="w-3 h-3" />
-                    Featured: The Confident Mind
+                <div className="glass-card p-5">
+                  <div className="flex items-start gap-4">
+                    {/* Book Cover */}
+                    <div className="relative w-24 h-36 flex-shrink-0 rounded-md overflow-hidden shadow-lg">
+                      <Image
+                        src={book.cover}
+                        alt={book.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    
+                    {/* Book Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 text-[10px] mb-2">
+                        <BookOpen className="w-3 h-3" />
+                        Published Author
+                      </div>
+                      <h3 className="font-serif text-lg font-semibold leading-tight mb-1">
+                        {book.title}
+                      </h3>
+                      <p className="text-xs text-muted-foreground italic mb-2">
+                        {book.subtitle}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-3 mb-3">
+                        {book.description}
+                      </p>
+                      
+                      {/* Highlights */}
+                      <ul className="space-y-1 mb-3">
+                        {book.highlights.slice(0, 2).map((highlight, i) => (
+                          <li key={i} className="text-[10px] text-muted-foreground flex items-start gap-1.5">
+                            <span className="text-primary mt-0.5">•</span>
+                            <span className="line-clamp-1">{highlight}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      
+                      <a 
+                        href={book.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                      >
+                        View on Amazon
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </div>
                   </div>
-                  <h3 className="font-serif text-xl font-semibold">Interactive Confidence Terminal</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Based on principles from my book — build confidence through small wins
-                  </p>
                 </div>
-                <ConfidenceTerminal />
-                <div className="mt-4 flex items-center justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    A Practical Guide to Authentic Confidence
+                
+                {/* Philosophy note */}
+                <div className="mt-4 px-1">
+                  <p className="text-xs text-muted-foreground italic">
+                    "Bridging technical expertise with human psychology — 
+                    the same analytical rigor applied to understanding 
+                    confidence and personal growth."
                   </p>
-                  <a 
-                    href="https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-primary hover:underline text-xs"
-                  >
-                    View on Amazon
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
                 </div>
               </div>
             </div>
@@ -261,6 +327,37 @@ export default function AboutPage() {
                     />
                   </div>
                   <h4 className="text-xs font-medium text-center line-clamp-1">{cert.name}</h4>
+                </div>
+              </ScrollReveal>
+            ))}
+          </div>
+
+          {/* Anthropic Certifications */}
+          <ScrollReveal>
+            <div className="mt-12 mb-6">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                  <span className="text-orange-600 text-xs font-bold">A</span>
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-semibold">Anthropic</h3>
+                  <p className="text-xs text-muted-foreground">Claude & AI Fluency Certifications</p>
+                </div>
+              </div>
+            </div>
+          </ScrollReveal>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {anthropicCerts.map((cert, index) => (
+              <ScrollReveal key={cert.name} delay={index * 0.05}>
+                <div className="glass-card p-4 flex items-center gap-3 group">
+                  <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                    <span className="text-orange-600 text-lg font-bold">A</span>
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-medium line-clamp-1">{cert.name}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{cert.description}</p>
+                  </div>
                 </div>
               </ScrollReveal>
             ))}

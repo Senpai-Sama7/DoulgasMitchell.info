@@ -13,6 +13,7 @@ export interface GalleryImage {
   height: number;
   date: string; // ISO date string for sorting
   blurDataUrl?: string; // Placeholder blur image
+  link?: string; // External URL to project (GitHub, website, etc.)
 }
 
 // Static gallery images (used as fallback)
