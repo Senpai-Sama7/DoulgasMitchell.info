@@ -11,6 +11,7 @@ import {
   validateSession,
   invalidateSession,
   recordLoginAttempt,
+  getRecentFailedAttempts,
   initializeAdminUser,
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/security';
@@ -26,6 +27,7 @@ import { loginSchema } from '@/lib/validations';
 
 // Initialize admin user on first load
 let initialized = false;
+const MAX_FAILED_LOGIN_ATTEMPTS = parseInt(process.env.MAX_FAILED_LOGIN_ATTEMPTS || '5', 10);
 
 async function ensureAdminInitialized() {
   if (!initialized) {
@@ -44,6 +46,13 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
     // Check rate limit
     const rateLimitResult = checkRateLimit(ipAddress);
     if (!rateLimitResult.allowed) {
+      throw new RateLimitError(
+        Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
+      );
+    }
+
+    const failedAttempts = await getRecentFailedAttempts(ipAddress);
+    if (failedAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
       throw new RateLimitError(
         Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
       );

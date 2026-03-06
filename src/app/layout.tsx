@@ -42,6 +42,24 @@ const sora = Sora({
 export const metadata: Metadata = {
   title: "Senpai's Isekai | Open-Source Humanity",
   description: "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+  metadataBase: new URL("https://www.douglasmitchell.info"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://www.douglasmitchell.info",
+    title: "Senpai's Isekai | Open-Source Humanity",
+    description:
+      "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+    siteName: "Senpai's Isekai",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Senpai's Isekai | Open-Source Humanity",
+    description:
+      "A sophisticated personal blog and photography portfolio. Exploring architecture, light, and the art of visual storytelling.",
+  },
 };
 
 export default function RootLayout({
