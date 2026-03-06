@@ -2,6 +2,7 @@ import { MainLayout } from "@/components/main-layout";
 import { Metadata } from "next";
 import Image from "next/image";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/animations";
+import { ConfidenceTerminal } from "@/components/confidence-terminal";
 import { 
   Code, 
   BookOpen, 
@@ -136,9 +137,10 @@ export default function AboutPage() {
             </StaggerItem>
           </StaggerContainer>
 
-          {/* Bio Section */}
+          {/* Bio & Interactive Terminal Section */}
           <ScrollReveal>
-            <div className="grid md:grid-cols-2 gap-12 mb-20">
+            <div className="grid lg:grid-cols-2 gap-12 mb-20 items-start">
+              {/* Bio */}
               <div className="space-y-6">
                 <h2 className="font-serif text-2xl md:text-3xl font-bold">Philosophy & Approach</h2>
                 <div className="space-y-4 text-muted-foreground leading-relaxed">
@@ -151,8 +153,7 @@ export default function AboutPage() {
                   <p>
                     With a foundation in software engineering and a certification in 
                     Google AI technologies, I bridge the gap between cutting-edge 
-                    technology and practical application. My approach combines 
-                    technical excellence with a deep understanding of human needs.
+                    technology and practical application.
                   </p>
                   <p>
                     As an author, I explore the internal landscape of confidence and 
@@ -160,65 +161,54 @@ export default function AboutPage() {
                     to understanding human behavior and potential.
                   </p>
                 </div>
-              </div>
 
-              <div className="space-y-6">
-                <h2 className="font-serif text-2xl md:text-3xl font-bold">Technical Expertise</h2>
-                <div className="space-y-4">
-                  {skills.map((skillGroup) => (
-                    <div key={skillGroup.category}>
-                      <h3 className="text-sm font-medium text-primary mb-2">{skillGroup.category}</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {skillGroup.items.map((skill) => (
-                          <span 
-                            key={skill}
-                            className="px-3 py-1 text-xs rounded-full bg-accent/10 text-muted-foreground"
-                          >
-                            {skill}
-                          </span>
-                        ))}
+                <div className="pt-4">
+                  <h3 className="text-sm font-medium text-primary mb-3">Technical Expertise</h3>
+                  <div className="space-y-3">
+                    {skills.map((skillGroup) => (
+                      <div key={skillGroup.category}>
+                        <span className="text-xs text-muted-foreground">{skillGroup.category}</span>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
+                          {skillGroup.items.map((skill) => (
+                            <span 
+                              key={skill}
+                              className="px-2 py-0.5 text-xs rounded-full bg-accent/10 text-muted-foreground"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          </ScrollReveal>
 
-          {/* Featured Publication */}
-          <ScrollReveal>
-            <div className="glass-card p-8 md:p-12 mb-20 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-              
-              <div className="relative z-10 grid md:grid-cols-[1fr,2fr] gap-8 items-center">
-                <div className="aspect-[3/4] bg-gradient-to-br from-amber-900/20 to-amber-600/10 rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-20 h-20 text-amber-500/30" />
-                </div>
-                
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs mb-4">
+              {/* Interactive Confidence Terminal */}
+              <div className="lg:sticky lg:top-24">
+                <div className="mb-4">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 text-xs mb-2">
                     <Award className="w-3 h-3" />
-                    Featured Publication
+                    Featured: The Confident Mind
                   </div>
-                  <h2 className="font-serif text-2xl md:text-3xl font-bold mb-2">
-                    The Confident Mind
-                  </h2>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    A Practical Guide to Authentic Confidence
+                  <h3 className="font-serif text-xl font-semibold">Interactive Confidence Terminal</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Based on principles from my book — build confidence through small wins
                   </p>
-                  <p className="text-muted-foreground leading-relaxed mb-6">
-                    Drawing from psychological research and personal experience, this book 
-                    offers actionable strategies for building genuine, lasting confidence. 
-                    Available on Amazon for those seeking to unlock their full potential.
+                </div>
+                <ConfidenceTerminal />
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    A Practical Guide to Authentic Confidence
                   </p>
                   <a 
                     href="https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-primary hover:underline text-sm"
+                    className="inline-flex items-center gap-1.5 text-primary hover:underline text-xs"
                   >
                     View on Amazon
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
