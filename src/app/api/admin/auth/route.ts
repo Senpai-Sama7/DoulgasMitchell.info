@@ -11,6 +11,7 @@ import {
   validateSession,
   invalidateSession,
   recordLoginAttempt,
+  getRecentFailedAttempts,
   initializeAdminUser,
   SESSION_MAX_AGE_SECONDS,
 } from '@/lib/security';
@@ -40,6 +41,11 @@ async function handleLogin(request: NextRequest): Promise<NextResponse> {
   const userAgent = getUserAgent(request);
   try {
     await ensureAdminInitialized();
+
+    const failedAttempts = await getRecentFailedAttempts(ipAddress);
+    if (failedAttempts >= 5) {
+      throw new RateLimitError(60);
+    }
 
     // Check rate limit
     const rateLimitResult = checkRateLimit(ipAddress);
