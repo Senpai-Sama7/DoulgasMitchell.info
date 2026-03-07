@@ -1,0 +1,1 @@
+the splash screen is still messing up the ASCII style Douglas Mitchell and the breathing-DM is still showing up above it but it does appear in the right place after and i dont see the artifact there . did you run npm run build to make sure it compiles?
