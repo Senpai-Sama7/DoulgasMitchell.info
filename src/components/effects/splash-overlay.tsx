@@ -45,8 +45,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
   const [phase, setPhase] = useState<'video' | 'matrix' | 'build' | 'reveal' | 'fade'>('video');
 
   useEffect(() => {
-    // Clear seen flag for testing/troubleshooting to ensure it shows up
-    sessionStorage.removeItem('splash-seen');
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'unset';
