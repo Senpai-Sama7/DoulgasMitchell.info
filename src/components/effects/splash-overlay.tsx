@@ -222,7 +222,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
                 muted
                 playsInline
                 poster="/media/breathing-dm-poster.webp"
-                className="w-full h-full object-contain max-w-2xl"
+                className="w-full h-full object-contain max-w-2xl mix-blend-screen"
               >
                 <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
               </video>

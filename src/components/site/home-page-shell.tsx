@@ -75,7 +75,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40"
+          className="fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40 mix-blend-screen"
         >
           <video
             autoPlay
