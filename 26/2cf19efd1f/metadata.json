@@ -3,7 +3,7 @@
   "checkpoint_id": "262cf19efd1f",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 10,
   "files_touched": [
     "next.config.ts",
     "src/components/effects/splash-overlay.tsx",
@@ -94,6 +94,12 @@
       "transcript": "/26/2cf19efd1f/13/full.jsonl",
       "content_hash": "/26/2cf19efd1f/13/content_hash.txt",
       "prompt": "/26/2cf19efd1f/13/prompt.txt"
+    },
+    {
+      "metadata": "/26/2cf19efd1f/14/metadata.json",
+      "transcript": "/26/2cf19efd1f/14/full.jsonl",
+      "content_hash": "/26/2cf19efd1f/14/content_hash.txt",
+      "prompt": "/26/2cf19efd1f/14/prompt.txt"
     }
   ],
   "token_usage": {
