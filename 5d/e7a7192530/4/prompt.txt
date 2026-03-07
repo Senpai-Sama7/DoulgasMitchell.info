@@ -1,0 +1,13 @@
+pull repo and then continue
+
+---
+
+make sure both mobile and desktop are rendign correctly because on my phone i see the breathing-dm above the entrance overlay . the entrance overlay isnt postiioned rights, but the dougie-loop fit in the frame, but on my computer i dont see the entrance over lay at all and the frame is still too small for the picture
+
+---
+
+and make the connect button more cohesive with the aesthetic because it color dont really match and it blocking the breathing-DM on my phone
+
+---
+
+the video entrance is only showing up for like .5s and the dougie-loop is too big. make it smaller and put a interactive articfact next to it like they are side by side. make it like a JIT terminal with cool, impressive and on theme
