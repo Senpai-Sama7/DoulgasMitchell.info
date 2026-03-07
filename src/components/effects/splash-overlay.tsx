@@ -14,23 +14,7 @@ const NORD_COLORS = {
   yellow: '#EBCB8B',
 };
 
-// Large ASCII art for Douglas Mitchell - Stacked for impact
-const ASCII_DOUGLAS = `
-██████╗  ██████╗ ██╗   ██╗ ██████╗ ██╗      █████╗ ███████╗
-██╔══██╗██╔═══██╗██║   ██║██╔════╝ ██║     ██╔══██╗██╔════╝
-██║  ██║██║   ██║██║   ██║██║  ███╗██║     ███████║███████╗
-██║  ██║██║   ██║██║   ██║██║   ██║██║     ██╔══██║╚════██║
-██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗██║  ██║███████║
-╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝`;
-
-const ASCII_MITCHELL = `
-███╗   ███╗██╗████████╗ ██████╗██╗  ██╗███████╗██╗     ██╗     
-████╗ ████║██║╚══██╔══╝██╔════╝██║  ██║██╔════╝██║     ██║     
-██╔████╔██║██║   ██║   ██║     ███████║█████╗  ██║     ██║     
-██║╚██╔╝██║██║   ██║   ██║     ██╔══██║██╔══╝  ██║     ██║     
-██║ ╚═╝ ██║██║   ██║   ╚██████╗██║  ██║███████╗███████╗███████╗
-╚═╝     ╚═╝╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝`;
-
+// Remove ASCII block constants
 const SUBTITLE = 'THE ARCHITECT';
 const ROLES = [
   'Operations Analyst',
@@ -261,38 +245,38 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               </div>
             </motion.div>
 
-            {/* GOD Tier Typewriter Name - Stacked with large gap */}
+            {/* GOD Tier Clean Typography - Stacked with massive gap */}
             {(phase === 'typing' || phase === 'reveal' || phase === 'fade') && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-16 w-full flex flex-col items-center space-y-12 sm:space-y-20 lg:space-y-24"
+                className="mb-16 w-full flex flex-col items-center space-y-16 sm:space-y-24 lg:space-y-32"
               >
-                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black tracking-[0.15em] text-white leading-none uppercase italic">
-                  <span className="relative">
+                <div className="relative">
+                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-[-0.05em] text-white leading-none uppercase">
                     {typedName.split(' ')[0]}
                     {phase === 'typing' && !typedName.includes(' ') && (
                       <motion.span
                         animate={{ opacity: [1, 0] }}
                         transition={{ duration: 0.1, repeat: Infinity }}
-                        className="inline-block w-[8px] h-[0.8em] bg-primary ml-2 align-middle"
+                        className="inline-block w-[4px] h-[0.8em] bg-primary ml-2 align-middle"
                       />
                     )}
-                  </span>
-                </h1>
+                  </h1>
+                </div>
                 
-                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black tracking-[0.15em] text-primary leading-none uppercase italic">
-                  <span className="relative">
+                <div className="relative">
+                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-[-0.05em] text-primary leading-none uppercase">
                     {typedName.split(' ')[1] || ''}
                     {phase === 'typing' && typedName.includes(' ') && (
                       <motion.span
                         animate={{ opacity: [1, 0] }}
                         transition={{ duration: 0.1, repeat: Infinity }}
-                        className="inline-block w-[8px] h-[0.8em] bg-white ml-2 align-middle"
+                        className="inline-block w-[4px] h-[0.8em] bg-white ml-2 align-middle"
                       />
                     )}
-                  </span>
-                </h1>
+                  </h1>
+                </div>
               </motion.div>
             )}
 
