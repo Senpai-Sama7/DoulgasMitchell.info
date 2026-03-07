@@ -78,15 +78,16 @@ export function EnhancedAboutSection() {
           </p>
         </motion.div>
 
-        {/* Video & Terminal Side-by-Side */}
-        <div className="grid lg:grid-cols-2 gap-8 mb-16 items-stretch">
+        {/* Video & Info & Book Trio */}
+        <div className="grid lg:grid-cols-[240px_1fr_240px] gap-8 mb-16 items-center">
+          {/* Column 1: Video (Left) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="flex justify-center lg:justify-end"
+            className="flex justify-center"
           >
-            <div className="relative w-full max-w-xs aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
+            <div className="relative w-full aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
               <video
                 autoPlay
                 loop
@@ -97,16 +98,16 @@ export function EnhancedAboutSection() {
               >
                 <source src="/media/dougie-loop-v2.mp4" type="video/mp4" />
               </video>
-              
-              {/* Subtle overlay to blend video with editorial style */}
               <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10" />
             </div>
           </motion.div>
 
+          {/* Column 2: Book Info (Center) */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
             className="flex flex-col justify-center"
           >
             <div className="space-y-6">
@@ -115,7 +116,7 @@ export function EnhancedAboutSection() {
                 <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">Featured Publication</span>
               </div>
               
-              <h2 className="editorial-title leading-tight">
+              <h2 className="editorial-title leading-tight text-3xl">
                 {bookShowcase.title}
               </h2>
 
@@ -123,7 +124,7 @@ export function EnhancedAboutSection() {
                 {bookShowcase.subtitle}
               </p>
 
-              <p className="text-muted-foreground leading-relaxed max-w-lg">
+              <p className="text-muted-foreground leading-relaxed">
                 {bookShowcase.description}
               </p>
 
@@ -147,7 +148,7 @@ export function EnhancedAboutSection() {
                 href={bookShowcase.amazonUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cta-button group"
+                className="cta-button group self-start"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -155,6 +156,24 @@ export function EnhancedAboutSection() {
                 Learn More
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </motion.a>
+            </div>
+          </motion.div>
+
+          {/* Column 3: Book Cover (Right) */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="flex justify-center"
+          >
+            <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-border group">
+              <img 
+                src="/images/the-confident-mind.jpg" 
+                alt="The Confident Mind Book Cover"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
             </div>
           </motion.div>
         </div>

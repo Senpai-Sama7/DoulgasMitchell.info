@@ -42,7 +42,7 @@ function createMatrixCharacters(length: number) {
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [phase, setPhase] = useState<'video' | 'matrix' | 'build' | 'reveal' | 'fade'>('video');
+  const [phase, setPhase] = useState<'matrix' | 'build' | 'reveal' | 'fade'>('matrix');
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -163,7 +163,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     if (phase !== 'fade') return;
 
     const timeout = setTimeout(() => {
-      sessionStorage.setItem('splash-seen', 'true');
       setIsVisible(false);
     }, 1000); // Give it time to fade out properly
 
@@ -171,7 +170,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
   }, [phase]);
 
   const handleSkip = useCallback(() => {
-    sessionStorage.setItem('splash-seen', 'true');
     setIsVisible(false);
   }, []);
 
@@ -219,26 +217,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           style={{ height: '100dvh' }}
           onClick={handleSkip}
         >
-          {/* Video Intro Phase */}
-          {phase === 'video' && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 flex items-center justify-center p-4"
-            >
-              <video
-                autoPlay
-                muted
-                playsInline
-                poster="/media/breathing-dm-poster.webp"
-                className="w-full h-full object-contain max-w-2xl mix-blend-screen"
-              >
-                <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
-              </video>
-            </motion.div>
-          )}
-
           {/* Matrix Rain Background */}
           {phase === 'matrix' && (
             <motion.div

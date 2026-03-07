@@ -42,18 +42,32 @@ export function SiteHeader() {
     >
       <nav className="editorial-container">
         <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <Link 
-            href="/" 
-            className="group flex items-center gap-2"
-          >
-            <span className="font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-              {'//'}
-            </span>
-            <span className="font-semibold tracking-tight">
-              {siteProfile.name}
-            </span>
-          </Link>
+          {/* Logo & Breathing DM */}
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/" 
+              className="group flex items-center gap-2"
+            >
+              <span className="font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                {'//'}
+              </span>
+              <span className="font-semibold tracking-tight">
+                {siteProfile.name}
+              </span>
+            </Link>
+
+            <div className="hidden sm:block w-10 h-10 rounded-full overflow-hidden border border-primary/20 mix-blend-screen shadow-lg shadow-primary/5">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="w-full h-full object-cover scale-125"
+              >
+                <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+              </video>
+            </div>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-1">
