@@ -1,0 +1,7 @@
+Conduct comprehensive vulnerability assessment of the douglasmitchell.info repository. Focus on:
+1. OWASP Top 10 vulnerabilities (Injection, Broken Authentication, XSS, etc.)
+2. API security (rate limiting, authentication, input validation)
+3. Frontend security (CSP, CSRF, DOM-based vulnerabilities)
+4. Database security (injection, privilege escalation)
+5. Configuration security (secrets management, environment variables)
+Provide detailed findings with severity ratings and remediation steps.
