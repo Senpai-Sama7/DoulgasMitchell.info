@@ -158,6 +158,7 @@ function mapDbCertificationToShowcase(certification: {
     issueDate: certification.issueDate.getFullYear().toString(),
     skills: parseStringArray(certification.skills, fallback?.skills ?? []),
     featured: certification.featured,
+    imageUrl: fallback?.imageUrl,
   };
 
   return mapped;
