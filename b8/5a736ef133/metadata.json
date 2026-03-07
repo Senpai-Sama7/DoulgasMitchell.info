@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "b85a736ef133",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".serena/.gitignore",
+    ".serena/project.yml",
+    "AGENTS.md",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-about-section.tsx",
+    "src/components/site/home-page-shell.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/b8/5a736ef133/0/metadata.json",
+      "transcript": "/b8/5a736ef133/0/full.jsonl",
+      "content_hash": "/b8/5a736ef133/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
