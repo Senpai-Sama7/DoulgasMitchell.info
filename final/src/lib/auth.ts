@@ -1,0 +1,179 @@
+import { randomBytes } from 'crypto';
+import bcrypt from 'bcryptjs';
+import { SignJWT, jwtVerify } from 'jose';
+import { cookies } from 'next/headers';
+import { env } from './env';
+import { db } from './db';
+import { clearRateLimit as clearScopedRateLimit, rateLimit } from './rate-limit';
+
+function getJwtSecret() {
+  const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');
+
+  if (!secret) {
+    throw new Error('JWT_SECRET must be configured in production');
+  }
+
+  return new TextEncoder().encode(secret);
+}
+
+const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
+
+export interface Session {
+  id: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: 'admin' | 'editor';
+  expiresAt: Date;
+}
+
+// Hash password with bcrypt
+export async function hashPassword(password: string): Promise<string> {
+  return bcrypt.hash(password, 12);
+}
+
+// Verify password
+export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  return bcrypt.compare(password, hashedPassword);
+}
+
+// Create JWT token
+export async function createToken(payload: object): Promise<string> {
+  return new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d')
+    .sign(getJwtSecret());
+}
+
+// Verify JWT token
+export async function verifyToken(token: string): Promise<Session | null> {
+  try {
+    const { payload } = await jwtVerify(token, getJwtSecret());
+    return payload as unknown as Session;
+  } catch {
+    return null;
+  }
+}
+
+// Create session
+export async function createSession(
+  userId: string,
+  email: string,
+  name: string,
+  options?: {
+    ipAddress?: string;
+    userAgent?: string;
+  }
+): Promise<string> {
+  const token = await createToken({
+    userId,
+    email,
+    name,
+    role: 'admin',
+    expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
+  });
+
+  // Store in database
+  await db.session.create({
+    data: {
+      token,
+      userId,
+      expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
+      ipAddress: options?.ipAddress,
+      userAgent: options?.userAgent,
+    },
+  });
+
+  return token;
+}
+
+// Get current session from cookies
+export async function getSession(): Promise<Session | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('admin-session')?.value;
+  
+  if (!token) return null;
+  
+  const session = await verifyToken(token);
+  if (!session) return null;
+
+  const persistedSession = await db.session.findUnique({
+    where: { token },
+    include: {
+      user: {
+        select: {
+          email: true,
+          name: true,
+          role: true,
+          isActive: true,
+        },
+      },
+    },
+  }).catch(() => null);
+
+  if (!persistedSession || !persistedSession.user.isActive) {
+    await deleteSession(token);
+    return null;
+  }
+  
+  // Check if session is expired
+  if (new Date() > new Date(session.expiresAt) || new Date() > persistedSession.expiresAt) {
+    await deleteSession(token);
+    return null;
+  }
+  
+  return {
+    id: persistedSession.id,
+    userId: persistedSession.userId,
+    email: persistedSession.user.email,
+    name: persistedSession.user.name || session.name,
+    role: persistedSession.user.role as Session['role'],
+    expiresAt: persistedSession.expiresAt,
+  };
+}
+
+// Delete session
+export async function deleteSession(token: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.delete('admin-session');
+  
+  try {
+    await db.session.delete({
+      where: { token },
+    });
+  } catch {
+    // Session might not exist in DB
+  }
+}
+
+// Set session cookie
+export async function setSessionCookie(token: string): Promise<void> {
+  const cookieStore = await cookies();
+  cookieStore.set('admin-session', token, {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: SESSION_DURATION,
+    path: '/',
+  });
+}
+
+// Rate limiting for login attempts
+export function checkRateLimit(identifier: string): boolean {
+  return rateLimit(identifier, {
+    limit: 5,
+    windowMs: 15 * 60 * 1000,
+    prefix: 'login',
+  }).allowed;
+}
+
+// Clear rate limit
+export function clearRateLimit(identifier: string): void {
+  clearScopedRateLimit(identifier, 'login');
+}
+
+// Generate secure random token
+export function generateSecureToken(length: number = 32): string {
+  return randomBytes(length).toString('hex').slice(0, length);
+}
