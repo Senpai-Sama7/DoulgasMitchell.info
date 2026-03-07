@@ -14,16 +14,22 @@ const NORD_COLORS = {
   yellow: '#EBCB8B',
 };
 
-// Small dot-based ASCII art for Douglas Mitchell
-const DOT_ART = [
-  '▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄     ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄  ▄▄▄▄▄',
-  '▀  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄     ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀  ▀',
-  '▀▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀     ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▀▄▄▀',
-  '▀▄▄▀ ▀▀▀  ▀▀▀  ▀▀▀  ▀▀▀     ▀▀▀  ▀▀▀  ▀▀▀  ▀▀▀  ▀▀▀  ▀▀▀  ▀▄▄▀',
-  '▀▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀     ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▄▄▄▀ ▀▄▄▀',
-  '▀  ▀  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄     ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀▄▄  ▀  ▀',
-  '▀▀▀▀  ▀▀▀▀  ▀▀▀▀  ▀▀▀▀  ▀▀▀▀     ▀▀▀▀  ▀▀▀▀  ▀▀▀▀  ▀▀▀▀  ▀▀▀▀  ▀▀▀',
-];
+// Large ASCII art for Douglas Mitchell - Stacked for impact
+const ASCII_DOUGLAS = `
+██████╗  ██████╗ ██╗   ██╗ ██████╗ ██╗      █████╗ ███████╗
+██╔══██╗██╔═══██╗██║   ██║██╔════╝ ██║     ██╔══██╗██╔════╝
+██║  ██║██║   ██║██║   ██║██║  ███╗██║     ███████║███████╗
+██║  ██║██║   ██║██║   ██║██║   ██║██║     ██╔══██║╚════██║
+██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗██║  ██║███████║
+╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝`;
+
+const ASCII_MITCHELL = `
+███╗   ███╗██╗████████╗ ██████╗██╗  ██╗███████╗██╗     ██╗     
+████╗ ████║██║╚══██╔══╝██╔════╝██║  ██║██╔════╝██║     ██║     
+██╔████╔██║██║   ██║   ██║     ███████║█████╗  ██║     ██║     
+██║╚██╔╝██║██║   ██║   ██║     ██╔══██║██╔══╝  ██║     ██║     
+██║ ╚═╝ ██║██║   ██║   ╚██████╗██║  ██║███████╗███████╗███████╗
+╚═╝     ╚═╝╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝`;
 
 const SUBTITLE = 'THE ARCHITECT';
 const ROLES = [
@@ -48,14 +54,14 @@ function createDotField(length: number) {
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
-  const [isVisible, setIsVisible] = useState(true);
-  const [phase, setPhase] = useState<'dots' | 'build' | 'reveal' | 'fade'>('dots');
+  const [typedName, setTypedName] = useState('');
+  const [phase, setPhase] = useState<'dots' | 'typing' | 'reveal' | 'fade'>('dots');
   const [dotField, setDotField] = useState<string[]>(() => createDotField(100));
-  const [typedLines, setTypedLines] = useState<string[]>([]);
-  const [currentLine, setCurrentLine] = useState(0);
   const [progress, setProgress] = useState(0);
   const [currentRole, setCurrentRole] = useState(0);
   const prefersReducedMotion = useReducedMotion();
+
+  const FULL_NAME = "DOUGLAS MITCHELL";
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -93,36 +99,23 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     };
   }, [isVisible, prefersReducedMotion, phase]);
 
-  // Build phase - type out dot art
+  // Typing phase - GOD tier font reveal
   useEffect(() => {
-    if (phase !== 'build' || prefersReducedMotion) return;
+    if (phase !== 'typing' || prefersReducedMotion) return;
 
-    const lines = DOT_ART;
-    
+    let charIndex = 0;
     const typeInterval = setInterval(() => {
-      setTypedLines(prev => {
-        if (currentLine >= lines.length) {
-          clearInterval(typeInterval);
-          setTimeout(() => setPhase('reveal'), 500);
-          return prev;
-        }
-        
-        const line = lines[currentLine];
-        const currentTyped = prev[currentLine] || '';
-        
-        if (currentTyped.length < line.length) {
-          const next = [...prev];
-          next[currentLine] = line.slice(0, currentTyped.length + 2);
-          return next;
-        } else {
-          setCurrentLine(currentLine + 1);
-          return [...prev, line];
-        }
-      });
-    }, 40);
+      if (charIndex <= FULL_NAME.length) {
+        setTypedName(FULL_NAME.slice(0, charIndex));
+        charIndex++;
+      } else {
+        clearInterval(typeInterval);
+        setTimeout(() => setPhase('reveal'), 800);
+      }
+    }, 60);
 
     return () => clearInterval(typeInterval);
-  }, [phase, currentLine, prefersReducedMotion]);
+  }, [phase, prefersReducedMotion]);
 
   // Progress bar animation
   useEffect(() => {
@@ -259,17 +252,39 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               </div>
             </motion.div>
 
-            {/* Dot Art */}
-            {(phase === 'build' || phase === 'reveal' || phase === 'fade') && (
+            {/* GOD Tier Typewriter Name */}
+            {(phase === 'typing' || phase === 'reveal' || phase === 'fade') && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-6 sm:mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[80px] sm:min-h-[100px] px-2"
+                className="mb-12 relative"
               >
-                <pre className="font-mono text-[2vw] sm:text-[3px] md:text-[4px] lg:text-[5px] leading-[1.1] whitespace-pre-wrap break-all text-center"
-                  style={{ color: NORD_COLORS.cyan }}>
-                  {typedLines.join('\n')}
-                </pre>
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-white flex flex-col items-center leading-[0.85]">
+                  <span className="relative inline-block overflow-hidden">
+                    {typedName.split(' ')[0]}
+                    {phase === 'typing' && !typedName.includes(' ') && (
+                      <motion.span
+                        animate={{ opacity: [1, 0] }}
+                        transition={{ duration: 0.1, repeat: Infinity }}
+                        className="inline-block w-[4px] h-[0.8em] bg-primary ml-1 align-middle"
+                      />
+                    )}
+                  </span>
+                  <span className="text-primary mt-2">
+                    {typedName.split(' ')[1] || ''}
+                    {phase === 'typing' && typedName.includes(' ') && (
+                      <motion.span
+                        animate={{ opacity: [1, 0] }}
+                        transition={{ duration: 0.1, repeat: Infinity }}
+                        className="inline-block w-[4px] h-[0.8em] bg-white ml-1 align-middle"
+                      />
+                    )}
+                  </span>
+                </h1>
+                
+                {/* Architectural Accents */}
+                <div className="absolute -inset-x-8 -inset-y-4 border-x border-white/5 pointer-events-none" />
+                <div className="absolute -inset-x-4 -inset-y-8 border-y border-white/5 pointer-events-none" />
               </motion.div>
             )}
 
