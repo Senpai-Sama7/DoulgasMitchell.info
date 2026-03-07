@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "4aa5c2834191",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "public/llms.txt",
+    "public/robots.txt",
+    "src/app/layout.tsx",
+    "src/app/sitemap.ts",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-book-section.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/4a/a5c2834191/0/metadata.json",
+      "transcript": "/4a/a5c2834191/0/full.jsonl",
+      "content_hash": "/4a/a5c2834191/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
