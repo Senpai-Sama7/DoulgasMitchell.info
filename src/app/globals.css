@@ -470,17 +470,43 @@
   padding: 0.875rem 1.75rem;
   font-size: 0.875rem;
   font-weight: 600;
+  font-family: var(--font-mono);
   background: var(--primary);
   color: var(--primary-foreground);
-  border: none;
+  border: 1px solid var(--primary);
   border-radius: var(--radius);
   cursor: pointer;
   transition: all 0.15s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.dark .cta-button {
+  background: color-mix(in oklch, var(--primary) 10%, transparent);
+  color: var(--primary);
+  border-color: var(--primary);
+  backdrop-blur: 8px;
+}
+
+.cta-button::before {
+  content: '+';
+  position: absolute;
+  top: 0;
+  left: 2px;
+  font-size: 10px;
+  opacity: 0.5;
 }
 
 .cta-button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.dark .cta-button:hover {
+  background: var(--primary);
+  color: var(--primary-foreground);
 }
 
 .cta-button:active {

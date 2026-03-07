@@ -32,6 +32,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
     if (typeof window === 'undefined') return true;
     return !sessionStorage.getItem('splash-seen');
   });
+  const [persistentVideoVisible, setPersistentVideoVisible] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -67,22 +68,32 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
     <>
       <PageViewTracker />
 
-      {showSplash && <SplashOverlay onComplete={() => setShowSplash(false)} />}
+      <AnimatePresence>
+        {showSplash && (
+          <SplashOverlay 
+            key="splash" 
+            onComplete={() => {
+              setShowSplash(false);
+              setPersistentVideoVisible(true);
+            }} 
+          />
+        )}
+      </AnimatePresence>
 
       {/* Breathing DM video - shows in top right after splash */}
-      {!showSplash && !prefersReducedMotion && (
+      {(persistentVideoVisible || (!showSplash && typeof window !== 'undefined' && sessionStorage.getItem('splash-seen'))) && !prefersReducedMotion && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40 mix-blend-screen"
+          className="fixed top-4 right-4 w-32 md:w-48 z-40 mix-blend-screen pointer-events-none"
         >
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-auto object-contain"
           >
             <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
           </video>

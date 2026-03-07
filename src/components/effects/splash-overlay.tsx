@@ -65,14 +65,14 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
 
     const timer = setTimeout(() => {
       setPhase('matrix');
-    }, 2000);
+    }, 4000);
 
     return () => clearTimeout(timer);
   }, [isVisible, prefersReducedMotion, phase]);
 
   // Matrix rain effect
   useEffect(() => {
-    if (!isVisible || prefersReducedMotion) return;
+    if (!isVisible || prefersReducedMotion || phase !== 'matrix') return;
 
     const interval = setInterval(() => {
       setMatrixChars(prev => prev.map(() => 
@@ -86,13 +86,13 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     const timeout = setTimeout(() => {
       setPhase('build');
       clearInterval(interval);
-    }, 1000);
+    }, 2000);
 
     return () => {
       clearInterval(interval);
       clearTimeout(timeout);
     };
-  }, [isVisible, prefersReducedMotion]);
+  }, [isVisible, prefersReducedMotion, phase]);
 
   // Build phase - type out ASCII art
   useEffect(() => {
@@ -161,10 +161,10 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     const timeout = setTimeout(() => {
       sessionStorage.setItem('splash-seen', 'true');
       setIsVisible(false);
-    }, Math.max(500, Math.round(minDisplayTime / 8)));
+    }, 1000); // Give it time to fade out properly
 
     return () => clearTimeout(timeout);
-  }, [minDisplayTime, phase]);
+  }, [phase]);
 
   const handleSkip = useCallback(() => {
     sessionStorage.setItem('splash-seen', 'true');
@@ -180,33 +180,39 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [handleSkip]);
 
-  if (!isVisible) return null;
+  if (!isVisible && typeof window !== 'undefined') return null;
 
   // Reduced motion version - simple fade
   if (prefersReducedMotion) {
     return (
-      <motion.div
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 0 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="fixed inset-0 z-[9999] bg-background flex items-center justify-center"
-        onClick={handleSkip}
-      >
-        <div className="text-center">
-          <p className="font-mono text-sm text-muted-foreground">Loading...</p>
-        </div>
-      </motion.div>
+      <AnimatePresence onExitComplete={onComplete}>
+        {isVisible && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+            onClick={handleSkip}
+          >
+            <div className="text-center">
+              <p className="font-mono text-sm text-green-500">Loading...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     );
   }
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onComplete}>
       {isVisible && (
         <motion.div
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8, ease: 'easeInOut' }}
           className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden cursor-pointer"
+          style={{ height: '100dvh' }}
           onClick={handleSkip}
         >
           {/* Video Intro Phase */}
@@ -215,7 +221,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 flex items-center justify-center"
+              className="absolute inset-0 flex items-center justify-center p-4"
             >
               <video
                 autoPlay
@@ -234,7 +240,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
             <motion.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 grid grid-cols-[repeat(15,1fr)] gap-1 p-8 pointer-events-none"
+              className="absolute inset-0 grid grid-cols-[repeat(10,1fr)] sm:grid-cols-[repeat(15,1fr)] gap-1 p-4 sm:p-8 pointer-events-none"
             >
               {matrixChars.map((char, i) => (
                 <motion.span
@@ -242,7 +248,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: [0, 1, 0.3], y: 0 }}
                   transition={{ duration: 0.5, delay: i * 0.01 }}
-                  className="font-mono text-green-500/40 text-lg"
+                  className="font-mono text-green-500/40 text-sm sm:text-lg text-center"
                   style={{
                     textShadow: '0 0 10px rgba(34, 197, 94, 0.5)',
                   }}
@@ -254,7 +260,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           )}
 
           {/* Main Content */}
-          <div className="relative z-10 text-center px-4">
+          <div className="relative z-10 w-full flex flex-col items-center justify-center text-center px-4">
             {/* Terminal Header */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}

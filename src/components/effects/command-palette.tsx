@@ -274,7 +274,7 @@ export function CommandKTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-3 py-2 bg-background border border-border rounded-full shadow-lg hover:bg-muted transition-colors group"
+      className="fixed bottom-6 left-6 sm:left-auto sm:right-6 z-50 flex items-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-full shadow-lg hover:bg-muted transition-colors group"
       aria-label="Open command palette"
     >
       <Command className="h-4 w-4" />

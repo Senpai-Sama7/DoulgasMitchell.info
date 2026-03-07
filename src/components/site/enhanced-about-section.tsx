@@ -1,8 +1,8 @@
 'use client';
 
-import { useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket } from 'lucide-react';
+import { useRef, useState, useEffect } from 'react';
+import { motion, useScroll, useTransform, useReducedMotion, AnimatePresence } from 'framer-motion';
+import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, Terminal, Cpu, Database, Network } from 'lucide-react';
 import { aboutRoles, expertiseByCategory, operatingPrinciples } from '@/lib/site-content';
 
 const roles = [
@@ -18,6 +18,89 @@ const values = [
   { icon: Users, label: 'Human-Centric' },
   { icon: Rocket, label: 'Innovation' },
 ];
+
+function JITTerminal() {
+  const [logs, setLogs] = useState<string[]>([]);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const systemMessages = [
+    "Initializing neural pathways...",
+    "Scanning architectural patterns...",
+    "Optimizing workflow efficiency: 98.4%",
+    "Loading 'The Confident Mind' core modules...",
+    "Connecting to global intelligence grid...",
+    "Analyzing system entropy...",
+    "Synthesizing human-AI interaction nodes...",
+    "Executing strategic operations protocol...",
+    "Monitoring performance metrics...",
+    "Validating secure communication channels...",
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setLogs(prev => {
+        const next = [...prev, `[${new Date().toLocaleTimeString()}] ${systemMessages[Math.floor(Math.random() * systemMessages.length)]}`];
+        return next.slice(-8); // Keep last 8 logs
+      });
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="w-full h-full bg-black/90 rounded-2xl border border-primary/20 p-4 font-mono text-[10px] sm:text-xs text-primary/70 overflow-hidden shadow-2xl relative group">
+      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-primary/10">
+        <div className="flex gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-red-500/40" />
+          <div className="w-2 h-2 rounded-full bg-yellow-500/40" />
+          <div className="w-2 h-2 rounded-full bg-green-500/40" />
+        </div>
+        <div className="flex-1 text-center opacity-50 uppercase tracking-widest text-[8px]">
+          system_monitor.sh
+        </div>
+        <Terminal className="h-3 w-3 opacity-50" />
+      </div>
+      
+      <div className="space-y-2">
+        <div className="text-primary flex items-center gap-2">
+          <span className="opacity-50">admin@dm-info:~$</span>
+          <motion.span
+            animate={{ opacity: [1, 0] }}
+            transition={{ duration: 0.8, repeat: Infinity }}
+          >
+            _
+          </motion.span>
+        </div>
+        
+        <AnimatePresence initial={false}>
+          {logs.map((log, i) => (
+            <motion.div
+              key={log + i}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="whitespace-nowrap overflow-hidden text-ellipsis"
+            >
+              <span className="text-primary/30 mr-2">{'>'}</span>
+              {log}
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+
+      {/* Decorative scanning line */}
+      <motion.div
+        animate={{ top: ['0%', '100%'] }}
+        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
+        className="absolute left-0 right-0 h-px bg-primary/20 z-10 pointer-events-none"
+      />
+      
+      <div className="absolute bottom-4 right-4 flex gap-4 opacity-20">
+        <Cpu className="h-4 w-4" />
+        <Database className="h-4 w-4" />
+        <Network className="h-4 w-4" />
+      </div>
+    </div>
+  );
+}
 
 export function EnhancedAboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -78,26 +161,42 @@ export function EnhancedAboutSection() {
           </p>
         </motion.div>
 
-        {/* Video Frame - 9:12 vertical video */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-16 flex justify-center"
-        >
-          <div className="relative w-full max-w-xl aspect-[9/12] rounded-xl overflow-hidden border-2 border-border bg-black">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster="/media/dougie-frame-poster.webp"
-              className="w-full h-full object-cover"
-            >
-              <source src="/media/dougie-frame-loop.mp4" type="video/mp4" />
-            </video>
-          </div>
-        </motion.div>
+        {/* Video & Terminal Side-by-Side */}
+        <div className="grid lg:grid-cols-2 gap-8 mb-16 items-stretch">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="flex justify-center lg:justify-end"
+          >
+            <div className="relative w-full max-w-md aspect-[640/948] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/media/dougie-frame-poster.webp"
+                className="w-full h-full object-cover"
+              >
+                <source src="/media/dougie-frame-loop.mp4" type="video/mp4" />
+              </video>
+              
+              {/* Subtle overlay to blend video with editorial style */}
+              <div className="absolute inset-0 pointer-events-none ring-1 ring-inset ring-white/10" />
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="flex items-center"
+          >
+            <div className="w-full aspect-[640/948] lg:aspect-auto lg:h-full">
+              <JITTerminal />
+            </div>
+          </motion.div>
+        </div>
 
         {/* Values Strip */}
         <motion.div
