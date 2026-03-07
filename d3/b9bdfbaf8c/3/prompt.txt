@@ -1,0 +1,3 @@
+make sure you look how desktop view and mobile view interact. because there are a couple things off on the mobile view. make the "lets connect" button a square so it doesnt take up so much space
+
+and the interactive JIT only works if you press tab first. make it to where all you have to do is click
