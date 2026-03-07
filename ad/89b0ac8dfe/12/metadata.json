@@ -1,0 +1,38 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "ad89b0ac8dfe",
+  "session_id": "ses_3377e0261ffeb2Iru40PPPQtXX",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T17:28:50.02462517Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "src/app/layout.tsx",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-hero-section.tsx"
+  ],
+  "agent": "OpenCode",
+  "model": "minimax-m2.5-free",
+  "turn_id": "47f8c3fd6443",
+  "checkpoint_transcript_start": 73,
+  "transcript_lines_at_start": 73,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 11
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T17:28:49.187110464Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 10,
+    "human_removed": 0,
+    "total_committed": 6,
+    "agent_percentage": 0
+  }
+}
