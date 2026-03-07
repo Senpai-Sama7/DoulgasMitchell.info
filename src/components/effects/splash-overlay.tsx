@@ -247,9 +247,9 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[160px] px-2"
+                className="mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[160px] max-h-[40vh] px-2"
               >
-                <pre className="font-mono text-[2.5vw] sm:text-[7px] md:text-[9px] lg:text-[11px] text-green-500 leading-[1] tracking-tighter whitespace-pre overflow-hidden text-center inline-block mx-auto max-w-full">
+                <pre className="font-mono text-[2vw] sm:text-[7px] md:text-[9px] lg:text-[11px] text-green-500 leading-[1] tracking-tighter whitespace-pre overflow-hidden text-center inline-block mx-auto max-w-full">
                   {typedLines.join('\n')}
                 </pre>
               </motion.div>

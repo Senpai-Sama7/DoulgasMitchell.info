@@ -113,7 +113,7 @@ export function EnhancedHeroSection() {
             transition={{ duration: 0.5 }}
             className="mb-8 hidden lg:block"
           >
-            <pre className="font-mono text-[10px] md:text-xs text-muted-foreground/50 leading-tight overflow-hidden">
+            <pre className="font-mono text-[1.2vw] text-muted-foreground/50 leading-tight overflow-hidden text-center">
               {typedText}
             </pre>
           </motion.div>
