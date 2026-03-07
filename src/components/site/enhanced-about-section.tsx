@@ -169,7 +169,7 @@ export function EnhancedAboutSection() {
             viewport={{ once: true }}
             className="flex justify-center lg:justify-end"
           >
-            <div className="relative w-full max-w-md aspect-[640/948] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
+            <div className="relative w-full max-w-md aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
               <video
                 autoPlay
                 loop
@@ -178,7 +178,7 @@ export function EnhancedAboutSection() {
                 poster="/media/dougie-frame-poster.webp"
                 className="w-full h-full object-cover"
               >
-                <source src="/media/dougie-frame-loop.mp4" type="video/mp4" />
+                <source src="/media/dougie-loop-v2.mp4" type="video/mp4" />
               </video>
               
               {/* Subtle overlay to blend video with editorial style */}
