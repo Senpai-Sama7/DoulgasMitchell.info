@@ -1,0 +1,17 @@
+make @final/ the website that get pushed to github . and fully enhancement, improve, optimize and fully expand all function features and code to make the website GOD tier that is real, working, and fully functional interactive, immersive, impressive, high-end, high-fidelity, premium, sophisticated and tested, secure
+
+---
+
+git add . && git commit && git push
+
+---
+
+can i put these on the webpage?: @db/assets/favicon-DM.png as the favicon (extra points if you can remove the background), @db/assets/breathing-DM.mp4 just a seemless loop that can just be on loop (compressed if it will affect website peformance) placed at the top of the page just pulsing. and @db/assets/dougie-loop.mp4 this video in like a picture frame (like the pictures at hogwarts, but with no sound) that is just playing as if he is alive in the frame . maybe in the about page/section.
+
+---
+
+lmao do a full audit at https://douglasmitchell.info it gets pushed to github and deployed via vercel
+
+---
+
+fix it

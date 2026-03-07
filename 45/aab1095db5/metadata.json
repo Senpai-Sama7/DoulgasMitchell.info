@@ -3,7 +3,7 @@
   "checkpoint_id": "45aab1095db5",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 6,
   "files_touched": [
     ".cursor/hooks.json",
     ".entire/.gitignore",
@@ -501,6 +501,12 @@
       "transcript": "/45/aab1095db5/3/full.jsonl",
       "content_hash": "/45/aab1095db5/3/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/45/aab1095db5/4/metadata.json",
+      "transcript": "/45/aab1095db5/4/full.jsonl",
+      "content_hash": "/45/aab1095db5/4/content_hash.txt",
+      "prompt": "/45/aab1095db5/4/prompt.txt"
     }
   ],
   "token_usage": {
