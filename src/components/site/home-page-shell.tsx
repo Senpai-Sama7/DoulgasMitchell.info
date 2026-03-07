@@ -89,14 +89,14 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 0.5 }}
-          className="fixed top-4 right-4 w-32 md:w-48 z-40 mix-blend-screen pointer-events-none"
+          className="fixed top-4 right-4 w-20 h-20 md:w-28 md:h-28 z-40 mix-blend-screen pointer-events-none rounded-full overflow-hidden border border-primary/20 shadow-2xl shadow-primary/10"
         >
           <video
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-auto object-contain"
+            className="w-full h-full object-cover scale-110"
           >
             <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
           </video>
