@@ -160,6 +160,10 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
 
     const timeout = setTimeout(() => {
       setIsVisible(false);
+      // Mark splash as seen
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('splash-seen', 'true');
+      }
     }, 1000);
 
     return () => clearTimeout(timeout);
