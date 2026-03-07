@@ -1,12 +1,21 @@
 import { KeyRound, ShieldCheck, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { env } from '@/lib/env';
-import { getAdminSecurityData } from '@/lib/content-service';
+import { getAdminSecurityData, getUserPasskeys } from '@/lib/content-service';
+import { getSession } from '@/lib/auth';
+import { PasskeyManager } from '@/components/admin/passkey-manager';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSecurityPage() {
+  const session = await getSession();
+  if (!session) {
+    redirect('/admin/login');
+  }
+
   const security = await getAdminSecurityData();
+  const userPasskeys = await getUserPasskeys(session.userId);
 
   const checklist = [
     {
@@ -63,21 +72,25 @@ export default async function AdminSecurityPage() {
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[0.85fr_1.15fr]">
-        <Card>
-          <CardHeader>
-            <CardTitle>Readiness checklist</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {checklist.map((item) => (
-              <div key={item.label} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm">
-                <span>{item.label}</span>
-                <span className={item.value ? 'text-emerald-500' : 'text-amber-500'}>
-                  {item.value ? 'Configured' : 'Needs review'}
-                </span>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <PasskeyManager initialPasskeys={userPasskeys} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Readiness checklist</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {checklist.map((item) => (
+                <div key={item.label} className="flex items-center justify-between rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm">
+                  <span>{item.label}</span>
+                  <span className={item.value ? 'text-emerald-500' : 'text-amber-500'}>
+                    {item.value ? 'Configured' : 'Needs review'}
+                  </span>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>

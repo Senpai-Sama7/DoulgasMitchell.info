@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { startAuthentication } from '@simplewebauthn/browser';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -16,7 +17,70 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const { toast } = useToast();
+
+  const handlePasskeyLogin = async () => {
+    if (!email) {
+      toast({
+        title: 'Email required',
+        description: 'Please enter your email to sign in with a passkey.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsPasskeyLoading(true);
+
+    try {
+      // 1. Get auth options
+      const optionsRes = await fetch('/api/admin/auth/passkey/authenticate/generate-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!optionsRes.ok) {
+        const error = await optionsRes.json();
+        throw new Error(error.error || 'Failed to get authentication options');
+      }
+      
+      const options = await optionsRes.json();
+
+      // 2. Start authentication
+      const authResp = await startAuthentication({ optionsJSON: options });
+
+      // 3. Verify on server
+      const verifyRes = await fetch('/api/admin/auth/passkey/authenticate/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          response: authResp,
+        }),
+      });
+
+      if (verifyRes.ok) {
+        toast({
+          title: 'Authenticated!',
+          description: 'Redirecting to dashboard...',
+        });
+        window.location.href = '/admin';
+      } else {
+        const error = await verifyRes.json();
+        throw new Error(error.error || 'Verification failed');
+      }
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: 'Passkey failed',
+        description: error.message || 'Authentication unsuccessful.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsPasskeyLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -161,7 +225,7 @@ export default function AdminLoginPage() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || isPasskeyLoading}
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
@@ -177,6 +241,30 @@ export default function AdminLoginPage() {
                   <>
                     Sign In
                     <ArrowRight className="h-4 w-4 ml-2" />
+                  </>
+                )}
+              </Button>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-border" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                </div>
+              </div>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handlePasskeyLogin}
+                disabled={isLoading || isPasskeyLoading}
+              >
+                {isPasskeyLoading ? 'Authenticating...' : (
+                  <>
+                    <Fingerprint className="h-4 w-4 mr-2" />
+                    Biometric Sign In
                   </>
                 )}
               </Button>

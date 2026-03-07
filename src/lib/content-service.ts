@@ -615,3 +615,23 @@ export const getAdminSecurityData = cache(async () => {
     };
   }, fallback);
 });
+
+export const getUserPasskeys = cache(async (userId: string) => {
+  if (!(await hasTables(['PasskeyCredential']))) {
+    return [];
+  }
+
+  return withFallback(async () => {
+    return await db.passkeyCredential.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        credentialId: true,
+        deviceName: true,
+        createdAt: true,
+        lastUsedAt: true,
+      },
+    });
+  }, []);
+});

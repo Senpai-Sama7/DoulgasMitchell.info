@@ -38,6 +38,7 @@ function createDotField(length: number) {
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
+  const [isVisible, setIsVisible] = useState(true);
   const [typedName, setTypedName] = useState('');
   const [phase, setPhase] = useState<'matrix' | 'typing' | 'reveal' | 'fade'>('matrix');
   const [matrixChars, setMatrixChars] = useState<string[]>([]);
@@ -253,7 +254,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
                 className="mb-16 w-full flex flex-col items-center space-y-16 sm:space-y-24 lg:space-y-32"
               >
                 <div className="relative">
-                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-[-0.05em] text-white leading-none uppercase">
+                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-orbitron font-black tracking-[-0.05em] text-white leading-none uppercase">
                     {typedName.split(' ')[0]}
                     {phase === 'typing' && !typedName.includes(' ') && (
                       <motion.span
@@ -266,7 +267,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
                 </div>
                 
                 <div className="relative">
-                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-black tracking-[-0.05em] text-primary leading-none uppercase">
+                  <h1 className="text-6xl sm:text-8xl md:text-9xl lg:text-[12rem] font-orbitron font-black tracking-[-0.05em] text-primary leading-none uppercase">
                     {typedName.split(' ')[1] || ''}
                     {phase === 'typing' && typedName.includes(' ') && (
                       <motion.span
