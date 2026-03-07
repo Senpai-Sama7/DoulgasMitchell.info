@@ -82,21 +82,6 @@ export function EnhancedHeroSection() {
       ref={containerRef}
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* Background Video */}
-      <div className="absolute inset-0 z-0">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          poster="/media/dougie-frame-poster.webp"
-          className="w-full h-full object-cover opacity-20 dark:opacity-10"
-        >
-          <source src="/media/dougie-frame-loop.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/60 to-background" />
-      </div>
-
       {/* ASCII Grid Background */}
       <div 
         className="absolute inset-0 opacity-[0.02] dark:opacity-[0.05] z-[1]"
