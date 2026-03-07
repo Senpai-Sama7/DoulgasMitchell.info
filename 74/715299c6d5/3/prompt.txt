@@ -1,0 +1,262 @@
+and can you make it more responsive. it lets me zoom out way too far and make the site look small
+
+Performance
+90
+Accessibility
+96
+Best Practices
+92
+SEO
+Performance
+Values are estimated and may vary. The performance score is calculated directly from these metrics.See calculator.
+0–49
+50–89
+90–100
+Final Screenshot
+
+Metrics
+Collapse view
+First Contentful Paint
+1.2 s
+First Contentful Paint marks the time at which the first text or image is painted. Learn more about the First Contentful Paint metric.
+Largest Contentful Paint
+Error!
+NO_LCP
+Total Blocking Time
+Error!
+NO_LCP
+Cumulative Layout Shift
+0.063
+Cumulative Layout Shift measures the movement of visible elements within the viewport. Learn more about the Cumulative Layout Shift metric.
+Speed Index
+5.4 s
+Speed Index shows how quickly the contents of a page are visibly populated. Learn more about the Speed Index metric.
+Captured at Mar 7, 2026, 10:25 AM CST
+Emulated Moto G Power with Lighthouse 13.0.1
+Single page session
+Initial page load
+Slow 4G throttling
+Using HeadlessChromium 145.0.7632.116 with lr
+View Treemap
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Screenshot
+Show audits relevant to:
+
+All
+
+LCP
+
+TBT
+
+CLS
+Insights
+Forced reflow
+A forced reflow occurs when JavaScript queries geometric properties (such as offsetWidth) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about forced reflows and possible mitigations.Unscored
+Top function call
+Total reflow time
+…chunks/9a0d125b632943d5.js:2:8056(www.douglasmitchell.info)
+26 ms
+Source
+Total reflow time
+[unattributed]
+48 ms
+…chunks/9a0d125b632943d5.js:1:182021(www.douglasmitchell.info)
+0 ms
+…chunks/9a0d125b632943d5.js:1:103503(www.douglasmitchell.info)
+24 ms
+…chunks/0d8c026cf43f8b87.js:20:12099(www.douglasmitchell.info)
+2 ms
+…chunks/0d8c026cf43f8b87.js:1:2145(www.douglasmitchell.info)
+16 ms
+…chunks/0d8c026cf43f8b87.js:1:14793(www.douglasmitchell.info)
+23 ms
+Improve image delivery Est savings of 126 KiB
+Reducing the download time of images can improve the perceived load time of the page and LCP. Learn more about optimizing image sizeLCPUnscored
+URL
+Resource Size
+Est Savings
+douglasmitchell.info 1st party
+171.5 KiB	125.6 KiB
+The Confident Mind Book Cover
+<img alt="The Confident Mind Book Cover" class="w-full h-full object-cover group-hover:scale-105 transition-transform dura…" src="/images/the-confident-mind.jpg">
+/images/the-confident-mind.jpg(www.douglasmitchell.info)
+108.3 KiB
+72.2 KiB
+This image file is larger than it needs to be (736x1107) for its displayed dimensions (377x721). Use responsive images to reduce the image download size.
+72.2 KiB
+div.grid > div.flex > div.relative > video.w-full
+<video autoplay="" loop="" playsinline="" poster="/media/dougie-frame-poster.webp" class="w-full h-full object-cover">
+/media/dougie-frame-poster.webp(www.douglasmitchell.info)
+63.2 KiB
+53.4 KiB
+This image file is larger than it needs to be (960x1424) for its displayed dimensions (378x560). Use responsive images to reduce the image download size.
+53.4 KiB
+Render blocking requests
+Requests are blocking the page's initial render, which may delay LCP. Deferring or inlining can move these network requests out of the critical path.LCPUnscored
+URL
+Transfer Size
+Duration
+douglasmitchell.info 1st party
+25.7 KiB	0 ms
+…chunks/2473c16c0c2f6b5f.css(www.douglasmitchell.info)
+1.4 KiB
+…chunks/9505c5bf32b198a6.css(www.douglasmitchell.info)
+24.3 KiB
+Legacy JavaScript Est savings of 14 KiB
+Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile Baseline features, unless you know you must support older browsers. Learn why most sites can deploy ES6+ code without transpilingUnscored
+URL
+Wasted bytes
+douglasmitchell.info 1st party
+13.7 KiB
+…chunks/9a0d125b632943d5.js(www.douglasmitchell.info)
+13.7 KiB
+…chunks/9a0d125b632943d5.js:1:6066(www.douglasmitchell.info)
+Array.prototype.at
+…chunks/9a0d125b632943d5.js:1:5454(www.douglasmitchell.info)
+Array.prototype.flat
+…chunks/9a0d125b632943d5.js:1:5567(www.douglasmitchell.info)
+Array.prototype.flatMap
+…chunks/9a0d125b632943d5.js:1:5943(www.douglasmitchell.info)
+Object.fromEntries
+…chunks/9a0d125b632943d5.js:1:6201(www.douglasmitchell.info)
+Object.hasOwn
+…chunks/9a0d125b632943d5.js:1:5196(www.douglasmitchell.info)
+String.prototype.trimEnd
+…chunks/9a0d125b632943d5.js:1:5111(www.douglasmitchell.info)
+String.prototype.trimStart
+Layout shift culprits
+Layout shifts occur when elements move absent any user interaction. Investigate the causes of layout shifts, such as elements being added, removed, or their fonts changing as the page loads.CLSUnscored
+Element
+Layout shift score
+Total
+0.063
+douglas-mitchell-system-v4.2.0██████╗ ██████╗ ██╗ ██╗ ██████╗ ██╗ █████…
+<div class="relative z-10 w-full flex flex-col items-center justify-center text-center…">
+0.035
+douglas-mitchell-system-v4.2.0██████╗ ██████╗ ██╗ ██╗ ██████╗ ██╗ █████…
+<div class="relative z-10 w-full flex flex-col items-center justify-center text-center…">
+0.026
+0.000
+0.000
+0.000
+Optimize DOM size
+A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. Learn how to avoid an excessive DOM size.Unscored
+Statistic
+Element
+Value
+Total elements
+1,194
+DOM depth
+div.flex > span.inline-flex > svg.lucide > path
+<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5…">
+14
+Most children
+150
+These insights are also available in the Chrome DevTools Performance Panel - record a trace to view more detailed information.
+Diagnostics
+Minify CSS Error!
+Minifying CSS files can reduce network payload sizes. Learn how to minify CSS.Unscored
+Minify JavaScript Error!
+Minifying JavaScript files can reduce payload sizes and script parse time. Learn how to minify JavaScript.Unscored
+Reduce unused CSS Error!
+Reduce unused rules from stylesheets and defer CSS not used for above-the-fold content to decrease bytes consumed by network activity. Learn how to reduce unused CSS.Unscored
+Reduce unused JavaScript Error!
+Reduce unused JavaScript and defer loading scripts until they are required to decrease bytes consumed by network activity. Learn how to reduce unused JavaScript.Unscored
+Avoid long main-thread tasks Error!
+Lists the longest tasks on the main thread, useful for identifying worst contributors to input delay. Learn how to avoid long main-thread tasksUnscored
+Avoid enormous network payloads Total size was 5,887 KiB
+Large network payloads cost users real money and are highly correlated with long load times. Learn how to reduce payload sizes.Unscored
+URL
+Transfer Size
+douglasmitchell.info 1st party
+5,624.3 KiB
+/media/dougie-loop-v2.mp4(www.douglasmitchell.info)
+4,010.9 KiB
+/media/breathing-dm-loop.mp4(www.douglasmitchell.info)
+697.9 KiB
+…certs/AI-Fluency-Anthropic.jpg(www.douglasmitchell.info)
+339.5 KiB
+…certs/google-ai-professional-certificate.png(www.douglasmitchell.info)
+214.6 KiB
+/images/the-confident-mind.jpg(www.douglasmitchell.info)
+109.0 KiB
+…chunks/9a0d125b632943d5.js(www.douglasmitchell.info)
+70.5 KiB
+/media/dougie-frame-poster.webp(www.douglasmitchell.info)
+63.9 KiB
+/media/dougie-loop-v2.mp4(www.douglasmitchell.info)
+42.9 KiB
+…chunks/973d8b95129f0543.js(www.douglasmitchell.info)
+41.9 KiB
+…chunks/ae278f207e029d8d.js(www.douglasmitchell.info)
+33.1 KiB
+Reduce JavaScript execution time 3.0 s
+Consider reducing the time spent parsing, compiling, and executing JS. You may find delivering smaller JS payloads helps with this. Learn how to reduce Javascript execution time.TBTUnscored
+URL
+Total CPU Time
+Script Evaluation
+Script Parse
+douglasmitchell.info 1st party
+4,898 ms	2,914 ms	52 ms
+…chunks/9a0d125b632943d5.js(www.douglasmitchell.info)
+3,061 ms
+2,415 ms
+19 ms
+https://www.douglasmitchell.info
+876 ms
+2 ms
+4 ms
+…chunks/973d8b95129f0543.js(www.douglasmitchell.info)
+804 ms
+455 ms
+13 ms
+…chunks/0d8c026cf43f8b87.js(www.douglasmitchell.info)
+104 ms
+9 ms
+7 ms
+…chunks/ae278f207e029d8d.js(www.douglasmitchell.info)
+53 ms
+33 ms
+9 ms
+Unattributable
+267 ms	10 ms	0 ms
+Unattributable
+267 ms
+10 ms
+0 ms
+Minimize main-thread work 5.2 s
+Consider reducing the time spent parsing, compiling and executing JS. You may find delivering smaller JS payloads helps with this. Learn how to minimize main-thread workTBTUnscored
+Category
+Time Spent
+Script Evaluation
+2,932 ms
+Style & Layout
+900 ms
+Other
+863 ms
+Rendering
+248 ms
+Garbage Collection
+158 ms
+Script Parsing & Compilation
+77 ms
+Parse HTML & CSS
+27 ms
+More information about the performance of your application. These numbers don't directly affect the Performance score.
+Passed audits (13)
+Show
+90
+Accessibility
+These checks highlight opportunities to improve the accessibility of your web app. Automatic detection can only detect a subset of issues and does not guarantee the accessibility of your web app, so manual testing is also encouraged.
+Names and labels
+Form elements do not have associated labels
+Labels ensure that form controls are announced properly by assistive technologies, like screen readers. Learn more about form element labels.
+Failing Elements
+div.lg:col-span-2 > div.w-full > form.flex > input.bg-transparent
+<input class="bg-transparent border-none outline-none text-white w-full p-0 focus:ring-0" spellcheck="false" type="text" value="">
