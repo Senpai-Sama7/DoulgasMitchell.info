@@ -23,12 +23,17 @@ function JITTerminal() {
   ]);
   const [isUpdating, setIsUpdating] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [history, isUpdating]);
+
+  const handleTerminalClick = () => {
+    inputRef.current?.focus();
+  };
 
   const handleCommand = (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,7 +100,10 @@ function JITTerminal() {
   };
 
   return (
-    <div className="w-full h-[500px] bg-black/95 rounded-2xl border border-primary/20 p-6 font-mono text-sm text-primary/80 overflow-hidden shadow-2xl relative flex flex-col">
+    <div 
+      className="w-full h-[500px] bg-black/95 rounded-2xl border border-primary/20 p-6 font-mono text-sm text-primary/80 overflow-hidden shadow-2xl relative flex flex-col cursor-text"
+      onClick={handleTerminalClick}
+    >
       {/* Header */}
       <div className="flex items-center gap-3 mb-6 pb-4 border-b border-primary/10">
         <div className="flex gap-1.5">
@@ -132,6 +140,7 @@ function JITTerminal() {
       <form onSubmit={handleCommand} className="flex items-center gap-2">
         <span className="text-primary/50 whitespace-nowrap">guest@dm-os:~$</span>
         <input
+          ref={inputRef}
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}

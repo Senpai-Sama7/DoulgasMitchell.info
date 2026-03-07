@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Sun, Menu, X } from 'lucide-react';
+import { Moon, Sun, Menu, X, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { siteProfile } from '@/lib/site-content';
@@ -120,12 +120,14 @@ export function SiteHeader() {
               )}
             </Button>
 
-            {/* CTA - Desktop */}
+            {/* CTA - Desktop / Mobile Square */}
             <a
               href="#contact"
-              className="hidden md:inline-flex cta-button text-sm"
+              className="cta-button text-sm p-2 sm:px-6 sm:py-3"
+              aria-label="Let's Connect"
             >
-              Let's Connect
+              <Mail className="h-4 w-4 sm:hidden" />
+              <span className="hidden sm:inline">Let's Connect</span>
             </a>
           </div>
         </div>
