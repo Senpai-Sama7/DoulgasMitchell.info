@@ -145,7 +145,11 @@ export function EnhancedHeroSection() {
               <span className="font-mono text-lg text-muted-foreground/30">──╮</span>
             </div>
 
-            <h1 className="editorial-title mb-2 relative">
+            <h1 
+              // @ts-ignore
+              fetchPriority="high"
+              className="editorial-title mb-2 relative"
+            >
               <span className="relative inline-block">
                 Douglas
                 <motion.span
