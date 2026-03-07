@@ -78,14 +78,14 @@ export function EnhancedAboutSection() {
           </p>
         </motion.div>
 
-        {/* Video Frame */}
+        {/* Video Frame - 9:12 vertical video */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           className="mb-16 flex justify-center"
         >
-          <div className="relative w-full max-w-2xl aspect-video rounded-xl overflow-hidden border-2 border-border bg-black">
+          <div className="relative w-full max-w-lg aspect-[3/4] h-[70vh] max-h-[800px] rounded-xl overflow-hidden border-2 border-border bg-black">
             <video
               autoPlay
               loop

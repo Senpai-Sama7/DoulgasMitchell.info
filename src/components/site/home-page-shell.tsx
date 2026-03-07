@@ -28,7 +28,10 @@ interface HomePageShellProps {
 export function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {
   const { scrollYProgress } = useScroll();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window === 'undefined') return true;
+    return !sessionStorage.getItem('splash-seen');
+  });
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -65,6 +68,26 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
       <PageViewTracker />
 
       {showSplash && <SplashOverlay onComplete={() => setShowSplash(false)} />}
+
+      {/* Breathing DM video - shows in top right after splash */}
+      {!showSplash && !prefersReducedMotion && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40"
+        >
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+          </video>
+        </motion.div>
+      )}
 
       <motion.div
         className="scroll-progress"
