@@ -3,7 +3,7 @@
   "checkpoint_id": "0395f07c74a8",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "src/components/effects/splash-overlay.tsx"
   ],
@@ -25,13 +25,19 @@
       "transcript": "/03/95f07c74a8/2/full.jsonl",
       "content_hash": "/03/95f07c74a8/2/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/03/95f07c74a8/3/metadata.json",
+      "transcript": "/03/95f07c74a8/3/full.jsonl",
+      "content_hash": "/03/95f07c74a8/3/content_hash.txt",
+      "prompt": "/03/95f07c74a8/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
+    "input_tokens": 33997369,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "cache_read_tokens": 28944873,
+    "output_tokens": 98265,
+    "api_call_count": 251
   }
 }
