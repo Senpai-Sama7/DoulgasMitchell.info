@@ -45,7 +45,10 @@ export async function POST() {
   } catch (error) {
     console.error('Admin setup error:', error);
     return NextResponse.json(
-      { error: 'Failed to create admin user' },
+      { 
+        error: 'Failed to create admin user',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
