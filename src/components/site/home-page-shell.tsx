@@ -28,10 +28,7 @@ interface HomePageShellProps {
 export function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {
   const { scrollYProgress } = useScroll();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return !sessionStorage.getItem('splash-seen');
-  });
+  const [showSplash, setShowSplash] = useState(true);
   const [persistentVideoVisible, setPersistentVideoVisible] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
