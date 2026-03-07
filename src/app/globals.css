@@ -3,6 +3,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Prevent excessive zoom on mobile */
+html {
+  touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+html, body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent pinch zoom on specific elements */
+button, a, input, select, textarea {
+  touch-action: manipulation;
+}
+
+/* Prevent double-tap zoom on interactive elements */
+* {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
 /* ═══════════════════════════════════════════════════════════════════════════
    DOUGLAS MITCHELL - ARCHITECTURAL EDITORIAL DESIGN SYSTEM
    ASCII-INFLECTED VISUAL LANGUAGE

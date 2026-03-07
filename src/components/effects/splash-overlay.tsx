@@ -3,15 +3,28 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 
-const KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+// Nord color scheme
+const NORD_COLORS = {
+  bg: '#2E3440',
+  fg: '#ECEFF4',
+  cyan: '#88C0D0',
+  blue: '#81A1C1',
+  red: '#BF616A',
+  green: '#A3BE8C',
+  yellow: '#EBCB8B',
+};
 
-// Large ASCII art for Douglas Mitchell
-const ASCII_NAME = `
- ____  _             _            _     _____           _                  
-|  _ \\| |_ _   _    | |_ ___  ___| |_  | ____|_ __   __| | ___ _ __ ___  
-| |_) | __| | | |   | __/ _ \\/ __| __| |  _| | '_ \\ / _\` |/ _ \\ '_ \` _ \\
-|  __/| |_| |_| |   | || (_) \\__ \\ |_  | |___| | | | | (_| |  __/ | | | | |
-|_|   |\\__|\\__,_|    \\__\\___/|___/\\__| |_____|_| |_|\\__,_|\\___|_| |_| |_|`;
+// Small dot-based ASCII art for Douglas Mitchell (using dots pattern)
+const DOT_ART = [
+  '·••••· ·••· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+  '· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ·· ··',
+];
 
 const SUBTITLE = 'THE ARCHITECT';
 const ROLES = [
@@ -23,26 +36,22 @@ const ROLES = [
   'Anthropic Certified',
 ];
 
+// Dot characters for background
+const DOT_CHARS = ['·', '○', '●', '◦', '○', '·'];
+
 interface SplashOverlayProps {
   onComplete?: () => void;
   minDisplayTime?: number;
 }
 
-function createMatrixCharacters(length: number) {
-  return Array.from({ length }, () => KATAKANA[Math.floor(Math.random() * KATAKANA.length)]);
+function createDotField(length: number) {
+  return Array.from({ length }, () => DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]);
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const [phase, setPhase] = useState<'matrix' | 'build' | 'reveal' | 'fade'>('matrix');
-
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
-  const [matrixChars, setMatrixChars] = useState<string[]>(() => createMatrixCharacters(150));
+  const [phase, setPhase] = useState<'dots' | 'build' | 'reveal' | 'fade'>('dots');
+  const [dotField, setDotField] = useState<string[]>(() => createDotField(100));
   const [typedLines, setTypedLines] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -50,24 +59,30 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
   const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
+  useEffect(() => {
     if (!isVisible) {
       onComplete?.();
     }
   }, [isVisible, onComplete]);
 
-  // Matrix rain effect
+  // Dot field animation
   useEffect(() => {
-    if (!isVisible || prefersReducedMotion || phase !== 'matrix') return;
+    if (!isVisible || prefersReducedMotion || phase !== 'dots') return;
 
     const interval = setInterval(() => {
-      setMatrixChars(prev => prev.map(() => 
-        Math.random() > 0.7 
-          ? KATAKANA[Math.floor(Math.random() * KATAKANA.length)]
+      setDotField(prev => prev.map(() => 
+        Math.random() > 0.8 
+          ? DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]
           : prev[Math.floor(Math.random() * prev.length)]
       ));
-    }, 100);
+    }, 150);
 
-    // Transition to build phase
     const timeout = setTimeout(() => {
       setPhase('build');
       clearInterval(interval);
@@ -79,11 +94,11 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     };
   }, [isVisible, prefersReducedMotion, phase]);
 
-  // Build phase - type out ASCII art
+  // Build phase - type out dot art
   useEffect(() => {
     if (phase !== 'build' || prefersReducedMotion) return;
 
-    const lines = ASCII_NAME.split('\n').filter(line => line.trim());
+    const lines = DOT_ART;
     
     const typeInterval = setInterval(() => {
       setTypedLines(prev => {
@@ -98,14 +113,14 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
         
         if (currentTyped.length < line.length) {
           const next = [...prev];
-          next[currentLine] = line.slice(0, currentTyped.length + 3);
+          next[currentLine] = line.slice(0, currentTyped.length + 2);
           return next;
         } else {
           setCurrentLine(currentLine + 1);
           return [...prev, line];
         }
       });
-    }, 30);
+    }, 40);
 
     return () => clearInterval(typeInterval);
   }, [phase, currentLine, prefersReducedMotion]);
@@ -145,7 +160,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
 
     const timeout = setTimeout(() => {
       setIsVisible(false);
-    }, 1000); // Give it time to fade out properly
+    }, 1000);
 
     return () => clearTimeout(timeout);
   }, [phase]);
@@ -154,7 +169,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     setIsVisible(false);
   }, []);
 
-  // Skip on escape key
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') handleSkip();
@@ -165,7 +179,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
 
   if (!isVisible && typeof window !== 'undefined') return null;
 
-  // Reduced motion version - simple fade
+  // Reduced motion version
   if (prefersReducedMotion) {
     return (
       <AnimatePresence onExitComplete={onComplete}>
@@ -175,11 +189,12 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
             animate={{ opacity: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
-            className="fixed inset-0 z-[9999] bg-black flex items-center justify-center"
+            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}
             onClick={handleSkip}
           >
             <div className="text-center">
-              <p className="font-mono text-sm text-green-500">Loading...</p>
+              <p className="font-mono text-sm" style={{ color: NORD_COLORS.cyan }}>Loading...</p>
             </div>
           </motion.div>
         )}
@@ -194,27 +209,25 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
-          className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden cursor-pointer"
-          style={{ height: '100dvh' }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden cursor-pointer"
+          style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}
           onClick={handleSkip}
         >
-          {/* Matrix Rain Background */}
-          {phase === 'matrix' && (
+          {/* Dot Field Background */}
+          {phase === 'dots' && (
             <motion.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 grid grid-cols-[repeat(10,1fr)] sm:grid-cols-[repeat(15,1fr)] gap-1 p-4 sm:p-8 pointer-events-none"
+              className="absolute inset-0 grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 sm:gap-3 p-4 pointer-events-none"
             >
-              {matrixChars.map((char, i) => (
+              {dotField.map((char, i) => (
                 <motion.span
                   key={i}
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: [0, 1, 0.3], y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.01 }}
-                  className="font-mono text-green-500/40 text-sm sm:text-lg text-center"
-                  style={{
-                    textShadow: '0 0 10px rgba(34, 197, 94, 0.5)',
-                  }}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: [0.2, 0.5, 0.2], scale: 1 }}
+                  transition={{ duration: 1, delay: i * 0.02, repeat: Infinity }}
+                  className="font-mono text-xs sm:text-sm md:text-base text-center"
+                  style={{ color: NORD_COLORS.blue }}
                 >
                   {char}
                 </motion.span>
@@ -228,28 +241,30 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
+              className="mb-6 sm:mb-8"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
+                style={{ borderColor: NORD_COLORS.cyan, backgroundColor: 'rgba(136, 192, 208, 0.1)' }}>
                 <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.red }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.yellow }} />
+                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.green }} />
                 </div>
-                <span className="font-mono text-xs text-green-500/70">
-                  douglas-mitchell-system-v4.2.0
+                <span className="font-mono text-[10px] sm:text-xs" style={{ color: NORD_COLORS.cyan }}>
+                  douglas-mitchell-v4.2.0
                 </span>
               </div>
             </motion.div>
 
-            {/* ASCII Art */}
+            {/* Dot Art */}
             {(phase === 'build' || phase === 'reveal' || phase === 'fade') && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[160px] max-h-[40vh] px-2"
+                className="mb-6 sm:mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[80px] sm:min-h-[100px] px-2"
               >
-                <pre className="font-mono text-[2vw] sm:text-[7px] md:text-[9px] lg:text-[11px] text-green-500 leading-[1] tracking-tighter whitespace-pre overflow-hidden text-center inline-block mx-auto max-w-full">
+                <pre className="font-mono text-[2vw] sm:text-[3px] md:text-[4px] lg:text-[5px] leading-[1.1] whitespace-pre-wrap break-all text-center"
+                  style={{ color: NORD_COLORS.cyan }}>
                   {typedLines.join('\n')}
                 </pre>
               </motion.div>
@@ -260,14 +275,14 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-8"
+                className="mb-6 sm:mb-8"
               >
-                <div className="flex items-center justify-center gap-4">
-                  <span className="font-mono text-green-500/30">{'◄'}</span>
-                  <span className="font-mono text-lg text-green-400 tracking-widest">
+                <div className="flex items-center justify-center gap-3 sm:gap-4">
+                  <span className="font-mono text-xs sm:text-sm" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'◄'}</span>
+                  <span className="font-mono text-base sm:text-lg md:text-xl tracking-widest" style={{ color: NORD_COLORS.fg }}>
                     {SUBTITLE}
                   </span>
-                  <span className="font-mono text-green-500/30">{'►'}</span>
+                  <span className="font-mono text-xs sm:text-sm" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'►'}</span>
                 </div>
               </motion.div>
             )}
@@ -277,23 +292,25 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-8 h-8"
+                className="mb-6 sm:mb-8 h-6 sm:h-8"
               >
-                <div className="flex items-center justify-center gap-3">
-                  <span className="font-mono text-xs text-green-500/50">$</span>
+                <div className="flex items-center justify-center gap-2 sm:gap-3">
+                  <span className="font-mono text-xs" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>$</span>
                   <motion.span
                     key={currentRole}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    className="font-mono text-sm text-green-400"
+                    className="font-mono text-xs sm:text-sm"
+                    style={{ color: NORD_COLORS.cyan }}
                   >
                     {ROLES[currentRole]}
                   </motion.span>
                   <motion.span
                     animate={{ opacity: [1, 0] }}
                     transition={{ duration: 0.5, repeat: Infinity }}
-                    className="font-mono text-green-500"
+                    className="font-mono"
+                    style={{ color: NORD_COLORS.green }}
                   >
                     ▊
                   </motion.span>
@@ -306,58 +323,42 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="w-64 sm:w-80 mx-auto"
+                className="w-48 sm:w-64 mx-auto"
               >
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-mono text-xs text-green-500/50">loading...</span>
-                  <span className="font-mono text-xs text-green-400">{progress}%</span>
+                <div className="flex items-center gap-2 mb-1.5 sm:mb-2">
+                  <span className="font-mono text-[10px] sm:text-xs" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>loading...</span>
+                  <span className="font-mono text-[10px] sm:text-xs" style={{ color: NORD_COLORS.cyan }}>{progress}%</span>
                 </div>
-                <div className="h-1 bg-green-500/20 rounded-full overflow-hidden">
+                <div className="h-0.5 sm:h-1 rounded-full overflow-hidden" style={{ backgroundColor: NORD_COLORS.blue, opacity: 0.2 }}>
                   <motion.div
-                    className="h-full bg-green-500"
+                    className="h-full"
+                    style={{ backgroundColor: NORD_COLORS.cyan }}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.1 }}
                   />
                 </div>
-                <div className="mt-2 font-mono text-[10px] text-green-500/30">
-                  {'['}{'█'.repeat(Math.floor(progress / 5))}{'░'.repeat(20 - Math.floor(progress / 5))}{']'}
-                </div>
               </motion.div>
             )}
 
-            {/* Footer - Moved inside container to prevent overlap */}
+            {/* Footer */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
-              className="mt-12 text-center"
+              className="mt-8 sm:mt-12 text-center"
             >
-              <p className="font-mono text-xs text-green-500/40">
-                Press <kbd className="px-1.5 py-0.5 bg-green-500/10 rounded text-green-500/60">ESC</kbd> or click to skip
+              <p className="font-mono text-[10px] sm:text-xs" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>
+                Press <kbd className="px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', color: NORD_COLORS.cyan }}>ESC</kbd> or click to skip
               </p>
             </motion.div>
-
-            {/* Corner Decorations */}
-            <div className="absolute top-8 left-8 font-mono text-xs text-green-500/30">
-              ╭──────────────────╮
-            </div>
-            <div className="absolute top-8 right-8 font-mono text-xs text-green-500/30">
-              ╭──────────────────╮
-            </div>
-            <div className="absolute bottom-8 left-8 font-mono text-xs text-green-500/30">
-              ╰──────────────────╯
-            </div>
-            <div className="absolute bottom-8 right-8 font-mono text-xs text-green-500/30">
-              ╰──────────────────╯
-            </div>
           </div>
 
-          {/* Scanline Effect */}
+          {/* Subtle Glow */}
           <div 
-            className="absolute inset-0 pointer-events-none opacity-10"
+            className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.03) 2px, rgba(0,255,0,0.03) 4px)',
+              background: 'radial-gradient(circle at center, rgba(136, 192, 208, 0.05) 0%, transparent 70%)',
             }}
           />
         </motion.div>
