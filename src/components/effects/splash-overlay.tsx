@@ -63,17 +63,6 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     }
   }, [isVisible, onComplete]);
 
-  // Video intro phase
-  useEffect(() => {
-    if (!isVisible || prefersReducedMotion || phase !== 'video') return;
-
-    const timer = setTimeout(() => {
-      setPhase('matrix');
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, [isVisible, prefersReducedMotion, phase]);
-
   // Matrix rain effect
   useEffect(() => {
     if (!isVisible || prefersReducedMotion || phase !== 'matrix') return;
@@ -244,27 +233,22 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           {/* Main Content */}
           <div className="relative z-10 w-full flex flex-col items-center justify-center text-center px-4">
             {/* Terminal Header */}
-            <AnimatePresence>
-              {phase !== 'video' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  className="mb-8"
-                >
-                  <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
-                    <div className="flex gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                    </div>
-                    <span className="font-mono text-xs text-green-500/70">
-                      douglas-mitchell-system-v4.2.0
-                    </span>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-8"
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                </div>
+                <span className="font-mono text-xs text-green-500/70">
+                  douglas-mitchell-system-v4.2.0
+                </span>
+              </div>
+            </motion.div>
 
             {/* ASCII Art */}
             {(phase === 'build' || phase === 'reveal' || phase === 'fade') && (
