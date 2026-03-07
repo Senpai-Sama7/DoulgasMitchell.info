@@ -19,7 +19,6 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     // React rules
     "react-hooks/exhaustive-deps": "off",
     "react-hooks/purity": "off",
-    "react-hooks/set-state-in-effect": "off",
     "react/no-unescaped-entities": "off",
     "react/display-name": "off",
     "react/prop-types": "off",
@@ -43,11 +42,6 @@ const eslintConfig = [...nextCoreWebVitals, ...nextTypescript, {
     "no-undef": "off",
     "no-unreachable": "off",
     "no-useless-escape": "off",
-  },
-}, {
-  files: ["check-admin.js", "reset-admin.js", "test-login.js"],
-  rules: {
-    "@typescript-eslint/no-require-imports": "off",
   },
 }, {
   ignores: ["node_modules/**", ".next/**", "out/**", "build/**", "next-env.d.ts", "examples/**", "skills"]

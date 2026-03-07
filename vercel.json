@@ -1,6 +1,0 @@
-{
-  "installCommand": "cd final && bun install",
-  "buildCommand": "cd final && bun run build", 
-  "outputDirectory": "final/.next",
-  "framework": "nextjs"
-}

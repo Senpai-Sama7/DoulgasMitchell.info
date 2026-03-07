@@ -1,45 +1,17 @@
-import { PrismaClient, type Prisma } from '@prisma/client'
+import { PrismaClient } from '@prisma/client';
 
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined
-}
-
-function resolveDatabaseUrl(): string | undefined {
-  const candidates = [
-    process.env.DATABASE_URL,
-    process.env.DATABASE_URL_UNPOOLED,
-    process.env.POSTGRES_PRISMA_URL,
-    process.env.POSTGRES_URL,
-    process.env.POSTGRES_URL_NON_POOLING,
-  ];
-
-  for (const candidate of candidates) {
-    if (typeof candidate === 'string' && candidate.trim().length > 0) {
-      return candidate;
-    }
-  }
-
-  return undefined;
-}
-
-const resolvedDatabaseUrl = resolveDatabaseUrl();
-const prismaOptions: Prisma.PrismaClientOptions = {
-  log:
-    process.env.NODE_ENV === 'development' && process.env.PRISMA_LOG_QUERIES === 'true'
-      ? ['query', 'error', 'warn']
-      : ['error', 'warn'],
+  prisma: PrismaClient | undefined;
 };
 
-if (resolvedDatabaseUrl) {
-  prismaOptions.datasources = {
-    db: {
-      url: resolvedDatabaseUrl,
-    },
-  };
+if (!process.env.DATABASE_URL) {
+  process.env.DATABASE_URL = 'file:./dev.db';
 }
 
 export const db =
   globalForPrisma.prisma ??
-  new PrismaClient(prismaOptions)
+  new PrismaClient({
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  });
 
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;

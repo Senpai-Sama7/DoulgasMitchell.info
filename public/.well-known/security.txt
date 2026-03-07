@@ -1,0 +1,9 @@
+Contact: mailto:CEO@DouglasMitchell.info
+Expires: 2027-12-31T23:59:59.000Z
+Preferred-Languages: en
+Canonical: https://douglasmitchell.info/.well-known/security.txt
+
+# Responsible Disclosure Policy
+# Please report security vulnerabilities to CEO@DouglasMitchell.info
+# We will respond within 48 hours and provide updates every 7 days
+# Please allow 90 days for remediation before public disclosure

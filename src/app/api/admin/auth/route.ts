@@ -1,205 +1,124 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
-import {
-  checkRateLimit,
-  getClientIp,
-  getUserAgent,
-  verifyPassword,
-  generateToken,
-  createSession,
-  validateSession,
-  invalidateSession,
-  recordLoginAttempt,
-  getRecentFailedAttempts,
-  initializeAdminUser,
-  SESSION_MAX_AGE_SECONDS,
-} from '@/lib/security';
-import {
-  withMiddleware,
-  successResponse,
-  RateLimitError,
-  AuthenticationError,
-  ServiceUnavailableError,
-  ValidationError,
-} from '@/lib/middleware';
-import { loginSchema } from '@/lib/validations';
+import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';
+import { logActivity } from '@/lib/activity';
+import { getClientIp, getUserAgent } from '@/lib/request';
 
-// Initialize admin user on first load
-let initialized = false;
-const MAX_FAILED_LOGIN_ATTEMPTS = parseInt(process.env.MAX_FAILED_LOGIN_ATTEMPTS || '5', 10);
+// GET /api/admin/auth - Check current session
+export async function GET() {
+  try {
+    const session = await getSession();
 
-async function ensureAdminInitialized() {
-  if (!initialized) {
-    await initializeAdminUser();
-    initialized = true;
+    if (!session) {
+      return NextResponse.json({ authenticated: false }, { status: 401 });
+    }
+
+    return NextResponse.json({
+      authenticated: true,
+      user: {
+        userId: session.userId,
+        email: session.email,
+        name: session.name,
+        role: session.role,
+      },
+    });
+  } catch (error) {
+    console.error('Auth check error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// POST - Login
-async function handleLogin(request: NextRequest): Promise<NextResponse> {
-  const ipAddress = getClientIp(request);
-  const userAgent = getUserAgent(request);
+// POST /api/admin/auth - Login
+export async function POST(request: NextRequest) {
   try {
-    await ensureAdminInitialized();
+    const body = await request.json();
+    const { email, password } = body;
 
-    // Check rate limit
-    const rateLimitResult = checkRateLimit(ipAddress);
-    if (!rateLimitResult.allowed) {
-      throw new RateLimitError(
-        Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
+    // Validation
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: 'Email and password are required' },
+        { status: 400 }
       );
     }
 
-    const failedAttempts = await getRecentFailedAttempts(ipAddress);
-    if (failedAttempts >= MAX_FAILED_LOGIN_ATTEMPTS) {
-      throw new RateLimitError(
-        Math.ceil((rateLimitResult.resetAt.getTime() - Date.now()) / 1000)
+    // Rate limiting
+    const clientIp = getClientIp(request);
+    if (!checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        { error: 'Too many login attempts. Please try again later.' },
+        { status: 429 }
       );
     }
 
-    // Parse and validate input
-    let body: unknown;
-    try {
-      body = await request.json();
-    } catch {
-      throw new ValidationError('Invalid JSON body');
-    }
-
-    const validation = loginSchema.safeParse(body);
-    if (!validation.success) {
-      throw new ValidationError('Invalid input', {
-        errors: validation.error.issues.map((e) => ({
-          path: e.path.join('.'),
-          message: e.message,
-        })),
-      });
-    }
-
-    const { password } = validation.data;
-
-    // Find admin user
-    const adminUser = await db.adminUser.findUnique({
-      where: { username: 'admin' },
+    // Find user
+    const user = await db.adminUser.findUnique({
+      where: { email },
     });
 
-    if (!adminUser) {
-      await recordLoginAttempt(ipAddress, false);
-      throw new AuthenticationError('Invalid credentials');
+    if (!user) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
     }
 
     // Verify password
-    const isValid = await verifyPassword(password, adminUser.passwordHash);
-    if (!isValid) {
-      await recordLoginAttempt(ipAddress, false);
-      throw new AuthenticationError('Invalid credentials');
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        { error: 'Password login is not configured for this account.' },
+        { status: 403 }
+      );
     }
 
-    // Generate JWT token
-    const token = generateToken({
-      userId: adminUser.id,
-      username: adminUser.username,
-    });
+    const isValid = await verifyPassword(password, user.passwordHash);
 
-    // Create session in database
-    await createSession(adminUser.id, token, ipAddress, userAgent);
+    if (!isValid) {
+      return NextResponse.json(
+        { error: 'Invalid credentials' },
+        { status: 401 }
+      );
+    }
 
-    // Record successful login
-    await recordLoginAttempt(ipAddress, true);
-
-    // Update last login time
+    // Update last login
     await db.adminUser.update({
-      where: { id: adminUser.id },
+      where: { id: user.id },
       data: { lastLoginAt: new Date() },
     });
 
-    // Log activity
-    await db.activityLog.create({
-      data: {
-        action: 'login',
-        resource: 'auth',
-        resourceId: adminUser.id,
-        ipAddress,
+    // Create session
+    const token = await createSession(user.id, user.email, user.name || 'Admin', {
+      ipAddress: clientIp,
+      userAgent: getUserAgent(request),
+    });
+    await setSessionCookie(token);
+    clearRateLimit(clientIp);
+
+    await logActivity({
+      action: 'login',
+      resource: 'admin-session',
+      resourceId: user.id,
+      userId: user.id,
+      request,
+      details: {
+        method: 'password',
       },
     });
 
-    // Set cookie
-    const cookieStore = await cookies();
-    cookieStore.set('admin-session', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: SESSION_MAX_AGE_SECONDS,
-      path: '/',
+    return NextResponse.json({
+      success: true,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
     });
-
-    return successResponse({ authenticated: true }, 'Login successful');
   } catch (error) {
-    if (
-      error instanceof RateLimitError ||
-      error instanceof ValidationError ||
-      error instanceof AuthenticationError
-    ) {
-      throw error;
-    }
-
-    throw new ServiceUnavailableError('Authentication service is currently unavailable. Please try again.');
+    console.error('Login error:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
-
-// GET - Check authentication status
-async function handleCheckAuth(request: NextRequest): Promise<NextResponse> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('admin-session')?.value;
-
-  if (!token) {
-    return NextResponse.json({ authenticated: false });
-  }
-
-  const sessionResult = await validateSession(token);
-
-  if (!sessionResult.valid) {
-    // Clear invalid cookie
-    cookieStore.delete('admin-session');
-    return NextResponse.json({ authenticated: false });
-  }
-
-  return NextResponse.json({ authenticated: true });
-}
-
-// DELETE - Logout
-async function handleLogout(request: NextRequest): Promise<NextResponse> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get('admin-session')?.value;
-  const ipAddress = getClientIp(request);
-
-  if (token) {
-    // Get userId before invalidating
-    const sessionResult = await validateSession(token);
-    
-    // Invalidate session in database
-    await invalidateSession(token);
-
-    // Log activity
-    if (sessionResult.valid) {
-      await db.activityLog.create({
-        data: {
-          action: 'logout',
-          resource: 'auth',
-          resourceId: sessionResult.userId,
-          ipAddress,
-        },
-      });
-    }
-  }
-
-  // Clear cookie
-  cookieStore.delete('admin-session');
-
-  return successResponse(undefined, 'Logged out successfully');
-}
-
-// Route handlers with middleware
-export const POST = withMiddleware(handleLogin);
-export const GET = withMiddleware(handleCheckAuth);
-export const DELETE = withMiddleware(handleLogout);
