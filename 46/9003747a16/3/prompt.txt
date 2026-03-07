@@ -749,3 +749,8 @@ continue
 ---
 
 read the documents at /home/donovan/Documents/extras and make sure all of the validated finding are implemented and fully integrated
+
+---
+
+still not correct: @../../Pictures/Screenshots/Screenshot_20260307_110947.png and it alwasy starts me at the bottom of the page on my laptop: @../../Pictures/Screenshots/Screenshot_20260307_111000.png
+--- Content from referenced files ---No files matching the criteria were found or all were skipped.
