@@ -45,7 +45,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     if (typeof window === 'undefined') return true;
     return !sessionStorage.getItem('splash-seen');
   });
-  const [phase, setPhase] = useState<'matrix' | 'build' | 'reveal' | 'fade'>('matrix');
+  const [phase, setPhase] = useState<'video' | 'matrix' | 'build' | 'reveal' | 'fade'>('video');
   const [matrixChars, setMatrixChars] = useState<string[]>(() => createMatrixCharacters(150));
   const [typedLines, setTypedLines] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState(0);
@@ -58,6 +58,17 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
       onComplete?.();
     }
   }, [isVisible, onComplete]);
+
+  // Video intro phase
+  useEffect(() => {
+    if (!isVisible || prefersReducedMotion || phase !== 'video') return;
+
+    const timer = setTimeout(() => {
+      setPhase('matrix');
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [isVisible, prefersReducedMotion, phase]);
 
   // Matrix rain effect
   useEffect(() => {
@@ -198,6 +209,26 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden cursor-pointer"
           onClick={handleSkip}
         >
+          {/* Video Intro Phase */}
+          {phase === 'video' && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 flex items-center justify-center"
+            >
+              <video
+                autoPlay
+                muted
+                playsInline
+                poster="/media/breathing-dm-poster.webp"
+                className="w-full h-full object-contain max-w-2xl"
+              >
+                <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+              </video>
+            </motion.div>
+          )}
+
           {/* Matrix Rain Background */}
           {phase === 'matrix' && (
             <motion.div
