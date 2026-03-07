@@ -86,7 +86,7 @@ export function EnhancedAboutSection() {
             viewport={{ once: true }}
             className="flex justify-center lg:justify-end"
           >
-            <div className="relative w-full max-w-md aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
+            <div className="relative w-full max-w-xs aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
               <video
                 autoPlay
                 loop

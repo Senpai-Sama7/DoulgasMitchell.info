@@ -120,7 +120,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
 
         <EnhancedAboutSection />
         <EnhancedWorkSection projects={projects} />
-        <EnhancedBookSection book={book} />
+        <EnhancedBookSection />
         <EnhancedWritingSection articles={articles} />
         <CertificationsSection items={certifications} />
         <EnhancedContactSection />

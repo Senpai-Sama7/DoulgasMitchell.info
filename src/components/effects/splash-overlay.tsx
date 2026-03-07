@@ -41,13 +41,12 @@ function createMatrixCharacters(length: number) {
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [phase, setPhase] = useState<'video' | 'matrix' | 'build' | 'reveal' | 'fade'>('video');
 
   useEffect(() => {
     // Clear seen flag for testing/troubleshooting to ensure it shows up
     sessionStorage.removeItem('splash-seen');
-    setIsVisible(true);
     document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = 'unset';
@@ -296,19 +295,10 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-6 w-full max-w-full overflow-hidden flex justify-center"
+                className="mb-8 w-full max-w-full overflow-hidden flex justify-center items-center min-h-[160px]"
               >
-                <pre className="font-mono text-[5px] sm:text-[8px] md:text-[10px] lg:text-xs text-green-500 leading-none tracking-tighter whitespace-pre overflow-visible text-center inline-block mx-auto scale-[0.8] sm:scale-100">
-                  {typedLines.map((line, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      {line}
-                    </motion.div>
-                  ))}
+                <pre className="font-mono text-[4px] sm:text-[7px] md:text-[9px] lg:text-[11px] text-green-500 leading-[1.1] tracking-tighter whitespace-pre overflow-visible text-center inline-block mx-auto transform scale-[0.9] sm:scale-100">
+                  {typedLines.join('\n')}
                 </pre>
               </motion.div>
             )}
@@ -384,12 +374,12 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
               </motion.div>
             )}
 
-            {/* Footer */}
+            {/* Footer - Moved inside container to prevent overlap */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
-              className="absolute bottom-8 left-0 right-0 text-center"
+              className="mt-12 text-center"
             >
               <p className="font-mono text-xs text-green-500/40">
                 Press <kbd className="px-1.5 py-0.5 bg-green-500/10 rounded text-green-500/60">ESC</kbd> or click to skip
