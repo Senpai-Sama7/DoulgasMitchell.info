@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "adcb62a06748",
+  "session_id": "ses_336605ad0ffeJF4weAgMl0g27t",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T20:24:49.387578249Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "src/app/admin/login/page.tsx",
+    "src/app/admin/security/page.tsx",
+    "src/app/api/admin/auth/passkey/generate-options/route.ts",
+    "src/app/api/admin/auth/passkey/register/generate-options/route.ts",
+    "src/app/layout.tsx",
+    "src/components/admin/passkey-manager.tsx",
+    "src/components/effects/splash-overlay.tsx",
+    "src/app/api/admin/auth/passkey/register/verify/route.ts",
+    "src/app/api/admin/auth/passkey/verify/route.ts",
+    "src/lib/content-service.ts",
+    "src/lib/webauthn.ts"
+  ],
+  "agent": "OpenCode",
+  "turn_id": "4fa5dd9bd5c4",
+  "checkpoint_transcript_start": 1,
+  "transcript_lines_at_start": 1,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T20:24:49.384121862Z",
+    "agent_lines": 0,
+    "human_added": 627,
+    "human_modified": 22,
+    "human_removed": 0,
+    "total_committed": 627,
+    "agent_percentage": 0
+  }
+}
