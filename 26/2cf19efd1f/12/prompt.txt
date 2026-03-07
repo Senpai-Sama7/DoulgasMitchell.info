@@ -1,0 +1,7 @@
+Perform comprehensive backend code review of douglasmitchell.info repository. Focus on:
+1. Authentication and session management security
+2. API route security (input validation, rate limiting, authentication)
+3. Database security (queries, connection management, migrations)
+4. Environment configuration and secrets management
+5. Error handling and logging security
+Identify vulnerabilities, implement fixes, and validate all changes.

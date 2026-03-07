@@ -1,0 +1,1557 @@
+{
+  "info": {
+    "id": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+    "slug": "shiny-nebula",
+    "projectID": "aac261c5e191235afb6e29264e2f008f1db3af8a",
+    "directory": "/home/donovan/Projects/DoulgasMitchell.info",
+    "parentID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+    "title": "Backend Engineer - Code Review and Fix (@backend-developer subagent)",
+    "version": "1.2.20",
+    "summary": {
+      "additions": 42,
+      "deletions": 52,
+      "files": 1
+    },
+    "permission": [
+      {
+        "permission": "todowrite",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "todoread",
+        "pattern": "*",
+        "action": "deny"
+      },
+      {
+        "permission": "task",
+        "pattern": "*",
+        "action": "deny"
+      }
+    ],
+    "time": {
+      "created": 1772909242649,
+      "updated": 1772909367804
+    }
+  },
+  "messages": [
+    {
+      "info": {
+        "role": "user",
+        "time": {
+          "created": 1772909242653
+        },
+        "summary": {
+          "diffs": [
+            {
+              "file": "src/components/effects/splash-overlay.tsx",
+              "before": "'use client';\n\nimport { useState, useEffect, useCallback } from 'react';\nimport { motion, AnimatePresence, useReducedMotion } from 'framer-motion';\n\n// Nord color scheme\nconst NORD_COLORS = {\n  bg: '#2E3440',\n  fg: '#ECEFF4',\n  cyan: '#88C0D0',\n  blue: '#81A1C1',\n  red: '#BF616A',\n  green: '#A3BE8C',\n  yellow: '#EBCB8B',\n};\n\n// Large ASCII art for Douglas Mitchell - Stacked for impact\nconst ASCII_DOUGLAS = `\n██████╗  ██████╗ ██╗   ██╗ ██████╗ ██╗      █████╗ ███████╗\n██╔══██╗██╔═══██╗██║   ██║██╔════╝ ██║     ██╔══██╗██╔════╝\n██║  ██║██║   ██║██║   ██║██║  ███╗██║     ███████║███████╗\n██║  ██║██║   ██║██║   ██║██║   ██║██║     ██╔══██║╚════██║\n██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗██║  ██║███████║\n╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝`;\n\nconst ASCII_MITCHELL = `\n███╗   ███╗██╗████████╗ ██████╗██╗  ██╗███████╗██╗     ██╗     \n████╗ ████║██║╚══██╔══╝██╔════╝██║  ██║██╔════╝██║     ██║     \n██╔████╔██║██║   ██║   ██║     ███████║█████╗  ██║     ██║     \n██║╚██╔╝██║██║   ██║   ██║     ██╔══██║██╔══╝  ██║     ██║     \n██║ ╚═╝ ██║██║   ██║   ╚██████╗██║  ██║███████╗███████╗███████╗\n╚═╝     ╚═╝╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝`;\n\nconst SUBTITLE = 'THE ARCHITECT';\nconst ROLES = [\n  'Operations Analyst',\n  'AI Practitioner',\n  'Systems Architect',\n  'Author',\n  'Google AI Certified',\n  'Anthropic Certified',\n];\n\n// Dot characters for background\nconst DOT_CHARS = ['·', '○', '●', '◦', '○', '·'];\n\ninterface SplashOverlayProps {\n  onComplete?: () => void;\n  minDisplayTime?: number;\n}\n\nfunction createDotField(length: number) {\n  return Array.from({ length }, () => DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]);\n}\n\nexport function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {\n  const [isVisible, setIsVisible] = useState(true);\n  const [phase, setPhase] = useState<'dots' | 'build' | 'reveal' | 'fade'>('dots');\n  const [dotField, setDotField] = useState<string[]>(() => createDotField(100));\n  const [typedDouglas, setTypedDouglas] = useState<string[]>([]);\n  const [typedMitchell, setTypedMitchell] = useState<string[]>([]);\n  const [currentLine, setCurrentLine] = useState(0);\n  const [progress, setProgress] = useState(0);\n  const [currentRole, setCurrentRole] = useState(0);\n  const prefersReducedMotion = useReducedMotion();\n\n  useEffect(() => {\n    document.body.style.overflow = 'hidden';\n    return () => {\n      document.body.style.overflow = 'unset';\n    };\n  }, []);\n\n  useEffect(() => {\n    if (!isVisible) {\n      onComplete?.();\n    }\n  }, [isVisible, onComplete]);\n\n  // Dot field animation\n  useEffect(() => {\n    if (!isVisible || prefersReducedMotion || phase !== 'dots') return;\n\n    const interval = setInterval(() => {\n      setDotField(prev => prev.map(() => \n        Math.random() > 0.8 \n          ? DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]\n          : prev[Math.floor(Math.random() * prev.length)]\n      ));\n    }, 150);\n\n    const timeout = setTimeout(() => {\n      setPhase('build');\n      clearInterval(interval);\n    }, 2000);\n\n    return () => {\n      clearInterval(interval);\n      clearTimeout(timeout);\n    };\n  }, [isVisible, prefersReducedMotion, phase]);\n\n  // Build phase - type out ASCII art\n  useEffect(() => {\n    if (phase !== 'build' || prefersReducedMotion) return;\n\n    const douglasLines = ASCII_DOUGLAS.split('\\n').filter(line => line.trim());\n    const mitchellLines = ASCII_MITCHELL.split('\\n').filter(line => line.trim());\n    const totalLines = douglasLines.length + mitchellLines.length;\n    \n    const typeInterval = setInterval(() => {\n      if (currentLine < douglasLines.length) {\n        setTypedDouglas(prev => {\n          const line = douglasLines[currentLine];\n          const currentTyped = prev[currentLine] || '';\n          if (currentTyped.length < line.length) {\n            const next = [...prev];\n            next[currentLine] = line.slice(0, currentTyped.length + 4);\n            return next;\n          } else {\n            setCurrentLine(currentLine + 1);\n            return [...prev, line];\n          }\n        });\n      } else if (currentLine < totalLines) {\n        const mitchellIdx = currentLine - douglasLines.length;\n        setTypedMitchell(prev => {\n          const line = mitchellLines[mitchellIdx];\n          const currentTyped = prev[mitchellIdx] || '';\n          if (currentTyped.length < line.length) {\n            const next = [...prev];\n            next[mitchellIdx] = line.slice(0, currentTyped.length + 4);\n            return next;\n          } else {\n            setCurrentLine(currentLine + 1);\n            return [...prev, line];\n          }\n        });\n      } else {\n        clearInterval(typeInterval);\n        setTimeout(() => setPhase('reveal'), 500);\n      }\n    }, 30);\n\n    return () => clearInterval(typeInterval);\n  }, [phase, currentLine, prefersReducedMotion]);\n\n  // Progress bar animation\n  useEffect(() => {\n    if (phase !== 'reveal') return;\n\n    const interval = setInterval(() => {\n      setProgress(prev => {\n        if (prev >= 100) {\n          clearInterval(interval);\n          setTimeout(() => setPhase('fade'), 500);\n          return 100;\n        }\n        return prev + 2;\n      });\n    }, 50);\n\n    return () => clearInterval(interval);\n  }, [phase]);\n\n  // Role rotation\n  useEffect(() => {\n    if (phase !== 'reveal') return;\n\n    const interval = setInterval(() => {\n      setCurrentRole(prev => (prev + 1) % ROLES.length);\n    }, 800);\n\n    return () => clearInterval(interval);\n  }, [phase]);\n\n  // Complete splash\n  useEffect(() => {\n    if (phase !== 'fade') return;\n\n    const timeout = setTimeout(() => {\n      setIsVisible(false);\n      // Mark splash as seen\n      if (typeof window !== 'undefined') {\n        sessionStorage.setItem('splash-seen', 'true');\n      }\n    }, 1000);\n\n    return () => clearTimeout(timeout);\n  }, [phase]);\n\n  const handleSkip = useCallback(() => {\n    setIsVisible(false);\n  }, []);\n\n  useEffect(() => {\n    const handleKeyDown = (e: KeyboardEvent) => {\n      if (e.key === 'Escape') handleSkip();\n    };\n    window.addEventListener('keydown', handleKeyDown);\n    return () => window.removeEventListener('keydown', handleKeyDown);\n  }, [handleSkip]);\n\n  if (!isVisible && typeof window !== 'undefined') return null;\n\n  // Reduced motion version\n  if (prefersReducedMotion) {\n    return (\n      <AnimatePresence onExitComplete={onComplete}>\n        {isVisible && (\n          <motion.div\n            initial={{ opacity: 1 }}\n            animate={{ opacity: 0 }}\n            exit={{ opacity: 0 }}\n            transition={{ duration: 0.5, delay: 0.5 }}\n            className=\"fixed inset-0 z-[9999] flex items-center justify-center\"\n            style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}\n            onClick={handleSkip}\n          >\n            <div className=\"text-center\">\n              <p className=\"font-mono text-sm\" style={{ color: NORD_COLORS.cyan }}>Loading...</p>\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n    );\n  }\n\n  return (\n    <AnimatePresence onExitComplete={onComplete}>\n      {isVisible && (\n        <motion.div\n          initial={{ opacity: 1 }}\n          exit={{ opacity: 0 }}\n          transition={{ duration: 0.8, ease: 'easeInOut' }}\n          className=\"fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden cursor-pointer\"\n          style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}\n          onClick={handleSkip}\n        >\n          {/* Dot Field Background */}\n          {phase === 'dots' && (\n            <motion.div\n              initial={{ opacity: 1 }}\n              exit={{ opacity: 0 }}\n              className=\"absolute inset-0 grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 sm:gap-3 p-4 pointer-events-none\"\n            >\n              {dotField.map((char, i) => (\n                <motion.span\n                  key={i}\n                  initial={{ opacity: 0, scale: 0.5 }}\n                  animate={{ opacity: [0.2, 0.5, 0.2], scale: 1 }}\n                  transition={{ duration: 1, delay: i * 0.02, repeat: Infinity }}\n                  className=\"font-mono text-xs sm:text-sm md:text-base text-center\"\n                  style={{ color: NORD_COLORS.blue }}\n                >\n                  {char}\n                </motion.span>\n              ))}\n            </motion.div>\n          )}\n\n          {/* Main Content */}\n          <div className=\"relative z-10 w-full flex flex-col items-center justify-center text-center px-4\">\n            {/* Terminal Header */}\n            <motion.div\n              initial={{ opacity: 0, y: -20 }}\n              animate={{ opacity: 1, y: 0 }}\n              className=\"mb-6 sm:mb-8\"\n            >\n              <div className=\"inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg\"\n                style={{ borderColor: NORD_COLORS.cyan, backgroundColor: 'rgba(136, 192, 208, 0.1)' }}>\n                <div className=\"flex gap-1.5\">\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.red }} />\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.yellow }} />\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.green }} />\n                </div>\n                <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.cyan }}>\n                  douglas-mitchell-v4.2.0\n                </span>\n              </div>\n            </motion.div>\n\n            {/* ASCII Art - Stacked */}\n            {(phase === 'build' || phase === 'reveal' || phase === 'fade') && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-8 w-full max-w-full overflow-hidden flex flex-col justify-center items-center px-2 space-y-6 sm:space-y-8\"\n              >\n                <pre className=\"font-mono text-[1.5vw] sm:text-[5px] md:text-[6px] lg:text-[8px] leading-none tracking-tighter whitespace-pre overflow-hidden text-center inline-block mx-auto\"\n                  style={{ color: NORD_COLORS.cyan }}>\n                  {typedDouglas.join('\\n')}\n                </pre>\n                <pre className=\"font-mono text-[1.5vw] sm:text-[5px] md:text-[6px] lg:text-[8px] leading-none tracking-tighter whitespace-pre overflow-hidden text-center inline-block mx-auto\"\n                  style={{ color: NORD_COLORS.cyan }}>\n                  {typedMitchell.join('\\n')}\n                </pre>\n              </motion.div>\n            )}\n\n            {/* Subtitle */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-6 sm:mb-8\"\n              >\n                <div className=\"flex items-center justify-center gap-3 sm:gap-4\">\n                  <span className=\"font-mono text-xs sm:text-sm\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'◄'}</span>\n                  <span className=\"font-mono text-base sm:text-lg md:text-xl tracking-widest\" style={{ color: NORD_COLORS.fg }}>\n                    {SUBTITLE}\n                  </span>\n                  <span className=\"font-mono text-xs sm:text-sm\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'►'}</span>\n                </div>\n              </motion.div>\n            )}\n\n            {/* Rotating Role */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-6 sm:mb-8 h-6 sm:h-8\"\n              >\n                <div className=\"flex items-center justify-center gap-2 sm:gap-3\">\n                  <span className=\"font-mono text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>$</span>\n                  <motion.span\n                    key={currentRole}\n                    initial={{ opacity: 0, y: 10 }}\n                    animate={{ opacity: 1, y: 0 }}\n                    exit={{ opacity: 0, y: -10 }}\n                    className=\"font-mono text-xs sm:text-sm\"\n                    style={{ color: NORD_COLORS.cyan }}\n                  >\n                    {ROLES[currentRole]}\n                  </motion.span>\n                  <motion.span\n                    animate={{ opacity: [1, 0] }}\n                    transition={{ duration: 0.5, repeat: Infinity }}\n                    className=\"font-mono\"\n                    style={{ color: NORD_COLORS.green }}\n                  >\n                    ▊\n                  </motion.span>\n                </div>\n              </motion.div>\n            )}\n\n            {/* Progress Bar */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"w-48 sm:w-64 mx-auto\"\n              >\n                <div className=\"flex items-center gap-2 mb-1.5 sm:mb-2\">\n                  <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>loading...</span>\n                  <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.cyan }}>{progress}%</span>\n                </div>\n                <div className=\"h-0.5 sm:h-1 rounded-full overflow-hidden\" style={{ backgroundColor: NORD_COLORS.blue, opacity: 0.2 }}>\n                  <motion.div\n                    className=\"h-full\"\n                    style={{ backgroundColor: NORD_COLORS.cyan }}\n                    initial={{ width: 0 }}\n                    animate={{ width: `${progress}%` }}\n                    transition={{ duration: 0.1 }}\n                  />\n                </div>\n              </motion.div>\n            )}\n\n            {/* Footer */}\n            <motion.div\n              initial={{ opacity: 0 }}\n              animate={{ opacity: 1 }}\n              transition={{ delay: 1 }}\n              className=\"mt-8 sm:mt-12 text-center\"\n            >\n              <p className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>\n                Press <kbd className=\"px-1.5 py-0.5 rounded text-[10px]\" style={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', color: NORD_COLORS.cyan }}>ESC</kbd> or click to skip\n              </p>\n            </motion.div>\n          </div>\n\n          {/* Subtle Glow */}\n          <div \n            className=\"absolute inset-0 pointer-events-none\"\n            style={{\n              background: 'radial-gradient(circle at center, rgba(136, 192, 208, 0.05) 0%, transparent 70%)',\n            }}\n          />\n        </motion.div>\n      )}\n    </AnimatePresence>\n  );\n}\n",
+              "after": "'use client';\n\nimport { useState, useEffect, useCallback } from 'react';\nimport { motion, AnimatePresence, useReducedMotion } from 'framer-motion';\n\n// Nord color scheme\nconst NORD_COLORS = {\n  bg: '#2E3440',\n  fg: '#ECEFF4',\n  cyan: '#88C0D0',\n  blue: '#81A1C1',\n  red: '#BF616A',\n  green: '#A3BE8C',\n  yellow: '#EBCB8B',\n};\n\n// Large ASCII art for Douglas Mitchell - Stacked for impact\nconst ASCII_DOUGLAS = `\n██████╗  ██████╗ ██╗   ██╗ ██████╗ ██╗      █████╗ ███████╗\n██╔══██╗██╔═══██╗██║   ██║██╔════╝ ██║     ██╔══██╗██╔════╝\n██║  ██║██║   ██║██║   ██║██║  ███╗██║     ███████║███████╗\n██║  ██║██║   ██║██║   ██║██║   ██║██║     ██╔══██║╚════██║\n██████╔╝╚██████╔╝╚██████╔╝╚██████╔╝███████╗██║  ██║███████║\n╚═════╝  ╚═════╝  ╚═════╝  ╚═════╝ ╚══════╝╚═╝  ╚═╝╚══════╝`;\n\nconst ASCII_MITCHELL = `\n███╗   ███╗██╗████████╗ ██████╗██╗  ██╗███████╗██╗     ██╗     \n████╗ ████║██║╚══██╔══╝██╔════╝██║  ██║██╔════╝██║     ██║     \n██╔████╔██║██║   ██║   ██║     ███████║█████╗  ██║     ██║     \n██║╚██╔╝██║██║   ██║   ██║     ██╔══██║██╔══╝  ██║     ██║     \n██║ ╚═╝ ██║██║   ██║   ╚██████╗██║  ██║███████╗███████╗███████╗\n╚═╝     ╚═╝╚═╝   ╚═╝    ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚══════╝`;\n\nconst SUBTITLE = 'THE ARCHITECT';\nconst ROLES = [\n  'Operations Analyst',\n  'AI Practitioner',\n  'Systems Architect',\n  'Author',\n  'Google AI Certified',\n  'Anthropic Certified',\n];\n\n// Dot characters for background\nconst DOT_CHARS = ['·', '○', '●', '◦', '○', '·'];\n\ninterface SplashOverlayProps {\n  onComplete?: () => void;\n  minDisplayTime?: number;\n}\n\nfunction createDotField(length: number) {\n  return Array.from({ length }, () => DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]);\n}\n\nexport function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {\n  const [typedName, setTypedName] = useState('');\n  const [phase, setPhase] = useState<'dots' | 'typing' | 'reveal' | 'fade'>('dots');\n  const [dotField, setDotField] = useState<string[]>(() => createDotField(100));\n  const [progress, setProgress] = useState(0);\n  const [currentRole, setCurrentRole] = useState(0);\n  const prefersReducedMotion = useReducedMotion();\n\n  const FULL_NAME = \"DOUGLAS MITCHELL\";\n\n  useEffect(() => {\n    document.body.style.overflow = 'hidden';\n    return () => {\n      document.body.style.overflow = 'unset';\n    };\n  }, []);\n\n  useEffect(() => {\n    if (!isVisible) {\n      onComplete?.();\n    }\n  }, [isVisible, onComplete]);\n\n  // Dot field animation\n  useEffect(() => {\n    if (!isVisible || prefersReducedMotion || phase !== 'dots') return;\n\n    const interval = setInterval(() => {\n      setDotField(prev => prev.map(() => \n        Math.random() > 0.8 \n          ? DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]\n          : prev[Math.floor(Math.random() * prev.length)]\n      ));\n    }, 150);\n\n    const timeout = setTimeout(() => {\n      setPhase('build');\n      clearInterval(interval);\n    }, 2000);\n\n    return () => {\n      clearInterval(interval);\n      clearTimeout(timeout);\n    };\n  }, [isVisible, prefersReducedMotion, phase]);\n\n  // Typing phase - GOD tier font reveal\n  useEffect(() => {\n    if (phase !== 'typing' || prefersReducedMotion) return;\n\n    let charIndex = 0;\n    const typeInterval = setInterval(() => {\n      if (charIndex <= FULL_NAME.length) {\n        setTypedName(FULL_NAME.slice(0, charIndex));\n        charIndex++;\n      } else {\n        clearInterval(typeInterval);\n        setTimeout(() => setPhase('reveal'), 800);\n      }\n    }, 60);\n\n    return () => clearInterval(typeInterval);\n  }, [phase, prefersReducedMotion]);\n\n  // Progress bar animation\n  useEffect(() => {\n    if (phase !== 'reveal') return;\n\n    const interval = setInterval(() => {\n      setProgress(prev => {\n        if (prev >= 100) {\n          clearInterval(interval);\n          setTimeout(() => setPhase('fade'), 500);\n          return 100;\n        }\n        return prev + 2;\n      });\n    }, 50);\n\n    return () => clearInterval(interval);\n  }, [phase]);\n\n  // Role rotation\n  useEffect(() => {\n    if (phase !== 'reveal') return;\n\n    const interval = setInterval(() => {\n      setCurrentRole(prev => (prev + 1) % ROLES.length);\n    }, 800);\n\n    return () => clearInterval(interval);\n  }, [phase]);\n\n  // Complete splash\n  useEffect(() => {\n    if (phase !== 'fade') return;\n\n    const timeout = setTimeout(() => {\n      setIsVisible(false);\n      // Mark splash as seen\n      if (typeof window !== 'undefined') {\n        sessionStorage.setItem('splash-seen', 'true');\n      }\n    }, 1000);\n\n    return () => clearTimeout(timeout);\n  }, [phase]);\n\n  const handleSkip = useCallback(() => {\n    setIsVisible(false);\n  }, []);\n\n  useEffect(() => {\n    const handleKeyDown = (e: KeyboardEvent) => {\n      if (e.key === 'Escape') handleSkip();\n    };\n    window.addEventListener('keydown', handleKeyDown);\n    return () => window.removeEventListener('keydown', handleKeyDown);\n  }, [handleSkip]);\n\n  if (!isVisible && typeof window !== 'undefined') return null;\n\n  // Reduced motion version\n  if (prefersReducedMotion) {\n    return (\n      <AnimatePresence onExitComplete={onComplete}>\n        {isVisible && (\n          <motion.div\n            initial={{ opacity: 1 }}\n            animate={{ opacity: 0 }}\n            exit={{ opacity: 0 }}\n            transition={{ duration: 0.5, delay: 0.5 }}\n            className=\"fixed inset-0 z-[9999] flex items-center justify-center\"\n            style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}\n            onClick={handleSkip}\n          >\n            <div className=\"text-center\">\n              <p className=\"font-mono text-sm\" style={{ color: NORD_COLORS.cyan }}>Loading...</p>\n            </div>\n          </motion.div>\n        )}\n      </AnimatePresence>\n    );\n  }\n\n  return (\n    <AnimatePresence onExitComplete={onComplete}>\n      {isVisible && (\n        <motion.div\n          initial={{ opacity: 1 }}\n          exit={{ opacity: 0 }}\n          transition={{ duration: 0.8, ease: 'easeInOut' }}\n          className=\"fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden cursor-pointer\"\n          style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}\n          onClick={handleSkip}\n        >\n          {/* Dot Field Background */}\n          {phase === 'dots' && (\n            <motion.div\n              initial={{ opacity: 1 }}\n              exit={{ opacity: 0 }}\n              className=\"absolute inset-0 grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 sm:gap-3 p-4 pointer-events-none\"\n            >\n              {dotField.map((char, i) => (\n                <motion.span\n                  key={i}\n                  initial={{ opacity: 0, scale: 0.5 }}\n                  animate={{ opacity: [0.2, 0.5, 0.2], scale: 1 }}\n                  transition={{ duration: 1, delay: i * 0.02, repeat: Infinity }}\n                  className=\"font-mono text-xs sm:text-sm md:text-base text-center\"\n                  style={{ color: NORD_COLORS.blue }}\n                >\n                  {char}\n                </motion.span>\n              ))}\n            </motion.div>\n          )}\n\n          {/* Main Content */}\n          <div className=\"relative z-10 w-full flex flex-col items-center justify-center text-center px-4\">\n            {/* Terminal Header */}\n            <motion.div\n              initial={{ opacity: 0, y: -20 }}\n              animate={{ opacity: 1, y: 0 }}\n              className=\"mb-6 sm:mb-8\"\n            >\n              <div className=\"inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg\"\n                style={{ borderColor: NORD_COLORS.cyan, backgroundColor: 'rgba(136, 192, 208, 0.1)' }}>\n                <div className=\"flex gap-1.5\">\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.red }} />\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.yellow }} />\n                  <div className=\"w-2 h-2 rounded-full\" style={{ backgroundColor: NORD_COLORS.green }} />\n                </div>\n                <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.cyan }}>\n                  douglas-mitchell-v4.2.0\n                </span>\n              </div>\n            </motion.div>\n\n            {/* GOD Tier Typewriter Name */}\n            {(phase === 'typing' || phase === 'reveal' || phase === 'fade') && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-12 relative\"\n              >\n                <h1 className=\"text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-white flex flex-col items-center leading-[0.85]\">\n                  <span className=\"relative inline-block overflow-hidden\">\n                    {typedName.split(' ')[0]}\n                    {phase === 'typing' && !typedName.includes(' ') && (\n                      <motion.span\n                        animate={{ opacity: [1, 0] }}\n                        transition={{ duration: 0.1, repeat: Infinity }}\n                        className=\"inline-block w-[4px] h-[0.8em] bg-primary ml-1 align-middle\"\n                      />\n                    )}\n                  </span>\n                  <span className=\"text-primary mt-2\">\n                    {typedName.split(' ')[1] || ''}\n                    {phase === 'typing' && typedName.includes(' ') && (\n                      <motion.span\n                        animate={{ opacity: [1, 0] }}\n                        transition={{ duration: 0.1, repeat: Infinity }}\n                        className=\"inline-block w-[4px] h-[0.8em] bg-white ml-1 align-middle\"\n                      />\n                    )}\n                  </span>\n                </h1>\n                \n                {/* Architectural Accents */}\n                <div className=\"absolute -inset-x-8 -inset-y-4 border-x border-white/5 pointer-events-none\" />\n                <div className=\"absolute -inset-x-4 -inset-y-8 border-y border-white/5 pointer-events-none\" />\n              </motion.div>\n            )}\n\n            {/* Subtitle */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-6 sm:mb-8\"\n              >\n                <div className=\"flex items-center justify-center gap-3 sm:gap-4\">\n                  <span className=\"font-mono text-xs sm:text-sm\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'◄'}</span>\n                  <span className=\"font-mono text-base sm:text-lg md:text-xl tracking-widest\" style={{ color: NORD_COLORS.fg }}>\n                    {SUBTITLE}\n                  </span>\n                  <span className=\"font-mono text-xs sm:text-sm\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>{'►'}</span>\n                </div>\n              </motion.div>\n            )}\n\n            {/* Rotating Role */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"mb-6 sm:mb-8 h-6 sm:h-8\"\n              >\n                <div className=\"flex items-center justify-center gap-2 sm:gap-3\">\n                  <span className=\"font-mono text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>$</span>\n                  <motion.span\n                    key={currentRole}\n                    initial={{ opacity: 0, y: 10 }}\n                    animate={{ opacity: 1, y: 0 }}\n                    exit={{ opacity: 0, y: -10 }}\n                    className=\"font-mono text-xs sm:text-sm\"\n                    style={{ color: NORD_COLORS.cyan }}\n                  >\n                    {ROLES[currentRole]}\n                  </motion.span>\n                  <motion.span\n                    animate={{ opacity: [1, 0] }}\n                    transition={{ duration: 0.5, repeat: Infinity }}\n                    className=\"font-mono\"\n                    style={{ color: NORD_COLORS.green }}\n                  >\n                    ▊\n                  </motion.span>\n                </div>\n              </motion.div>\n            )}\n\n            {/* Progress Bar */}\n            {phase === 'reveal' && (\n              <motion.div\n                initial={{ opacity: 0 }}\n                animate={{ opacity: 1 }}\n                className=\"w-48 sm:w-64 mx-auto\"\n              >\n                <div className=\"flex items-center gap-2 mb-1.5 sm:mb-2\">\n                  <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>loading...</span>\n                  <span className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.cyan }}>{progress}%</span>\n                </div>\n                <div className=\"h-0.5 sm:h-1 rounded-full overflow-hidden\" style={{ backgroundColor: NORD_COLORS.blue, opacity: 0.2 }}>\n                  <motion.div\n                    className=\"h-full\"\n                    style={{ backgroundColor: NORD_COLORS.cyan }}\n                    initial={{ width: 0 }}\n                    animate={{ width: `${progress}%` }}\n                    transition={{ duration: 0.1 }}\n                  />\n                </div>\n              </motion.div>\n            )}\n\n            {/* Footer */}\n            <motion.div\n              initial={{ opacity: 0 }}\n              animate={{ opacity: 1 }}\n              transition={{ delay: 1 }}\n              className=\"mt-8 sm:mt-12 text-center\"\n            >\n              <p className=\"font-mono text-[10px] sm:text-xs\" style={{ color: NORD_COLORS.blue, opacity: 0.5 }}>\n                Press <kbd className=\"px-1.5 py-0.5 rounded text-[10px]\" style={{ backgroundColor: 'rgba(136, 192, 208, 0.1)', color: NORD_COLORS.cyan }}>ESC</kbd> or click to skip\n              </p>\n            </motion.div>\n          </div>\n\n          {/* Subtle Glow */}\n          <div \n            className=\"absolute inset-0 pointer-events-none\"\n            style={{\n              background: 'radial-gradient(circle at center, rgba(136, 192, 208, 0.05) 0%, transparent 70%)',\n            }}\n          />\n        </motion.div>\n      )}\n    </AnimatePresence>\n  );\n}\n",
+              "additions": 42,
+              "deletions": 52,
+              "status": "modified"
+            }
+          ]
+        },
+        "agent": "backend-developer",
+        "model": {
+          "providerID": "ollama-cloud",
+          "modelID": "qwen3-coder:480b"
+        },
+        "tools": {
+          "todowrite": false,
+          "todoread": false,
+          "task": false
+        },
+        "id": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "text",
+          "text": "Perform comprehensive backend code review of douglasmitchell.info repository. Focus on:\n1. Authentication and session management security\n2. API route security (input validation, rate limiting, authentication)\n3. Database security (queries, connection management, migrations)\n4. Environment configuration and secrets management\n5. Error handling and logging security\nIdentify vulnerabilities, implement fixes, and validate all changes.",
+          "id": "prt_cc9a0291d001J58MfD1KKMPa6L",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0291c001VlddicFmcxG5hM"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909242659,
+          "completed": 1772909248047
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 14957,
+          "input": 14900,
+          "output": 57,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a02923001cjdW4yW2oqnRc0",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a02e3e001eHCfN13a58ii2f",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a02923001cjdW4yW2oqnRc0"
+        },
+        {
+          "type": "text",
+          "text": "I'll perform a comprehensive backend code review of the douglasmitchell.info repository. Let me start by exploring the project structure to understand the codebase better.",
+          "time": {
+            "start": 1772909248006,
+            "end": 1772909248006
+          },
+          "id": "prt_cc9a02e40001TOF9ejrh8S6exd",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a02923001cjdW4yW2oqnRc0"
+        },
+        {
+          "type": "tool",
+          "callID": "call_vnl3tebl",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "**/*.ts"
+            },
+            "output": "/home/donovan/Projects/DoulgasMitchell.info/next.config.ts\n/home/donovan/Projects/DoulgasMitchell.info/verify-splash.ts\n/home/donovan/Projects/DoulgasMitchell.info/next-env.d.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/sitemap.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/site-content.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/content-service.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/check/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/setup/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/tailwind.config.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/__tests__/forms.test.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/__tests__/auth.test.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/__tests__/site-content.test.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/__tests__/upload.test.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/passkey-challenges.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload-server.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/auth.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/env.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/theme.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/cache.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/db.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/utils.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/request.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/rate-limit.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/forms.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/activity.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/ascii/index.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/ascii/patterns.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/hooks/use-toast.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/hooks/use-mobile.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/components/admin/index.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/components/site/index.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/components/effects/index.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/upload/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/analytics/page-view/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/content/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/auth/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/logout/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/contact/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/seed/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/newsletter/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/examples/websocket/server.ts\n/home/donovan/Projects/DoulgasMitchell.info/.opencode/plugins/entire.ts",
+            "title": "",
+            "metadata": {
+              "count": 44,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772909247836,
+              "end": 1772909247852
+            }
+          },
+          "id": "prt_cc9a03d56001DBUadAIZBc6eWg",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a02923001cjdW4yW2oqnRc0"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 14957,
+            "input": 14900,
+            "output": 57,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a03e07001xzi6uaBPwqQvm3",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a02923001cjdW4yW2oqnRc0"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909248049,
+          "completed": 1772909251358
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 15841,
+          "input": 15800,
+          "output": 41,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a03e31001ShOKj9KnqKJflP",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a040de001McQMouUXKH5ajN",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a03e31001ShOKj9KnqKJflP"
+        },
+        {
+          "type": "text",
+          "text": "Let me also check for any JavaScript files and explore the lib directory more deeply:",
+          "time": {
+            "start": 1772909251311,
+            "end": 1772909251311
+          },
+          "id": "prt_cc9a040df001Sm9N4Gjz6plq95",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a03e31001ShOKj9KnqKJflP"
+        },
+        {
+          "type": "tool",
+          "callID": "call_ree85qqm",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "src/lib/**/*.ts"
+            },
+            "output": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/site-content.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/content-service.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/passkey-challenges.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload-server.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/env.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/theme.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/cache.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/db.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/auth.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/utils.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/request.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/rate-limit.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/forms.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/activity.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/ascii/index.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/lib/ascii/patterns.ts",
+            "title": "",
+            "metadata": {
+              "count": 17,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772909251112,
+              "end": 1772909251125
+            }
+          },
+          "id": "prt_cc9a04a250014qK0Fr2761MUas",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a03e31001ShOKj9KnqKJflP"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 15841,
+            "input": 15800,
+            "output": 41,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a04af1001meIJVpo1cGwQAN",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a03e31001ShOKj9KnqKJflP"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909251360,
+          "completed": 1772909263548
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 16190,
+          "input": 16156,
+          "output": 34,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a04b20001JyxdilCXVbU7NJ",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a05840001l1IRhMEAhPWTnF",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a04b20001JyxdilCXVbU7NJ"
+        },
+        {
+          "type": "text",
+          "text": "Let me also check the API routes:",
+          "time": {
+            "start": 1772909263502,
+            "end": 1772909263502
+          },
+          "id": "prt_cc9a05842001lfjaX1nbky9fa4",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a04b20001JyxdilCXVbU7NJ"
+        },
+        {
+          "type": "tool",
+          "callID": "call_pvdbznj2",
+          "tool": "glob",
+          "state": {
+            "status": "completed",
+            "input": {
+              "pattern": "src/app/api/**/*.ts"
+            },
+            "output": "/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/check/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/setup/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/upload/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/analytics/page-view/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/content/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/logout/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/auth/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/contact/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/newsletter/route.ts\n/home/donovan/Projects/DoulgasMitchell.info/src/app/api/seed/route.ts",
+            "title": "",
+            "metadata": {
+              "count": 11,
+              "truncated": false
+            },
+            "time": {
+              "start": 1772909262970,
+              "end": 1772909262981
+            }
+          },
+          "id": "prt_cc9a078760017TimQr22YYW1TA",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a04b20001JyxdilCXVbU7NJ"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 16190,
+            "input": 16156,
+            "output": 34,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a07a90001SqydtCRCLX5yU1",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a04b20001JyxdilCXVbU7NJ"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909263550,
+          "completed": 1772909272570
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 16486,
+          "input": 16431,
+          "output": 55,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a07abe001mg0V5el5y2vDw2",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a08031001CRSqLEA7Nigq3U",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a07abe001mg0V5el5y2vDw2"
+        },
+        {
+          "type": "text",
+          "text": "Now let me examine the key files for security issues. Let's start with the environment configuration:",
+          "time": {
+            "start": 1772909272496,
+            "end": 1772909272496
+          },
+          "id": "prt_cc9a08033001QC6HqFwFOuJWa6",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a07abe001mg0V5el5y2vDw2"
+        },
+        {
+          "type": "tool",
+          "callID": "call_85v12d6a",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/env.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/env.ts</path>\n<type>file</type>\n<content>1: import { z } from 'zod';\n2: \n3: const envSchema = z.object({\n4:   // Database\n5:   DATABASE_URL: z.string().default('file:./dev.db'),\n6:   \n7:   // Auth\n8:   ADMIN_PASSWORD: z.string().min(8).optional(),\n9:   JWT_SECRET: z.string().min(32).optional(),\n10:   \n11:   // Passkeys (WebAuthn)\n12:   PASSKEY_RP_ID: z.string().optional(),\n13:   PASSKEY_RP_NAME: z.string().default('Douglas Mitchell Portfolio'),\n14:   PASSKEY_EXPECTED_ORIGINS: z.string().optional(),\n15:   \n16:   // Redis/Cache\n17:   UPSTASH_REDIS_URL: z.string().optional(),\n18:   UPSTASH_REDIS_TOKEN: z.string().optional(),\n19:   \n20:   // Storage\n21:   STORAGE_PROVIDER: z.enum(['local', 's3', 'r2']).default('local'),\n22:   S3_BUCKET: z.string().optional(),\n23:   S3_REGION: z.string().default('us-east-1'),\n24:   S3_ACCESS_KEY: z.string().optional(),\n25:   S3_SECRET_KEY: z.string().optional(),\n26:   \n27:   // Upload limits\n28:   MAX_FILE_SIZE: z.string().default('50'), // MB\n29:   UPLOAD_DIR: z.string().default('./public/uploads'),\n30:   \n31:   // App config\n32:   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),\n33:   NEXT_PUBLIC_SITE_URL: z.string().url().default('https://douglasmitchell.info'),\n34:   \n35:   // Features\n36:   ENABLE_PASSKEYS: z.string().default('true'),\n37:   ENABLE_ANALYTICS: z.string().default('false'),\n38:   \n39:   // Email\n40:   SMTP_HOST: z.string().optional(),\n41:   SMTP_PORT: z.string().default('587'),\n42:   SMTP_USER: z.string().optional(),\n43:   SMTP_PASS: z.string().optional(),\n44:   FROM_EMAIL: z.string().email().optional(),\n45: });\n46: \n47: let validatedEnv: z.infer<typeof envSchema> | null = null;\n48: \n49: export function getEnv() {\n50:   if (validatedEnv) return validatedEnv;\n51:   \n52:   try {\n53:     validatedEnv = envSchema.parse(process.env);\n54:     return validatedEnv;\n55:   } catch (error) {\n56:     if (error instanceof z.ZodError) {\n57:       console.error('Environment validation failed:');\n58:       error.issues.forEach((err) => {\n59:         console.error(`  - ${err.path.join('.')}: ${err.message}`);\n60:       });\n61:     }\n62:     throw new Error('Invalid environment variables');\n63:   }\n64: }\n65: \n66: // Type-safe env export\n67: export const env = getEnv();\n68: \n69: // Feature flags\n70: export const features = {\n71:   passkeys: env.ENABLE_PASSKEYS === 'true' && env.ADMIN_PASSWORD,\n72:   analytics: env.ENABLE_ANALYTICS === 'true',\n73:   email: env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS,\n74:   s3: env.STORAGE_PROVIDER === 's3' && env.S3_BUCKET && env.S3_ACCESS_KEY,\n75:   redis: env.UPSTASH_REDIS_URL && env.UPSTASH_REDIS_TOKEN,\n76: } as const;\n\n(End of file - total 76 lines)\n</content>",
+            "title": "src/lib/env.ts",
+            "metadata": {
+              "preview": "import { z } from 'zod';\n\nconst envSchema = z.object({\n  // Database\n  DATABASE_URL: z.string().default('file:./dev.db'),\n  \n  // Auth\n  ADMIN_PASSWORD: z.string().min(8).optional(),\n  JWT_SECRET: z.string().min(32).optional(),\n  \n  // Passkeys (WebAuthn)\n  PASSKEY_RP_ID: z.string().optional(),\n  PASSKEY_RP_NAME: z.string().default('Douglas Mitchell Portfolio'),\n  PASSKEY_EXPECTED_ORIGINS: z.string().optional(),\n  \n  // Redis/Cache\n  UPSTASH_REDIS_URL: z.string().optional(),\n  UPSTASH_REDIS_TOKEN: z.string().optional(),\n  \n  // Storage",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909272233,
+              "end": 1772909272252
+            }
+          },
+          "id": "prt_cc9a09ca1001PpmbRiiOIhiiMK",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a07abe001mg0V5el5y2vDw2"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 16486,
+            "input": 16431,
+            "output": 55,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a09db3001uVz61Pmr2NjSOL",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a07abe001mg0V5el5y2vDw2"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909272573,
+          "completed": 1772909275917
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 17446,
+          "input": 17402,
+          "output": 44,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a09dfd001TlaftEAsWLtjxY",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a0a0db0013IJUObevQtHoGJ",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a09dfd001TlaftEAsWLtjxY"
+        },
+        {
+          "type": "text",
+          "text": "Now let's check the authentication system:",
+          "time": {
+            "start": 1772909275865,
+            "end": 1772909275865
+          },
+          "id": "prt_cc9a0a0f40013UtmPcggpuTuJh",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a09dfd001TlaftEAsWLtjxY"
+        },
+        {
+          "type": "tool",
+          "callID": "call_n7nj89ul",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/auth.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/auth.ts</path>\n<type>file</type>\n<content>1: import { randomBytes } from 'crypto';\n2: import bcrypt from 'bcryptjs';\n3: import { SignJWT, jwtVerify } from 'jose';\n4: import { cookies } from 'next/headers';\n5: import { env } from './env';\n6: import { db } from './db';\n7: import { clearRateLimit as clearScopedRateLimit, rateLimit } from './rate-limit';\n8: \n9: function getJwtSecret() {\n10:   const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');\n11: \n12:   if (!secret) {\n13:     throw new Error('JWT_SECRET must be configured in production');\n14:   }\n15: \n16:   return new TextEncoder().encode(secret);\n17: }\n18: \n19: const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days\n20: \n21: export interface Session {\n22:   id: string;\n23:   userId: string;\n24:   email: string;\n25:   name: string;\n26:   role: 'admin' | 'editor';\n27:   expiresAt: Date;\n28: }\n29: \n30: // Hash password with bcrypt\n31: export async function hashPassword(password: string): Promise<string> {\n32:   return bcrypt.hash(password, 12);\n33: }\n34: \n35: // Verify password\n36: export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {\n37:   return bcrypt.compare(password, hashedPassword);\n38: }\n39: \n40: // Create JWT token\n41: export async function createToken(payload: object): Promise<string> {\n42:   return new SignJWT({ ...payload })\n43:     .setProtectedHeader({ alg: 'HS256' })\n44:     .setIssuedAt()\n45:     .setExpirationTime('7d')\n46:     .sign(getJwtSecret());\n47: }\n48: \n49: // Verify JWT token\n50: export async function verifyToken(token: string): Promise<Session | null> {\n51:   try {\n52:     const { payload } = await jwtVerify(token, getJwtSecret());\n53:     return payload as unknown as Session;\n54:   } catch {\n55:     return null;\n56:   }\n57: }\n58: \n59: // Create session\n60: export async function createSession(\n61:   userId: string,\n62:   email: string,\n63:   name: string,\n64:   options?: {\n65:     ipAddress?: string;\n66:     userAgent?: string;\n67:   }\n68: ): Promise<string> {\n69:   const token = await createToken({\n70:     userId,\n71:     email,\n72:     name,\n73:     role: 'admin',\n74:     expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),\n75:   });\n76: \n77:   // Store in database\n78:   await db.session.create({\n79:     data: {\n80:       token,\n81:       userId,\n82:       expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),\n83:       ipAddress: options?.ipAddress,\n84:       userAgent: options?.userAgent,\n85:     },\n86:   });\n87: \n88:   return token;\n89: }\n90: \n91: // Get current session from cookies\n92: export async function getSession(): Promise<Session | null> {\n93:   const cookieStore = await cookies();\n94:   const token = cookieStore.get('admin-session')?.value;\n95:   \n96:   if (!token) return null;\n97:   \n98:   const session = await verifyToken(token);\n99:   if (!session) return null;\n100: \n101:   const persistedSession = await db.session.findUnique({\n102:     where: { token },\n103:     include: {\n104:       user: {\n105:         select: {\n106:           email: true,\n107:           name: true,\n108:           role: true,\n109:           isActive: true,\n110:         },\n111:       },\n112:     },\n113:   }).catch(() => null);\n114: \n115:   if (!persistedSession || !persistedSession.user.isActive) {\n116:     await deleteSession(token);\n117:     return null;\n118:   }\n119:   \n120:   // Check if session is expired\n121:   if (new Date() > new Date(session.expiresAt) || new Date() > persistedSession.expiresAt) {\n122:     await deleteSession(token);\n123:     return null;\n124:   }\n125:   \n126:   return {\n127:     id: persistedSession.id,\n128:     userId: persistedSession.userId,\n129:     email: persistedSession.user.email,\n130:     name: persistedSession.user.name || session.name,\n131:     role: persistedSession.user.role as Session['role'],\n132:     expiresAt: persistedSession.expiresAt,\n133:   };\n134: }\n135: \n136: // Delete session\n137: export async function deleteSession(token: string): Promise<void> {\n138:   const cookieStore = await cookies();\n139:   cookieStore.delete('admin-session');\n140:   \n141:   try {\n142:     await db.session.delete({\n143:       where: { token },\n144:     });\n145:   } catch {\n146:     // Session might not exist in DB\n147:   }\n148: }\n149: \n150: // Set session cookie\n151: export async function setSessionCookie(token: string): Promise<void> {\n152:   const cookieStore = await cookies();\n153:   cookieStore.set('admin-session', token, {\n154:     httpOnly: true,\n155:     secure: env.NODE_ENV === 'production',\n156:     sameSite: 'strict',\n157:     maxAge: SESSION_DURATION,\n158:     path: '/',\n159:   });\n160: }\n161: \n162: // Rate limiting for login attempts\n163: export function checkRateLimit(identifier: string): boolean {\n164:   return rateLimit(identifier, {\n165:     limit: 5,\n166:     windowMs: 15 * 60 * 1000,\n167:     prefix: 'login',\n168:   }).allowed;\n169: }\n170: \n171: // Clear rate limit\n172: export function clearRateLimit(identifier: string): void {\n173:   clearScopedRateLimit(identifier, 'login');\n174: }\n175: \n176: // Generate secure random token\n177: export function generateSecureToken(length: number = 32): string {\n178:   return randomBytes(length).toString('hex').slice(0, length);\n179: }\n\n(End of file - total 179 lines)\n</content>",
+            "title": "src/lib/auth.ts",
+            "metadata": {
+              "preview": "import { randomBytes } from 'crypto';\nimport bcrypt from 'bcryptjs';\nimport { SignJWT, jwtVerify } from 'jose';\nimport { cookies } from 'next/headers';\nimport { env } from './env';\nimport { db } from './db';\nimport { clearRateLimit as clearScopedRateLimit, rateLimit } from './rate-limit';\n\nfunction getJwtSecret() {\n  const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');\n\n  if (!secret) {\n    throw new Error('JWT_SECRET must be configured in production');\n  }\n\n  return new TextEncoder().encode(secret);\n}\n\nconst SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days\n",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909275696,
+              "end": 1772909275703
+            }
+          },
+          "id": "prt_cc9a0aa2c001W1N1LLxrngt0gQ",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a09dfd001TlaftEAsWLtjxY"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 17446,
+            "input": 17402,
+            "output": 44,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a0aada001FVPcQ84Gps93hf",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a09dfd001TlaftEAsWLtjxY"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909275919,
+          "completed": 1772909279894
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 19250,
+          "input": 19207,
+          "output": 43,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a0ab0f001XyTw6T5sP6RYy3",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a0b11d001km6CdpIXmimROx",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ab0f001XyTw6T5sP6RYy3"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the database setup:",
+          "time": {
+            "start": 1772909279835,
+            "end": 1772909279835
+          },
+          "id": "prt_cc9a0b1220013qtiX3W5QP0Tpd",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ab0f001XyTw6T5sP6RYy3"
+        },
+        {
+          "type": "tool",
+          "callID": "call_m4brso5x",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/db.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/db.ts</path>\n<type>file</type>\n<content>1: import { PrismaClient } from '@prisma/client';\n2: \n3: const globalForPrisma = globalThis as unknown as {\n4:   prisma: PrismaClient | undefined;\n5: };\n6: \n7: if (!process.env.DATABASE_URL) {\n8:   process.env.DATABASE_URL = 'file:./dev.db';\n9: }\n10: \n11: export const db =\n12:   globalForPrisma.prisma ??\n13:   new PrismaClient({\n14:     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n15:   });\n16: \n17: if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;\n\n(End of file - total 17 lines)\n</content>",
+            "title": "src/lib/db.ts",
+            "metadata": {
+              "preview": "import { PrismaClient } from '@prisma/client';\n\nconst globalForPrisma = globalThis as unknown as {\n  prisma: PrismaClient | undefined;\n};\n\nif (!process.env.DATABASE_URL) {\n  process.env.DATABASE_URL = 'file:./dev.db';\n}\n\nexport const db =\n  globalForPrisma.prisma ??\n  new PrismaClient({\n    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],\n  });\n\nif (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = db;",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909279677,
+              "end": 1772909279681
+            }
+          },
+          "id": "prt_cc9a0b9b8001xK5TPdiWlv67RP",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ab0f001XyTw6T5sP6RYy3"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 19250,
+            "input": 19207,
+            "output": 43,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a0ba5f001MKfFJD376aErGZ",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ab0f001XyTw6T5sP6RYy3"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909279899,
+          "completed": 1772909284192
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 19534,
+          "input": 19479,
+          "output": 55,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a0ba9b001sohCPH2JBsxjUy",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a0bdb3001qWfGopp4ogth6r",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ba9b001sohCPH2JBsxjUy"
+        },
+        {
+          "type": "text",
+          "text": "Now let's examine the API routes, starting with the admin auth route:",
+          "time": {
+            "start": 1772909284146,
+            "end": 1772909284146
+          },
+          "id": "prt_cc9a0bdb9001rEor6h6Pk0jMtQ",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ba9b001sohCPH2JBsxjUy"
+        },
+        {
+          "type": "tool",
+          "callID": "call_v5c8ansb",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/auth/route.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/auth/route.ts</path>\n<type>file</type>\n<content>1: import { NextRequest, NextResponse } from 'next/server';\n2: import { db } from '@/lib/db';\n3: import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';\n4: import { logActivity } from '@/lib/activity';\n5: import { getClientIp, getUserAgent } from '@/lib/request';\n6: \n7: // GET /api/admin/auth - Check current session\n8: export async function GET() {\n9:   try {\n10:     const session = await getSession();\n11: \n12:     if (!session) {\n13:       return NextResponse.json({ authenticated: false }, { status: 401 });\n14:     }\n15: \n16:     return NextResponse.json({\n17:       authenticated: true,\n18:       user: {\n19:         userId: session.userId,\n20:         email: session.email,\n21:         name: session.name,\n22:         role: session.role,\n23:       },\n24:     });\n25:   } catch (error) {\n26:     console.error('Auth check error:', error);\n27:     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });\n28:   }\n29: }\n30: \n31: // POST /api/admin/auth - Login\n32: export async function POST(request: NextRequest) {\n33:   try {\n34:     const body = await request.json();\n35:     const { email, password } = body;\n36: \n37:     // Validation\n38:     if (!email || !password) {\n39:       return NextResponse.json(\n40:         { error: 'Email and password are required' },\n41:         { status: 400 }\n42:       );\n43:     }\n44: \n45:     // Rate limiting\n46:     const clientIp = getClientIp(request);\n47:     if (!checkRateLimit(clientIp)) {\n48:       return NextResponse.json(\n49:         { error: 'Too many login attempts. Please try again later.' },\n50:         { status: 429 }\n51:       );\n52:     }\n53: \n54:     // Find user\n55:     const user = await db.adminUser.findUnique({\n56:       where: { email },\n57:     });\n58: \n59:     if (!user) {\n60:       return NextResponse.json(\n61:         { error: 'Invalid credentials' },\n62:         { status: 401 }\n63:       );\n64:     }\n65: \n66:     // Verify password\n67:     if (!user.passwordHash) {\n68:       return NextResponse.json(\n69:         { error: 'Password login is not configured for this account.' },\n70:         { status: 403 }\n71:       );\n72:     }\n73: \n74:     const isValid = await verifyPassword(password, user.passwordHash);\n75: \n76:     if (!isValid) {\n77:       return NextResponse.json(\n78:         { error: 'Invalid credentials' },\n79:         { status: 401 }\n80:       );\n81:     }\n82: \n83:     // Update last login\n84:     await db.adminUser.update({\n85:       where: { id: user.id },\n86:       data: { lastLoginAt: new Date() },\n87:     });\n88: \n89:     // Create session\n90:     const token = await createSession(user.id, user.email, user.name || 'Admin', {\n91:       ipAddress: clientIp,\n92:       userAgent: getUserAgent(request),\n93:     });\n94:     await setSessionCookie(token);\n95:     clearRateLimit(clientIp);\n96: \n97:     await logActivity({\n98:       action: 'login',\n99:       resource: 'admin-session',\n100:       resourceId: user.id,\n101:       userId: user.id,\n102:       request,\n103:       details: {\n104:         method: 'password',\n105:       },\n106:     });\n107: \n108:     return NextResponse.json({\n109:       success: true,\n110:       user: {\n111:         id: user.id,\n112:         email: user.email,\n113:         name: user.name,\n114:         role: user.role,\n115:       },\n116:     });\n117:   } catch (error) {\n118:     console.error('Login error:', error);\n119:     return NextResponse.json(\n120:       { error: 'Internal server error' },\n121:       { status: 500 }\n122:     );\n123:   }\n124: }\n\n(End of file - total 124 lines)\n</content>",
+            "title": "src/app/api/admin/auth/route.ts",
+            "metadata": {
+              "preview": "import { NextRequest, NextResponse } from 'next/server';\nimport { db } from '@/lib/db';\nimport { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';\nimport { logActivity } from '@/lib/activity';\nimport { getClientIp, getUserAgent } from '@/lib/request';\n\n// GET /api/admin/auth - Check current session\nexport async function GET() {\n  try {\n    const session = await getSession();\n\n    if (!session) {\n      return NextResponse.json({ authenticated: false }, { status: 401 });\n    }\n\n    return NextResponse.json({\n      authenticated: true,\n      user: {\n        userId: session.userId,\n        email: session.email,",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909284001,
+              "end": 1772909284005
+            }
+          },
+          "id": "prt_cc9a0ca9c0012AmBpTkdO40PM7",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ba9b001sohCPH2JBsxjUy"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 19534,
+            "input": 19479,
+            "output": 55,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a0cb38001MDBRWkjXPpekMS",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0ba9b001sohCPH2JBsxjUy"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909284197,
+          "completed": 1772909290690
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 20777,
+          "input": 20730,
+          "output": 47,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a0cb65001sJWObpI0Q2JD0W",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a0dae8001OpP13aEkpkGKne",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0cb65001sJWObpI0Q2JD0W"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the logout route:",
+          "time": {
+            "start": 1772909290648,
+            "end": 1772909290648
+          },
+          "id": "prt_cc9a0daea001AgnHs7Rop9RWqg",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0cb65001sJWObpI0Q2JD0W"
+        },
+        {
+          "type": "tool",
+          "callID": "call_5r72r3n9",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/logout/route.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/logout/route.ts</path>\n<type>file</type>\n<content>1: import { NextResponse } from 'next/server';\n2: import { cookies } from 'next/headers';\n3: import { deleteSession } from '@/lib/auth';\n4: \n5: // POST /api/admin/logout - Logout user\n6: export async function POST() {\n7:   try {\n8:     const cookieStore = await cookies();\n9:     const token = cookieStore.get('admin-session')?.value;\n10:     \n11:     if (token) {\n12:       await deleteSession(token);\n13:     }\n14:     \n15:     // Clear cookie\n16:     cookieStore.delete('admin-session');\n17:     \n18:     return NextResponse.json({ success: true });\n19:   } catch (error) {\n20:     console.error('Logout error:', error);\n21:     return NextResponse.json(\n22:       { error: 'Internal server error' },\n23:       { status: 500 }\n24:     );\n25:   }\n26: }\n\n(End of file - total 26 lines)\n</content>",
+            "title": "src/app/api/admin/logout/route.ts",
+            "metadata": {
+              "preview": "import { NextResponse } from 'next/server';\nimport { cookies } from 'next/headers';\nimport { deleteSession } from '@/lib/auth';\n\n// POST /api/admin/logout - Logout user\nexport async function POST() {\n  try {\n    const cookieStore = await cookies();\n    const token = cookieStore.get('admin-session')?.value;\n    \n    if (token) {\n      await deleteSession(token);\n    }\n    \n    // Clear cookie\n    cookieStore.delete('admin-session');\n    \n    return NextResponse.json({ success: true });\n  } catch (error) {\n    console.error('Logout error:', error);",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909290511,
+              "end": 1772909290515
+            }
+          },
+          "id": "prt_cc9a0e40c001JeWZSX2AkBk0HN",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0cb65001sJWObpI0Q2JD0W"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "cost": 0,
+          "tokens": {
+            "total": 20777,
+            "input": 20730,
+            "output": 47,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a0e49a001EgQW91J5rxNMyD",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0cb65001sJWObpI0Q2JD0W"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909290695,
+          "completed": 1772909297844
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 21110,
+          "input": 21065,
+          "output": 45,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a0e4c7001bEOpZJ1qjZwEky",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "id": "prt_cc9a0e7aa001nXt22bMYkom4mE",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0e4c7001bEOpZJ1qjZwEky"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the middleware or security utilities:",
+          "time": {
+            "start": 1772909297747,
+            "end": 1772909297747
+          },
+          "id": "prt_cc9a0e7ac0018ZUh8rXkcybvXz",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0e4c7001bEOpZJ1qjZwEky"
+        },
+        {
+          "type": "tool",
+          "callID": "call_414pol3d",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/request.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/request.ts</path>\n<type>file</type>\n<content>1: import type { NextRequest } from 'next/server';\n2: \n3: export function getClientIp(request: NextRequest) {\n4:   const forwardedFor = request.headers.get('x-forwarded-for');\n5:   if (forwardedFor) {\n6:     return forwardedFor.split(',')[0]?.trim() || 'unknown';\n7:   }\n8: \n9:   return request.headers.get('x-real-ip') || 'unknown';\n10: }\n11: \n12: export function getUserAgent(request: NextRequest) {\n13:   return request.headers.get('user-agent') || 'unknown';\n14: }\n\n(End of file - total 14 lines)\n</content>",
+            "title": "src/lib/request.ts",
+            "metadata": {
+              "preview": "import type { NextRequest } from 'next/server';\n\nexport function getClientIp(request: NextRequest) {\n  const forwardedFor = request.headers.get('x-forwarded-for');\n  if (forwardedFor) {\n    return forwardedFor.split(',')[0]?.trim() || 'unknown';\n  }\n\n  return request.headers.get('x-real-ip') || 'unknown';\n}\n\nexport function getUserAgent(request: NextRequest) {\n  return request.headers.get('user-agent') || 'unknown';\n}",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909297574,
+              "end": 1772909297584
+            }
+          },
+          "id": "prt_cc9a0ff97001GDuWLLdzlNHHPq",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0e4c7001bEOpZJ1qjZwEky"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 21110,
+            "input": 21065,
+            "output": 45,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a10057001SBw2pEguGfkzFD",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0e4c7001bEOpZJ1qjZwEky"
+        },
+        {
+          "type": "patch",
+          "hash": "c9827dacae81cea8c91da7b762f305dc1e398f02",
+          "files": [
+            "/home/donovan/Projects/DoulgasMitchell.info/src/components/effects/splash-overlay.tsx"
+          ],
+          "id": "prt_cc9a100af001Vs1phR8tXLlXCn",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a0e4c7001bEOpZJ1qjZwEky"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909297850,
+          "completed": 1772909301252
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 21347,
+          "input": 21301,
+          "output": 46,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a100ba001LB73pUfzyqfvAv",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a10390001cDiJ1kq1VqZni7",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a100ba001LB73pUfzyqfvAv"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the rate limiting implementation:",
+          "time": {
+            "start": 1772909301184,
+            "end": 1772909301184
+          },
+          "id": "prt_cc9a10393001OylFxIqBlN0ZJw",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a100ba001LB73pUfzyqfvAv"
+        },
+        {
+          "type": "tool",
+          "callID": "call_8wdytuws",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/rate-limit.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/rate-limit.ts</path>\n<type>file</type>\n<content>1: interface RateLimitOptions {\n2:   limit: number;\n3:   windowMs: number;\n4:   prefix?: string;\n5: }\n6: \n7: interface RateLimitState {\n8:   count: number;\n9:   resetAt: number;\n10: }\n11: \n12: export interface RateLimitResult {\n13:   allowed: boolean;\n14:   remaining: number;\n15:   resetAt: number;\n16: }\n17: \n18: const rateLimitStore = new Map<string, RateLimitState>();\n19: \n20: function createStoreKey(identifier: string, prefix = 'global') {\n21:   return `${prefix}:${identifier}`;\n22: }\n23: \n24: export function rateLimit(identifier: string, options: RateLimitOptions): RateLimitResult {\n25:   const now = Date.now();\n26:   const storeKey = createStoreKey(identifier, options.prefix);\n27:   const existing = rateLimitStore.get(storeKey);\n28: \n29:   if (!existing || now > existing.resetAt) {\n30:     rateLimitStore.set(storeKey, {\n31:       count: 1,\n32:       resetAt: now + options.windowMs,\n33:     });\n34: \n35:     return {\n36:       allowed: true,\n37:       remaining: Math.max(options.limit - 1, 0),\n38:       resetAt: now + options.windowMs,\n39:     };\n40:   }\n41: \n42:   if (existing.count >= options.limit) {\n43:     return {\n44:       allowed: false,\n45:       remaining: 0,\n46:       resetAt: existing.resetAt,\n47:     };\n48:   }\n49: \n50:   existing.count += 1;\n51: \n52:   return {\n53:     allowed: true,\n54:     remaining: Math.max(options.limit - existing.count, 0),\n55:     resetAt: existing.resetAt,\n56:   };\n57: }\n58: \n59: export function clearRateLimit(identifier: string, prefix = 'global') {\n60:   rateLimitStore.delete(createStoreKey(identifier, prefix));\n61: }\n\n(End of file - total 61 lines)\n</content>",
+            "title": "src/lib/rate-limit.ts",
+            "metadata": {
+              "preview": "interface RateLimitOptions {\n  limit: number;\n  windowMs: number;\n  prefix?: string;\n}\n\ninterface RateLimitState {\n  count: number;\n  resetAt: number;\n}\n\nexport interface RateLimitResult {\n  allowed: boolean;\n  remaining: number;\n  resetAt: number;\n}\n\nconst rateLimitStore = new Map<string, RateLimitState>();\n\nfunction createStoreKey(identifier: string, prefix = 'global') {",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909301014,
+              "end": 1772909301021
+            }
+          },
+          "id": "prt_cc9a10d10001aQvSqol3DWektX",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a100ba001LB73pUfzyqfvAv"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 21347,
+            "input": 21301,
+            "output": 46,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a10dc3001eTdsfiewZb1HG5",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a100ba001LB73pUfzyqfvAv"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909301262,
+          "completed": 1772909313295
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 21957,
+          "input": 21914,
+          "output": 43,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a10e0e001Xd5Y1gzLEpzuIS",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a12213001TuBaYgti7bj5Yf",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a10e0e001Xd5Y1gzLEpzuIS"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the activity logging:",
+          "time": {
+            "start": 1772909313247,
+            "end": 1772909313247
+          },
+          "id": "prt_cc9a122150011aLQerrPR9GYZb",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a10e0e001Xd5Y1gzLEpzuIS"
+        },
+        {
+          "type": "tool",
+          "callID": "call_e3ekq6m2",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/activity.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/activity.ts</path>\n<type>file</type>\n<content>1: import type { NextRequest } from 'next/server';\n2: import { db } from '@/lib/db';\n3: import { getClientIp, getUserAgent } from '@/lib/request';\n4: \n5: interface LogActivityInput {\n6:   action: string;\n7:   resource: string;\n8:   resourceId?: string;\n9:   details?: Record<string, unknown>;\n10:   userId?: string;\n11:   request?: NextRequest;\n12: }\n13: \n14: export async function logActivity(input: LogActivityInput) {\n15:   try {\n16:     await db.activityLog.create({\n17:       data: {\n18:         action: input.action,\n19:         resource: input.resource,\n20:         resourceId: input.resourceId,\n21:         details: input.details ? JSON.stringify(input.details) : undefined,\n22:         userId: input.userId,\n23:         ipAddress: input.request ? getClientIp(input.request) : undefined,\n24:         userAgent: input.request ? getUserAgent(input.request) : undefined,\n25:       },\n26:     });\n27:   } catch {\n28:     return;\n29:   }\n30: }\n\n(End of file - total 30 lines)\n</content>",
+            "title": "src/lib/activity.ts",
+            "metadata": {
+              "preview": "import type { NextRequest } from 'next/server';\nimport { db } from '@/lib/db';\nimport { getClientIp, getUserAgent } from '@/lib/request';\n\ninterface LogActivityInput {\n  action: string;\n  resource: string;\n  resourceId?: string;\n  details?: Record<string, unknown>;\n  userId?: string;\n  request?: NextRequest;\n}\n\nexport async function logActivity(input: LogActivityInput) {\n  try {\n    await db.activityLog.create({\n      data: {\n        action: input.action,\n        resource: input.resource,\n        resourceId: input.resourceId,",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909313075,
+              "end": 1772909313079
+            }
+          },
+          "id": "prt_cc9a13c30001sueje0gWnyVvNJ",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a10e0e001Xd5Y1gzLEpzuIS"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 21957,
+            "input": 21914,
+            "output": 43,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a13ce1001nalUqbZiDO1q7o",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a10e0e001Xd5Y1gzLEpzuIS"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909313299,
+          "completed": 1772909319678
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 22325,
+          "input": 22277,
+          "output": 48,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a13d13001Es63DbfV6indkD",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a13fd9001P2QqfY44B4iRrA",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a13d13001Es63DbfV6indkD"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the content API route:",
+          "time": {
+            "start": 1772909319626,
+            "end": 1772909319626
+          },
+          "id": "prt_cc9a13fdb001Ap8mwtEDJWY3mo",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a13d13001Es63DbfV6indkD"
+        },
+        {
+          "type": "tool",
+          "callID": "call_pwzt794i",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/content/route.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/app/api/admin/content/route.ts</path>\n<type>file</type>\n<content>1: import { NextResponse } from 'next/server';\n2: import { getSession } from '@/lib/auth';\n3: import { getAdminContentSnapshot } from '@/lib/content-service';\n4: \n5: export async function GET() {\n6:   const session = await getSession();\n7: \n8:   if (!session) {\n9:     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });\n10:   }\n11: \n12:   const snapshot = await getAdminContentSnapshot();\n13:   return NextResponse.json({ success: true, ...snapshot });\n14: }\n\n(End of file - total 14 lines)\n</content>",
+            "title": "src/app/api/admin/content/route.ts",
+            "metadata": {
+              "preview": "import { NextResponse } from 'next/server';\nimport { getSession } from '@/lib/auth';\nimport { getAdminContentSnapshot } from '@/lib/content-service';\n\nexport async function GET() {\n  const session = await getSession();\n\n  if (!session) {\n    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });\n  }\n\n  const snapshot = await getAdminContentSnapshot();\n  return NextResponse.json({ success: true, ...snapshot });\n}",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909319013,
+              "end": 1772909319017
+            }
+          },
+          "id": "prt_cc9a153620017D2BoIdvMMcman",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a13d13001Es63DbfV6indkD"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 22325,
+            "input": 22277,
+            "output": 48,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a155cd001o5P7JAmGlpLw0I",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a13d13001Es63DbfV6indkD"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909319682,
+          "completed": 1772909347670
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 22565,
+          "input": 22519,
+          "output": 46,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a15602001Jd3B5Hrc53ODCD",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a191ec001AKnleUi12UUL79",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a15602001Jd3B5Hrc53ODCD"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the upload route:",
+          "time": {
+            "start": 1772909347629,
+            "end": 1772909347629
+          },
+          "id": "prt_cc9a191ee001iS3LJTLO4wf453",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a15602001Jd3B5Hrc53ODCD"
+        },
+        {
+          "type": "tool",
+          "callID": "call_g5enjq9i",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/app/api/upload/route.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/app/api/upload/route.ts</path>\n<type>file</type>\n<content>1: import { NextRequest, NextResponse } from 'next/server';\n2: import { db } from '@/lib/db';\n3: import { getSession } from '@/lib/auth';\n4: import { logActivity } from '@/lib/activity';\n5: import { getClientIp } from '@/lib/request';\n6: import { rateLimit } from '@/lib/rate-limit';\n7: import { formatFileSize, getFileCategory } from '@/lib/upload';\n8: import { deleteStoredAsset, processFileUpload } from '@/lib/upload-server';\n9: \n10: // POST /api/upload - Upload files\n11: export async function POST(request: NextRequest) {\n12:   try {\n13:     // Check authentication\n14:     const session = await getSession();\n15:     if (!session) {\n16:       return NextResponse.json(\n17:         { error: 'Unauthorized' },\n18:         { status: 401 }\n19:       );\n20:     }\n21: \n22:     // Parse form data\n23:     const formData = await request.formData();\n24:     const files = formData.getAll('files') as File[];\n25: \n26:     if (!files || files.length === 0) {\n27:       return NextResponse.json(\n28:         { error: 'No files provided' },\n29:         { status: 400 }\n30:       );\n31:     }\n32: \n33:     const uploadLimit = rateLimit(`${session.userId}:${getClientIp(request)}`, {\n34:       limit: 20,\n35:       windowMs: 15 * 60 * 1000,\n36:       prefix: 'upload',\n37:     });\n38: \n39:     if (!uploadLimit.allowed) {\n40:       return NextResponse.json(\n41:         { error: 'Upload rate limit exceeded. Please wait before trying again.' },\n42:         { status: 429 }\n43:       );\n44:     }\n45: \n46:     // Process each file\n47:     const results = await Promise.all(\n48:       files.map(async (file) => {\n49:         const uploadResult = await processFileUpload(file);\n50: \n51:         if (!uploadResult.success) {\n52:           return {\n53:             success: false,\n54:             originalName: file.name,\n55:             error: uploadResult.error,\n56:           };\n57:         }\n58: \n59:         // Save to database\n60:         const media = await db.media.create({\n61:           data: {\n62:             id: uploadResult.id,\n63:             filename: uploadResult.filename!,\n64:             originalName: uploadResult.originalName,\n65:             mimeType: uploadResult.mimeType,\n66:             category: getFileCategory(uploadResult.mimeType),\n67:             size: uploadResult.size,\n68:             width: uploadResult.width,\n69:             height: uploadResult.height,\n70:             duration: uploadResult.duration,\n71:             url: uploadResult.url!,\n72:             thumbnailUrl: uploadResult.thumbnailUrl,\n73:             uploadedById: session.userId,\n74:           },\n75:         });\n76: \n77:         return {\n78:           success: true,\n79:           media: {\n80:             id: media.id,\n81:             filename: media.filename,\n82:             originalName: media.originalName,\n83:             url: media.url,\n84:             thumbnailUrl: media.thumbnailUrl,\n85:             category: media.category,\n86:             size: formatFileSize(media.size),\n87:             width: media.width,\n88:             height: media.height,\n89:           },\n90:         };\n91:       })\n92:     );\n93: \n94:     const successful = results.filter(r => r.success);\n95:     const failed = results.filter(r => !r.success);\n96: \n97:     if (successful.length > 0) {\n98:       await logActivity({\n99:         action: 'upload',\n100:         resource: 'media',\n101:         userId: session.userId,\n102:         request,\n103:         details: {\n104:           uploaded: successful.length,\n105:           failed: failed.length,\n106:         },\n107:       });\n108:     }\n109: \n110:     return NextResponse.json({\n111:       success: true,\n112:       uploaded: successful.length,\n113:       failed: failed.length,\n114:       results,\n115:     });\n116:   } catch (error) {\n117:     console.error('Upload error:', error);\n118:     return NextResponse.json(\n119:       { error: 'Failed to process upload' },\n120:       { status: 500 }\n121:     );\n122:   }\n123: }\n124: \n125: // GET /api/upload - List media files\n126: export async function GET(request: NextRequest) {\n127:   try {\n128:     const session = await getSession();\n129:     if (!session) {\n130:       return NextResponse.json(\n131:         { error: 'Unauthorized' },\n132:         { status: 401 }\n133:       );\n134:     }\n135: \n136:     const { searchParams } = new URL(request.url);\n137:     const category = searchParams.get('category');\n138:     const folder = searchParams.get('folder');\n139:     const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);\n140:     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20', 10), 1), 100);\n141:     const search = searchParams.get('search');\n142: \n143:     // Build where clause\n144:     const where: any = {};\n145:     if (category) where.category = category;\n146:     if (folder) where.folder = folder;\n147:     if (search) {\n148:       where.OR = [\n149:         { originalName: { contains: search, mode: 'insensitive' } },\n150:         { tags: { contains: search, mode: 'insensitive' } },\n151:       ];\n152:     }\n153: \n154:     // Get total count\n155:     const total = await db.media.count({ where });\n156: \n157:     // Get media files\n158:     const media = await db.media.findMany({\n159:       where,\n160:       orderBy: { createdAt: 'desc' },\n161:       skip: (page - 1) * limit,\n162:       take: limit,\n163:       include: {\n164:         _count: {\n165:           select: {\n166:             articleUsages: true,\n167:             projectUsages: true,\n168:           },\n169:         },\n170:       },\n171:     });\n172: \n173:     return NextResponse.json({\n174:       success: true,\n175:       media,\n176:       pagination: {\n177:         page,\n178:         limit,\n179:         total,\n180:         totalPages: Math.ceil(total / limit),\n181:       },\n182:     });\n183:   } catch (error) {\n184:     console.error('Media list error:', error);\n185:     return NextResponse.json(\n186:       { error: 'Failed to fetch media' },\n187:       { status: 500 }\n188:     );\n189:   }\n190: }\n191: \n192: // DELETE /api/upload - Delete media files\n193: export async function DELETE(request: NextRequest) {\n194:   try {\n195:     const session = await getSession();\n196:     if (!session) {\n197:       return NextResponse.json(\n198:         { error: 'Unauthorized' },\n199:         { status: 401 }\n200:       );\n201:     }\n202: \n203:     const body = await request.json();\n204:     const { ids } = body;\n205: \n206:     if (!ids || !Array.isArray(ids) || ids.length === 0) {\n207:       return NextResponse.json(\n208:         { error: 'No media IDs provided' },\n209:         { status: 400 }\n210:       );\n211:     }\n212: \n213:     const mediaItems = await db.media.findMany({\n214:       where: { id: { in: ids } },\n215:       select: {\n216:         id: true,\n217:         url: true,\n218:         thumbnailUrl: true,\n219:       },\n220:     });\n221: \n222:     const result = await db.media.deleteMany({\n223:       where: { id: { in: ids } },\n224:     });\n225: \n226:     await Promise.all(\n227:       mediaItems.flatMap((item) => [\n228:         deleteStoredAsset(item.url),\n229:         deleteStoredAsset(item.thumbnailUrl),\n230:       ])\n231:     );\n232: \n233:     await logActivity({\n234:       action: 'delete',\n235:       resource: 'media',\n236:       userId: session.userId,\n237:       request,\n238:       details: {\n239:         deleted: result.count,\n240:       },\n241:     });\n242: \n243:     return NextResponse.json({\n244:       success: true,\n245:       deleted: result.count,\n246:     });\n247:   } catch (error) {\n248:     console.error('Media delete error:', error);\n249:     return NextResponse.json(\n250:       { error: 'Failed to delete media' },\n251:       { status: 500 }\n252:     );\n253:   }\n254: }\n\n(End of file - total 254 lines)\n</content>",
+            "title": "src/app/api/upload/route.ts",
+            "metadata": {
+              "preview": "import { NextRequest, NextResponse } from 'next/server';\nimport { db } from '@/lib/db';\nimport { getSession } from '@/lib/auth';\nimport { logActivity } from '@/lib/activity';\nimport { getClientIp } from '@/lib/request';\nimport { rateLimit } from '@/lib/rate-limit';\nimport { formatFileSize, getFileCategory } from '@/lib/upload';\nimport { deleteStoredAsset, processFileUpload } from '@/lib/upload-server';\n\n// POST /api/upload - Upload files\nexport async function POST(request: NextRequest) {\n  try {\n    // Check authentication\n    const session = await getSession();\n    if (!session) {\n      return NextResponse.json(\n        { error: 'Unauthorized' },\n        { status: 401 }\n      );\n    }",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909347437,
+              "end": 1772909347441
+            }
+          },
+          "id": "prt_cc9a1c26a001DlH7X7IFrR99lp",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a15602001Jd3B5Hrc53ODCD"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 22565,
+            "input": 22519,
+            "output": 46,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a15602001Jd3B5Hrc53ODCD"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909347675,
+          "completed": 1772909361801
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 25112,
+          "input": 25067,
+          "output": 45,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a1c35b0013mgKpoX7Dg6dam",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a1df65001winIyrdyYVyyT0",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1c35b0013mgKpoX7Dg6dam"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the upload server utilities:",
+          "time": {
+            "start": 1772909361751,
+            "end": 1772909361751
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1c35b0013mgKpoX7Dg6dam"
+        },
+        {
+          "type": "tool",
+          "callID": "call_ppdwhe3u",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload-server.ts"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/src/lib/upload-server.ts</path>\n<type>file</type>\n<content>1: import { existsSync } from 'fs';\n2: import { mkdir, unlink, writeFile } from 'fs/promises';\n3: import { extname, join } from 'path';\n4: import sharp from 'sharp';\n5: import { v4 as uuidv4 } from 'uuid';\n6: import { env } from '@/lib/env';\n7: import {\n8:   type UploadResult,\n9:   getFileCategory,\n10:   validateFileSize,\n11:   validateFileType,\n12: } from '@/lib/upload';\n13: \n14: const UPLOAD_DIR = env.UPLOAD_DIR;\n15: \n16: export function generateUniqueFilename(originalName: string): string {\n17:   const ext = extname(originalName);\n18:   const uniqueId = uuidv4();\n19:   return `${uniqueId}${ext}`;\n20: }\n21: \n22: export async function getImageDimensions(buffer: Buffer): Promise<{ width: number; height: number } | null> {\n23:   try {\n24:     const metadata = await sharp(buffer).metadata();\n25:     if (metadata.width && metadata.height) {\n26:       return { width: metadata.width, height: metadata.height };\n27:     }\n28:     return null;\n29:   } catch {\n30:     return null;\n31:   }\n32: }\n33: \n34: export async function createThumbnail(\n35:   buffer: Buffer,\n36:   filename: string,\n37:   width: number = 300\n38: ): Promise<string | null> {\n39:   try {\n40:     const thumbnailDir = join(UPLOAD_DIR, 'thumbnails');\n41:     if (!existsSync(thumbnailDir)) {\n42:       await mkdir(thumbnailDir, { recursive: true });\n43:     }\n44: \n45:     const thumbnailFilename = `thumb-${width}-${filename}`;\n46:     const thumbnailPath = join(thumbnailDir, thumbnailFilename);\n47: \n48:     await sharp(buffer)\n49:       .resize(width, null, { withoutEnlargement: true })\n50:       .jpeg({ quality: 80 })\n51:       .toFile(thumbnailPath);\n52: \n53:     return `/uploads/thumbnails/${thumbnailFilename}`;\n54:   } catch (error) {\n55:     console.error('Thumbnail creation failed:', error);\n56:     return null;\n57:   }\n58: }\n59: \n60: export async function optimizeImage(buffer: Buffer, mimeType: string): Promise<Buffer> {\n61:   try {\n62:     if (mimeType === 'image/svg+xml') {\n63:       return buffer;\n64:     }\n65: \n66:     const sharpInstance = sharp(buffer);\n67:     const metadata = await sharpInstance.metadata();\n68:     if (metadata.width && metadata.width > 2048) {\n69:       sharpInstance.resize(2048, null, { withoutEnlargement: true });\n70:     }\n71: \n72:     if (mimeType !== 'image/webp' && mimeType !== 'image/avif') {\n73:       return await sharpInstance.webp({ quality: 85 }).toBuffer();\n74:     }\n75: \n76:     return await sharpInstance.toBuffer();\n77:   } catch {\n78:     return buffer;\n79:   }\n80: }\n81: \n82: function replaceExtension(filename: string, extension: string) {\n83:   return filename.replace(/\\.[^.]+$/, extension);\n84: }\n85: \n86: export async function saveFile(buffer: Buffer, filename: string, category: string): Promise<string> {\n87:   const categoryDir = join(UPLOAD_DIR, category);\n88: \n89:   if (!existsSync(categoryDir)) {\n90:     await mkdir(categoryDir, { recursive: true });\n91:   }\n92: \n93:   const filePath = join(categoryDir, filename);\n94:   await writeFile(filePath, buffer);\n95: \n96:   return `/uploads/${category}/${filename}`;\n97: }\n98: \n99: export async function processFileUpload(\n100:   file: File,\n101:   options: {\n102:     createThumbnail?: boolean;\n103:     optimizeImages?: boolean;\n104:   } = {}\n105: ): Promise<UploadResult> {\n106:   const { createThumbnail: shouldCreateThumbnail = true, optimizeImages = true } = options;\n107: \n108:   try {\n109:     const typeValidation = validateFileType(file.type);\n110:     if (!typeValidation.valid) {\n111:       return { success: false, error: typeValidation.error, originalName: file.name, mimeType: file.type, size: file.size };\n112:     }\n113: \n114:     const sizeValidation = validateFileSize(file.size);\n115:     if (!sizeValidation.valid) {\n116:       return { success: false, error: sizeValidation.error, originalName: file.name, mimeType: file.type, size: file.size };\n117:     }\n118: \n119:     const category = getFileCategory(file.type);\n120:     let outputMimeType = file.type;\n121:     const uniqueFilename = generateUniqueFilename(file.name);\n122:     let outputFilename = uniqueFilename;\n123: \n124:     const bytes = await file.arrayBuffer();\n125:     let buffer: Buffer = Buffer.from(bytes) as Buffer;\n126: \n127:     let width: number | undefined;\n128:     let height: number | undefined;\n129:     let duration: number | undefined;\n130:     let thumbnailUrl: string | undefined;\n131: \n132:     if (category === 'image') {\n133:       const dimensions = await getImageDimensions(buffer);\n134:       if (dimensions) {\n135:         width = dimensions.width;\n136:         height = dimensions.height;\n137:       }\n138: \n139:       if (optimizeImages) {\n140:         buffer = await optimizeImage(buffer, file.type);\n141:         if (file.type !== 'image/svg+xml' && file.type !== 'image/webp' && file.type !== 'image/avif') {\n142:           outputFilename = replaceExtension(uniqueFilename, '.webp');\n143:           outputMimeType = 'image/webp';\n144:         }\n145:       }\n146: \n147:       if (shouldCreateThumbnail && dimensions) {\n148:         thumbnailUrl = (await createThumbnail(buffer, outputFilename)) ?? undefined;\n149:       }\n150:     }\n151: \n152:     const url = await saveFile(buffer, outputFilename, category);\n153: \n154:     return {\n155:       success: true,\n156:       id: uuidv4(),\n157:       filename: outputFilename,\n158:       originalName: file.name,\n159:       mimeType: outputMimeType,\n160:       size: file.size,\n161:       width,\n162:       height,\n163:       duration,\n164:       url,\n165:       thumbnailUrl,\n166:     };\n167:   } catch (error) {\n168:     console.error('File upload error:', error);\n169:     return {\n170:       success: false,\n171:       error: 'Failed to process file upload',\n172:       originalName: file.name,\n173:       mimeType: file.type,\n174:       size: file.size,\n175:     };\n176:   }\n177: }\n178: \n179: function resolveStoragePath(url: string) {\n180:   if (!url.startsWith('/uploads/')) return null;\n181:   return join(UPLOAD_DIR, url.replace('/uploads/', ''));\n182: }\n183: \n184: export async function deleteStoredAsset(url?: string | null) {\n185:   if (!url) return;\n186: \n187:   const filePath = resolveStoragePath(url);\n188:   if (!filePath || !existsSync(filePath)) return;\n189: \n190:   await unlink(filePath).catch(() => undefined);\n191: }\n\n(End of file - total 191 lines)\n</content>",
+            "title": "src/lib/upload-server.ts",
+            "metadata": {
+              "preview": "import { existsSync } from 'fs';\nimport { mkdir, unlink, writeFile } from 'fs/promises';\nimport { extname, join } from 'path';\nimport sharp from 'sharp';\nimport { v4 as uuidv4 } from 'uuid';\nimport { env } from '@/lib/env';\nimport {\n  type UploadResult,\n  getFileCategory,\n  validateFileSize,\n  validateFileType,\n} from '@/lib/upload';\n\nconst UPLOAD_DIR = env.UPLOAD_DIR;\n\nexport function generateUniqueFilename(originalName: string): string {\n  const ext = extname(originalName);\n  const uniqueId = uuidv4();\n  return `${uniqueId}${ext}`;\n}",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909361565,
+              "end": 1772909361570
+            }
+          },
+          "id": "prt_cc9a1f999001P9gskZm9eyrLe1",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1c35b0013mgKpoX7Dg6dam"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 25112,
+            "input": 25067,
+            "output": 45,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a1fa58001K3DldaPERYy5Ui",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1c35b0013mgKpoX7Dg6dam"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909361807,
+          "completed": 1772909367733
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 27162,
+          "input": 27111,
+          "output": 51,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc9a1fa8f0018XB5blcCJYxyUh",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "id": "prt_cc9a1ff53001ILUuCNYB1gbUu8",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1fa8f0018XB5blcCJYxyUh"
+        },
+        {
+          "type": "text",
+          "text": "Let me check the Prisma schema to understand the database models:",
+          "time": {
+            "start": 1772909367678,
+            "end": 1772909367678
+          },
+          "id": "prt_cc9a1ff55001SsvH0nP3MtLWIW",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1fa8f0018XB5blcCJYxyUh"
+        },
+        {
+          "type": "tool",
+          "callID": "call_33qfdshu",
+          "tool": "read",
+          "state": {
+            "status": "completed",
+            "input": {
+              "filePath": "/home/donovan/Projects/DoulgasMitchell.info/prisma/schema.prisma"
+            },
+            "output": "<path>/home/donovan/Projects/DoulgasMitchell.info/prisma/schema.prisma</path>\n<type>file</type>\n<content>1: // Douglas Mitchell Editorial Platform - Content Model\n2: // Single source of truth for all content\n3: \n4: generator client {\n5:   provider = \"prisma-client-js\"\n6: }\n7: \n8: datasource db {\n9:   provider = \"postgresql\"\n10:   url      = env(\"DATABASE_URL\")\n11: }\n12: \n13: // Core Content Models\n14: model Article {\n15:   id          String   @id @default(cuid())\n16:   slug        String   @unique\n17:   title       String\n18:   subtitle    String?\n19:   excerpt     String\n20:   content     String   // Markdown content\n21:   coverImage  String?\n22:   category    String   // essay, technical, insight, case-study\n23:   tags        String   // JSON array of tags\n24:   featured    Boolean  @default(false)\n25:   published   Boolean  @default(false)\n26:   publishedAt DateTime?\n27:   readingTime Int      @default(5)\n28:   createdAt   DateTime @default(now())\n29:   updatedAt   DateTime @updatedAt\n30:   \n31:   // Relations\n32:   blocks      ArticleBlock[]\n33:   media       ArticleMedia[]\n34:   comments    Comment[]\n35:   reactions   Reaction[]\n36:   \n37:   @@index([slug])\n38:   @@index([category])\n39:   @@index([published, featured])\n40: }\n41: \n42: model ArticleBlock {\n43:   id        String  @id @default(cuid())\n44:   articleId String\n45:   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)\n46:   blockType String  // text, quote, code, image, divider, ascii-art, evidence-grid\n47:   content   String  // JSON content specific to block type\n48:   order     Int\n49:   createdAt DateTime @default(now())\n50:   \n51:   @@index([articleId, order])\n52: }\n53: \n54: model Project {\n55:   id            String   @id @default(cuid())\n56:   slug          String   @unique\n57:   title         String\n58:   subtitle      String?\n59:   description   String\n60:   longDescription String?\n61:   coverImage    String?\n62:   githubUrl     String?\n63:   liveUrl       String?\n64:   techStack     String   // JSON array of technologies\n65:   category      String   // ai-automation, web-development, system-design, open-source\n66:   featured      Boolean  @default(false)\n67:   status        String   @default(\"completed\") // completed, in-progress, archived\n68:   startDate     DateTime?\n69:   endDate       DateTime?\n70:   createdAt     DateTime @default(now())\n71:   updatedAt     DateTime @updatedAt\n72: \n73:   media         ProjectMedia[]\n74:   comments      Comment[]\n75:   reactions     Reaction[]\n76:   \n77:   @@index([slug])\n78:   @@index([category])\n79:   @@index([featured])\n80: }\n81: \n82: model Certification {\n83:   id          String   @id @default(cuid())\n84:   title       String\n85:   issuer      String\n86:   issuerLogo  String?\n87:   credentialUrl String?\n88:   issueDate   DateTime\n89:   expiryDate  DateTime?\n90:   credentialId String?\n91:   description String?\n92:   skills      String   // JSON array of skills\n93:   featured    Boolean  @default(false)\n94:   order       Int      @default(0)\n95:   createdAt   DateTime @default(now())\n96:   \n97:   @@index([featured, order])\n98: }\n99: \n100: model Book {\n101:   id            String   @id @default(cuid())\n102:   title         String\n103:   subtitle      String?\n104:   description   String\n105:   coverImage    String?\n106:   amazonUrl     String?\n107:   publisher     String?\n108:   publishDate   DateTime?\n109:   isbn          String?\n110:   pages         Int?\n111:   featured      Boolean  @default(true)\n112:   createdAt     DateTime @default(now())\n113:   updatedAt     DateTime @updatedAt\n114: }\n115: \n116: model SiteConfig {\n117:   id          String   @id @default(cuid())\n118:   key         String   @unique\n119:   value       String   // JSON value\n120:   updatedAt   DateTime @updatedAt\n121: }\n122: \n123: model ContactSubmission {\n124:   id        String   @id @default(cuid())\n125:   name      String\n126:   email     String\n127:   subject   String?\n128:   message   String\n129:   source    String?  // Where the submission came from\n130:   status    String   @default(\"new\") // new, read, responded, archived\n131:   createdAt DateTime @default(now())\n132:   \n133:   @@index([status, createdAt])\n134: }\n135: \n136: // ============================================\n137: // AUTHENTICATION & AUTHORIZATION\n138: // ============================================\n139: \n140: model AdminUser {\n141:   id           String   @id @default(cuid())\n142:   email        String   @unique\n143:   name         String?\n144:   passwordHash String?\n145:   role         String   @default(\"admin\") // admin, editor\n146:   avatar       String?\n147:   bio          String?\n148:   lastLoginAt  DateTime?\n149:   isActive     Boolean  @default(true)\n150:   createdAt    DateTime @default(now())\n151:   updatedAt    DateTime @updatedAt\n152:   \n153:   // Relations\n154:   sessions     Session[]\n155:   passkeys     PasskeyCredential[]\n156:   activityLogs ActivityLog[]\n157:   \n158:   @@index([email])\n159:   @@index([isActive])\n160: }\n161: \n162: model Session {\n163:   id        String   @id @default(cuid())\n164:   token     String   @unique\n165:   userId    String\n166:   user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)\n167:   expiresAt DateTime\n168:   ipAddress String?\n169:   userAgent String?\n170:   createdAt DateTime @default(now())\n171:   \n172:   @@index([token])\n173:   @@index([userId])\n174:   @@index([expiresAt])\n175: }\n176: \n177: model PasskeyCredential {\n178:   id          String   @id @default(cuid())\n179:   credentialId String  @unique\n180:   userId      String\n181:   user        AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)\n182:   publicKey   Bytes\n183:   counter     Int      @default(0)\n184:   deviceType  String?  // platform, cross-platform\n185:   deviceName  String?  // e.g., \"MacBook Pro Touch ID\"\n186:   lastUsedAt  DateTime?\n187:   createdAt   DateTime @default(now())\n188:   \n189:   @@index([userId])\n190:   @@index([credentialId])\n191: }\n192: \n193: // ============================================\n194: // MEDIA MANAGEMENT\n195: // ============================================\n196: \n197: model Media {\n198:   id            String   @id @default(cuid())\n199:   filename      String   @unique\n200:   originalName  String\n201:   mimeType      String\n202:   category      String   // image, video, audio, document\n203:   size          Int\n204:   width         Int?     // for images/videos\n205:   height        Int?     // for images/videos\n206:   duration      Int?     // for videos/audio (seconds)\n207:   url           String\n208:   thumbnailUrl  String?\n209:   alt           String?  // accessibility text\n210:   caption       String?\n211:   description   String?\n212:   tags          String?  // JSON array\n213:   folder        String   @default(\"uncategorized\")\n214:   uploadedById  String?\n215:   isPublic      Boolean  @default(true)\n216:   createdAt     DateTime @default(now())\n217:   updatedAt     DateTime @updatedAt\n218:   \n219:   // Relations\n220:   articleUsages ArticleMedia[]\n221:   projectUsages ProjectMedia[]\n222:   \n223:   @@index([category])\n224:   @@index([folder])\n225:   @@index([mimeType])\n226:   @@index([createdAt])\n227: }\n228: \n229: // Many-to-many: Articles <-> Media\n230: model ArticleMedia {\n231:   id        String   @id @default(cuid())\n232:   articleId String\n233:   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)\n234:   mediaId   String\n235:   media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)\n236:   order     Int      @default(0)\n237:   createdAt DateTime @default(now())\n238:   \n239:   @@unique([articleId, mediaId])\n240:   @@index([articleId])\n241:   @@index([mediaId])\n242: }\n243: \n244: // Many-to-many: Projects <-> Media\n245: model ProjectMedia {\n246:   id        String   @id @default(cuid())\n247:   projectId String\n248:   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)\n249:   mediaId   String\n250:   media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)\n251:   order     Int      @default(0)\n252:   createdAt DateTime @default(now())\n253:   \n254:   @@unique([projectId, mediaId])\n255:   @@index([projectId])\n256:   @@index([mediaId])\n257: }\n258: \n259: // ============================================\n260: // SOCIAL FEATURES\n261: // ============================================\n262: \n263: model Comment {\n264:   id          String   @id @default(cuid())\n265:   content     String\n266:   authorName  String\n267:   authorEmail String\n268:   authorUrl   String?\n269:   articleId   String?\n270:   article     Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)\n271:   projectId   String?\n272:   project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)\n273:   parentId    String?\n274:   parent      Comment?  @relation(\"CommentReplies\", fields: [parentId], references: [id])\n275:   replies     Comment[] @relation(\"CommentReplies\")\n276:   isApproved  Boolean   @default(false)\n277:   isSpam      Boolean   @default(false)\n278:   likes       Int       @default(0)\n279:   createdAt   DateTime  @default(now())\n280:   updatedAt   DateTime  @updatedAt\n281:   \n282:   @@index([articleId])\n283:   @@index([projectId])\n284:   @@index([isApproved, isSpam])\n285:   @@index([createdAt])\n286: }\n287: \n288: model Reaction {\n289:   id        String   @id @default(cuid())\n290:   type      String   // like, love, applaud, insightful\n291:   articleId String?\n292:   article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)\n293:   projectId String?\n294:   project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)\n295:   sessionId String   // anonymous tracking\n296:   createdAt DateTime @default(now())\n297:   \n298:   @@unique([articleId, projectId, sessionId, type])\n299:   @@index([articleId])\n300:   @@index([projectId])\n301: }\n302: \n303: model Newsletter {\n304:   id        String   @id @default(cuid())\n305:   email     String   @unique\n306:   name      String?\n307:   isActive  Boolean  @default(true)\n308:   confirmedAt DateTime?\n309:   createdAt DateTime @default(now())\n310:   \n311:   @@index([email])\n312:   @@index([isActive])\n313: }\n314: \n315: // ============================================\n316: // ANALYTICS & LOGGING\n317: // ============================================\n318: \n319: model ActivityLog {\n320:   id         String   @id @default(cuid())\n321:   action     String   // create, update, delete, login, logout, publish, etc.\n322:   resource   String   // article, project, media, user, etc.\n323:   resourceId String?\n324:   details    String?  // JSON string with additional data\n325:   userId     String?\n326:   user       AdminUser? @relation(fields: [userId], references: [id])\n327:   ipAddress  String?\n328:   userAgent  String?\n329:   createdAt  DateTime @default(now())\n330:   \n331:   @@index([action])\n332:   @@index([resource])\n333:   @@index([userId])\n334:   @@index([createdAt])\n335: }\n336: \n337: model PageView {\n338:   id          String   @id @default(cuid())\n339:   path        String\n340:   referrer    String?\n341:   userAgent   String?\n342:   ipAddress   String?\n343:   country     String?\n344:   city        String?\n345:   sessionId   String\n346:   duration    Int?     // seconds spent on page\n347:   createdAt   DateTime @default(now())\n348:   \n349:   @@index([path])\n350:   @@index([sessionId])\n351:   @@index([createdAt])\n352: }\n353: \n354: // ============================================\n355: // LAYOUT & THEMING\n356: // ============================================\n357: \n358: model LayoutBlock {\n359:   id          String   @id @default(cuid())\n360:   name        String   @unique\n361:   type        String   // hero, about, work, contact, custom\n362:   isActive    Boolean  @default(true)\n363:   order       Int      @default(0)\n364:   settings    String   // JSON configuration\n365:   content     String   // JSON content blocks\n366:   styles      String?  // Custom CSS\n367:   createdAt   DateTime @default(now())\n368:   updatedAt   DateTime @updatedAt\n369:   \n370:   @@index([type])\n371:   @@index([isActive, order])\n372: }\n373: \n374: model Setting {\n375:   id          String   @id @default(cuid())\n376:   key         String   @unique\n377:   value       String   // JSON value\n378:   type        String   @default(\"string\") // string, number, boolean, json\n379:   category    String   @default(\"general\") // general, seo, social, analytics\n380:   isPublic    Boolean  @default(false) // expose to frontend?\n381:   createdAt   DateTime @default(now())\n382:   updatedAt   DateTime @updatedAt\n383:   \n384:   @@index([key])\n385:   @@index([category])\n386: }\n\n(End of file - total 386 lines)\n</content>",
+            "title": "prisma/schema.prisma",
+            "metadata": {
+              "preview": "// Douglas Mitchell Editorial Platform - Content Model\n// Single source of truth for all content\n\ngenerator client {\n  provider = \"prisma-client-js\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\n// Core Content Models\nmodel Article {\n  id          String   @id @default(cuid())\n  slug        String   @unique\n  title       String\n  subtitle    String?\n  excerpt     String\n  content     String   // Markdown content",
+              "truncated": false,
+              "loaded": []
+            },
+            "time": {
+              "start": 1772909367490,
+              "end": 1772909367497
+            }
+          },
+          "id": "REDACTED",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1fa8f0018XB5blcCJYxyUh"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "0b6f99ddf1cc3f16acb64586d53cf81d7abc0b0d",
+          "cost": 0,
+          "tokens": {
+            "total": 27162,
+            "input": 27111,
+            "output": 51,
+            "reasoning": 0,
+            "cache": {
+              "read": 0,
+              "write": 0
+            }
+          },
+          "id": "prt_cc9a21181001Iez7PxYVHlWs2a",
+          "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp",
+          "messageID": "msg_cc9a1fa8f0018XB5blcCJYxyUh"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772909367742
+        },
+        "parentID": "msg_cc9a0291c001VlddicFmcxG5hM",
+        "modelID": "qwen3-coder:480b",
+        "providerID": "ollama-cloud",
+        "mode": "backend-developer",
+        "agent": "backend-developer",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "input": 0,
+          "output": 0,
+          "reasoning": 0,
+          "cache": {
+            "read": 0,
+            "write": 0
+          }
+        },
+        "id": "msg_cc9a211be001RxruW5p75cQjIg",
+        "sessionID": "ses_3365fd6e7ffeJTU7N7i3aYp5wp"
+      },
+      "parts": []
+    }
+  ]
+}
