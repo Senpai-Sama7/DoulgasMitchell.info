@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   CertificationsSection,
   EnhancedAboutSection,
@@ -32,7 +32,10 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
     if (typeof window === 'undefined') return true;
     return !sessionStorage.getItem('splash-seen');
   });
-  const [persistentVideoVisible, setPersistentVideoVisible] = useState(false);
+  const [persistentVideoVisible, setPersistentVideoVisible] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return !!sessionStorage.getItem('splash-seen');
+  });
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
@@ -81,7 +84,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
       </AnimatePresence>
 
       {/* Breathing DM video - shows in top right after splash */}
-      {(persistentVideoVisible || (!showSplash && typeof window !== 'undefined' && sessionStorage.getItem('splash-seen'))) && !prefersReducedMotion && (
+      {persistentVideoVisible && !prefersReducedMotion && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

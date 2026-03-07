@@ -262,31 +262,36 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           {/* Main Content */}
           <div className="relative z-10 w-full flex flex-col items-center justify-center text-center px-4">
             {/* Terminal Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
-                <div className="flex gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-                </div>
-                <span className="font-mono text-xs text-green-500/70">
-                  douglas-mitchell-system-v4.2.0
-                </span>
-              </div>
-            </motion.div>
+            <AnimatePresence>
+              {phase !== 'video' && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="mb-8"
+                >
+                  <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
+                    <div className="flex gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                    </div>
+                    <span className="font-mono text-xs text-green-500/70">
+                      douglas-mitchell-system-v4.2.0
+                    </span>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* ASCII Art */}
             {(phase === 'build' || phase === 'reveal' || phase === 'fade') && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-6"
+                className="mb-6 w-full max-w-full overflow-hidden flex justify-center"
               >
-                <pre className="font-mono text-[6px] sm:text-[8px] md:text-[10px] lg:text-xs text-green-500 leading-none tracking-tighter whitespace-pre overflow-hidden">
+                <pre className="font-mono text-[5px] sm:text-[8px] md:text-[10px] lg:text-xs text-green-500 leading-none tracking-tighter whitespace-pre overflow-visible text-center inline-block mx-auto scale-[0.8] sm:scale-100">
                   {typedLines.map((line, i) => (
                     <motion.div
                       key={i}
