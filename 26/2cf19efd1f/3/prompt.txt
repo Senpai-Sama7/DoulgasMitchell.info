@@ -779,3 +779,7 @@ i want the entrance overlay to be like your splash screen. but says Douglas Mitc
 ---
 
 /compact
+
+---
+
+Just change the ASCII entrance overlay to like a really cool, impressive GOD tier font being typed and remove the ASCII style all together, apparently you will never get it right
