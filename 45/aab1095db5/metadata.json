@@ -525,6 +525,12 @@
       "transcript": "/45/aab1095db5/7/full.jsonl",
       "content_hash": "/45/aab1095db5/7/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/45/aab1095db5/8/metadata.json",
+      "transcript": "/45/aab1095db5/8/full.jsonl",
+      "content_hash": "/45/aab1095db5/8/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
