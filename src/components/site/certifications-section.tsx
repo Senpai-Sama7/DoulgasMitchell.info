@@ -69,7 +69,18 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
                       </span>
                     ))}
                   </div>
-                  <span className="inline-flex items-center gap-1 text-xs text-primary mt-3 group-hover:translate-x-1 transition-transform">
+
+                  {cert.imageUrl && (
+                    <div className="mt-4 relative aspect-[4/3] rounded-md overflow-hidden border border-border/50 group-hover:border-primary/20 transition-colors bg-muted/20">
+                      <img 
+                        src={cert.imageUrl} 
+                        alt={`${cert.title} certificate`}
+                        className="w-full h-full object-contain p-1 group-hover:scale-[1.02] transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+
+                  <span className="inline-flex items-center gap-1 text-xs text-primary mt-4 group-hover:translate-x-1 transition-transform">
                     View Credential
                     <ExternalLink className="h-3 w-3" />
                   </span>

@@ -78,6 +78,7 @@ export interface CertificationShowcase {
   issueDate: string;
   skills: string[];
   featured: boolean;
+  imageUrl?: string;
 }
 
 export interface ContactMethod {
@@ -545,6 +546,7 @@ export const certificationShowcase: CertificationShowcase[] = [
     issueDate: '2024',
     skills: ['Machine Learning', 'AI Development', 'Responsible AI', 'Workflow Design'],
     featured: true,
+    imageUrl: '/images/certs/google-ai-professional-certificate.png',
   },
   {
     id: 'anthropic-ai-safety',
@@ -552,10 +554,11 @@ export const certificationShowcase: CertificationShowcase[] = [
     issuer: 'Anthropic',
     description:
       'Credential focused on safe deployment, model behavior, and building AI systems that preserve trust under real-world usage.',
-    credentialUrl: 'https://www.credly.com/users/douglas-mitchell.887417ae/badges',
+    credentialUrl: 'https://verify.skilljar.com/c/kcmc2byhr4ay',
     issueDate: '2024',
     skills: ['AI Safety', 'Evaluation', 'Prompt Discipline', 'Responsible Deployment'],
     featured: true,
+    imageUrl: '/images/certs/AI-Fluency-Anthropic.jpg',
   },
 ];
 
