@@ -56,13 +56,13 @@ export function SiteHeader() {
               </span>
             </Link>
 
-            <div className="hidden sm:block w-10 h-10 rounded-full overflow-hidden border border-primary/20 mix-blend-screen shadow-lg shadow-primary/5">
+            <div className="hidden sm:block w-10 h-10 rounded-full overflow-hidden border border-primary/20 mix-blend-screen shadow-lg shadow-primary/5 shrink-0 aspect-square">
               <video
                 autoPlay
                 loop
                 muted
                 playsInline
-                className="w-full h-full object-cover scale-125"
+                className="w-full h-full object-cover"
               >
                 <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
               </video>
