@@ -1,0 +1,23 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "469003747a16",
+  "session_id": "4b334226-7a0b-47c8-a956-29349c3cb8cc",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T17:13:33.137693516Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [],
+  "agent": "Gemini CLI",
+  "model": "gemini-3-flash-preview",
+  "turn_id": "b2488c071e45",
+  "token_usage": {
+    "input_tokens": 25169017,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 20997876,
+    "output_tokens": 79618,
+    "api_call_count": 214
+  },
+  "session_metrics": {
+    "turn_count": 25
+  }
+}
