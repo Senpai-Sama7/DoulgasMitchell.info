@@ -733,3 +733,7 @@ These items highlight common accessibility best practices.
 Contrast
 Background and foreground colors do not have a sufficient contrast ratio.
 Low-contrast text is difficult or impossible for
+
+---
+
+wait ommit the poems. i didnt mean to uplaod that . you can proceed with everything else
