@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "adcb62a06748",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "src/app/admin/login/page.tsx",
+    "src/app/admin/security/page.tsx",
+    "src/app/api/admin/auth/passkey/generate-options/route.ts",
+    "src/app/api/admin/auth/passkey/register/generate-options/route.ts",
+    "src/app/api/admin/auth/passkey/register/verify/route.ts",
+    "src/app/api/admin/auth/passkey/verify/route.ts",
+    "src/app/layout.tsx",
+    "src/components/admin/passkey-manager.tsx",
+    "src/components/effects/splash-overlay.tsx",
+    "src/lib/content-service.ts",
+    "src/lib/webauthn.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/ad/cb62a06748/0/metadata.json",
+      "transcript": "/ad/cb62a06748/0/full.jsonl",
+      "content_hash": "/ad/cb62a06748/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
