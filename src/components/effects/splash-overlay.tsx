@@ -55,13 +55,21 @@ function createDotField(length: number) {
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
   const [typedName, setTypedName] = useState('');
-  const [phase, setPhase] = useState<'dots' | 'typing' | 'reveal' | 'fade'>('dots');
-  const [dotField, setDotField] = useState<string[]>(() => createDotField(100));
+  const [phase, setPhase] = useState<'matrix' | 'typing' | 'reveal' | 'fade'>('matrix');
+  const [matrixChars, setMatrixChars] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [currentRole, setCurrentRole] = useState(0);
   const prefersReducedMotion = useReducedMotion();
 
   const FULL_NAME = "DOUGLAS MITCHELL";
+  const KATAKANA = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン';
+
+  useEffect(() => {
+    // Initialize matrix chars
+    setMatrixChars(Array.from({ length: 150 }, () => 
+      KATAKANA[Math.floor(Math.random() * KATAKANA.length)]
+    ));
+  }, []);
 
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -76,20 +84,20 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
     }
   }, [isVisible, onComplete]);
 
-  // Dot field animation
+  // Matrix rain effect
   useEffect(() => {
-    if (!isVisible || prefersReducedMotion || phase !== 'dots') return;
+    if (!isVisible || prefersReducedMotion || phase !== 'matrix') return;
 
     const interval = setInterval(() => {
-      setDotField(prev => prev.map(() => 
-        Math.random() > 0.8 
-          ? DOT_CHARS[Math.floor(Math.random() * DOT_CHARS.length)]
+      setMatrixChars(prev => prev.map(() => 
+        Math.random() > 0.7 
+          ? KATAKANA[Math.floor(Math.random() * KATAKANA.length)]
           : prev[Math.floor(Math.random() * prev.length)]
       ));
-    }, 150);
+    }, 100);
 
     const timeout = setTimeout(() => {
-      setPhase('build');
+      setPhase('typing');
       clearInterval(interval);
     }, 2000);
 
@@ -205,25 +213,27 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
           initial={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8, ease: 'easeInOut' }}
-          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden cursor-pointer"
-          style={{ backgroundColor: NORD_COLORS.bg, height: '100dvh' }}
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden cursor-pointer bg-black"
+          style={{ height: '100dvh' }}
           onClick={handleSkip}
         >
-          {/* Dot Field Background */}
-          {phase === 'dots' && (
+          {/* Matrix Rain Background */}
+          {phase === 'matrix' && (
             <motion.div
               initial={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 grid grid-cols-8 sm:grid-cols-10 md:grid-cols-12 gap-2 sm:gap-3 p-4 pointer-events-none"
+              className="absolute inset-0 grid grid-cols-[repeat(10,1fr)] sm:grid-cols-[repeat(15,1fr)] gap-1 p-4 sm:p-8 pointer-events-none"
             >
-              {dotField.map((char, i) => (
+              {matrixChars.map((char, i) => (
                 <motion.span
                   key={i}
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: [0.2, 0.5, 0.2], scale: 1 }}
-                  transition={{ duration: 1, delay: i * 0.02, repeat: Infinity }}
-                  className="font-mono text-xs sm:text-sm md:text-base text-center"
-                  style={{ color: NORD_COLORS.blue }}
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: [0, 1, 0.3], y: 0 }}
+                  transition={{ duration: 0.5, delay: i * 0.01 }}
+                  className="font-mono text-green-500/40 text-sm sm:text-lg text-center"
+                  style={{
+                    textShadow: '0 0 10px rgba(34, 197, 94, 0.5)',
+                  }}
                 >
                   {char}
                 </motion.span>
@@ -237,54 +247,52 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 sm:mb-8"
+              className="mb-12"
             >
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg"
-                style={{ borderColor: NORD_COLORS.cyan, backgroundColor: 'rgba(136, 192, 208, 0.1)' }}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 border border-green-500/30 rounded-lg bg-green-500/5">
                 <div className="flex gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.red }} />
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.yellow }} />
-                  <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NORD_COLORS.green }} />
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
                 </div>
-                <span className="font-mono text-[10px] sm:text-xs" style={{ color: NORD_COLORS.cyan }}>
-                  douglas-mitchell-v4.2.0
+                <span className="font-mono text-xs text-green-500/70 uppercase tracking-widest">
+                  system_monitor.sh
                 </span>
               </div>
             </motion.div>
 
-            {/* GOD Tier Typewriter Name */}
+            {/* GOD Tier Typewriter Name - Stacked with large gap */}
             {(phase === 'typing' || phase === 'reveal' || phase === 'fade') && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="mb-12 relative"
+                className="mb-16 w-full flex flex-col items-center space-y-12 sm:space-y-20 lg:space-y-24"
               >
-                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl font-black tracking-tighter text-white flex flex-col items-center leading-[0.85]">
-                  <span className="relative inline-block overflow-hidden">
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black tracking-[0.15em] text-white leading-none uppercase italic">
+                  <span className="relative">
                     {typedName.split(' ')[0]}
                     {phase === 'typing' && !typedName.includes(' ') && (
                       <motion.span
                         animate={{ opacity: [1, 0] }}
                         transition={{ duration: 0.1, repeat: Infinity }}
-                        className="inline-block w-[4px] h-[0.8em] bg-primary ml-1 align-middle"
-                      />
-                    )}
-                  </span>
-                  <span className="text-primary mt-2">
-                    {typedName.split(' ')[1] || ''}
-                    {phase === 'typing' && typedName.includes(' ') && (
-                      <motion.span
-                        animate={{ opacity: [1, 0] }}
-                        transition={{ duration: 0.1, repeat: Infinity }}
-                        className="inline-block w-[4px] h-[0.8em] bg-white ml-1 align-middle"
+                        className="inline-block w-[8px] h-[0.8em] bg-primary ml-2 align-middle"
                       />
                     )}
                   </span>
                 </h1>
                 
-                {/* Architectural Accents */}
-                <div className="absolute -inset-x-8 -inset-y-4 border-x border-white/5 pointer-events-none" />
-                <div className="absolute -inset-x-4 -inset-y-8 border-y border-white/5 pointer-events-none" />
+                <h1 className="text-5xl sm:text-7xl md:text-8xl lg:text-[10rem] font-black tracking-[0.15em] text-primary leading-none uppercase italic">
+                  <span className="relative">
+                    {typedName.split(' ')[1] || ''}
+                    {phase === 'typing' && typedName.includes(' ') && (
+                      <motion.span
+                        animate={{ opacity: [1, 0] }}
+                        transition={{ duration: 0.1, repeat: Infinity }}
+                        className="inline-block w-[8px] h-[0.8em] bg-white ml-2 align-middle"
+                      />
+                    )}
+                  </span>
+                </h1>
               </motion.div>
             )}
 
