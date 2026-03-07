@@ -3,7 +3,7 @@
   "checkpoint_id": "6fd749a5facd",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 0,
+  "checkpoints_count": 1,
   "files_touched": [
     "src/components/effects/splash-overlay.tsx"
   ],
@@ -25,13 +25,19 @@
       "transcript": "/6f/d749a5facd/2/full.jsonl",
       "content_hash": "/6f/d749a5facd/2/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/6f/d749a5facd/3/metadata.json",
+      "transcript": "/6f/d749a5facd/3/full.jsonl",
+      "content_hash": "/6f/d749a5facd/3/content_hash.txt",
+      "prompt": "/6f/d749a5facd/3/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 0,
+    "input_tokens": 26016903,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 0,
-    "output_tokens": 0,
-    "api_call_count": 0
+    "cache_read_tokens": 21831975,
+    "output_tokens": 80735,
+    "api_call_count": 218
   }
 }
