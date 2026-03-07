@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "cc51dfac8c88",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "final/package.json",
+    "final/prisma/schema.prisma",
+    "final/src/__tests__/auth.test.ts",
+    "final/src/__tests__/upload.test.ts",
+    "final/src/app/admin/content/page.tsx",
+    "final/src/app/admin/layout.tsx",
+    "final/src/app/admin/login/page.tsx",
+    "final/src/app/admin/media/page.tsx",
+    "final/src/app/admin/page.tsx",
+    "final/src/app/api/admin/auth/route.ts",
+    "final/src/app/api/admin/logout/route.ts",
+    "final/src/app/api/upload/route.ts",
+    "final/src/app/layout.tsx",
+    "final/src/app/page.tsx",
+    "final/src/components/admin/data-table.tsx",
+    "final/src/components/admin/header.tsx",
+    "final/src/components/admin/index.ts",
+    "final/src/components/admin/media-uploader.tsx",
+    "final/src/components/admin/sidebar.tsx",
+    "final/src/components/effects/index.ts",
+    "final/src/components/effects/splash-overlay.tsx",
+    "final/src/components/site/header.tsx",
+    "final/src/lib/auth.ts",
+    "final/src/lib/cache.ts",
+    "final/src/lib/env.ts",
+    "final/src/lib/theme.ts",
+    "final/src/lib/upload.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/cc/51dfac8c88/0/metadata.json",
+      "transcript": "/cc/51dfac8c88/0/full.jsonl",
+      "content_hash": "/cc/51dfac8c88/0/content_hash.txt",
+      "prompt": "/cc/51dfac8c88/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
