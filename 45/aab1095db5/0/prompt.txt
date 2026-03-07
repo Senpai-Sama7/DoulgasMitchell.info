@@ -1,0 +1,5 @@
+this directory is a personal blog i push to github but i want to replace it with my new website in @final/ but go through it and see if there is anythign that need to be fixed, or ways i can enhance, improve, optimize, and fully expand any of the features, functions, or code.
+
+---
+
+implemtn all fixes and also add a SUPER COOL MODERN HIGH-END ASCII splash screen entrance overlay and a fully loaded admin portable that give me complete control over every feature and funtion on the viewer facing interface. NEEDS to be very easy to use for non-technical people (e.g. drag-and-drop, auto-adaptive, responsive, dynamice,etc.) I want to have the same functionality as a social media networking website so i can upload a wide variety of different type of files and multi-media files and it shoudl automatically adaptive and render appropriately. also include a biometric passkey capability to be added. also think of things i have forgotten to ask and just add it as well. every thing should be tested and verified to be real working and fully funcitional . alwasy proceed witht the most logical next steps. I want a GOD tier premium website complete and FAANG grade

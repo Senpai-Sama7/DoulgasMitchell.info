@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "45aab1095db5",
+  "session_id": "035fd435-c86a-474b-ae6e-9af8544b4e8e",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T12:27:51.706086016Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "bun.lock",
+    "eslint.config.mjs",
+    "next.config.ts",
+    "package.json",
+    "prisma/schema.prisma",
+    "public/robots.txt",
+    "src/app/api/contact/route.ts",
+    "src/app/globals.css",
+    "src/app/layout.tsx",
+    "src/app/page.tsx",
+    "src/components/ui/skeleton.tsx",
+    "src/components/ui/toast.tsx",
+    "src/components/ui/toaster.tsx",
+    "src/hooks/use-toast.ts",
+    "src/lib/db.ts",
+    "tsconfig.json"
+  ],
+  "agent": "Factory AI Droid",
+  "model": "kimi-k2.5",
+  "turn_id": "e2afff5e30b4",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T12:27:51.383285787Z",
+    "agent_lines": 852,
+    "human_added": 15486,
+    "human_modified": 1170,
+    "human_removed": 0,
+    "total_committed": 17508,
+    "agent_percentage": 4.866346812885538
+  }
+}
