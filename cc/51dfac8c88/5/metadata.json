@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "cc51dfac8c88",
+  "session_id": "39c3d38f-9b89-496b-8e6c-3575a7391059",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T09:34:59.930421031Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "final/src/__tests__/forms.test.ts",
+    "final/src/__tests__/site-content.test.ts",
+    "final/src/app/admin/analytics/page.tsx",
+    "final/src/app/admin/security/page.tsx",
+    "final/src/app/api/admin/content/route.ts",
+    "final/src/app/api/analytics/page-view/route.ts",
+    "final/src/app/api/newsletter/route.ts",
+    "final/src/app/sitemap.ts",
+    "final/src/app/work/[slug]/page.tsx",
+    "final/src/app/writing/[slug]/page.tsx",
+    "final/src/components/admin/analytics-chart.tsx",
+    "final/src/components/site/home-page-shell.tsx",
+    "final/src/components/site/page-view-tracker.tsx",
+    "final/src/lib/activity.ts",
+    "final/src/lib/content-service.ts",
+    "final/src/lib/forms.ts",
+    "final/src/lib/rate-limit.ts",
+    "final/src/lib/request.ts",
+    "final/src/lib/site-content.ts",
+    "final/src/lib/upload-server.ts",
+    "final/vitest.config.ts"
+  ],
+  "agent": "Factory AI Droid",
+  "model": "gpt-5.4",
+  "turn_id": "2900c11a09b6",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T09:34:58.65677239Z",
+    "agent_lines": 1900,
+    "human_added": 14479,
+    "human_modified": 491,
+    "human_removed": 0,
+    "total_committed": 16870,
+    "agent_percentage": 11.26259632483699
+  }
+}

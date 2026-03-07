@@ -3,7 +3,7 @@
   "checkpoint_id": "cc51dfac8c88",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 3,
   "files_touched": [
     "final/.dockerignore",
     "final/.gitignore",
@@ -172,6 +172,12 @@
       "transcript": "/cc/51dfac8c88/4/full.jsonl",
       "content_hash": "/cc/51dfac8c88/4/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/cc/51dfac8c88/5/metadata.json",
+      "transcript": "/cc/51dfac8c88/5/full.jsonl",
+      "content_hash": "/cc/51dfac8c88/5/content_hash.txt",
+      "prompt": "/cc/51dfac8c88/5/prompt.txt"
     }
   ],
   "token_usage": {
