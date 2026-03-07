@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "1213f601c529",
+  "session_id": "c147ecbf-c294-463e-842f-6ddf444cf104",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T15:49:10.306104012Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "public/images/the-confident-mind.jpg",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-about-section.tsx",
+    "src/components/site/header.tsx",
+    "src/components/site/home-page-shell.tsx"
+  ],
+  "agent": "Factory AI Droid",
+  "turn_id": "53cff196619a",
+  "checkpoint_transcript_start": 9,
+  "transcript_lines_at_start": 9,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T15:49:10.252497092Z",
+    "agent_lines": 5,
+    "human_added": 0,
+    "human_modified": 28,
+    "human_removed": 20,
+    "total_committed": 33,
+    "agent_percentage": 15.151515151515152
+  }
+}
