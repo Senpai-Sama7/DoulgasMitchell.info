@@ -1,60 +1,67 @@
 # Douglas Mitchell
 
-> Software Architect, Google AI Professional, and Author crafting digital experiences at the intersection of technology and human potential.
+> Operations Analyst, AI Practitioner, Systems Architect, and Author building systems at the intersection of technology and human potential.
 
 ## About
 
-Douglas Mitchell is a software architect and full-stack developer specializing in React, Next.js, TypeScript, Python, and cloud technologies. He is Google AI certified with comprehensive training in AI fundamentals, app building, content creation, data analysis, and research methodologies. Douglas is also the author of "The Confident Mind: A Practical Guide to Authentic Confidence," a book that provides actionable strategies for building genuine, lasting confidence.
+Douglas Mitchell is an Operations Analyst, AI Practitioner, and Systems Architect based in Houston, Texas. He specializes in operational efficiency, workflow automation, data-driven decision making, and AI integration. Douglas is also the author of "The Confident Mind," a practical guide to building authentic confidence.
 
-As a photographer, Douglas specializes in architecture and light photography, exploring the interplay between built environments and natural illumination. His portfolio includes curated collections of architectural photography, workspace photography, and creative project documentation.
-
-## Technical Expertise
-
-**Frontend Development:** React, Next.js, TypeScript, Tailwind CSS, Vue.js
-**Backend Development:** Node.js, Python, PostgreSQL, GraphQL, REST APIs
-**Cloud & DevOps:** AWS, Docker, CI/CD, Git, Vercel
-**AI & Emerging:** Google AI, LLM Integration, System Design, Web3
+As a photographer, Douglas specializes in architecture and light photography, exploring the interplay between built environments and natural illumination.
 
 ## Credentials
 
 - Google AI Professional Certificate
-- AI Fundamentals Certification
-- AI for App Building Certification
-- AI for Content Creation Certification
-- AI for Data Analysis Certification
-- AI for Research and Insights Certification
-- AI for Writing and Communication Certification
-- AI for Brainstorming and Planning Certification
+- Anthropic AI Certificate
+- Operations Analysis
+- Systems Architecture
+
+## Expertise
+
+**Operations:** Process optimization, workflow automation, data analysis
+**AI:** LLM integration, intelligent automation, prompt engineering
+**Systems:** Architecture design, API development, cloud infrastructure
+**Technical:** React, Next.js, TypeScript, Python, PostgreSQL
 
 ## Services
 
-**Software Architecture:** Custom web application development, system design, API architecture
-**AI Integration:** LLM implementation, intelligent automation, AI-powered workflows
-**Photography:** Commercial photography licensing, architectural photography
-**Consulting:** Technology strategy, AI adoption, digital transformation
+- Operations Analysis & Optimization
+- AI Integration & Automation
+- Systems Architecture
+- Workflow Design
+- Technical Writing
 
 ## Published Work
 
-**The Confident Mind:** A Practical Guide to Authentic Confidence
-Available on Amazon. The book offers research-backed strategies for building genuine confidence through practical exercises and real-world applications.
+**The Confident Mind:** A Practical Guide to Authentic Confidence - Available on Amazon
 
 ## Portfolio
 
-Photography portfolio available at https://www.douglasmitchell.info/galleries
-Technical writing and insights at https://www.douglasmitchell.info/journal
+- Photography: https://douglasmitchell.info/galleries
+- Technical Writing: https://douglasmitchell.info/writing
+- Projects: https://douglasmitchell.info/work
+
+## Site Structure
+
+- `/` - Homepage
+- `/about` - About & philosophy
+- `/work` - Project portfolio
+- `/writing` - Journal & articles
+- `/book` - Book promotion
+- `/galleries` - Photography
+- `/contact` - Contact form
+- `/faq` - FAQ
 
 ## Contact
 
-- Website: https://www.douglasmitchell.info
+- Website: https://douglasmitchell.info
 - Email: contact@douglasmitchell.info
 - GitHub: https://github.com/Senpai-Sama7
 - LinkedIn: https://www.linkedin.com/in/douglas-mitchell-the-architect/
 
 ## Location
 
-Based in the United States
-Serving clients globally
+Houston, Texas, USA
 
 ---
 
-Last updated: March 2025
+Last updated: March 2026

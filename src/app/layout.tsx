@@ -80,12 +80,67 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": "https://douglasmitchell.info/#person",
+        "name": "Douglas Mitchell",
+        "url": "https://douglasmitchell.info",
+        "jobTitle": "Operations Analyst",
+        "worksFor": {
+          "@type": "Organization",
+          "@id": "https://douglasmitchell.info/#organization"
+        },
+        "sameAs": [
+          "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+          "https://github.com/Senpai-Sama7"
+        ]
+      },
+      {
+        "@type": "Organization",
+        "@id": "https://douglasmitchell.info/#organization",
+        "name": "Douglas Mitchell",
+        "url": "https://douglasmitchell.info",
+        "founder": {
+          "@type": "Person",
+          "name": "Douglas Mitchell"
+        },
+        "description": "Operations Analyst, AI Practitioner, and Author of The Confident Mind. Building systems at the intersection of technology and human potential.",
+        "sameAs": [
+          "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+          "https://github.com/Senpai-Sama7"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://douglasmitchell.info/#website",
+        "url": "https://douglasmitchell.info",
+        "name": "Douglas Mitchell",
+        "publisher": {
+          "@type": "Organization",
+          "@id": "https://douglasmitchell.info/#organization"
+        },
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://douglasmitchell.info/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+    ]
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/icons/favicon-32x32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icons/favicon-192x192.png" sizes="192x192" type="image/png" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
