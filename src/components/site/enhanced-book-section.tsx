@@ -1,250 +1,206 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
-import { BookOpen, ExternalLink, Quote, ArrowRight, Sparkles } from 'lucide-react';
-import type { BookShowcase } from '@/lib/site-content';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Terminal, Cpu, Database, Network, Sparkles, ChevronRight, Command } from 'lucide-react';
 
-interface EnhancedBookSectionProps {
-  book: BookShowcase;
-}
+const websites = [
+  { name: 'ReliantAI.org', url: 'https://ReliantAI.org' },
+  { name: 'Nex-Gen.Pro', url: 'https://Nex-Gen.Pro' },
+  { name: 'Gen-H.vercel.app', url: 'https://Gen-H.vercel.app' },
+  { name: 'AdTok.Shop', url: 'https://AdTok.Shop' },
+  { name: 'TheConfidentMind.Shop', url: 'https://TheConfidentMind.Shop' },
+  { name: 'Clear-Desk-Ten.vercel.app', url: 'https://Clear-Desk-Ten.vercel.app' },
+  { name: 'GitHub', url: 'https://github.com/senpai-sama7' },
+  { name: 'LinkedIn', url: 'https://linkedin.com/in/douglas-mitchell-the-architect' },
+];
 
-export function EnhancedBookSection({ book }: EnhancedBookSectionProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [activeChapter, setActiveChapter] = useState(0);
-  const prefersReducedMotion = useReducedMotion();
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ['start end', 'end start'],
-  });
-  
-  const rotateY = useTransform(scrollYProgress, [0, 0.5, 1], [-15, 0, 15]);
+function JITTerminal() {
+  const [input, setInput] = useState('');
+  const [history, setHistory] = useState<Array<{ type: 'cmd' | 'output' | 'error', text: React.ReactNode }>>([
+    { type: 'output', text: 'Douglas Mitchell OS v4.2.0 initialized.' },
+    { type: 'output', text: 'Type --help to see available commands.' },
+  ]);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-rotate chapters
   useEffect(() => {
-    if (prefersReducedMotion) return;
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [history, isUpdating]);
 
-    const interval = setInterval(() => {
-      setActiveChapter(prev => (prev + 1) % book.chapters.length);
-    }, 3000);
+  const handleCommand = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim()) return;
 
-    return () => clearInterval(interval);
-  }, [book.chapters.length, prefersReducedMotion]);
+    const cmd = input.trim().toLowerCase();
+    setHistory(prev => [...prev, { type: 'cmd', text: input }]);
+    setInput('');
 
-  const activeTestimonial = book.testimonials[activeChapter % book.testimonials.length] ?? book.testimonials[0];
+    if (cmd === '--help') {
+      setHistory(prev => [...prev, { 
+        type: 'output', 
+        text: 'Available commands: --help, sudo apt update, git push, nmap, clear, whoami' 
+      }]);
+    } else if (cmd === 'sudo apt update') {
+      setIsUpdating(true);
+      setHistory(prev => [...prev, { type: 'output', text: 'Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease' }]);
+      
+      setTimeout(() => {
+        setHistory(prev => [...prev, { type: 'output', text: 'Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]' }]);
+      }, 500);
+      
+      setTimeout(() => {
+        setHistory(prev => [...prev, { type: 'output', text: 'Fetched 126 kB in 1s (115 kB/s)' }]);
+        setHistory(prev => [...prev, { type: 'output', text: 'Reading package lists... Done' }]);
+        setHistory(prev => [...prev, { type: 'output', text: 'All packages are up to date.' }]);
+        setIsUpdating(false);
+      }, 1500);
+    } else if (cmd === 'git push') {
+      setHistory(prev => [...prev, { type: 'output', text: 'Enumerating objects: 15, done.' }]);
+      setHistory(prev => [...prev, { type: 'output', text: 'Delta compression using up to 18 threads' }]);
+      setHistory(prev => [...prev, { type: 'output', text: 'Redirecting to contact portal...' }]);
+      setTimeout(() => {
+        const contactSection = document.getElementById('contact');
+        if (contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
+      }, 1000);
+    } else if (cmd === 'nmap') {
+      setHistory(prev => [...prev, { type: 'output', text: 'Starting Nmap 7.80 ( https://nmap.org )' }]);
+      setHistory(prev => [...prev, { 
+        type: 'output', 
+        text: (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+            {websites.map(site => (
+              <a 
+                key={site.name} 
+                href={site.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-primary hover:underline flex items-center gap-1"
+              >
+                <ChevronRight className="h-3 w-3" /> {site.name}
+              </a>
+            ))}
+          </div>
+        )
+      }]);
+    } else if (cmd === 'clear') {
+      setHistory([]);
+    } else if (cmd === 'whoami') {
+      setHistory(prev => [...prev, { type: 'output', text: 'the_architect' }]);
+    } else {
+      setHistory(prev => [...prev, { type: 'error', text: `Command not found: ${cmd}` }]);
+    }
+  };
 
   return (
-    <section id="book" className="section-spacing bg-muted/30 relative overflow-hidden" ref={containerRef}>
-      {/* Background ASCII */}
-      <div className="absolute inset-0 pointer-events-none opacity-[0.02]">
-        <pre className="font-mono text-[8px] leading-tight text-muted-foreground whitespace-pre-wrap">
-{`
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-░  ╔════════════════════════════════════════════════════════════════╗  ░
-░  ║  THE CONFIDENT MIND - A PRACTICAL GUIDE TO AUTHENTICITY        ║  ░
-░  ╚════════════════════════════════════════════════════════════════╝  ░
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
-`}
-        </pre>
+    <div className="w-full h-[500px] bg-black/95 rounded-2xl border border-primary/20 p-6 font-mono text-sm text-primary/80 overflow-hidden shadow-2xl relative flex flex-col">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-primary/10">
+        <div className="flex gap-1.5">
+          <div className="w-3 h-3 rounded-full bg-red-500/40" />
+          <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
+          <div className="w-3 h-3 rounded-full bg-green-500/40" />
+        </div>
+        <div className="flex-1 text-center opacity-50 uppercase tracking-[0.3em] text-[10px]">
+          architect_terminal_v4.2
+        </div>
+        <Command className="h-4 w-4 opacity-50" />
       </div>
 
+      {/* Terminal Output */}
+      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 mb-4 scrollbar-hide">
+        {history.map((line, i) => (
+          <div key={i} className={line.type === 'error' ? 'text-red-400' : line.type === 'cmd' ? 'text-white' : ''}>
+            {line.type === 'cmd' && <span className="text-primary/50 mr-2">guest@dm-os:~$</span>}
+            {line.text}
+          </div>
+        ))}
+        {isUpdating && (
+          <motion.div
+            animate={{ opacity: [1, 0.5, 1] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+            className="text-primary/70"
+          >
+            Updating system repository...
+          </motion.div>
+        )}
+      </div>
+
+      {/* Input Line */}
+      <form onSubmit={handleCommand} className="flex items-center gap-2">
+        <span className="text-primary/50 whitespace-nowrap">guest@dm-os:~$</span>
+        <input
+          type="text"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="bg-transparent border-none outline-none text-white w-full p-0 focus:ring-0"
+          autoFocus
+          spellCheck={false}
+        />
+      </form>
+
+      {/* Background Icons */}
+      <div className="absolute bottom-6 right-6 flex gap-6 opacity-10 pointer-events-none">
+        <Cpu className="h-6 w-6" />
+        <Database className="h-6 w-6" />
+        <Network className="h-6 w-6" />
+      </div>
+    </div>
+  );
+}
+
+export function EnhancedBookSection() {
+  return (
+    <section id="terminal" className="section-spacing bg-muted/30 relative overflow-hidden">
       <div className="editorial-container relative z-10">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="mb-16"
+          className="mb-12"
         >
           <div className="flex items-center gap-3 mb-4">
             <span className="font-mono text-xs text-muted-foreground">{'// 04'}</span>
             <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
           </div>
-          
           <div className="flex items-center gap-3">
             <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-mono text-sm text-muted-foreground">PUBLISHED WORK</span>
+            <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">System Command Center</span>
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          {/* Book Cover */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="relative"
-          >
-            {/* 3D Book Effect */}
-            <motion.div 
-              style={{ rotateY: prefersReducedMotion ? 0 : rotateY }}
-              className="relative perspective-1000"
-            >
-              <div className="relative aspect-[2/3] max-w-sm mx-auto lg:mx-0">
-                {/* Book Shadow */}
-                <div className="absolute -bottom-4 left-4 right-4 h-8 bg-gradient-to-t from-black/20 to-transparent blur-lg" />
-                
-                {/* Book Cover */}
-                <div className="relative w-full h-full bg-gradient-to-br from-primary via-primary to-primary/80 rounded-lg shadow-2xl overflow-hidden">
-                  {/* Cover Pattern */}
-                  <div className="absolute inset-0 opacity-10">
-                    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                      <defs>
-                        <pattern id="bookPattern" width="20" height="20" patternUnits="userSpaceOnUse">
-                          <circle cx="10" cy="10" r="1" fill="currentColor" />
-                        </pattern>
-                      </defs>
-                      <rect width="100%" height="100%" fill="url(#bookPattern)" />
-                    </svg>
-                  </div>
-
-                  {/* Cover Content */}
-                  <div className="relative z-10 h-full flex flex-col items-center justify-center p-8 text-primary-foreground">
-                    {/* ASCII Top */}
-                    <pre className="font-mono text-[8px] opacity-50 mb-4">
-{`╭──────────────╮
-│              │
-│    ◆ ◇ ◆    │
-│              │
-╰──────────────╯`}
-                    </pre>
-
-                    <BookOpen className="h-12 w-12 mb-6 opacity-80" />
-                    
-                    <h3 className="font-bold text-2xl text-center mb-2 tracking-tight">
-                      {book.title}
-                    </h3>
-                    <p className="text-sm opacity-80 text-center leading-relaxed">
-                      {book.subtitle}
-                    </p>
-
-                    {/* ASCII Bottom */}
-                    <pre className="font-mono text-[8px] opacity-50 mt-6">
-{`╭──────────────╮
-│   by D.M.    │
-╰──────────────╯`}
-                    </pre>
-                  </div>
-
-                  {/* Book Edge */}
-                  <div className="absolute right-0 top-0 bottom-0 w-4 bg-primary-foreground/10" />
+        <div className="grid lg:grid-cols-3 gap-12 items-start">
+          <div className="lg:col-span-2">
+            <JITTerminal />
+          </div>
+          
+          <div className="space-y-8">
+            <div className="p-6 rounded-2xl border border-border bg-background">
+              <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4">Quick Shortcuts</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-mono">--help</span>
+                  <span className="text-xs opacity-50">View all commands</span>
                 </div>
-
-                {/* Floating Pages */}
-                <motion.div
-                  animate={{ y: [-2, 2, -2] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                  className="absolute -right-2 top-2 bottom-2 w-2 bg-muted rounded-r shadow-md"
-                />
-              </div>
-            </motion.div>
-
-            {/* Decorative Elements */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 60, repeat: Infinity, ease: 'linear' }}
-              className="absolute -z-10 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%]"
-            >
-              <svg viewBox="0 0 200 200" className="w-full h-full opacity-20">
-                <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 4" />
-                <circle cx="100" cy="100" r="80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 6" />
-              </svg>
-            </motion.div>
-          </motion.div>
-
-          {/* Book Info */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <h2 className="editorial-title mb-4">
-              {book.title}
-            </h2>
-
-            <p className="text-lg text-muted-foreground italic mb-6">
-              {book.subtitle}
-            </p>
-
-            <p className="text-muted-foreground leading-relaxed mb-8">
-              {book.description}
-            </p>
-
-            {/* Highlights */}
-            <div className="space-y-3 mb-8">
-              {book.highlights.map((highlight, i) => (
-                <motion.div
-                  key={highlight}
-                  initial={{ opacity: 0, x: -10 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                  className="flex items-center gap-3 text-sm"
-                >
-                  <span className="text-primary">◆</span>
-                  <span className="text-muted-foreground">{highlight}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            {/* Chapters Preview */}
-            <div className="mb-8 p-4 bg-background border border-border rounded-lg">
-              <div className="font-mono text-xs text-muted-foreground mb-3">
-                CHAPTERS
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {book.chapters.map((chapter, i) => (
-                  <motion.span
-                    key={chapter}
-                    onClick={() => setActiveChapter(i)}
-                    className={`px-3 py-1 text-xs font-mono rounded cursor-pointer transition-colors ${
-                      i === activeChapter 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted hover:bg-muted/80'
-                    }`}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {i + 1}. {chapter}
-                  </motion.span>
-                ))}
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-mono">nmap</span>
+                  <span className="text-xs opacity-50">Scan project grid</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-muted-foreground font-mono">git push</span>
+                  <span className="text-xs opacity-50">Sync to contact</span>
+                </div>
               </div>
             </div>
 
-            {/* Testimonial */}
-            <div className="border-l-2 border-primary pl-4 mb-8">
-              <Quote className="h-4 w-4 text-muted-foreground mb-2" />
-              <motion.p 
-                key={activeChapter}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-sm italic text-muted-foreground"
-              >
-                "{activeTestimonial.text}"
-              </motion.p>
-              <span className="text-xs text-muted-foreground mt-1 block">
-                {activeTestimonial.author}
-              </span>
+            <div className="p-6 rounded-2xl border border-border bg-muted/40">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Interact with the Architect's terminal to explore the network, sync with the contact portal, or run system diagnostics.
+              </p>
             </div>
-
-            {/* CTA */}
-            <motion.a
-              href={book.amazonUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-button group"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <BookOpen className="h-4 w-4" />
-              Get It on Amazon
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </motion.a>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

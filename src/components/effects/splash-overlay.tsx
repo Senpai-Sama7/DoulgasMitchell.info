@@ -41,11 +41,18 @@ function createMatrixCharacters(length: number) {
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverlayProps) {
-  const [isVisible, setIsVisible] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return !sessionStorage.getItem('splash-seen');
-  });
+  const [isVisible, setIsVisible] = useState(false);
   const [phase, setPhase] = useState<'video' | 'matrix' | 'build' | 'reveal' | 'fade'>('video');
+
+  useEffect(() => {
+    // Clear seen flag for testing/troubleshooting to ensure it shows up
+    sessionStorage.removeItem('splash-seen');
+    setIsVisible(true);
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   const [matrixChars, setMatrixChars] = useState<string[]>(() => createMatrixCharacters(150));
   const [typedLines, setTypedLines] = useState<string[]>([]);
   const [currentLine, setCurrentLine] = useState(0);

@@ -2,8 +2,8 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion, AnimatePresence } from 'framer-motion';
-import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, Terminal, Cpu, Database, Network } from 'lucide-react';
-import { aboutRoles, expertiseByCategory, operatingPrinciples } from '@/lib/site-content';
+import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, Terminal, Cpu, Database, Network, ArrowRight, Sparkles } from 'lucide-react';
+import { aboutRoles, expertiseByCategory, operatingPrinciples, bookShowcase } from '@/lib/site-content';
 
 const roles = [
   { icon: Code, ...aboutRoles[0] },
@@ -18,89 +18,6 @@ const values = [
   { icon: Users, label: 'Human-Centric' },
   { icon: Rocket, label: 'Innovation' },
 ];
-
-function JITTerminal() {
-  const [logs, setLogs] = useState<string[]>([]);
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const systemMessages = [
-    "Initializing neural pathways...",
-    "Scanning architectural patterns...",
-    "Optimizing workflow efficiency: 98.4%",
-    "Loading 'The Confident Mind' core modules...",
-    "Connecting to global intelligence grid...",
-    "Analyzing system entropy...",
-    "Synthesizing human-AI interaction nodes...",
-    "Executing strategic operations protocol...",
-    "Monitoring performance metrics...",
-    "Validating secure communication channels...",
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setLogs(prev => {
-        const next = [...prev, `[${new Date().toLocaleTimeString()}] ${systemMessages[Math.floor(Math.random() * systemMessages.length)]}`];
-        return next.slice(-8); // Keep last 8 logs
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  return (
-    <div className="w-full h-full bg-black/90 rounded-2xl border border-primary/20 p-4 font-mono text-[10px] sm:text-xs text-primary/70 overflow-hidden shadow-2xl relative group">
-      <div className="flex items-center gap-2 mb-4 pb-2 border-b border-primary/10">
-        <div className="flex gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-red-500/40" />
-          <div className="w-2 h-2 rounded-full bg-yellow-500/40" />
-          <div className="w-2 h-2 rounded-full bg-green-500/40" />
-        </div>
-        <div className="flex-1 text-center opacity-50 uppercase tracking-widest text-[8px]">
-          system_monitor.sh
-        </div>
-        <Terminal className="h-3 w-3 opacity-50" />
-      </div>
-      
-      <div className="space-y-2">
-        <div className="text-primary flex items-center gap-2">
-          <span className="opacity-50">admin@dm-info:~$</span>
-          <motion.span
-            animate={{ opacity: [1, 0] }}
-            transition={{ duration: 0.8, repeat: Infinity }}
-          >
-            _
-          </motion.span>
-        </div>
-        
-        <AnimatePresence initial={false}>
-          {logs.map((log, i) => (
-            <motion.div
-              key={log + i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="whitespace-nowrap overflow-hidden text-ellipsis"
-            >
-              <span className="text-primary/30 mr-2">{'>'}</span>
-              {log}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-
-      {/* Decorative scanning line */}
-      <motion.div
-        animate={{ top: ['0%', '100%'] }}
-        transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-        className="absolute left-0 right-0 h-px bg-primary/20 z-10 pointer-events-none"
-      />
-      
-      <div className="absolute bottom-4 right-4 flex gap-4 opacity-20">
-        <Cpu className="h-4 w-4" />
-        <Database className="h-4 w-4" />
-        <Network className="h-4 w-4" />
-      </div>
-    </div>
-  );
-}
 
 export function EnhancedAboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -190,10 +107,54 @@ export function EnhancedAboutSection() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="flex items-center"
+            className="flex flex-col justify-center"
           >
-            <div className="w-full aspect-[640/948] lg:aspect-auto lg:h-full">
-              <JITTerminal />
+            <div className="space-y-6">
+              <div className="flex items-center gap-3">
+                <Sparkles className="h-5 w-5 text-primary" />
+                <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">Featured Publication</span>
+              </div>
+              
+              <h2 className="editorial-title leading-tight">
+                {bookShowcase.title}
+              </h2>
+
+              <p className="text-lg text-muted-foreground italic">
+                {bookShowcase.subtitle}
+              </p>
+
+              <p className="text-muted-foreground leading-relaxed max-w-lg">
+                {bookShowcase.description}
+              </p>
+
+              <div className="space-y-3">
+                {bookShowcase.highlights.slice(0, 3).map((highlight, i) => (
+                  <motion.div
+                    key={highlight}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 }}
+                    className="flex items-center gap-3 text-sm"
+                  >
+                    <span className="text-primary font-mono">◆</span>
+                    <span className="text-muted-foreground">{highlight}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <motion.a
+                href={bookShowcase.amazonUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="cta-button group"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <BookOpen className="h-4 w-4" />
+                Learn More
+                <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </motion.a>
             </div>
           </motion.div>
         </div>
