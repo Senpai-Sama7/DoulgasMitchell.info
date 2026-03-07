@@ -1,0 +1,5 @@
+{
+  "buildCommand": "cd final && bun install && bun run build",
+  "outputDirectory": "final/.next",
+  "installCommand": "cd final && bun install"
+}
