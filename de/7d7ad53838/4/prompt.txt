@@ -1,0 +1,1 @@
+dougie video in about is not sized right . the frame is too small and horizontal orinetation when the video is a 9:12. and the breathing-DM video is suppose to have no background and just looping at the top right AFFTER the video overlay not over it
