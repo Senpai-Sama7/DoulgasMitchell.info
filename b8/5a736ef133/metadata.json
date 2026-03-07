@@ -3,7 +3,7 @@
   "checkpoint_id": "b85a736ef133",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 1,
+  "checkpoints_count": 3,
   "files_touched": [
     ".serena/.gitignore",
     ".serena/project.yml",
@@ -96,13 +96,19 @@
       "transcript": "/b8/5a736ef133/13/full.jsonl",
       "content_hash": "/b8/5a736ef133/13/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/b8/5a736ef133/14/metadata.json",
+      "transcript": "/b8/5a736ef133/14/full.jsonl",
+      "content_hash": "/b8/5a736ef133/14/content_hash.txt",
+      "prompt": "/b8/5a736ef133/14/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 135755,
-    "cache_creation_tokens": 0,
-    "cache_read_tokens": 114526,
-    "output_tokens": 588,
-    "api_call_count": 5
+    "input_tokens": 171295,
+    "cache_creation_tokens": 84163,
+    "cache_read_tokens": 2102926,
+    "output_tokens": 11959,
+    "api_call_count": 53
   }
 }

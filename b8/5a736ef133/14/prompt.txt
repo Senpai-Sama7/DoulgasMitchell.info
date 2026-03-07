@@ -1,0 +1,41 @@
+Please analyze this codebase and create an AGENTS.md file containing:
+1. Build/lint/test commands - especially for running a single test
+2. Code style guidelines including imports, formatting, types, naming conventions, error handling, etc.
+
+The file you create will be given to agentic coding agents (such as yourself) that operate in this repository. Make it about 150 lines long.
+If there are Cursor rules (in .cursor/rules/ or .cursorrules) or Copilot rules (in .github/copilot-instructions.md), make sure to include them.
+
+If there's already an AGENTS.md, improve it if it's located in /home/donovan/Projects/DoulgasMitchell.info
+
+---
+
+1. ✅ Dougie video moved to About section - Now displays in a bordered frame
+in the about section instead of as a barely visible background in the hero
+2. ✅ Hero background cleaned up - Removed the background video that was hard
+to see
+3. ✅ Favicon updated - Now using the proper PNG favicons from /icons/ folder
+(32x32, 192x192, and apple-touch-icon)
+4. ✅ Entrance overlay - The breathing-DM video is already in the code and
+should show on first visit (stored in sessionStorage)
+
+What to expect:
+- First visit: 2-second breathing DM video → matrix animation → ASCII build
+→ site
+- Subsequent visits: No splash (cached in sessionStorage)
+- About section: Dougie frame loop video in a bordered frame
+- Browser tab: Proper DM favicon
+
+The changes are deploying now. Clear your browser cache (Ctrl+Shift+R) and
+try in incognito mode to see the entrance overlay. fix any problems you might encounter
+
+---
+
+dougie video in about is not sized right . the frame is too small and horizontal orinetation when the video is a 9:12. and the breathing-DM video is suppose to have no background and just looping at the top right AFFTER the video overlay not over it
+
+---
+
+dougie video in about is not sized right . the frame is too small and horizontal orinetation when the video is a 9:12. and the breathing-DM video is suppose to have no background and just looping at the top right AFFTER the video overlay not over it
+
+---
+
+take screen shots of proof or assume it a lie
