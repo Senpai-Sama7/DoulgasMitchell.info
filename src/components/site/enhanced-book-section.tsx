@@ -147,6 +147,7 @@ function JITTerminal() {
           className="bg-transparent border-none outline-none text-white w-full p-0 focus:ring-0"
           autoFocus
           spellCheck={false}
+          aria-label="Terminal input"
         />
       </form>
 

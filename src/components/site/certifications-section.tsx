@@ -76,6 +76,7 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
                         src={cert.imageUrl} 
                         alt={`${cert.title} certificate`}
                         className="w-full h-full object-contain p-1 group-hover:scale-[1.02] transition-transform duration-500"
+                        loading="lazy"
                       />
                     </div>
                   )}
