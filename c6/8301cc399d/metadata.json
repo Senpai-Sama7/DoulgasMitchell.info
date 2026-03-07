@@ -19,6 +19,12 @@
       "transcript": "/c6/8301cc399d/1/full.jsonl",
       "content_hash": "/c6/8301cc399d/1/content_hash.txt",
       "prompt": ""
+    },
+    {
+      "metadata": "/c6/8301cc399d/2/metadata.json",
+      "transcript": "/c6/8301cc399d/2/full.jsonl",
+      "content_hash": "/c6/8301cc399d/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
