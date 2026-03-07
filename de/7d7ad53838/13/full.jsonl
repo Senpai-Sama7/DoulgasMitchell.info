@@ -13,7 +13,7 @@
     },
     "time": {
       "created": 1772890488222,
-      "updated": 1772890940900
+      "updated": 1772890981846
     }
   },
   "messages": [
@@ -4297,7 +4297,16 @@
           "created": 1772890890944
         },
         "summary": {
-          "diffs": []
+          "diffs": [
+            {
+              "file": "src/components/site/home-page-shell.tsx",
+              "before": "'use client';\n\nimport { useCallback, useEffect, useState } from 'react';\nimport { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';\nimport {\n  CertificationsSection,\n  EnhancedAboutSection,\n  EnhancedBookSection,\n  EnhancedContactSection,\n  EnhancedHeroSection,\n  EnhancedWorkSection,\n  EnhancedWritingSection,\n  SiteFooter,\n  SiteHeader,\n} from '@/components/site';\nimport { CommandKTrigger, CommandPalette, SplashOverlay } from '@/components/effects';\nimport { PageViewTracker } from '@/components/site/page-view-tracker';\nimport type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowcase } from '@/lib/site-content';\nimport { useTheme } from '@/lib/theme';\n\ninterface HomePageShellProps {\n  articles: ArticleShowcase[];\n  book: BookShowcase;\n  certifications: CertificationShowcase[];\n  projects: ProjectShowcase[];\n}\n\nexport function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {\n  const { scrollYProgress } = useScroll();\n  const [isCommandOpen, setIsCommandOpen] = useState(false);\n  const [showSplash, setShowSplash] = useState(() => {\n    if (typeof window === 'undefined') return true;\n    return !sessionStorage.getItem('splash-seen');\n  });\n  const prefersReducedMotion = useReducedMotion();\n  const { isDark, toggle } = useTheme();\n  const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);\n\n  useEffect(() => {\n    const handleKeyDown = (event: KeyboardEvent) => {\n      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {\n        event.preventDefault();\n        setIsCommandOpen((previous) => !previous);\n      }\n    };\n\n    window.addEventListener('keydown', handleKeyDown);\n    return () => window.removeEventListener('keydown', handleKeyDown);\n  }, []);\n\n  const handleNavigate = useCallback(\n    (href: string) => {\n      if (href === '#') {\n        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });\n        return;\n      }\n\n      const element = document.querySelector(href);\n      if (element instanceof HTMLElement) {\n        element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });\n      }\n    },\n    [prefersReducedMotion]\n  );\n\n  return (\n    <>\n      <PageViewTracker />\n\n      {showSplash && <SplashOverlay onComplete={() => setShowSplash(false)} />}\n\n      {/* Breathing DM video - shows in top right after splash */}\n      {!showSplash && !prefersReducedMotion && (\n        <motion.div\n          initial={{ opacity: 0 }}\n          animate={{ opacity: 1 }}\n          transition={{ duration: 1, delay: 0.5 }}\n          className=\"fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40\"\n        >\n          <video\n            autoPlay\n            loop\n            muted\n            playsInline\n            className=\"w-full h-full object-cover\"\n          >\n            <source src=\"/media/breathing-dm-loop.mp4\" type=\"video/mp4\" />\n          </video>\n        </motion.div>\n      )}\n\n      <motion.div\n        className=\"scroll-progress\"\n        style={{\n          scaleX,\n          backgroundColor: isDark ? '#fafafa' : '#171717',\n        }}\n      />\n\n      <SiteHeader />\n\n      <main id=\"main-content\" className=\"flex-1\">\n        <EnhancedHeroSection />\n\n        <div className=\"editorial-container\">\n          <div className=\"flex items-center justify-center gap-4 py-8\">\n            <span className=\"font-mono text-xl text-muted-foreground/20\">{'═'.repeat(20)}</span>\n            <span className=\"font-mono text-muted-foreground/30\">◈</span>\n            <span className=\"font-mono text-xl text-muted-foreground/20\">{'═'.repeat(20)}</span>\n          </div>\n        </div>\n\n        <EnhancedAboutSection />\n        <EnhancedWorkSection projects={projects} />\n        <EnhancedBookSection book={book} />\n        <EnhancedWritingSection articles={articles} />\n        <CertificationsSection items={certifications} />\n        <EnhancedContactSection />\n      </main>\n\n      <SiteFooter />\n\n      <CommandPalette\n        isOpen={isCommandOpen}\n        onClose={() => setIsCommandOpen(false)}\n        onNavigate={handleNavigate}\n        isDark={isDark}\n        onToggleTheme={toggle}\n      />\n\n      <CommandKTrigger onClick={() => setIsCommandOpen(true)} />\n    </>\n  );\n}\n",
+              "after": "'use client';\n\nimport { useCallback, useEffect, useState } from 'react';\nimport { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';\nimport {\n  CertificationsSection,\n  EnhancedAboutSection,\n  EnhancedBookSection,\n  EnhancedContactSection,\n  EnhancedHeroSection,\n  EnhancedWorkSection,\n  EnhancedWritingSection,\n  SiteFooter,\n  SiteHeader,\n} from '@/components/site';\nimport { CommandKTrigger, CommandPalette, SplashOverlay } from '@/components/effects';\nimport { PageViewTracker } from '@/components/site/page-view-tracker';\nimport type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowcase } from '@/lib/site-content';\nimport { useTheme } from '@/lib/theme';\n\ninterface HomePageShellProps {\n  articles: ArticleShowcase[];\n  book: BookShowcase;\n  certifications: CertificationShowcase[];\n  projects: ProjectShowcase[];\n}\n\nexport function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {\n  const { scrollYProgress } = useScroll();\n  const [isCommandOpen, setIsCommandOpen] = useState(false);\n  const [showSplash, setShowSplash] = useState(() => {\n    if (typeof window === 'undefined') return true;\n    return !sessionStorage.getItem('splash-seen');\n  });\n  const prefersReducedMotion = useReducedMotion();\n  const { isDark, toggle } = useTheme();\n  const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);\n\n  useEffect(() => {\n    const handleKeyDown = (event: KeyboardEvent) => {\n      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {\n        event.preventDefault();\n        setIsCommandOpen((previous) => !previous);\n      }\n    };\n\n    window.addEventListener('keydown', handleKeyDown);\n    return () => window.removeEventListener('keydown', handleKeyDown);\n  }, []);\n\n  const handleNavigate = useCallback(\n    (href: string) => {\n      if (href === '#') {\n        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });\n        return;\n      }\n\n      const element = document.querySelector(href);\n      if (element instanceof HTMLElement) {\n        element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });\n      }\n    },\n    [prefersReducedMotion]\n  );\n\n  return (\n    <>\n      <PageViewTracker />\n\n      {showSplash && <SplashOverlay onComplete={() => setShowSplash(false)} />}\n\n      {/* Breathing DM video - shows in top right after splash */}\n      {!showSplash && !prefersReducedMotion && (\n        <motion.div\n          initial={{ opacity: 0 }}\n          animate={{ opacity: 1 }}\n          transition={{ duration: 1, delay: 0.5 }}\n          className=\"fixed top-4 right-4 w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden z-40 mix-blend-screen\"\n        >\n          <video\n            autoPlay\n            loop\n            muted\n            playsInline\n            className=\"w-full h-full object-cover\"\n          >\n            <source src=\"/media/breathing-dm-loop.mp4\" type=\"video/mp4\" />\n          </video>\n        </motion.div>\n      )}\n\n      <motion.div\n        className=\"scroll-progress\"\n        style={{\n          scaleX,\n          backgroundColor: isDark ? '#fafafa' : '#171717',\n        }}\n      />\n\n      <SiteHeader />\n\n      <main id=\"main-content\" className=\"flex-1\">\n        <EnhancedHeroSection />\n\n        <div className=\"editorial-container\">\n          <div className=\"flex items-center justify-center gap-4 py-8\">\n            <span className=\"font-mono text-xl text-muted-foreground/20\">{'═'.repeat(20)}</span>\n            <span className=\"font-mono text-muted-foreground/30\">◈</span>\n            <span className=\"font-mono text-xl text-muted-foreground/20\">{'═'.repeat(20)}</span>\n          </div>\n        </div>\n\n        <EnhancedAboutSection />\n        <EnhancedWorkSection projects={projects} />\n        <EnhancedBookSection book={book} />\n        <EnhancedWritingSection articles={articles} />\n        <CertificationsSection items={certifications} />\n        <EnhancedContactSection />\n      </main>\n\n      <SiteFooter />\n\n      <CommandPalette\n        isOpen={isCommandOpen}\n        onClose={() => setIsCommandOpen(false)}\n        onNavigate={handleNavigate}\n        isDark={isDark}\n        onToggleTheme={toggle}\n      />\n\n      <CommandKTrigger onClick={() => setIsCommandOpen(true)} />\n    </>\n  );\n}\n",
+              "additions": 1,
+              "deletions": 1,
+              "status": "modified"
+            }
+          ]
         },
         "agent": "backend-architect",
         "model": {
@@ -4832,7 +4841,8 @@
       "info": {
         "role": "assistant",
         "time": {
-          "created": 1772890940821
+          "created": 1772890940821,
+          "completed": 1772890963490
         },
         "parentID": "msg_cc88822b7001di5Dv2o5skMr7q",
         "modelID": "minimax-m2.5-free",
@@ -4845,14 +4855,16 @@
         },
         "cost": 0,
         "tokens": {
-          "input": 0,
-          "output": 0,
+          "total": 61951,
+          "input": 219,
+          "output": 267,
           "reasoning": 0,
           "cache": {
-            "read": 0,
-            "write": 0
+            "read": 60631,
+            "write": 834
           }
         },
+        "finish": "tool-calls",
         "id": "msg_cc888e595001MFqemdHItpHH90",
         "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX"
       },
@@ -4896,22 +4908,339 @@
           "callID": "call_function_o96dhlnns17n_1",
           "tool": "bash",
           "state": {
-            "status": "running",
+            "status": "completed",
             "input": {
               "command": "cd /home/donovan/Projects/DoulgasMitchell.info && git add src/components/site/enhanced-about-section.tsx src/components/site/home-page-shell.tsx && git commit -m \"Fix video sizing: larger vertical dougie frame, remove border on breathing-DM\"",
               "description": "Commit video fixes"
             },
+            "output": "[main 71aba320] Fix video sizing: larger vertical dougie frame, remove border on breathing-DM\n 2 files changed, 26 insertions(+), 3 deletions(-)\n",
+            "title": "Commit video fixes",
             "metadata": {
-              "output": "",
-              "description": "Commit video fixes"
+              "output": "[main 71aba320] Fix video sizing: larger vertical dougie frame, remove border on breathing-DM\n 2 files changed, 26 insertions(+), 3 deletions(-)\n",
+              "exit": 0,
+              "description": "Commit video fixes",
+              "truncated": false
             },
             "time": {
-              "start": 1772890957401
+              "start": 1772890957396,
+              "end": 1772890963456
             }
           },
           "id": "prt_cc889231c001u4itCnejjkhYyf",
           "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
           "messageID": "msg_cc888e595001MFqemdHItpHH90"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "de0e2003bd365bbae38f3dd276292c03b3eac609",
+          "cost": 0,
+          "tokens": {
+            "total": 61951,
+            "input": 219,
+            "output": 267,
+            "reasoning": 0,
+            "cache": {
+              "read": 60631,
+              "write": 834
+            }
+          },
+          "id": "prt_cc8893e010018oFFoehQdCLYZp",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc888e595001MFqemdHItpHH90"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772890963498,
+          "completed": 1772890967624
+        },
+        "parentID": "msg_cc88822b7001di5Dv2o5skMr7q",
+        "modelID": "minimax-m2.5-free",
+        "providerID": "opencode",
+        "mode": "backend-architect",
+        "agent": "backend-architect",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 62095,
+          "input": 121,
+          "output": 90,
+          "reasoning": 0,
+          "cache": {
+            "read": 61173,
+            "write": 711
+          }
+        },
+        "finish": "tool-calls",
+        "id": "REDACTED",
+        "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "de0e2003bd365bbae38f3dd276292c03b3eac609",
+          "id": "prt_cc88948f6001pquHFaZrvJW45l",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "reasoning",
+          "text": "Now let me check if there's a deploy script or if there's a Vercel/Netlify deployment. Let me check the package.json for deploy commands.",
+          "metadata": {
+            "anthropic": {
+              "signature": "32d35dd247b6f7655818a5fa485ada265b02cb55ce128ffd816e655cb6a48111"
+            }
+          },
+          "time": {
+            "start": 1772890966263,
+            "end": 1772890967162
+          },
+          "id": "prt_cc88948f7001EYgTD8IwYI8u6N",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "tool",
+          "callID": "call_function_h3sblf8xmqen_1",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /home/donovan/Projects/DoulgasMitchell.info && git log --oneline -5",
+              "description": "Check recent commits"
+            },
+            "output": "71aba320 Fix video sizing: larger vertical dougie frame, remove border on breathing-DM\n5af857ce fix: Move Dougie video to about section frame, remove from hero background, update favicon\n31add3f5 feat: Add DM breathing video to entrance overlay and favicon link\nff50f5bd feat: Add background video to hero section\ncf5f5e74 feat: Add database check endpoint\n",
+            "title": "Check recent commits",
+            "metadata": {
+              "output": "71aba320 Fix video sizing: larger vertical dougie frame, remove border on breathing-DM\n5af857ce fix: Move Dougie video to about section frame, remove from hero background, update favicon\n31add3f5 feat: Add DM breathing video to entrance overlay and favicon link\nff50f5bd feat: Add background video to hero section\ncf5f5e74 feat: Add database check endpoint\n",
+              "exit": 0,
+              "description": "Check recent commits",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772890967489,
+              "end": 1772890967510
+            }
+          },
+          "id": "prt_cc8894c7b001QfevW7zfQw6OaC",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "REDACTED"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "de0e2003bd365bbae38f3dd276292c03b3eac609",
+          "cost": 0,
+          "tokens": {
+            "total": 62095,
+            "input": 121,
+            "output": 90,
+            "reasoning": 0,
+            "cache": {
+              "read": 61173,
+              "write": 711
+            }
+          },
+          "id": "prt_cc8894e23001IfglkExYZgZlnZ",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "REDACTED"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772890967633,
+          "completed": 1772890981734
+        },
+        "parentID": "msg_cc88822b7001di5Dv2o5skMr7q",
+        "modelID": "minimax-m2.5-free",
+        "providerID": "opencode",
+        "mode": "backend-architect",
+        "agent": "backend-architect",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 62278,
+          "input": 173,
+          "output": 77,
+          "reasoning": 0,
+          "cache": {
+            "read": 61612,
+            "write": 416
+          }
+        },
+        "finish": "tool-calls",
+        "id": "msg_cc8894e51001FoNLVddFqcydWN",
+        "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "708ab4a79a7fe619baccf28493857456e3f31321",
+          "id": "prt_cc8897374001n0VV3HX4hDuDdX",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc8894e51001FoNLVddFqcydWN"
+        },
+        {
+          "type": "reasoning",
+          "text": "The commit is done. Now I need to push it to trigger deployment. Let me push to the remote.",
+          "metadata": {
+            "anthropic": {
+              "signature": "82d7ada2cc383501dc48e8930fa5eb81230079973da2707c761668f4b0a81c3e"
+            }
+          },
+          "time": {
+            "start": 1772890977141,
+            "end": 1772890977981
+          },
+          "id": "prt_cc8897375001290EgoEkHVd2mz",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc8894e51001FoNLVddFqcydWN"
+        },
+        {
+          "type": "tool",
+          "callID": "call_function_7z81gd6icwrs_1",
+          "tool": "bash",
+          "state": {
+            "status": "completed",
+            "input": {
+              "command": "cd /home/donovan/Projects/DoulgasMitchell.info && git push",
+              "description": "Push to trigger deployment"
+            },
+            "output": "[entire] Pushing entire/checkpoints/v1 to origin...\nTo https://github.com/Senpai-Sama7/DoulgasMitchell.info.git\n   5af857ce..71aba320  main -> main\n",
+            "title": "Push to trigger deployment",
+            "metadata": {
+              "output": "[entire] Pushing entire/checkpoints/v1 to origin...\nTo https://github.com/Senpai-Sama7/DoulgasMitchell.info.git\n   5af857ce..71aba320  main -> main\n",
+              "exit": 0,
+              "description": "Push to trigger deployment",
+              "truncated": false
+            },
+            "time": {
+              "start": 1772890978796,
+              "end": 1772890981691
+            }
+          },
+          "id": "prt_cc88979e80010cvdeti04jNJ4s",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc8894e51001FoNLVddFqcydWN"
+        },
+        {
+          "type": "step-finish",
+          "reason": "tool-calls",
+          "snapshot": "708ab4a79a7fe619baccf28493857456e3f31321",
+          "cost": 0,
+          "tokens": {
+            "total": 62278,
+            "input": 173,
+            "output": 77,
+            "reasoning": 0,
+            "cache": {
+              "read": 61612,
+              "write": 416
+            }
+          },
+          "id": "prt_cc889853d001TwglYtKoK2pFlm",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc8894e51001FoNLVddFqcydWN"
+        }
+      ]
+    },
+    {
+      "info": {
+        "role": "assistant",
+        "time": {
+          "created": 1772890981746,
+          "completed": 1772890988845
+        },
+        "parentID": "msg_cc88822b7001di5Dv2o5skMr7q",
+        "modelID": "minimax-m2.5-free",
+        "providerID": "opencode",
+        "mode": "backend-architect",
+        "agent": "backend-architect",
+        "path": {
+          "cwd": "/home/donovan/Projects/DoulgasMitchell.info",
+          "root": "/home/donovan/Projects/DoulgasMitchell.info"
+        },
+        "cost": 0,
+        "tokens": {
+          "total": 62565,
+          "input": 129,
+          "output": 225,
+          "reasoning": 0,
+          "cache": {
+            "read": 61933,
+            "write": 278
+          }
+        },
+        "finish": "stop",
+        "id": "msg_cc889857200103vsbCJzJlqMrQ",
+        "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX"
+      },
+      "parts": [
+        {
+          "type": "step-start",
+          "snapshot": "436c771a2ea7ac69916b0fcd8d1ccdea85a1c475",
+          "id": "prt_cc8898fd90015Leg8b7RaajjKZ",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc889857200103vsbCJzJlqMrQ"
+        },
+        {
+          "type": "reasoning",
+          "text": "The changes have been pushed. Now let me verify what the deployed site shows. Actually, I should wait a moment for the deployment to complete, but let me check what's currently deployed vs what the code now has.",
+          "metadata": {
+            "anthropic": {
+              "signature": "f8acd7e81bbd7c369eb13aaf96b63351b7f6d506c418050ca06b010bca90fb0d"
+            }
+          },
+          "time": {
+            "start": 1772890984410,
+            "end": 1772890985366
+          },
+          "id": "prt_cc8898fda001Chr8Aq6LTYfZut",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc889857200103vsbCJzJlqMrQ"
+        },
+        {
+          "type": "text",
+          "text": "**Committed and pushed!** The changes will deploy now.\n\n**Proof of the issue:**\n- **Live site HTML**: `max-w-2xl aspect-video` (horizontal 16:9) - WRONG\n- **My fix**: `max-w-lg aspect-[3/4] h-[70vh] max-h-[800px]` (vertical 3:4) - CORRECT\n\nThe deployment should complete in ~1-2 minutes. After that:\n\n1. **Dougie video** will be `max-w-lg` (wider), `aspect-[3/4]` (vertical 9:12 ratio), `h-[70vh] max-h-[800px]` (taller)\n2. **Breathing-DM** will appear in top-right with no border after splash overlay finishes\n\nClear cache and refresh in ~2 minutes to see the fixes.",
+          "time": {
+            "start": 1772890988701,
+            "end": 1772890988701
+          },
+          "id": "prt_cc88993970017a8AX9Q6QMPKvL",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc889857200103vsbCJzJlqMrQ"
+        },
+        {
+          "type": "step-finish",
+          "reason": "stop",
+          "snapshot": "436c771a2ea7ac69916b0fcd8d1ccdea85a1c475",
+          "cost": 0,
+          "tokens": {
+            "total": 62565,
+            "input": 129,
+            "output": 225,
+            "reasoning": 0,
+            "cache": {
+              "read": 61933,
+              "write": 278
+            }
+          },
+          "id": "prt_cc889a106001WvbhoVBozh2Tt4",
+          "sessionID": "ses_3377e0261ffeb2Iru40PPPQtXX",
+          "messageID": "msg_cc889857200103vsbCJzJlqMrQ"
         }
       ]
     }
