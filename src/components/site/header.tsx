@@ -37,6 +37,8 @@ export function SiteHeader() {
     if (videoRef.current) {
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
+      videoRef.current.setAttribute('muted', '');
+      videoRef.current.setAttribute('playsinline', '');
       videoRef.current.play().catch(err => {
         console.warn("Header video autoplay failed:", err);
       });

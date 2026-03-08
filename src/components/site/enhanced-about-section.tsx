@@ -29,6 +29,8 @@ export function EnhancedAboutSection() {
     if (videoRef.current) {
       videoRef.current.defaultMuted = true;
       videoRef.current.muted = true;
+      videoRef.current.setAttribute('muted', '');
+      videoRef.current.setAttribute('playsinline', '');
       videoRef.current.play().catch(err => {
         console.warn("Video autoplay failed:", err);
       });
