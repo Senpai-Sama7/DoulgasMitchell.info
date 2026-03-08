@@ -4,13 +4,28 @@
   "strategy": "manual-commit",
   "branch": "main",
   "checkpoints_count": 1,
-  "files_touched": null,
+  "files_touched": [
+    "src/app/globals.css",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-about-section.tsx",
+    "src/components/site/enhanced-hero-section.tsx",
+    "src/components/site/enhanced-work-section.tsx",
+    "src/components/site/header.tsx",
+    "src/components/site/home-page-shell.tsx",
+    "src/lib/redis.ts"
+  ],
   "sessions": [
     {
       "metadata": "/60/eaf4e01c3e/0/metadata.json",
       "transcript": "/60/eaf4e01c3e/0/full.jsonl",
       "content_hash": "/60/eaf4e01c3e/0/content_hash.txt",
       "prompt": "/60/eaf4e01c3e/0/prompt.txt"
+    },
+    {
+      "metadata": "/60/eaf4e01c3e/1/metadata.json",
+      "transcript": "/60/eaf4e01c3e/1/full.jsonl",
+      "content_hash": "/60/eaf4e01c3e/1/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
