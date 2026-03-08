@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminDashboardData } from '@/lib/content-service';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60; // Refresh dashboard data every 60 seconds
 
 export default async function AdminDashboard() {
   const { stats, recentActivity } = await getAdminDashboardData();
