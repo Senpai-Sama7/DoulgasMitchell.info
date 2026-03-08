@@ -42,6 +42,11 @@ export function EnhancedHeroSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
 
+  // Ensure scroll starts at top
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // Role rotation
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -80,7 +85,7 @@ export function EnhancedHeroSection() {
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      className="relative min-h-screen flex items-start justify-center pt-24 md:pt-32 lg:pt-40"
     >
       {/* ASCII Grid Background */}
       <div 
@@ -153,7 +158,7 @@ export function EnhancedHeroSection() {
               <span className="relative inline-block">
                 Douglas
                 <motion.span
-                  className="absolute -right-8 top-0 font-mono text-2xl text-primary/30"
+                  className="absolute -right-8 top-0 font-mono text-2xl text-primary/30 hidden sm:inline-block"
                   animate={{ rotate: [0, 10, 0] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >

@@ -21,9 +21,20 @@ const values = [
 
 export function EnhancedAboutSection() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const prefersReducedMotion = useReducedMotion();
   
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(err => {
+        console.warn("Video autoplay failed:", err);
+      });
+    }
+  }, []);
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ['start end', 'end start'],
@@ -79,7 +90,7 @@ export function EnhancedAboutSection() {
         </motion.div>
 
         {/* Video & Info & Book Trio */}
-        <div className="grid lg:grid-cols-[240px_1fr_240px] gap-8 mb-16 items-center">
+        <div className="grid lg:grid-cols-[240px_1fr_240px] gap-4 md:gap-8 mb-16 items-center">
           {/* Column 1: Video (Left) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
@@ -89,6 +100,7 @@ export function EnhancedAboutSection() {
           >
             <div className="relative w-full aspect-[464/688] rounded-2xl overflow-hidden border border-border bg-black shadow-2xl">
               <video
+                ref={videoRef}
                 autoPlay
                 loop
                 muted

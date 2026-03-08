@@ -346,9 +346,22 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4000 }: SplashOverl
 
   // Prevent body scroll
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = ''; };
-  }, []);
+    if (phase !== 'exit') {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    // Safety timeout to ensure scroll is restored
+    const timer = setTimeout(() => {
+      document.body.style.overflow = '';
+    }, 10000);
+
+    return () => { 
+      document.body.style.overflow = ''; 
+      clearTimeout(timer);
+    };
+  }, [phase]);
 
   // ── BOOT ──────────────────────────────────────────────────────────
   useEffect(() => {

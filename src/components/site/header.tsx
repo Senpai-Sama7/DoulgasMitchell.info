@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Moon, Sun, Menu, X, Mail } from 'lucide-react';
@@ -21,6 +21,7 @@ export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isDark, toggle } = useTheme();
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   // Handle scroll
   useEffect(() => {
@@ -29,6 +30,17 @@ export function SiteHeader() {
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Handle video autoplay
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.defaultMuted = true;
+      videoRef.current.muted = true;
+      videoRef.current.play().catch(err => {
+        console.warn("Header video autoplay failed:", err);
+      });
+    }
   }, []);
 
   return (
@@ -58,6 +70,7 @@ export function SiteHeader() {
 
             <div className="hidden sm:block w-10 h-10 rounded-full overflow-hidden border border-primary/20 mix-blend-screen shadow-lg shadow-primary/5 shrink-0 aspect-square">
               <video
+                ref={videoRef}
                 autoPlay
                 loop
                 muted

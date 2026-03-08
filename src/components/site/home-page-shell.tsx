@@ -35,6 +35,12 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   useEffect(() => {
+    if (!showSplash) {
+      document.body.style.overflow = 'auto';
+    }
+  }, [showSplash]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();

@@ -122,8 +122,8 @@ export function EnhancedWorkSection({ projects }: EnhancedWorkSectionProps) {
         </motion.div>
 
         {/* Projects Grid */}
-        <div className="grid gap-6 xl:grid-cols-[1.35fr_0.65fr]">
-          <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid gap-4 md:gap-6 xl:grid-cols-[1.35fr_0.65fr]">
+          <div className="grid lg:grid-cols-2 gap-4 md:gap-6">
           {filteredProjects.map((project, index) => (
             <motion.article
               key={project.slug}
