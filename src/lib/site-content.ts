@@ -254,6 +254,91 @@ export const featuredProjects: ProjectShowcase[] = [
 
 export const featuredArticles: ArticleShowcase[] = [
   {
+    slug: 'rizz-prompting-attractor-based-style-steering',
+    title: 'Rizz Prompting: Attractor-Based Style Steering in LLMs',
+    excerpt:
+      'A scientific framework for steering Large Language Models toward target registers and personas using attractor dynamics instead of explicit commands.',
+    category: 'Research',
+    readTime: '15 min',
+    date: 'Feb 2026',
+    featured: true,
+    trending: true,
+    tags: ['prompt engineering', 'ai research', 'semantic steering', 'llm dynamics'],
+    insight: 'The most effective prompts do not demand compliance; they configure the linguistic landscape so that the desired output becomes the path of least resistance.',
+    content: `# Rizz Prompting: A Scientific Framework for Attractor-Based Style Steering
+
+"Rizz prompting" (RP) is an informal name for a family of prompt engineering techniques that steer a large language model (LLM) toward a target register, voice, or rhetorical persona by attraction rather than explicit command -- placing high-leverage linguistic cues in-context so that the desired style becomes the path of least resistance in the model's next-token distribution.
+
+## 1. Introduction
+
+In the sociology of charisma, rizz names a particular quality: effortless interpersonal magnetism. The person with rizz does not demand compliance -- they configure the social context so that a specific response becomes the path of least resistance. 
+
+This paper argues that the same principle applies, with mechanical precision, to interactions with large language models (LLMs). When a human communicates with an LLM, they are not simply sending a message -- they are reconfiguring a high-dimensional probability landscape. Every word choice, syntactic structure, emotional tone, contextual signal, and persona cue shifts the distribution of plausible outputs.
+
+### Three Paradigms of LLM Interaction:
+
+1.  **Command Prompting (instruction framing):** The user issues explicit directives. The model attempts to follow them. Results are highly sensitive to instruction quality.
+2.  **Vibe Coding (iterative feeling):** The user tries prompts, responds to what emerges, and gradually converges toward a satisfactory result through feel and intuition.
+3.  **Rizz Prompting (attractor engineering):** The user deliberately constructs a prompt context that makes the desired style, register, and structure statistically natural -- the path of least resistance for the model's next-token prediction.
+
+## 2. The Mathematical Foundation
+
+We model attractors as structured feature bundles extracted from text. Rizz Prompting aims to set the prompt close to the feature region that typically precedes the target register in the model's training distribution. 
+
+Certain prompt configurations concentrate probability mass so heavily toward specific output regions that, across repeated sampling, the model will almost always produce outputs from those regions. The output space has structure, carved by training data statistics, and certain prompts exploit that structure to channel the model toward predictable destinations.
+
+## 3. A Six-Category Attractor Taxonomy
+
+We propose a six-category attractor taxonomy, organized hierarchically by level of abstraction:
+
+### Class 1: Contextual Framing (CF)
+**Definition:** Establishes the domain, situation, and purpose within which the model believes it is operating.
+**In plain terms:** Think of it as dialing a radio to a specific station.
+**Example:** "In the context of an IPCC-style technical policy briefing..."
+
+### Class 2: Lexical / Semantic Loading (LA)
+**Definition:** Deliberate selection of words whose distributional statistics carry the practitioner's intent into the model's representational space.
+**In plain terms:** "Investigate" and "look at" are semantically similar but statistically different.
+**Example:** Using "ablation," "distribution shift," or "calibration" to activate an ML-research register.
+
+### Class 3: Syntactic Architecture (SA)
+**Definition:** Grammatical structure, sentence complexity, and organizational form that signals the register and formality.
+**In plain terms:** The shape of a sentence tells the model what shape of answer is expected.
+
+### Class 4: Schematic Activation (ScA)
+**Definition:** Activating a cognitive template for a type of situation or event (e.g., "Medical consultation," "Socratic dialogue").
+**Mechanism:** Schematic cues activate learned behavioral clusters associated with specific situation types.
+
+### Class 5: Temporal Anchoring (TA)
+**Definition:** Situating the prompt within a specific historical era, intellectual tradition, or canonical lineage.
+**Example:** "In the tradition of Feynman-style technical exposition..."
+
+### Class 6: Persona Assignment (PA)
+**Definition:** Assigns the model a specific identity. Persona is the **apex attractor**: it simultaneously activates all five lower-level attractor classes as a composite bundle.
+
+## 4. Design Principles
+
+### 4.1 Compositionality (Attractor Stacking)
+Attractor classes are designed to be deployed simultaneously. The power of Rizz Prompting emerges from their compound effect: multiple probability-narrowing forces operating in concert.
+
+### 4.2 The Minimality Principle
+Use the smallest set of attractors that reliably induces the target style. Excess attractor cues can overfit to a genre and crowd out actual information content.
+
+### 4.3 Reasoning Retention
+Style steering should not degrade correctness. The mitigation is structural: pair stylistic attractors with explicit correctness constraints that operate on a separate axis from style.
+
+## 5. The Attractor Density Hypothesis (ADH)
+
+The ADH conjectures that the degree of output quantization -- how reliably a prompt steers the model -- is a function of the number and specificity of simultaneous attractor features. We hypothesize that their effects are **superadditive**: each additional attractor class narrows the remaining degrees of freedom multiplicatively rather than additively.
+
+## 6. Conclusion
+
+The practitioner with rizz does not hope their words land -- they know how they land and why. Rizz Prompting names the competency in human-AI interaction of knowing which linguistic structures activate which probability basins, and deploying them with confident intentionality.
+
+---
+*Based on the research paper "RIZZ PROMPTING: A Scientific Framework for Attractor-Based Style Steering in Large Language Models" (February 2026).*`,
+  },
+  {
     slug: 'building-ai-powered-workflows',
     title: 'Building AI-Powered Workflows That Actually Work',
     excerpt:
