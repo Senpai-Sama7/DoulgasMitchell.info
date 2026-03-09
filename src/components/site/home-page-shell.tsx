@@ -29,10 +29,12 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
   const { scrollYProgress } = useScroll();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
+  const [splashKey, setSplashKey] = useState(0);
   const [persistentVideoVisible, setPersistentVideoVisible] = useState(false);
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+  const isDevelopment = process.env.NODE_ENV === 'development';
 
   useEffect(() => {
     if (!showSplash) {
@@ -45,12 +47,19 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
       if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
         event.preventDefault();
         setIsCommandOpen((previous) => !previous);
+        return;
+      }
+
+      if (isDevelopment && event.key.toLowerCase() === 'o' && event.shiftKey) {
+        event.preventDefault();
+        setSplashKey((previous) => previous + 1);
+        setShowSplash(true);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [isDevelopment]);
 
   const handleNavigate = useCallback(
     (href: string) => {
@@ -74,7 +83,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
       <AnimatePresence>
         {showSplash && (
           <SplashOverlay 
-            key="splash" 
+            key={`splash-${splashKey}`} 
             onComplete={() => {
               setShowSplash(false);
               setPersistentVideoVisible(true);
