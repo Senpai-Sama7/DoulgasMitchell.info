@@ -136,9 +136,9 @@ function createTelemetry(progress: number, frame: number, phase: Phase) {
 function createMonogram() {
   return [
     ' ______   __  __ ',
-    '|  __  \ |  \/  |',
-    '| |  | | | \  / |',
-    '| |  | | | |\/| |',
+    '|  __  \\ |  \\/  |',
+    '| |  | | | \\  / |',
+    '| |  | | | |\\/| |',
     '| |__| | | |  | |',
     '|______/ |_|  |_|',
   ].join('\n');
@@ -347,8 +347,9 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         {scanField}
       </motion.pre>
 
-      <div className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:px-8 lg:px-12">
-        <motion.div
+      <div className="absolute inset-0 z-10 overflow-y-auto">
+        <div className="relative flex min-h-screen items-center justify-center px-4 py-12 sm:px-8 lg:px-12">
+          <motion.div
           className="relative w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-border/10 bg-background/72 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-6 lg:p-8"
           initial={{ opacity: 0, y: 28, scale: 0.98 }}
           animate={{
@@ -504,13 +505,14 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
               </motion.div>
             </div>
 
-            <div className="flex flex-col items-center justify-between gap-3 border-t border-border/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-muted-foreground/58 sm:flex-row sm:text-[0.68rem]">
-              <span>Enter or click to continue</span>
-              <span>Editorial motion system</span>
-            </div>
+                <div className="flex flex-col items-center justify-between gap-3 border-t border-border/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-muted-foreground/58 sm:flex-row sm:text-[0.68rem]">
+                  <span>Enter or click to continue</span>
+                  <span>Editorial motion system</span>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </motion.div>
-      </div>
-    </motion.div>
-  );
-}
+        </div>
+      </motion.div>
+    );
+  }

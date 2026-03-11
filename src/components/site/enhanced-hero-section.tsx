@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, ChevronRight, Sparkles } from 'lucide-react';
 import { heroMetrics, siteProfile, socialLinks } from '@/lib/site-content';
-import { generateAsciiBox } from '@/lib/ascii/patterns';
 
 const roles = [
   'Operations Analyst',
@@ -15,8 +14,6 @@ const roles = [
 
 export function EnhancedHeroSection() {
   const [displayedRole, setDisplayedRole] = useState(0);
-  const [typedText, setTypedText] = useState('');
-  const [showAscii, setShowAscii] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const prefersReducedMotion = useReducedMotion();
   
@@ -25,20 +22,10 @@ export function EnhancedHeroSection() {
     offset: ['start start', 'end start'],
   });
   
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '40%']);
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95]);
 
-  const asciiArt = generateAsciiBox([
-    '  ┏━━━━━━━━━━━━━━━━━━━━━━┓',
-    `  ┃ ${roles[displayedRole].toUpperCase().padEnd(20)} ┃`,
-    '  ┗━━━━━━━━━━━━━━━━━━━━━━┛',
-    '',
-    '  • Operations Analysis',
-    '  • AI & Automation',
-    '  • Systems Design',
-    '  • Human Potential',
-  ], { style: 'rounded', padding: 1 });
 
   // Ensure scroll starts at top
   useEffect(() => {
@@ -54,36 +41,11 @@ export function EnhancedHeroSection() {
     return () => clearInterval(interval);
   }, [prefersReducedMotion]);
 
-  // Typewriter effect for ASCII
-  useEffect(() => {
-    if (prefersReducedMotion) {
-      setTypedText(asciiArt);
-      setShowAscii(true);
-      return;
-    }
-    
-    const timeout = setTimeout(() => setShowAscii(true), 500);
-    let charIndex = 0;
-    
-    const typeInterval = setInterval(() => {
-      if (charIndex < asciiArt.length) {
-        setTypedText(asciiArt.slice(0, charIndex + 1));
-        charIndex++;
-      } else {
-        clearInterval(typeInterval);
-      }
-    }, 5);
-
-    return () => {
-      clearTimeout(timeout);
-      clearInterval(typeInterval);
-    };
-  }, [prefersReducedMotion]);
 
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-screen flex items-start justify-center pt-24 md:pt-32 lg:pt-40"
+      className="relative min-h-[90vh] flex items-start justify-center pt-16 md:pt-24 lg:pt-32"
     >
       {/* ASCII Grid Background */}
       <div 
@@ -106,20 +68,9 @@ export function EnhancedHeroSection() {
       {/* Content */}
       <motion.div
         style={{ y: prefersReducedMotion ? 0 : y, opacity, scale }}
-        className="editorial-container py-20 md:py-32 relative z-10"
+        className="editorial-container py-10 md:py-20 relative z-10"
       >
         <div className="max-w-4xl mx-auto">
-          {/* ASCII Art Header */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: showAscii ? 1 : 0 }}
-            transition={{ duration: 0.5 }}
-            className="mb-8 hidden lg:block"
-          >
-            <pre className="font-mono text-[1.2vw] text-muted-foreground/50 leading-tight overflow-hidden text-center">
-              {typedText}
-            </pre>
-          </motion.div>
 
           {/* Mobile ASCII Marker */}
           <motion.div 
@@ -130,7 +81,7 @@ export function EnhancedHeroSection() {
           >
             <span className="font-mono text-xs text-muted-foreground">{'[ '}</span>
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="font-mono text-sm">Operations Analyst</span>
+            <span className="font-mono text-sm">System Status: PRIME</span>
             <span className="font-mono text-xs text-muted-foreground">{' ]'}</span>
           </motion.div>
 
