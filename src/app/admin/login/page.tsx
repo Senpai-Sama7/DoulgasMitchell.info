@@ -132,6 +132,15 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleForgotPassword = () => {
+    toast({
+      title: 'Password recovery',
+      description: hasAdminAccount
+        ? 'Self-serve password reset is not enabled. Use your passkey if it is registered, or rotate the admin password through the secure maintenance flow.'
+        : 'No admin account exists yet. Use Enable Admin Portal to create the admin account first.',
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -278,12 +287,13 @@ export default function AdminLoginPage() {
                     Remember me
                   </Label>
                 </div>
-                <a
-                  href="#"
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
                   className="text-sm text-primary hover:underline"
                 >
                   Forgot password?
-                </a>
+                </button>
               </div>
 
               {/* Submit */}
