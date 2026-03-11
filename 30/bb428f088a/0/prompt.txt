@@ -1,0 +1,33 @@
+HI
+
+---
+
+run git pull and then git push
+
+---
+
+1
+
+---
+
+i like version 2 what you think?
+
+---
+
+no delete the local changes
+
+---
+
+ok
+
+---
+
+1. you do it
+
+---
+
+you choose
+
+---
+
+yes

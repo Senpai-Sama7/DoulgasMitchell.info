@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "30bb428f088a",
+  "session_id": "1a24ec39-2d7c-4997-8c46-74fc00597eaa",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T09:35:11.128422058Z",
+  "branch": "main",
+  "checkpoints_count": 9,
+  "files_touched": [
+    ".github/workflows/junie-tag.yml",
+    "LLMS.TXT",
+    "README.md",
+    "src/app/admin/login/page.tsx",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-hero-section.tsx",
+    "src/lib/site-content.ts"
+  ],
+  "agent": "Gemini CLI",
+  "model": "gemini-2.5-flash-lite",
+  "turn_id": "8fc46f4ea00e",
+  "token_usage": {
+    "input_tokens": 732054,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 599026,
+    "output_tokens": 12684,
+    "api_call_count": 25
+  },
+  "session_metrics": {
+    "turn_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T09:35:10.817505982Z",
+    "agent_lines": 0,
+    "human_added": 167,
+    "human_modified": 147,
+    "human_removed": 0,
+    "total_committed": 167,
+    "agent_percentage": 0
+  }
+}

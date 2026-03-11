@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "30bb428f088a",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 9,
+  "files_touched": [
+    ".github/workflows/junie-tag.yml",
+    "LLMS.TXT",
+    "README.md",
+    "src/app/admin/login/page.tsx",
+    "src/components/effects/splash-overlay.tsx",
+    "src/components/site/enhanced-hero-section.tsx",
+    "src/lib/site-content.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/30/bb428f088a/0/metadata.json",
+      "transcript": "/30/bb428f088a/0/full.jsonl",
+      "content_hash": "/30/bb428f088a/0/content_hash.txt",
+      "prompt": "/30/bb428f088a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 732054,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 599026,
+    "output_tokens": 12684,
+    "api_call_count": 25
+  }
+}
