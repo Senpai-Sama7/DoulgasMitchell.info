@@ -14,6 +14,7 @@ function getJwtSecret() {
 // Routes that don't require authentication under /admin
 const publicAdminRoutes = [
   '/admin/login',
+  '/api/admin/check',
   '/api/admin/auth',
   '/api/admin/webauthn',
   '/api/admin/setup'
