@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
 import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import { getClientIp, getUserAgent } from '@/lib/request';
+import { ApiHandler } from '@/lib/api-response';
 
 // GET /api/admin/auth - Check current session
 export async function GET() {
@@ -10,10 +11,10 @@ export async function GET() {
     const session = await getSession();
 
     if (!session) {
-      return NextResponse.json({ authenticated: false }, { status: 401 });
+      return ApiHandler.error('Unauthorized', 401);
     }
 
-    return NextResponse.json({
+    return ApiHandler.success({
       authenticated: true,
       user: {
         userId: session.userId,
@@ -23,8 +24,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error('Auth check error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ApiHandler.internalServerError('Auth check error', error);
   }
 }
 
@@ -36,19 +36,13 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password are required' },
-        { status: 400 }
-      );
+      return ApiHandler.error('Email and password are required', 400);
     }
 
     // Rate limiting
     const clientIp = getClientIp(request);
     if (!checkRateLimit(clientIp)) {
-      return NextResponse.json(
-        { error: 'Too many login attempts. Please try again later.' },
-        { status: 429 }
-      );
+      return ApiHandler.error('Too many login attempts. Please try again later.', 429);
     }
 
     // Find user
@@ -57,27 +51,18 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return ApiHandler.unauthorized('Invalid credentials');
     }
 
     // Verify password
     if (!user.passwordHash) {
-      return NextResponse.json(
-        { error: 'Password login is not configured for this account.' },
-        { status: 403 }
-      );
+      return ApiHandler.forbidden('Password login is not configured for this account.');
     }
 
     const isValid = await verifyPassword(password, user.passwordHash);
 
     if (!isValid) {
-      return NextResponse.json(
-        { error: 'Invalid credentials' },
-        { status: 401 }
-      );
+      return ApiHandler.unauthorized('Invalid credentials');
     }
 
     // Update last login
@@ -105,8 +90,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
+    return ApiHandler.success({
       user: {
         id: user.id,
         email: user.email,
@@ -115,10 +99,6 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return ApiHandler.internalServerError('Login error', error);
   }
 }
