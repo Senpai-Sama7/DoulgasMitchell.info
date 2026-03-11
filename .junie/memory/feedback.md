@@ -70,3 +70,11 @@
     "NEW INSTRUCTION": "WHEN asked about my token or session usage THEN report only my tokens and list tool-invoked tokens separately."
 }
 
+[2026-03-11 09:51] - Updated by Junie
+{
+    "TYPE": "preference",
+    "CATEGORY": "Contact email display",
+    "EXPECTATION": "The user's email should be listed exactly as DouglasMitchell@ReliantAI.org wherever contact info appears.",
+    "NEW INSTRUCTION": "WHEN contact email is displayed or used THEN use DouglasMitchell@ReliantAI.org exactly."
+}
+
