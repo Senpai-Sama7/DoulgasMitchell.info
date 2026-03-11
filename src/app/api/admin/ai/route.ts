@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export async function POST(req: Request) {
   try {
@@ -18,25 +19,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ reply: '[SYSTEM ERROR] Missing Google Gemini API key in environment.' });
     }
 
-    // Call Google Gemini API
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ role: 'user', parts: [{ text: `You are the System Architect AI for Douglas Mitchell's portfolio admin portal. Keep responses concise, professional, and slightly futuristic/monospaced. The user is asking: ${message}` }] }]
-        }),
-      }
-    );
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction: 'You are the "Architect" AI for Douglas Mitchell\'s portfolio platform. Your purpose is to assist the administrator in managing content, analyzing site performance, and providing technical guidance. Maintain a precise, professional, and slightly futuristic tone. Responses should be formatted in clean markdown. Always assume you are speaking to the owner/architect, Douglas Mitchell.',
+    });
 
-    const data = await response.json();
-    if (data.error) {
-      console.error('Gemini API Error:', data.error);
-      return NextResponse.json({ reply: `[API ERROR] ${data.error.message}` });
-    }
-
-    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text || '[SYSTEM] No response generated.';
+    const result = await model.generateContent(message);
+    const response = await result.response;
+    const reply = response.text();
 
     return NextResponse.json({ reply });
   } catch (error: any) {
