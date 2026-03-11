@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function testLogin() {
-  const email = process.env.ADMIN_EMAIL || 'admin@example.com';
+  const email = process.env.ADMIN_EMAIL || 'DouglasMitchell@ReliantAI.org';
   const password = process.env.ADMIN_PASSWORD || 'newpassword123';
 
   const admin = await prisma.adminUser.findUnique({

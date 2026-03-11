@@ -236,7 +236,7 @@ Logs are stored in `logs/` directory:
 
 ## 🆘 Support
 
-For security issues: CEO@DouglasMitchell.info
+For security issues: DouglasMitchell@ReliantAI.org
 
 For general issues: Open a GitHub issue
 

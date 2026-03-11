@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { DEFAULT_ADMIN_EMAIL } from '@/lib/contact-config';
 import { startAuthentication } from '@simplewebauthn/browser';
 
 export default function AdminLoginPage() {
@@ -55,7 +56,7 @@ export default function AdminLoginPage() {
         description: 'The admin account is ready. Sign in with your admin email and password.',
       });
       setHasAdminAccount(true);
-      setEmail(data.email || 'admin@douglasmitchell.info');
+      setEmail(data.email || DEFAULT_ADMIN_EMAIL);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Failed to initialize admin user.';
       toast({
@@ -229,7 +230,7 @@ export default function AdminLoginPage() {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="admin@douglasmitchell.info"
+                    placeholder={DEFAULT_ADMIN_EMAIL}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9"

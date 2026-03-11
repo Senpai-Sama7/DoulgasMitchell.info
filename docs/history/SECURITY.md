@@ -2,7 +2,7 @@
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please email **CEO@DouglasMitchell.info**
+If you discover a security vulnerability, please email **DouglasMitchell@ReliantAI.org**
 
 **Please do NOT:**
 - Open a public GitHub issue

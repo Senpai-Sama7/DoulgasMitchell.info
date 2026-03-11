@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import { DEFAULT_ADMIN_EMAIL } from '@/lib/contact-config';
+import { env } from '@/lib/env';
 
 export async function POST() {
   try {
-    const adminPassword = process.env.ADMIN_PASSWORD;
+    const adminPassword = env.ADMIN_PASSWORD;
+    const adminEmail = env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
     
     if (!adminPassword) {
       return NextResponse.json(
@@ -29,7 +32,7 @@ export async function POST() {
     
     const admin = await db.adminUser.create({
       data: {
-        email: 'admin@douglasmitchell.info',
+        email: adminEmail,
         name: 'Douglas Mitchell',
         passwordHash,
         role: 'admin',

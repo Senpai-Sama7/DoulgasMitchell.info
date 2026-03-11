@@ -1,3 +1,5 @@
+import { PRIMARY_CONTACT_EMAIL } from '@/lib/contact-config';
+
 export interface HeroMetric {
   label: string;
   value: string;
@@ -94,7 +96,7 @@ export const siteProfile = {
   summary:
     'I design resilient systems that blend operational rigor, AI fluency, and human-centered execution. The result is proof-driven work that looks premium and performs in the real world.',
   location: 'Houston, TX',
-  email: 'contact@douglasmitchell.info',
+  email: PRIMARY_CONTACT_EMAIL,
   githubUrl: 'https://github.com/Senpai-Sama7',
   linkedinUrl: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
   bookUrl:

@@ -6,13 +6,14 @@ import { Mail, Send, MapPin, Github, Linkedin, ExternalLink } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { siteProfile } from '@/lib/site-content';
 
 const contactMethods = [
   {
     icon: Mail,
     label: 'Email',
-    value: 'contact@douglasmitchell.info',
-    href: 'mailto:contact@douglasmitchell.info',
+    value: siteProfile.email,
+    href: `mailto:${siteProfile.email}`,
   },
   {
     icon: Github,
