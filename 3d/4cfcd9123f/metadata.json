@@ -12,10 +12,15 @@
     "BEST_GODMODE_PASS_REPORT.md",
     "DEPLOYMENT_STATUS.md",
     "FINAL_STATUS.md",
+    "GEMINI.md",
     "HONEST_ANSWERS.md",
     "IMPLEMENTATION_COMPLETE.md",
+    "INDEX.md",
+    "INFRASTRUCTURE.md",
     "PATH_TO_100.md",
     "PERSONALIZATION_REPORT.md",
+    "QUICK_START.md",
+    "README_INFRASTRUCTURE.md",
     "SECURITY_AUDIT.md",
     "SOLUTIONS.md",
     "STATUS.md",
@@ -29,6 +34,7 @@
     "docs/history/IMPLEMENTATION_COMPLETE.md",
     "docs/history/PATH_TO_100.md",
     "docs/history/PERSONALIZATION_REPORT.md",
+    "docs/history/README.md",
     "docs/history/SECURITY_AUDIT.md",
     "docs/history/SOLUTIONS.md",
     "docs/history/STATUS.md",
@@ -52,6 +58,12 @@
       "transcript": "/3d/4cfcd9123f/0/full.jsonl",
       "content_hash": "/3d/4cfcd9123f/0/content_hash.txt",
       "prompt": "/3d/4cfcd9123f/0/prompt.txt"
+    },
+    {
+      "metadata": "/3d/4cfcd9123f/1/metadata.json",
+      "transcript": "/3d/4cfcd9123f/1/full.jsonl",
+      "content_hash": "/3d/4cfcd9123f/1/content_hash.txt",
+      "prompt": "/3d/4cfcd9123f/1/prompt.txt"
     }
   ],
   "token_usage": {
