@@ -1,0 +1,1 @@
+use free models only but for opencode zen
