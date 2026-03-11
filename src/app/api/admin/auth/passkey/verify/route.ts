@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyAuthentication } from '@/lib/webauthn';
-import { consumePasskeyChallenge } from '@/lib/passkey-challenges';
+import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { createSession, setSessionCookie, clearRateLimit } from '@/lib/auth';
 import { getClientIp, getUserAgent } from '@/lib/request';
 import { logActivity } from '@/lib/activity';
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and response are required' }, { status: 400 });
     }
 
-    const expectedChallenge = consumePasskeyChallenge('auth', email);
+    const expectedChallenge = await consumePasskeyChallengeCookie('auth', email);
     if (!expectedChallenge) {
       return NextResponse.json({ error: 'Invalid or expired challenge' }, { status: 400 });
     }

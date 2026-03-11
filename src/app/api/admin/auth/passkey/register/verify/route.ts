@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { verifyRegistration } from '@/lib/webauthn';
-import { consumePasskeyChallenge } from '@/lib/passkey-challenges';
+import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const expectedChallenge = consumePasskeyChallenge('register', user.email);
+    const expectedChallenge = await consumePasskeyChallengeCookie('register', user.email);
     if (!expectedChallenge) {
       return NextResponse.json({ error: 'Invalid or expired challenge' }, { status: 400 });
     }

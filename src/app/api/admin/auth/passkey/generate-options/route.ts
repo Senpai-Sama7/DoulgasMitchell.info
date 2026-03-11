@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getAuthenticationOptions } from '@/lib/webauthn';
-import { setPasskeyChallenge } from '@/lib/passkey-challenges';
+import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,8 +25,7 @@ export async function POST(request: NextRequest) {
       id: p.credentialId,
     })));
 
-    // Store challenge in memory/store for verification
-    setPasskeyChallenge('auth', email, options.challenge);
+    await setPasskeyChallengeCookie('auth', email, options.challenge);
 
     return NextResponse.json(options);
   } catch (error) {
