@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "d5119f4c45b9",
+  "session_id": "ses_323985284ffe3HY3pC8RaHijsW",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T11:05:33.860794716Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".junie/memory/language.json"
+  ],
+  "agent": "OpenCode",
+  "model": "google/gemini-2.0-flash-exp:free",
+  "turn_id": "e250164a72c7",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 1
+  },
+  "session_metrics": {
+    "turn_count": 2
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T11:05:33.857999504Z",
+    "agent_lines": 0,
+    "human_added": 239,
+    "human_modified": 1,
+    "human_removed": 0,
+    "total_committed": 240,
+    "agent_percentage": 0
+  }
+}
