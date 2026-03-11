@@ -1,0 +1,35 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "915859ea2d99",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".junie/memory/feedback.md",
+    ".junie/memory/language.json",
+    "AGENTS.md",
+    "Website Audit Request.docx",
+    "Website Audit Request.pdf",
+    "docs/history/Website Audit Request.docx",
+    "docs/history/Website Audit Request.pdf",
+    "src/app/globals.css",
+    "src/components/effects/particle-title.tsx",
+    "src/components/site/enhanced-hero-section.tsx",
+    "worklog.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/91/5859ea2d99/0/metadata.json",
+      "transcript": "/91/5859ea2d99/0/full.jsonl",
+      "content_hash": "/91/5859ea2d99/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
