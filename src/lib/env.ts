@@ -32,6 +32,10 @@ const envSchema = z.object({
   // App config
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NEXT_PUBLIC_SITE_URL: z.string().url().default('https://douglasmitchell.info'),
+
+  // AI
+  GOOGLE_GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   
   // Features
   ENABLE_PASSKEYS: z.string().default('true'),
