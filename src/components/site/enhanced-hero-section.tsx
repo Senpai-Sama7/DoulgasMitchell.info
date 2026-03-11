@@ -8,7 +8,7 @@ import { heroMetrics, siteProfile, socialLinks } from '@/lib/site-content';
 const roles = [
   'Operations Analyst',
   'AI Practitioner', 
-  'Systems Architect',
+  'Systems Strategist',
   'Author',
 ];
 
@@ -16,7 +16,7 @@ const asciiArt = `
     ╭────────────────────────────────────╮
     │                                    │
     │    ┏━━━━━━━━━━━━━━━━━━━━━━┓       │
-    │    ┃   THE  ARCHITECT    ┃       │
+    │    ┃ OPERATIONS ANALYST  ┃       │
     │    ┗━━━━━━━━━━━━━━━━━━━━━━┛       │
     │                                    │
     │    • Operations Analysis          │
@@ -132,7 +132,7 @@ export function EnhancedHeroSection() {
           >
             <span className="font-mono text-xs text-muted-foreground">{'[ '}</span>
             <Sparkles className="h-4 w-4 text-primary" />
-            <span className="font-mono text-sm">The Architect</span>
+            <span className="font-mono text-sm">Operations Analyst</span>
             <span className="font-mono text-xs text-muted-foreground">{' ]'}</span>
           </motion.div>
 
