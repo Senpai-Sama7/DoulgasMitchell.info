@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "669a5ef3705e",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".junie/memory/feedback.md",
+    ".junie/memory/language.json",
+    ".output.txt",
+    "bun.lock",
+    "package-lock.json",
+    "package.json",
+    "prisma/schema.prisma",
+    "scripts/admin/check-admin.js",
+    "scripts/admin/check-admin.ts",
+    "scripts/admin/reset-admin.js",
+    "scripts/admin/reset-admin.ts",
+    "scripts/admin/test-login.js",
+    "scripts/admin/test-login.ts",
+    "src/app/api/admin/content/reorder/route.ts",
+    "src/app/globals.css",
+    "src/components/site/footer.tsx",
+    "src/components/site/home-page-shell.tsx",
+    "src/lib/content-service.ts",
+    "src/lib/rate-limit.ts",
+    "src/lib/site-content.ts",
+    "vitest.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/66/9a5ef3705e/0/metadata.json",
+      "transcript": "/66/9a5ef3705e/0/full.jsonl",
+      "content_hash": "/66/9a5ef3705e/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}

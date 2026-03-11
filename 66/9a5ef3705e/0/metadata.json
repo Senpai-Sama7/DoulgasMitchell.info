@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "669a5ef3705e",
+  "session_id": "1a24ec39-2d7c-4997-8c46-74fc00597eaa",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T12:28:13.62731232Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "scripts/admin/reset-admin.ts",
+    "src/app/api/admin/content/reorder/route.ts",
+    "src/lib/rate-limit.ts",
+    "bun.lock",
+    "prisma/schema.prisma",
+    "scripts/admin/test-login.js",
+    "src/lib/content-service.ts",
+    "src/lib/site-content.ts",
+    ".junie/memory/feedback.md",
+    "package.json",
+    "scripts/admin/test-login.ts",
+    "vitest.config.ts",
+    "package-lock.json",
+    "src/app/globals.css",
+    "src/components/site/footer.tsx",
+    "src/components/site/home-page-shell.tsx",
+    ".junie/memory/language.json",
+    ".output.txt",
+    "scripts/admin/check-admin.js",
+    "scripts/admin/check-admin.ts",
+    "scripts/admin/reset-admin.js"
+  ],
+  "agent": "Gemini CLI",
+  "model": "gemini-3-flash-preview",
+  "turn_id": "b42179114afe",
+  "checkpoint_transcript_start": 81,
+  "transcript_lines_at_start": 81,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "session_metrics": {
+    "turn_count": 17
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T12:28:13.013560535Z",
+    "agent_lines": 256,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 256,
+    "agent_percentage": 100
+  }
+}
