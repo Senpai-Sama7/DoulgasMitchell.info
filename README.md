@@ -44,3 +44,7 @@ When not writing or consulting, you can find Douglas mentoring young professiona
 ---
 
 *"Confidence is not a fixed trait we simply have or lack; it's an ongoing practice. You are the architect of your own belief – build it strong, and build it with care."*
+
+## Developer Integration Docs
+
+- [Gravatar API Documentation v3.0.0 – LLMS.TXT](./LLMS.TXT)
