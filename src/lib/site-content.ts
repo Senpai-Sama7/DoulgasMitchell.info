@@ -384,12 +384,12 @@ A polished answer can still be wrong. Persona-rich prompting can create outputs 
 
 The paper recommends explicit correctness constraints, clearly separated from style cues:
 
-```text
+~~~text
 You must be correct and check your work.
 State assumptions explicitly.
 If uncertain, identify what evidence would resolve the uncertainty.
 Do not allow stylistic confidence to substitute for epistemic confidence.
-```
+~~~
 
 That separation is one of the strongest ideas in the entire paper.
 
@@ -530,3 +530,124 @@ That is the practical contribution of the paper: a vocabulary, a mechanism, a me
 ---
 
 *Adapted from the working paper "RIZZ PROMPTING: A Scientific Framework for Attractor-Based Style Steering in Large Language Models" by Douglas D. Mitchell, February 2026, arXiv preprint / working paper edition.*
+  `,
+  },
+];export const bookShowcase: BookShowcase = {
+  title: 'The Confident Mind',
+  subtitle: 'A Practical Manual to Repair, Build & Sustain Authentic Confidence',
+  description:
+    'A grounded, psychology-aware framework for rebuilding confidence without self-help theater. The book turns reflection into action and action into internal evidence.',
+  amazonUrl: siteProfile.bookUrl,
+  publisher: 'Independent Release',
+  publishDate: '2024',
+  highlights: [
+    'Psychology-informed framework for authentic confidence',
+    'Practical exercises that move insight into action',
+    'A non-performative alternative to hype-driven self-help',
+    'Designed to support sustainable internal change',
+  ],
+  chapters: [
+    'Understanding Confidence',
+    'The Confidence Gap',
+    'Building Internal Evidence',
+    'Practical Application',
+    'Sustaining Growth',
+  ],
+  testimonials: [
+    {
+      text: 'A refreshingly honest approach to confidence that feels practical, structured, and usable in real life.',
+      author: 'Reader feedback',
+    },
+    {
+      text: 'The exercises helped me move from vague motivation to repeatable action.',
+      author: 'Amazon reviewer',
+    },
+  ],
+};
+
+export const certificationShowcase: CertificationShowcase[] = [
+  {
+    id: 'google-ai-professional-certificate',
+    title: 'Google AI Professional Certificate',
+    issuer: 'Google',
+    description:
+      'Applied AI credential covering practical machine learning workflows, model fundamentals, and responsible AI implementation.',
+    credentialUrl: 'https://www.credly.com/users/douglas-mitchell.887417ae/badges',
+    issueDate: '2024',
+    skills: ['Machine Learning', 'AI Development', 'Responsible AI', 'Workflow Design'],
+    featured: true,
+    imageUrl: '/images/certs/google-ai-professional-certificate.png',
+  },
+  {
+    id: 'anthropic-ai-safety',
+    title: 'Anthropic AI Safety',
+    issuer: 'Anthropic',
+    description:
+      'Credential focused on safe deployment, model behavior, and building AI systems that preserve trust under real-world usage.',
+    credentialUrl: 'https://verify.skilljar.com/c/kcmc2byhr4ay',
+    issueDate: '2024',
+    skills: ['AI Safety', 'Evaluation', 'Prompt Discipline', 'Responsible Deployment'],
+    featured: true,
+    imageUrl: '/images/certs/AI-Fluency-Anthropic.jpg',
+  },
+];
+
+export const contactMethods: ContactMethod[] = [
+  {
+    label: 'Email',
+    value: siteProfile.email,
+    href: `mailto:${siteProfile.email}`,
+    color: 'hover:text-blue-500',
+  },
+  {
+    label: 'GitHub',
+    value: '@Senpai-Sama7',
+    href: siteProfile.githubUrl,
+    color: 'hover:text-purple-500',
+  },
+  {
+    label: 'LinkedIn',
+    value: 'douglas-mitchell-the-architect',
+    href: siteProfile.linkedinUrl,
+    color: 'hover:text-blue-600',
+  },
+  {
+    label: 'Location',
+    value: siteProfile.location,
+    color: 'hover:text-red-500',
+  },
+];
+
+export const expertiseByCategory = {
+  frontend: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'UI Systems'],
+  backend: ['Node.js', 'Python', 'Prisma', 'REST APIs', 'Automation Pipelines'],
+  infrastructure: ['Docker', 'CI/CD', 'Observability', 'Deployment Hygiene', 'System Design'],
+  ai: ['Applied AI', 'Prompt Engineering', 'Human-in-the-loop Systems', 'Evaluation', 'Workflow Automation'],
+};
+
+export const aboutRoles = [
+  {
+    title: 'Operations Analyst',
+    description:
+      'Improves clarity, throughput, and execution by redesigning the way work moves through a system.',
+    stats: 'Process-first thinking',
+  },
+  {
+    title: 'AI Practitioner',
+    description:
+      'Applies AI where it creates leverage, not noise, with emphasis on trust, quality, and useful automation.',
+    stats: 'Google AI + Anthropic credentials',
+  },
+  {
+    title: 'Author',
+    description:
+      'Builds frameworks that help people create durable confidence through honesty, repetition, and evidence.',
+    stats: 'Published book + companion ecosystem',
+  },
+  {
+    title: 'Operations Analyst',
+    description:
+      'Connects product thinking, technical execution, and operational discipline into measurable operating outcomes.',
+    stats: 'Systems-level execution',
+  },
+];

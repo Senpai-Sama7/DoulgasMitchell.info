@@ -64,8 +64,7 @@ function createField(rows: number, cols: number, frame: number, progress: number
     lines.push(line);
   }
 
-  return lines.join('
-');
+  return lines.join('\n');
 }
 
 function createPulseBars(progress: number, frame: number) {
@@ -78,8 +77,7 @@ function createPulseBars(progress: number, frame: number) {
       const bar = `${'#'.repeat(level)}${'.'.repeat(34 - level)}`;
       return `${label.padEnd(5, ' ')} [${bar}] ${pad(level, 2)}`;
     })
-    .join('
-');
+    .join('\n');
 }
 
 function createOrbit(progress: number, frame: number) {
@@ -118,8 +116,7 @@ function createOrbit(progress: number, frame: number) {
     lines.push(line);
   }
 
-  return lines.join('
-');
+  return lines.join('\n');
 }
 
 function createTelemetry(progress: number, frame: number, phase: Phase) {
@@ -133,8 +130,7 @@ function createTelemetry(progress: number, frame: number, phase: Phase) {
     `tension      ${tension}db`,
     `carrier      ${SIGNALS[frame % SIGNALS.length]}`,
     `vector       ${pad(48 + (frame % 37), 2)}`,
-  ].join('
-');
+  ].join('\n');
 }
 
 function createMonogram() {
@@ -145,8 +141,7 @@ function createMonogram() {
     '| |  | | | |\/| |',
     '| |__| | | |  | |',
     '|______/ |_|  |_|',
-  ].join('
-');
+  ].join('\n');
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverlayProps) {
