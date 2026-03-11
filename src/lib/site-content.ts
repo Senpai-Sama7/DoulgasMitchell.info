@@ -90,7 +90,7 @@ export interface ContactMethod {
 
 export const siteProfile = {
   name: 'Douglas Mitchell',
-  headline: 'Operations Analyst, AI Practitioner, Systems Architect, and Author.',
+  headline: 'Operations Analyst, AI Practitioner, Systems Strategist, and Author.',
   summary:
     'I design resilient systems that blend operational rigor, AI fluency, and human-centered execution. The result is proof-driven work that looks premium and performs in the real world.',
   location: 'Houston, TX',
@@ -700,9 +700,9 @@ export const aboutRoles = [
     stats: 'Published book + companion ecosystem',
   },
   {
-    title: 'Systems Architect',
+    title: 'Operations Analyst',
     description:
-      'Connects product thinking, technical execution, and operational discipline into coherent systems.',
-    stats: '85+ repositories of public proof',
+      'Connects product thinking, technical execution, and operational discipline into measurable operating outcomes.',
+    stats: 'Systems-level execution',
   },
 ];
