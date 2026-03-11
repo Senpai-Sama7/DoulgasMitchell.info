@@ -14,13 +14,24 @@ import {
 
 const tableAvailability = new Map<string, Promise<boolean>>();
 
+function getTableDiscoveryQuery() {
+  const databaseUrl = process.env.DATABASE_URL ?? '';
+
+  if (databaseUrl.startsWith('postgres://') || databaseUrl.startsWith('postgresql://')) {
+    return `SELECT tablename AS name FROM pg_tables WHERE schemaname = current_schema()`;
+  }
+
+  return `SELECT name FROM sqlite_master WHERE type='table'`;
+}
+
 async function hasTables(tableNames: string[]) {
   const key = [...tableNames].sort().join(',');
   const cached = tableAvailability.get(key);
   if (cached) return cached;
 
+  const discoveryQuery = getTableDiscoveryQuery();
   const availabilityPromise = db
-    .$queryRawUnsafe<Array<{ name: string }>>(`SELECT name FROM sqlite_master WHERE type='table'`)
+    .$queryRawUnsafe<Array<{ name: string }>>(discoveryQuery)
     .then((rows) => {
       const availableTables = new Set(rows.map((row) => row.name));
       return tableNames.every((tableName) => availableTables.has(tableName));
