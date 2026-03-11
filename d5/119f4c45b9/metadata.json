@@ -5,7 +5,11 @@
   "branch": "main",
   "checkpoints_count": 2,
   "files_touched": [
-    ".junie/memory/language.json"
+    ".junie/memory/language.json",
+    "docs/history/AUDIT_AND_REFRACTORING_REPORT_V2.md",
+    "src/components/effects/splash-overlay.tsx",
+    "src/lib/site-content.ts",
+    "src/proxy.ts"
   ],
   "sessions": [
     {
@@ -19,6 +23,12 @@
       "transcript": "/d5/119f4c45b9/1/full.jsonl",
       "content_hash": "/d5/119f4c45b9/1/content_hash.txt",
       "prompt": "/d5/119f4c45b9/1/prompt.txt"
+    },
+    {
+      "metadata": "/d5/119f4c45b9/2/metadata.json",
+      "transcript": "/d5/119f4c45b9/2/full.jsonl",
+      "content_hash": "/d5/119f4c45b9/2/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {

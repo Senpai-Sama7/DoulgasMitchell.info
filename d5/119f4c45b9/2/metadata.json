@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "d5119f4c45b9",
+  "session_id": "ses_3239b3e17ffex7jtd5p7tRzciP",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T11:05:35.965343147Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "docs/history/AUDIT_AND_REFRACTORING_REPORT_V2.md",
+    "src/components/effects/splash-overlay.tsx",
+    "src/lib/site-content.ts",
+    "src/proxy.ts",
+    ".junie/memory/language.json"
+  ],
+  "agent": "OpenCode",
+  "turn_id": "943d501957e7",
+  "checkpoint_transcript_start": 1,
+  "transcript_lines_at_start": 1,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T11:05:35.963075786Z",
+    "agent_lines": 0,
+    "human_added": 226,
+    "human_modified": 14,
+    "human_removed": 0,
+    "total_committed": 227,
+    "agent_percentage": 0
+  }
+}
