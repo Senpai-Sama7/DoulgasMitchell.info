@@ -55,6 +55,8 @@ bun run db:migrate    # Run migrations
 - **API Routes**: Standard Next.js handlers. Use `logActivity` for all admin actions.
 - **ASCII Art**: Use `src/lib/ascii` for editorial ASCII decorations.
 - **Database**: Use the singleton `db` instance from `@/lib/db`.
+- **AI Integration**: Use the Gemini AI agent at `src/app/api/admin/ai/route.ts` for coordinating admin tasks.
+- **Hidden Admin Access**: The admin login is accessible via a discrete link in the footer (the word "intent.").
 
 ## File Structure
 

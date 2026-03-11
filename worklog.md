@@ -166,9 +166,6 @@ Completely rewrote the entrance overlay component with the following premium fea
    - Letterbox expansion animation
    - Staggered timing for dramatic effect
 
-10. **Replay Intro Button**:
-    - Fixed position button (bottom-left)
-    - Appears after initial viewing
     - Clears localStorage and restarts animation
 
 **Additional Enhancements**:

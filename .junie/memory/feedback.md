@@ -38,3 +38,35 @@
     "NEW INSTRUCTION": "WHEN any mobile page allows horizontal scroll THEN eliminate overflow-x by fixing root and offending component widths/margins and enforce overflow-x-hidden globally.\nWHEN implementing/administering the admin portal THEN expose an inconspicuous entry (hidden route or subtle trigger) while enforcing full authentication/authorization."
 }
 
+[2026-03-11 09:37] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Hero title & mobile UX",
+    "EXPECTATION": "After the entrance overlay, 'Douglas Mitchell' should type in ASCII once (no loop), mobile must not allow horizontal scroll at default zoom (only when user zooms in), and the 'Replay intro' button should not be visible on the main page.",
+    "NEW INSTRUCTION": "WHEN showing hero after overlay THEN play one-time ASCII typing for 'Douglas Mitchell'.\nWHEN testing mobile at default zoom THEN eliminate all horizontal scrolling.\nWHEN rendering post-intro UI THEN hide or remove the 'Replay intro' button."
+}
+
+[2026-03-11 09:38] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Hero typing, mobile scroll, replay button",
+    "EXPECTATION": "After the entrance overlay, 'Douglas Mitchell' should type in ASCII once (no loop), mobile must not allow horizontal scroll at default zoom, and the 'Replay intro' button should not appear on the main page.",
+    "NEW INSTRUCTION": "WHEN showing hero after overlay THEN play one-time ASCII typing for 'Douglas Mitchell'."
+}
+
+[2026-03-11 09:42] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Token attribution clarity",
+    "EXPECTATION": "User wants a precise separation between the assistant's own token usage and tokens consumed by external tools like opencode/codex, and to not conflate them.",
+    "NEW INSTRUCTION": "WHEN asked about my token usage THEN exclude tool-invoked tokens and state separation explicitly."
+}
+
+[2026-03-11 09:45] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Token attribution clarity",
+    "EXPECTATION": "User wants the assistant's token usage reported separately from any tokens consumed by external tools like opencode/codex, with no conflation.",
+    "NEW INSTRUCTION": "WHEN asked about my token or session usage THEN report only my tokens and list tool-invoked tokens separately."
+}
+

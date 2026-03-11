@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, ChevronRight, Sparkles } from 'lucide-react';
 import { heroMetrics, siteProfile, socialLinks } from '@/lib/site-content';
+import { ParticleTitle } from '@/components/effects/particle-title';
 
 const roles = [
   'Operations Analyst',
@@ -104,18 +105,7 @@ export function EnhancedHeroSection() {
               fetchPriority="high"
               className="editorial-title mb-2 relative"
             >
-              <span className="relative inline-block">
-                Douglas
-                <motion.span
-                  className="absolute -right-8 top-0 font-mono text-2xl text-primary/30 hidden sm:inline-block"
-                  animate={{ rotate: [0, 10, 0] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                >
-                  _
-                </motion.span>
-              </span>
-              <br />
-              <span className="text-primary">Mitchell</span>
+              <ParticleTitle firstName="Douglas" lastName="Mitchell" />
             </h1>
 
             {/* ASCII Bottom Decoration */}
