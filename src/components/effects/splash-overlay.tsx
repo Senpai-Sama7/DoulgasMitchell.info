@@ -4,14 +4,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 const DESCRIPTORS = [
-  'Systems, composed with precision.',
-  'Applied intelligence, curated with restraint.',
-  'Operations, design, and authorship in one frame.',
+  'Signal architecture for systems, stories, and interface control.',
+  'Dense prompts, lucid motion, and high-contrast editorial framing.',
+  'A portfolio staged like a command deck instead of a brochure.',
 ];
 
-const SIGNALS = ['Private Residence', 'Editorial Portfolio', 'Douglas Mitchell'];
-
-const VEIL_TRANSITION = { duration: 1.05, ease: [0.22, 1, 0.36, 1] as const };
+const SIGNALS = ['ASCII GRID', 'FIELD STACK', 'MOTION INDEX'];
+const STATUS_CODES = ['PRIME', 'LOCK', 'FLOW'];
+const ASCII_RAMP = ' .:-=+*#%@';
+const VEIL_TRANSITION = { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const };
 const PANEL_TRANSITION = { duration: 0.95, ease: [0.16, 1, 0.3, 1] as const };
 
 interface SplashOverlayProps {
@@ -21,19 +22,140 @@ interface SplashOverlayProps {
 
 type Phase = 'intro' | 'settle' | 'exit';
 
-const titleFont = '"Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif';
+const monoFont = '"IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, monospace';
+const titleFont = '"Bodoni Moda", "Iowan Old Style", "Palatino Linotype", serif';
 
-export function SplashOverlay({ onComplete, minDisplayTime = 4800 }: SplashOverlayProps) {
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function mapIntensity(value: number) {
+  const normalized = clamp((value + 2.8) / 5.6, 0, 0.999);
+  return ASCII_RAMP[Math.floor(normalized * ASCII_RAMP.length)];
+}
+
+function pad(value: number, size = 3) {
+  return value.toString().padStart(size, '0');
+}
+
+function createField(rows: number, cols: number, frame: number, progress: number, variant: 'mesh' | 'scan') {
+  const lines: string[] = [];
+
+  for (let y = 0; y < rows; y += 1) {
+    let line = '';
+
+    for (let x = 0; x < cols; x += 1) {
+      const horizontal = Math.sin(x * 0.18 + frame * 0.24 + y * 0.12);
+      const vertical = Math.cos(y * 0.54 - frame * 0.18 + x * 0.03);
+      const diagonal = Math.sin((x + y) * 0.12 + progress * 0.08);
+      const bias = variant === 'mesh' ? Math.cos((x - y) * 0.1 - frame * 0.16) : Math.sin((x * y) * 0.005 + frame * 0.08);
+
+      const hotspotX = cols * (0.18 + ((frame % 32) / 44));
+      const hotspotY = rows * (0.3 + ((progress % 40) / 120));
+      const distance = Math.hypot((x - hotspotX) / cols, (y - hotspotY) / rows);
+      const hotspot = Math.max(0, 1 - distance * 3.6);
+
+      const value = horizontal + vertical + diagonal + bias + hotspot * 1.8;
+      const highlight = Math.abs(x - ((frame * 3 + y * 2) % cols)) < 1 ? '@' : null;
+
+      line += highlight && hotspot > 0.36 ? highlight : mapIntensity(value);
+    }
+
+    lines.push(line);
+  }
+
+  return lines.join('\n');
+}
+
+function createPulseBars(progress: number, frame: number) {
+  const labels = ['SYNC', 'DEPTH', 'EDGE', 'CACHE', 'VOICE', 'FLOW'];
+
+  return labels
+    .map((label, index) => {
+      const wave = Math.sin(frame * 0.28 + index * 0.72) * 0.5 + 0.5;
+      const level = clamp(Math.round(progress * 0.34 + wave * 15 + index * 4), 4, 34);
+      const bar = `${'#'.repeat(level)}${'.'.repeat(34 - level)}`;
+      return `${label.padEnd(5, ' ')} [${bar}] ${pad(level, 2)}`;
+    })
+    .join('\n');
+}
+
+function createOrbit(progress: number, frame: number) {
+  const width = 29;
+  const height = 11;
+  const centerX = Math.floor(width / 2);
+  const centerY = Math.floor(height / 2);
+  const radius = 4;
+  const angle = frame * 0.24 + progress * 0.05;
+  const markerX = Math.round(centerX + Math.cos(angle) * radius * 1.55);
+  const markerY = Math.round(centerY + Math.sin(angle) * radius);
+  const lines: string[] = [];
+
+  for (let y = 0; y < height; y += 1) {
+    let line = '';
+
+    for (let x = 0; x < width; x += 1) {
+      const dx = (x - centerX) / 1.65;
+      const dy = y - centerY;
+      const ring = Math.abs(Math.hypot(dx, dy) - radius) < 0.48;
+      const crosshair = x === centerX || y === centerY;
+
+      if (x === markerX && y === markerY) {
+        line += '@';
+      } else if (x === centerX && y === centerY) {
+        line += '+';
+      } else if (ring) {
+        line += 'o';
+      } else if (crosshair) {
+        line += '.';
+      } else {
+        line += ' ';
+      }
+    }
+
+    lines.push(line);
+  }
+
+  return lines.join('\n');
+}
+
+function createTelemetry(progress: number, frame: number, phase: Phase) {
+  const drift = (Math.sin(frame * 0.22) * 4.8 + 12.6).toFixed(1);
+  const tension = (Math.cos(frame * 0.18 + 0.6) * 7.6 + 18.4).toFixed(1);
+
+  return [
+    `phase        ${phase.toUpperCase()}`,
+    `completion   ${pad(Math.round(progress))}%`,
+    `drift        ${drift}db`,
+    `tension      ${tension}db`,
+    `carrier      ${SIGNALS[frame % SIGNALS.length]}`,
+    `vector       ${pad(48 + (frame % 37), 2)}`,
+  ].join('\n');
+}
+
+function createMonogram() {
+  return [
+    ' ______   __  __ ',
+    '|  __  \\ |  \\/  |',
+    '| |  | | | \\  / |',
+    '| |  | | | |\\/| |',
+    '| |__| | | |  | |',
+    '|______/ |_|  |_|',
+  ].join('\n');
+}
+
+export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverlayProps) {
   const prefersReducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<Phase>('intro');
   const [visible, setVisible] = useState(true);
   const [progress, setProgress] = useState(0);
   const [descriptorIndex, setDescriptorIndex] = useState(0);
   const [signalIndex, setSignalIndex] = useState(0);
+  const [frame, setFrame] = useState(0);
 
-  const introDuration = prefersReducedMotion ? 180 : 950;
-  const holdDuration = Math.max(minDisplayTime, prefersReducedMotion ? 700 : 2800);
-  const exitDuration = prefersReducedMotion ? 220 : 900;
+  const introDuration = prefersReducedMotion ? 180 : 900;
+  const holdDuration = Math.max(minDisplayTime, prefersReducedMotion ? 900 : 3200);
+  const exitDuration = prefersReducedMotion ? 220 : 820;
 
   useEffect(() => {
     document.body.style.overflow = phase === 'exit' ? '' : 'hidden';
@@ -61,6 +183,18 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4800 }: SplashOverl
   }, [introDuration, phase]);
 
   useEffect(() => {
+    if (phase === 'exit') {
+      return;
+    }
+
+    const frameTimer = window.setInterval(() => {
+      setFrame((current) => current + 1);
+    }, prefersReducedMotion ? 200 : 90);
+
+    return () => window.clearInterval(frameTimer);
+  }, [phase, prefersReducedMotion]);
+
+  useEffect(() => {
     if (phase !== 'settle') {
       return;
     }
@@ -75,12 +209,12 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4800 }: SplashOverl
         window.clearInterval(progressTimer);
         beginExit();
       }
-    }, prefersReducedMotion ? 80 : 32);
+    }, prefersReducedMotion ? 100 : 32);
 
     const descriptorTimer = window.setInterval(() => {
       setDescriptorIndex((current) => (current + 1) % DESCRIPTORS.length);
       setSignalIndex((current) => (current + 1) % SIGNALS.length);
-    }, prefersReducedMotion ? 1600 : 1200);
+    }, prefersReducedMotion ? 1800 : 1100);
 
     return () => {
       window.clearInterval(progressTimer);
@@ -121,13 +255,20 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4800 }: SplashOverl
     return null;
   }
 
+  const meshField = createField(16, 80, frame, progress, 'mesh');
+  const scanField = createField(12, 72, frame + 6, progress + 12, 'scan');
+  const pulseBars = createPulseBars(progress, frame);
+  const orbit = createOrbit(progress, frame);
+  const telemetry = createTelemetry(progress, frame, phase);
+  const monogram = createMonogram();
+
   return (
     <motion.div
       aria-label="Entrance overlay"
-      className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-[#050505] text-[#f4ecdd]"
+      className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-[#020304] text-[#f5efe6]"
       initial={{ opacity: 1 }}
       animate={{ opacity: phase === 'exit' ? 0 : 1 }}
-      transition={{ duration: prefersReducedMotion ? 0.2 : 0.7, ease: 'easeOut' }}
+      transition={{ duration: prefersReducedMotion ? 0.2 : 0.55, ease: 'easeOut' }}
       onClick={skip}
     >
       <div
@@ -135,192 +276,247 @@ export function SplashOverlay({ onComplete, minDisplayTime = 4800 }: SplashOverl
         className="absolute inset-0"
         style={{
           background: `
-            radial-gradient(circle at 50% 34%, rgba(214, 179, 102, 0.2), transparent 0 24%),
-            radial-gradient(circle at 20% 18%, rgba(255, 240, 214, 0.1), transparent 0 18%),
-            radial-gradient(circle at 82% 20%, rgba(177, 141, 75, 0.12), transparent 0 20%),
-            linear-gradient(180deg, rgba(15, 13, 11, 0.94) 0%, rgba(7, 7, 7, 0.98) 100%)
+            radial-gradient(circle at 50% 28%, rgba(133, 231, 255, 0.16), transparent 0 24%),
+            radial-gradient(circle at 76% 20%, rgba(244, 186, 112, 0.18), transparent 0 20%),
+            radial-gradient(circle at 20% 78%, rgba(118, 143, 255, 0.14), transparent 0 24%),
+            linear-gradient(180deg, rgba(6, 8, 13, 0.94) 0%, rgba(2, 3, 4, 0.99) 100%)
           `,
         }}
       />
 
       <div
         aria-hidden="true"
-        className="absolute inset-0 opacity-60"
+        className="absolute inset-0 opacity-55"
         style={{
           backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.035) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.025) 1px, transparent 1px)
+            linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
           `,
-          backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(circle at center, black 40%, transparent 88%)',
-        }}
-      />
-
-      <div
-        aria-hidden="true"
-        className="absolute inset-[24px] rounded-[32px] border border-white/8"
-        style={{
-          boxShadow: 'inset 0 0 0 1px rgba(205, 179, 128, 0.14), inset 0 0 140px rgba(255, 255, 255, 0.03)',
+          backgroundSize: '64px 64px',
+          maskImage: 'radial-gradient(circle at center, black 36%, transparent 92%)',
         }}
       />
 
       <motion.div
         aria-hidden="true"
-        className="absolute left-1/2 top-1/2 h-[26rem] w-[26rem] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-80 blur-3xl"
-        animate={prefersReducedMotion ? { opacity: 0.55 } : { rotate: 360, scale: [0.96, 1.04, 0.96] }}
-        transition={prefersReducedMotion ? undefined : { duration: 24, ease: 'linear', repeat: Infinity }}
-        style={{
-          background:
-            'conic-gradient(from 180deg at 50% 50%, rgba(251, 237, 198, 0.04), rgba(203, 165, 92, 0.25), rgba(251, 237, 198, 0.04), rgba(148, 116, 55, 0.22), rgba(251, 237, 198, 0.04))',
-        }}
-      />
-
-      <motion.div
-        aria-hidden="true"
-        className="absolute inset-x-0 top-0 h-[48vh]"
-        animate={{
-          y: phase === 'exit' ? '-110%' : '0%',
-          opacity: phase === 'exit' ? 0.15 : 1,
-        }}
+        className="absolute inset-x-0 top-0 h-[50vh]"
+        animate={{ y: phase === 'exit' ? '-115%' : '0%' }}
         transition={VEIL_TRANSITION}
         style={{
           background:
-            'linear-gradient(180deg, rgba(4, 4, 4, 0.98) 0%, rgba(4, 4, 4, 0.72) 64%, rgba(4, 4, 4, 0) 100%)',
-          boxShadow: '0 24px 120px rgba(0, 0, 0, 0.65)',
+            'linear-gradient(180deg, rgba(2, 3, 4, 0.98) 0%, rgba(2, 3, 4, 0.72) 68%, rgba(2, 3, 4, 0) 100%)',
         }}
       />
 
       <motion.div
         aria-hidden="true"
-        className="absolute inset-x-0 bottom-0 h-[48vh]"
-        animate={{
-          y: phase === 'exit' ? '110%' : '0%',
-          opacity: phase === 'exit' ? 0.15 : 1,
-        }}
+        className="absolute inset-x-0 bottom-0 h-[50vh]"
+        animate={{ y: phase === 'exit' ? '115%' : '0%' }}
         transition={VEIL_TRANSITION}
         style={{
           background:
-            'linear-gradient(0deg, rgba(4, 4, 4, 0.98) 0%, rgba(4, 4, 4, 0.76) 64%, rgba(4, 4, 4, 0) 100%)',
-          boxShadow: '0 -24px 120px rgba(0, 0, 0, 0.65)',
+            'linear-gradient(0deg, rgba(2, 3, 4, 0.98) 0%, rgba(2, 3, 4, 0.72) 68%, rgba(2, 3, 4, 0) 100%)',
         }}
       />
 
-      <div className="relative flex min-h-screen items-center justify-center px-6 py-10 sm:px-10">
+      <motion.pre
+        aria-hidden="true"
+        className="pointer-events-none absolute left-1/2 top-[8%] hidden -translate-x-1/2 whitespace-pre text-[0.5rem] uppercase leading-[1.18] tracking-[0.18em] text-[#81ddf6]/18 xl:block"
+        animate={prefersReducedMotion ? { opacity: 0.22 } : { y: [0, 10, 0], opacity: [0.16, 0.24, 0.16] }}
+        transition={prefersReducedMotion ? undefined : { duration: 8, ease: 'easeInOut', repeat: Infinity }}
+        style={{ fontFamily: monoFont }}
+      >
+        {meshField}
+      </motion.pre>
+
+      <motion.pre
+        aria-hidden="true"
+        className="pointer-events-none absolute bottom-[7%] right-[4%] hidden whitespace-pre text-[0.48rem] leading-[1.16] tracking-[0.14em] text-[#f0b877]/16 lg:block"
+        animate={prefersReducedMotion ? { opacity: 0.18 } : { x: [0, -14, 0], opacity: [0.14, 0.22, 0.14] }}
+        transition={prefersReducedMotion ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity }}
+        style={{ fontFamily: monoFont }}
+      >
+        {scanField}
+      </motion.pre>
+
+      <div className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:px-8 lg:px-12">
         <motion.div
-          className="relative w-full max-w-[760px] overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] px-6 py-8 backdrop-blur-2xl sm:px-10 sm:py-12"
-          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          className="relative w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-white/10 bg-[#07090d]/72 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-6 lg:p-8"
+          initial={{ opacity: 0, y: 28, scale: 0.98 }}
           animate={{
             opacity: phase === 'exit' ? 0 : 1,
-            y: phase === 'intro' ? 18 : phase === 'exit' ? -24 : 0,
-            scale: phase === 'intro' ? 0.985 : phase === 'exit' ? 1.03 : 1,
-            filter: phase === 'intro' ? 'blur(10px)' : phase === 'exit' ? 'blur(8px)' : 'blur(0px)',
+            y: phase === 'intro' ? 18 : phase === 'exit' ? -22 : 0,
+            scale: phase === 'intro' ? 0.985 : phase === 'exit' ? 1.02 : 1,
+            filter: phase === 'intro' ? 'blur(8px)' : phase === 'exit' ? 'blur(7px)' : 'blur(0px)',
           }}
           transition={PANEL_TRANSITION}
-          style={{
-            boxShadow:
-              '0 30px 110px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 0 0 1px rgba(212, 184, 132, 0.08)',
-          }}
         >
-          <motion.div
+          <div
             aria-hidden="true"
-            className="absolute left-[-10%] top-0 h-px w-[42%]"
-            animate={prefersReducedMotion ? { opacity: 0.7 } : { x: ['-20%', '165%'] }}
-            transition={prefersReducedMotion ? undefined : { duration: 2.8, ease: 'easeInOut', repeat: Infinity, repeatDelay: 1.2 }}
+            className="absolute inset-0 rounded-[34px]"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(255, 244, 214, 0.92), transparent)',
-              boxShadow: '0 0 24px rgba(255, 230, 176, 0.65)',
+              background:
+                'linear-gradient(135deg, rgba(133,231,255,0.08) 0%, rgba(255,255,255,0.02) 28%, rgba(244,186,112,0.06) 100%)',
             }}
           />
 
-          <div className="relative flex flex-col gap-8">
-            <div className="flex items-center justify-between gap-4 text-[0.62rem] uppercase tracking-[0.34em] text-[#bca47a] sm:text-[0.68rem]">
-              <span className="whitespace-nowrap">{SIGNALS[signalIndex]}</span>
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-[#b89a66]/60 to-transparent" />
-              <span className="whitespace-nowrap">Est. Presence</span>
+          <motion.div
+            aria-hidden="true"
+            className="absolute left-0 top-0 h-px w-40 bg-gradient-to-r from-transparent via-[#8de7ff] to-transparent"
+            animate={prefersReducedMotion ? { opacity: 0.7 } : { x: ['-15%', '680%'] }}
+            transition={prefersReducedMotion ? undefined : { duration: 3.2, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.8 }}
+          />
+
+          <div className="relative flex flex-col gap-5">
+            <div className="flex flex-col gap-3 border-b border-white/8 pb-4 text-[0.66rem] uppercase tracking-[0.34em] text-[#d7d0c2]/65 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-[#85e7ff] shadow-[0_0_16px_rgba(133,231,255,0.9)]" />
+                <span>Douglas Mitchell / Entrance Overlay</span>
+              </div>
+              <div className="flex items-center gap-3 text-[#f0b877]">
+                <span>{STATUS_CODES[descriptorIndex]}</span>
+                <span>{pad(Math.round(progress))}%</span>
+                <span>{SIGNALS[signalIndex]}</span>
+              </div>
             </div>
 
-            <div className="flex flex-col items-center gap-6 text-center">
-              <div className="relative flex h-24 w-24 items-center justify-center sm:h-28 sm:w-28">
-                <motion.div
+            <div className="grid gap-4 xl:grid-cols-[0.92fr_1.42fr_0.96fr]">
+              <motion.div
+                className="rounded-[28px] border border-white/8 bg-black/28 p-4 sm:p-5"
+                initial={{ opacity: 0, x: -24 }}
+                animate={{ opacity: phase === 'exit' ? 0 : 1, x: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0.2 : 0.65, delay: 0.08 }}
+              >
+                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#9fe8fb]/78">
+                  <span>Field Mesh</span>
+                  <span>Live Raster</span>
+                </div>
+                <pre
+                  className="overflow-hidden rounded-[22px] border border-[#85e7ff]/18 bg-[#061017]/72 p-3 text-[0.38rem] leading-[1.18] tracking-[0.16em] text-[#9fe8fb] sm:text-[0.44rem]"
+                  style={{ fontFamily: monoFont }}
+                >
+                  {scanField}
+                </pre>
+                <div className="mt-4 rounded-[20px] border border-white/8 bg-white/[0.02] p-3 text-[0.7rem] uppercase tracking-[0.24em] text-[#d6d0c4]/60">
+                  Prompting, authorship, and systems thinking staged as one signal surface.
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] px-5 py-6 sm:px-7 sm:py-8"
+                initial={{ opacity: 0, y: 24 }}
+                animate={{ opacity: phase === 'exit' ? 0 : 1, y: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0.2 : 0.72, delay: 0.12 }}
+              >
+                <div
                   aria-hidden="true"
-                  className="absolute inset-0 rounded-full"
-                  animate={prefersReducedMotion ? { opacity: 0.7 } : { rotate: 360 }}
-                  transition={prefersReducedMotion ? undefined : { duration: 14, ease: 'linear', repeat: Infinity }}
+                  className="absolute inset-x-[12%] top-[14%] h-40 rounded-full blur-3xl"
                   style={{
                     background:
-                      'conic-gradient(from 90deg at 50% 50%, rgba(255,255,255,0) 0deg, rgba(214,179,102,0.9) 110deg, rgba(255,255,255,0) 220deg, rgba(214,179,102,0.75) 320deg, rgba(255,255,255,0) 360deg)',
-                    padding: '1px',
-                    WebkitMask:
-                      'radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1px))',
-                    mask: 'radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 1px))',
+                      'radial-gradient(circle, rgba(133,231,255,0.18) 0%, rgba(133,231,255,0.03) 48%, transparent 76%)',
                   }}
                 />
-                <div
-                  className="absolute inset-[8px] rounded-full border border-white/12 bg-[#100d09]/70"
-                  style={{ boxShadow: 'inset 0 0 40px rgba(232, 202, 147, 0.08)' }}
-                />
-                <span
-                  className="relative text-[1.7rem] tracking-[0.36em] text-[#f3e3bc] sm:text-[2rem]"
-                  style={{ fontFamily: titleFont }}
-                >
-                  DM
-                </span>
-              </div>
 
-              <div className="space-y-4">
-                <p className="text-[0.7rem] uppercase tracking-[0.42em] text-[#e7d1a2]/82 sm:text-[0.76rem]">
-                  Douglas Mitchell
-                </p>
-                <div className="space-y-2">
-                  <h1
-                    className="text-[clamp(2.9rem,7.6vw,5.8rem)] font-light leading-none tracking-[0.08em] text-[#fff7eb]"
-                    style={{ fontFamily: titleFont }}
+                <div className="relative flex flex-col items-center text-center">
+                  <p className="mb-4 text-[0.72rem] uppercase tracking-[0.42em] text-[#f0e8d9]/62">ASCII Resonance</p>
+
+                  <pre
+                    aria-hidden="true"
+                    className="mb-6 whitespace-pre text-[0.72rem] leading-[1.02] tracking-[0.2em] text-[#f5efe6]/88 sm:text-[0.92rem]"
+                    style={{ fontFamily: monoFont }}
                   >
-                    The Architect
-                  </h1>
-                  <p className="mx-auto max-w-[34rem] text-sm leading-7 text-[#efe2c6]/72 sm:text-base">
-                    A refined portfolio of operations, intelligent systems, and authored perspective.
-                  </p>
-                </div>
-              </div>
-            </div>
+                    {monogram}
+                  </pre>
 
-            <div className="space-y-4">
-              <div className="overflow-hidden rounded-full border border-[#c8ab72]/20 bg-white/[0.03] px-4 py-3 text-center">
-                <motion.p
-                  key={descriptorIndex}
-                  className="text-xs uppercase tracking-[0.26em] text-[#dcc190] sm:text-sm"
-                  initial={{ opacity: 0, y: 14 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -14 }}
-                  transition={{ duration: 0.45, ease: 'easeOut' }}
+                  <div className="space-y-4">
+                    <h1
+                      className="text-[clamp(2.8rem,7vw,7rem)] font-light uppercase leading-[0.88] tracking-[0.14em] text-[#fff9ef]"
+                      style={{ fontFamily: titleFont }}
+                    >
+                      Modern
+                      <br />
+                      ASCII
+                    </h1>
+                    <p className="mx-auto max-w-[34rem] text-sm uppercase tracking-[0.28em] text-[#f0b877]/76 sm:text-[0.82rem]">
+                      Visual systems. Signal drama. Editorial control.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 w-full max-w-[40rem] rounded-[24px] border border-white/10 bg-black/24 px-4 py-4 sm:px-5">
+                    <motion.p
+                      key={descriptorIndex}
+                      className="text-sm leading-7 text-[#ede5d5] sm:text-[1rem]"
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.42, ease: 'easeOut' }}
+                    >
+                      {DESCRIPTORS[descriptorIndex]}
+                    </motion.p>
+                  </div>
+
+                  <div className="mt-7 flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center">
+                    <div className="rounded-[24px] border border-[#85e7ff]/24 bg-[#071118]/72 px-5 py-4">
+                      <p className="text-[0.62rem] uppercase tracking-[0.34em] text-[#9fe8fb]/70">Completion</p>
+                      <p className="mt-2 text-[clamp(2.8rem,8vw,5.6rem)] leading-none text-[#eafcff]" style={{ fontFamily: monoFont }}>
+                        {pad(Math.round(progress))}%
+                      </p>
+                    </div>
+                    <div className="w-full max-w-[18rem] rounded-[24px] border border-white/8 bg-white/[0.02] px-4 py-4 text-left">
+                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.34em] text-[#f0b877]/70">Telemetry</p>
+                      <pre className="text-[0.72rem] leading-7 text-[#f4ecdf]/80" style={{ fontFamily: monoFont }}>
+                        {telemetry}
+                      </pre>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+
+              <motion.div
+                className="rounded-[28px] border border-white/8 bg-black/28 p-4 sm:p-5"
+                initial={{ opacity: 0, x: 24 }}
+                animate={{ opacity: phase === 'exit' ? 0 : 1, x: 0 }}
+                transition={{ duration: prefersReducedMotion ? 0.2 : 0.68, delay: 0.14 }}
+              >
+                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#f0b877]/78">
+                  <span>Signal Orbit</span>
+                  <span>Load Trace</span>
+                </div>
+                <pre
+                  className="mb-4 overflow-hidden rounded-[22px] border border-[#f0b877]/18 bg-[#140d08]/70 p-3 text-[0.48rem] leading-[1.12] tracking-[0.18em] text-[#ffd7a7] sm:text-[0.56rem]"
+                  style={{ fontFamily: monoFont }}
                 >
-                  {DESCRIPTORS[descriptorIndex]}
-                </motion.p>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.32em] text-[#d9bd8f]/62 sm:text-[0.68rem]">
-                  <span>Preparing entrance</span>
-                  <span>{Math.round(progress)}%</span>
-                </div>
-                <div className="h-px overflow-hidden bg-white/10">
-                  <motion.div
-                    className="h-full"
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: prefersReducedMotion ? 0.2 : 0.3, ease: 'easeOut' }}
-                    style={{
-                      background: 'linear-gradient(90deg, rgba(153, 116, 46, 0), rgba(217, 189, 143, 1), rgba(255, 247, 235, 1))',
-                      boxShadow: '0 0 22px rgba(255, 229, 173, 0.62)',
-                    }}
-                  />
-                </div>
-              </div>
+                  {orbit}
+                </pre>
+                <pre
+                  className="overflow-hidden rounded-[22px] border border-white/8 bg-[#090b0f]/82 p-3 text-[0.54rem] leading-[1.55] text-[#f4ecdf]/82 sm:text-[0.64rem]"
+                  style={{ fontFamily: monoFont }}
+                >
+                  {pulseBars}
+                </pre>
+              </motion.div>
             </div>
 
-            <div className="flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-[#c8ad7e]/58 sm:flex-row sm:text-[0.68rem]">
-              <span>Enter or click to continue</span>
-              <span>Luxury motion system</span>
+            <div className="space-y-3 border-t border-white/8 pt-4">
+              <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#d8d0c1]/60">
+                <span>Signal Lock</span>
+                <span>{Math.round(progress)}% ready</span>
+              </div>
+              <div className="h-[2px] overflow-hidden rounded-full bg-white/10">
+                <motion.div
+                  className="h-full"
+                  animate={{ width: `${progress}%` }}
+                  transition={{ duration: prefersReducedMotion ? 0.2 : 0.22, ease: 'easeOut' }}
+                  style={{
+                    background:
+                      'linear-gradient(90deg, rgba(133,231,255,0) 0%, rgba(133,231,255,1) 35%, rgba(244,186,112,1) 100%)',
+                    boxShadow: '0 0 18px rgba(133, 231, 255, 0.55)',
+                  }}
+                />
+              </div>
+              <div className="flex flex-col gap-2 text-[0.64rem] uppercase tracking-[0.28em] text-[#bfb7aa]/60 sm:flex-row sm:items-center sm:justify-between">
+                <span>Enter, space, escape, or click to continue</span>
+                <span>Obsidian ASCII entrance system</span>
+              </div>
             </div>
           </div>
         </motion.div>

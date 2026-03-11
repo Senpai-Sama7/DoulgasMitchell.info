@@ -1,38 +1,25 @@
 import { NextResponse } from 'next/server';
+import { featuredArticles } from '@/lib/site-content';
 
 // Seed data for the editorial platform
-const seedArticles = [
-  {
-    slug: 'building-ai-powered-workflows',
-    title: 'Building AI-Powered Workflows That Actually Work',
-    subtitle: 'A practical guide to implementing AI automation',
-    excerpt: 'A practical guide to implementing AI automation in your daily operations without falling into the hype trap.',
-    category: 'technical',
-    featured: true,
-    published: true,
-    readingTime: 8,
-  },
-  {
-    slug: 'architecture-of-confidence',
-    title: 'The Architecture of Confidence',
-    subtitle: 'Systems thinking for personal development',
-    excerpt: 'How systems thinking applies to personal development and building lasting self-assurance.',
-    category: 'insight',
-    featured: true,
-    published: true,
-    readingTime: 6,
-  },
-  {
-    slug: 'operations-to-ai-transition',
-    title: 'From Operations to AI: A Career Transition Guide',
-    subtitle: 'Practical steps for career evolution',
-    excerpt: 'Practical steps for operations professionals looking to integrate AI into their skillset.',
-    category: 'essay',
-    featured: false,
-    published: true,
-    readingTime: 10,
-  },
-];
+function parseMonthYearLabel(value: string) {
+  const parsed = new Date(value.replace(/^([A-Za-z]{3}) (\d{4})$/, '$1 1, $2'));
+  return Number.isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
+const seedArticles = featuredArticles.map((article) => ({
+  slug: article.slug,
+  title: article.title,
+  subtitle: null,
+  excerpt: article.excerpt,
+  content: article.content,
+  category: article.category.toLowerCase(),
+  tags: JSON.stringify(article.tags),
+  featured: article.featured,
+  published: true,
+  publishedAt: parseMonthYearLabel(article.date),
+  readingTime: Number.parseInt(article.readTime, 10) || 5,
+}));
 
 const seedProjects = [
   {
@@ -114,11 +101,7 @@ export async function POST() {
       await db.article.upsert({
         where: { slug: article.slug },
         update: article,
-        create: {
-          ...article,
-          content: `# ${article.title}\n\n${article.excerpt}\n\n*Content coming soon...*`,
-          tags: JSON.stringify([article.category]),
-        },
+        create: article,
       });
     }
 

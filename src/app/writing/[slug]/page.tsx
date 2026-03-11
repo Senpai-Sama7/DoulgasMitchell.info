@@ -31,6 +31,20 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   return {
     title: article.title,
     description: article.excerpt,
+    openGraph: {
+      title: article.title,
+      description: article.excerpt,
+      type: 'article',
+      url: `https://douglasmitchell.info/writing/${slug}`,
+      publishedTime: article.date,
+      authors: ['Douglas Mitchell'],
+      tags: article.tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: article.title,
+      description: article.excerpt,
+    },
   };
 }
 

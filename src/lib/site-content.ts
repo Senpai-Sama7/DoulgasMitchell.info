@@ -257,86 +257,279 @@ export const featuredArticles: ArticleShowcase[] = [
     slug: 'rizz-prompting-attractor-based-style-steering',
     title: 'Rizz Prompting: Attractor-Based Style Steering in LLMs',
     excerpt:
-      'A scientific framework for steering Large Language Models toward target registers and personas using attractor dynamics instead of explicit commands.',
+      'An editorial adaptation of the working paper arguing that great prompting is less about commanding a model and more about arranging the conditions it naturally wants to continue.',
     category: 'Research',
-    readTime: '15 min',
+    readTime: '18 min',
     date: 'Feb 2026',
     featured: true,
     trending: true,
-    tags: ['prompt engineering', 'ai research', 'semantic steering', 'llm dynamics'],
-    insight: 'The most effective prompts do not demand compliance; they configure the linguistic landscape so that the desired output becomes the path of least resistance.',
+    tags: ['prompt engineering', 'ai research', 'human-ai interaction', 'style steering'],
+    insight: 'The strongest prompts do not force a model into a style. They stack contextual, lexical, structural, and persona cues until the desired response becomes statistically natural.',
     content: `# Rizz Prompting: A Scientific Framework for Attractor-Based Style Steering
 
-"Rizz prompting" (RP) is an informal name for a family of prompt engineering techniques that steer a large language model (LLM) toward a target register, voice, or rhetorical persona by attraction rather than explicit command -- placing high-leverage linguistic cues in-context so that the desired style becomes the path of least resistance in the model's next-token distribution.
+This post is a web adaptation of my February 2026 working paper on Rizz Prompting. The paper argues that effective prompting is not best understood as issuing better commands. It is better understood as shaping the probability landscape an LLM is about to continue.
 
-## 1. Introduction
+In other words: the best prompt often does not say "do this." It creates the conditions under which the desired response feels like the most natural next move.
 
-In the sociology of charisma, rizz names a particular quality: effortless interpersonal magnetism. The person with rizz does not demand compliance -- they configure the social context so that a specific response becomes the path of least resistance. 
+## The Abstract in Plain English
 
-This paper argues that the same principle applies, with mechanical precision, to interactions with large language models (LLMs). When a human communicates with an LLM, they are not simply sending a message -- they are reconfiguring a high-dimensional probability landscape. Every word choice, syntactic structure, emotional tone, contextual signal, and persona cue shifts the distribution of plausible outputs.
+Rizz Prompting names a family of prompt engineering techniques that steer a model toward a target voice, register, or rhetorical persona by attraction rather than explicit command. Instead of ordering the model to "sound academic" or "write like an expert," the prompt places the model inside a context where academic or expert language becomes statistically natural.
 
-### Three Paradigms of LLM Interaction:
+That is the paper's central claim: prompting is not only instruction. It is environment design.
 
-1.  **Command Prompting (instruction framing):** The user issues explicit directives. The model attempts to follow them. Results are highly sensitive to instruction quality.
-2.  **Vibe Coding (iterative feeling):** The user tries prompts, responds to what emerges, and gradually converges toward a satisfactory result through feel and intuition.
-3.  **Rizz Prompting (attractor engineering):** The user deliberately constructs a prompt context that makes the desired style, register, and structure statistically natural -- the path of least resistance for the model's next-token prediction.
+> The most effective prompts do not demand compliance. They configure the linguistic landscape so that the desired style becomes the path of least resistance.
 
-## 2. The Mathematical Foundation
+## Three Ways People Actually Prompt
 
-We model attractors as structured feature bundles extracted from text. Rizz Prompting aims to set the prompt close to the feature region that typically precedes the target register in the model's training distribution. 
+The paper distinguishes three paradigms of LLM interaction:
 
-Certain prompt configurations concentrate probability mass so heavily toward specific output regions that, across repeated sampling, the model will almost always produce outputs from those regions. The output space has structure, carved by training data statistics, and certain prompts exploit that structure to channel the model toward predictable destinations.
+1. **Command prompting**  
+   The user gives direct instructions and hopes the model interprets them correctly.
 
-## 3. A Six-Category Attractor Taxonomy
+2. **Vibe coding**  
+   The user iterates by feel, nudging the model until the output "sounds right."
 
-We propose a six-category attractor taxonomy, organized hierarchically by level of abstraction:
+3. **Rizz prompting**  
+   The user deliberately engineers the prompt so the right answer style is the easiest continuation for the model to produce.
 
-### Class 1: Contextual Framing (CF)
-**Definition:** Establishes the domain, situation, and purpose within which the model believes it is operating.
-**In plain terms:** Think of it as dialing a radio to a specific station.
-**Example:** "In the context of an IPCC-style technical policy briefing..."
+Command prompting is explicit but often brittle. Vibe coding can work, but it is hard to teach or reproduce. Rizz Prompting is the attempt to formalize what skilled practitioners are already doing intuitively.
 
-### Class 2: Lexical / Semantic Loading (LA)
-**Definition:** Deliberate selection of words whose distributional statistics carry the practitioner's intent into the model's representational space.
-**In plain terms:** "Investigate" and "look at" are semantically similar but statistically different.
-**Example:** Using "ablation," "distribution shift," or "calibration" to activate an ML-research register.
+## Why the Attractor Metaphor Matters
 
-### Class 3: Syntactic Architecture (SA)
-**Definition:** Grammatical structure, sentence complexity, and organizational form that signals the register and formality.
-**In plain terms:** The shape of a sentence tells the model what shape of answer is expected.
+The paper borrows the language of attractors from dynamical systems, not to claim LLMs literally are bowls with marbles inside them, but to describe something mechanically useful: some prompt configurations pull model outputs toward very narrow regions of style and structure with surprising consistency.
 
-### Class 4: Schematic Activation (ScA)
-**Definition:** Activating a cognitive template for a type of situation or event (e.g., "Medical consultation," "Socratic dialogue").
-**Mechanism:** Schematic cues activate learned behavioral clusters associated with specific situation types.
+Each token in a prompt changes the conditional probabilities of what comes next. Word choice, syntax, social framing, persona cues, and genre scaffolding all shift the model's internal expectations. Rizz Prompting treats those shifts as designable.
 
-### Class 5: Temporal Anchoring (TA)
-**Definition:** Situating the prompt within a specific historical era, intellectual tradition, or canonical lineage.
-**Example:** "In the tradition of Feynman-style technical exposition..."
+The key question becomes:
 
-### Class 6: Persona Assignment (PA)
-**Definition:** Assigns the model a specific identity. Persona is the **apex attractor**: it simultaneously activates all five lower-level attractor classes as a composite bundle.
+**What set of cues moves the model closest to the response manifold I actually want?**
 
-## 4. Design Principles
+## The Six Attractor Classes
 
-### 4.1 Compositionality (Attractor Stacking)
-Attractor classes are designed to be deployed simultaneously. The power of Rizz Prompting emerges from their compound effect: multiple probability-narrowing forces operating in concert.
+The paper proposes a six-part taxonomy. This is the core framework.
 
-### 4.2 The Minimality Principle
-Use the smallest set of attractors that reliably induces the target style. Excess attractor cues can overfit to a genre and crowd out actual information content.
+### 1. Contextual Framing
 
-### 4.3 Reasoning Retention
-Style steering should not degrade correctness. The mitigation is structural: pair stylistic attractors with explicit correctness constraints that operate on a separate axis from style.
+Contextual framing tells the model what world it is in.
 
-## 5. The Attractor Density Hypothesis (ADH)
+If you say, "In the context of an IPCC-style technical briefing," you are not just naming a topic. You are activating a domain, a seriousness level, a vocabulary range, and a style of evidence handling.
 
-The ADH conjectures that the degree of output quantization -- how reliably a prompt steers the model -- is a function of the number and specificity of simultaneous attractor features. We hypothesize that their effects are **superadditive**: each additional attractor class narrows the remaining degrees of freedom multiplicatively rather than additively.
+Think of this as selecting the station before the music starts.
 
-## 6. Conclusion
+### 2. Lexical and Semantic Loading
 
-The practitioner with rizz does not hope their words land -- they know how they land and why. Rizz Prompting names the competency in human-AI interaction of knowing which linguistic structures activate which probability basins, and deploying them with confident intentionality.
+This is deliberate word choice that carries the model into a specific semantic neighborhood.
+
+"Investigate" does not land the same way as "look at."  
+"Calibration," "ablation," and "distribution shift" do not activate the same region as "testing," "changes," and "accuracy."
+
+Small lexical substitutions can produce nonlinear shifts in output quality because they move the model into different representational neighborhoods.
+
+### 3. Syntactic Architecture
+
+The shape of a prompt changes the shape of the answer.
+
+Formal prompts, code-like prompts, peer-review prompts, and tutorial prompts each imply different completion structures. The paper argues that syntax itself is an attractor because models learn form-content pairings from their training distributions.
+
+If you want a peer review, it helps to write like someone opening a peer review.
+
+### 4. Schematic Activation
+
+Schemas are higher-level scripts: expert review, medical consultation, policy briefing, Socratic dialogue, methods section, and so on.
+
+Once a schema is activated, the model inherits expected behavior: what counts as relevant, what comes first, what kind of reasoning is normal, what kinds of caution are appropriate.
+
+This is not just vocabulary. It is behavioral scaffolding.
+
+### 5. Temporal Anchoring
+
+Temporal anchoring places the output inside a historical or intellectual lineage.
+
+Prompting "in the tradition of Feynman-style technical exposition" or "with the clarity of late 20th-century analytic philosophy" invokes conventions larger than any single persona.
+
+The paper is explicit that this class is theoretically motivated but empirically under-tested compared to the others.
+
+### 6. Persona Assignment
+
+Persona is the apex attractor.
+
+A well-specified persona implicitly bundles context, vocabulary, syntax, schematic expectations, and often temporal anchoring. "You are an expert" is weak. "You are a senior climate scientist with two decades of Arctic ice-core work contributing to IPCC-style assessment language" is strong.
+
+The paper's argument is simple: specificity matters because specificity narrows the output basin.
+
+## The Three Design Principles
+
+The framework is not just taxonomy. It also proposes a practical prompting discipline.
+
+### Compositionality
+
+Attractors stack.
+
+You do not have to choose between context, vocabulary, and persona. The strongest prompts often combine multiple classes so that each one narrows what remains possible.
+
+### The Minimality Principle
+
+More cues are not always better.
+
+If you overload a prompt with stylistic markers, you can crowd out the actual informational task. The recommendation is to use the smallest stack that reliably induces the desired output.
+
+The question is not "how many cues can I add?"  
+It is "what is still unconstrained that needs to be constrained?"
+
+### Reasoning Retention
+
+This is the most important practical warning in the paper.
+
+A polished answer can still be wrong. Persona-rich prompting can create outputs that feel authoritative without increasing correctness. So style and reasoning have to be handled on separate axes.
+
+The paper recommends explicit correctness constraints, clearly separated from style cues:
+
+\`\`\`text
+You must be correct and check your work.
+State assumptions explicitly.
+If uncertain, identify what evidence would resolve the uncertainty.
+Do not allow stylistic confidence to substitute for epistemic confidence.
+\`\`\`
+
+That separation is one of the strongest ideas in the entire paper.
+
+## Attractor Refresh Scheduling
+
+Long outputs drift.
+
+Early cues fade as the generated text grows and fills the context window. A model that started in a crisp academic register can slowly slide back toward a generic internet-explainer voice.
+
+The paper's solution is Attractor Refresh Scheduling: reinsert short lexical and schematic reminders at major section breaks to keep the generation anchored.
+
+This is especially useful for:
+
+- long essays,
+- multi-section reports,
+- generated documentation,
+- brand-sensitive copy systems.
+
+## The Attractor Density Hypothesis
+
+One of the original contributions of the paper is the Attractor Density Hypothesis, or ADH.
+
+The conjecture is that output quantization -- how tightly the model stays inside the intended response region -- increases with the number and specificity of active attractor classes. The paper goes further and suggests the effect may be superadditive: each new attractor class could narrow the remaining space multiplicatively rather than additively.
+
+That claim is explicitly presented as a hypothesis, not a proven law.
+
+This distinction matters. The paper is careful here: the evidence supports strong independent effects for different attractor classes, but the exact stacking behavior still needs direct empirical validation.
+
+## What the Evidence Currently Supports
+
+The paper synthesizes eight published studies spanning twelve benchmarks and multiple NLP task types. The main empirical story is not that every attractor has been independently proven in perfect isolation. It is that a substantial body of scattered prompt research already points in the same direction.
+
+Highlights from the paper include:
+
+- **Persona assignment**: role-play prompting produced very large gains in some reasoning tasks, including a reported 60.4 percentage-point improvement on the Last Letter task and a 10.3-point gain on AQuA in Kong et al. (2024).
+- **Contextual framing**: emotionally framed prompts improved performance, truthfulness, and responsibility metrics across many tasks in Li et al. (2023).
+- **Lexical effects**: small wording changes can produce nonlinear output changes, consistent with attractor-style steering.
+- **Syntactic effects**: reformulating prompts into different structural forms, including code-like syntax, can materially improve reasoning performance.
+- **Schematic prompting**: structured output scaffolds improve task adherence and reasoning organization.
+
+The one major empirical gap the paper names directly is **Temporal Anchoring**, which still needs clean benchmark validation.
+
+## A Practical Checklist for Real Use
+
+One of the best parts of the paper is that it does not stop at theory. It turns the framework into a usable workflow:
+
+1. Specify the target register precisely.  
+   Not "formal," but "technical writing in the style of a methods section."
+
+2. Choose the attractor classes that matter most.  
+   Persona and schema often do the most work early.
+
+3. Specify each attractor minimally but clearly.  
+   Precision beats excess.
+
+4. Add correctness constraints separately.  
+   Do not let polish impersonate truth.
+
+5. Generate and inspect.  
+   Look for drift, verbosity, or schema mismatch.
+
+6. Ablate to diagnose.  
+   Remove one attractor class at a time and see what breaks.
+
+7. Refresh attractors in long outputs.  
+   Re-anchor the register at section boundaries.
+
+8. Document the stack.  
+   If it works, turn it into reusable organizational knowledge.
+
+## Four Reusable Prompt Patterns
+
+The paper includes a practical template suite. In blog form, the most useful version is:
+
+- **Academic exposition** for technical explainers and literature-style summaries.
+- **Brand voice stacks** for consistent messaging across teams and channels.
+- **Expert peer review** for critical evaluation and argument testing.
+- **Reasoning-safe Rizz** for tasks where both style and factual reliability matter.
+
+That last one is probably the most important for real-world use. It acknowledges the temptation to chase polished outputs while reminding practitioners that polished outputs are often the exact place models can become dangerously convincing.
+
+## Why This Matters Beyond Prompt Nerds
+
+The paper closes with implications for four areas.
+
+### AI literacy
+
+Many users still think prompt quality is a mysterious talent. The framework argues that prompting skill can be decomposed, named, taught, and improved systematically.
+
+### Alignment and safety
+
+If attractor structures reliably steer output regions, then beneficial and adversarial prompt structures can both be studied more rigorously. The same mechanism that helps a user obtain a better policy memo could also be exploited to bypass safety boundaries.
+
+### Interface design
+
+Most AI interfaces leave prompt construction entirely to the user. The paper suggests a better interface pattern: help users build attractor-rich prompts deliberately through scaffolds, missing-class hints, and reusable prompt structures.
+
+### Human-AI interaction research
+
+The six-class framework is testable. It creates actual experimental questions instead of vague prompt folklore.
+
+## Limitations the Paper Admits
+
+The paper is strong partly because it does not oversell itself. Its key limitations are named directly:
+
+- the Attractor Density Hypothesis is still a hypothesis,
+- the framework is not yet grounded in mechanistic interpretability evidence,
+- Temporal Anchoring lacks direct benchmark validation,
+- the framework is currently English-first and text-first,
+- different model families may respond differently to the same stacks,
+- beneficial attractors and adversarial attractors are mirror problems.
+
+That intellectual honesty makes the framework more credible, not less.
+
+## Final Take
+
+Rizz Prompting gives a name to something skilled practitioners already sense: language does not just request outcomes from a model, it prepares the terrain those outcomes emerge from.
+
+That is why a mediocre prompt and a great prompt can ask for almost the same thing and still land in completely different worlds.
+
+The practitioner with rizz does not merely hope the words land. They understand which structures move probability, which signals activate a register, and which combinations collapse ambiguity into a stable response basin.
+
+That is the practical contribution of the paper: a vocabulary, a mechanism, a methodology, and a research program for one of the most important human-AI skills now emerging.
+
+## Selected References
+
+- Brown et al. (2020), *Language Models are Few-Shot Learners*
+- Kong et al. (2024), *Better Zero-Shot Reasoning with Role-Play Prompting*
+- Li et al. (2023), *Large Language Models Understand and Can Be Enhanced by Emotional Stimuli*
+- Liu et al. (2026), *A Comprehensive Taxonomy of Prompt Engineering Techniques for Large Language Models*
+- Puerto et al. (2024), *Code Prompting Elicits Conditional Reasoning Abilities in Text+Code LLMs*
+- Sahoo et al. (2024), *A Systematic Survey of Prompt Engineering in Large Language Models*
+- Salinas and Morstatter (2024), *The Butterfly Effect of Altering Prompts*
+- Shanahan, McDonell, and Reynolds (2023), *Role Play with Large Language Models*
+- Wang et al. (2024), *Chain-of-Table*
+- Xu et al. (2023), *ExpertPrompting*
 
 ---
-*Based on the research paper "RIZZ PROMPTING: A Scientific Framework for Attractor-Based Style Steering in Large Language Models" (February 2026).*`,
+
+*Adapted from the working paper "RIZZ PROMPTING: A Scientific Framework for Attractor-Based Style Steering in Large Language Models" by Douglas D. Mitchell, February 2026, arXiv preprint / working paper edition.*`,
   },
   {
     slug: 'building-ai-powered-workflows',
