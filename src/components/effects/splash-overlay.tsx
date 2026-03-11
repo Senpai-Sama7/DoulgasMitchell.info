@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 const DESCRIPTORS = [
-  'Signal architecture for systems, stories, and interface control.',
-  'Dense prompts, lucid motion, and high-contrast editorial framing.',
-  'A portfolio staged like a command deck instead of a brochure.',
-];
+<<<<<<< HEAD
+  'Operations strategy, delivered with precision.',
+  'Applied intelligence, integrated with intent.',
+  'Analysis, AI practice, and authorship in one frame.',];
 
 const SIGNALS = ['ASCII GRID', 'FIELD STACK', 'MOTION INDEX'];
 const STATUS_CODES = ['PRIME', 'LOCK', 'FLOW'];
@@ -265,7 +265,11 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
   return (
     <motion.div
       aria-label="Entrance overlay"
+<<<<<<< HEAD
       className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-[#020304] text-[#f5efe6]"
+=======
+      className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-background text-foreground"
+>>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
       initial={{ opacity: 1 }}
       animate={{ opacity: phase === 'exit' ? 0 : 1 }}
       transition={{ duration: prefersReducedMotion ? 0.2 : 0.55, ease: 'easeOut' }}
@@ -276,16 +280,24 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         className="absolute inset-0"
         style={{
           background: `
+<<<<<<< HEAD
             radial-gradient(circle at 50% 28%, rgba(133, 231, 255, 0.16), transparent 0 24%),
             radial-gradient(circle at 76% 20%, rgba(244, 186, 112, 0.18), transparent 0 20%),
             radial-gradient(circle at 20% 78%, rgba(118, 143, 255, 0.14), transparent 0 24%),
             linear-gradient(180deg, rgba(6, 8, 13, 0.94) 0%, rgba(2, 3, 4, 0.99) 100%)
+=======
+            radial-gradient(circle at 50% 34%, hsl(var(--primary) / 0.2), transparent 0 24%),
+            radial-gradient(circle at 20% 18%, hsl(var(--accent) / 0.18), transparent 0 18%),
+            radial-gradient(circle at 82% 20%, hsl(var(--secondary) / 0.14), transparent 0 20%),
+            linear-gradient(180deg, hsl(var(--background) / 0.96) 0%, hsl(var(--muted) / 0.98) 100%)
+>>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
           `,
         }}
       />
 
       <div
         aria-hidden="true"
+<<<<<<< HEAD
         className="absolute inset-0 opacity-55"
         style={{
           backgroundImage: `
@@ -294,6 +306,24 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
           `,
           backgroundSize: '64px 64px',
           maskImage: 'radial-gradient(circle at center, black 36%, transparent 92%)',
+=======
+          className="absolute inset-0 opacity-40"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, hsl(var(--foreground) / 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, hsl(var(--foreground) / 0.06) 1px, transparent 1px)
+          `,
+          backgroundSize: '72px 72px',
+          maskImage: 'radial-gradient(circle at center, black 40%, transparent 88%)',
+        }}
+      />
+
+      <div
+        aria-hidden="true"
+        className="absolute inset-[24px] rounded-[32px] border border-border/70"
+        style={{
+          boxShadow: 'inset 0 0 0 1px hsl(var(--primary) / 0.14), inset 0 0 140px hsl(var(--foreground) / 0.04)',
+>>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
         }}
       />
 
@@ -425,8 +455,19 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
                     className="mb-6 whitespace-pre text-[0.72rem] leading-[1.02] tracking-[0.2em] text-[#f5efe6]/88 sm:text-[0.92rem]"
                     style={{ fontFamily: monoFont }}
                   >
+<<<<<<< HEAD
                     {monogram}
                   </pre>
+=======
+                    Operations Analyst
+                  </h1>
+                  <p className="mx-auto max-w-[34rem] text-sm leading-7 text-[#efe2c6]/72 sm:text-base">
+                    A refined portfolio of operations, intelligent systems, and authored perspective.
+                  </p>
+                </div>
+              </div>
+            </div>
+>>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
 
                   <div className="space-y-4">
                     <h1
@@ -496,6 +537,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
               </motion.div>
             </div>
 
+<<<<<<< HEAD
             <div className="space-y-3 border-t border-white/8 pt-4">
               <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#d8d0c1]/60">
                 <span>Signal Lock</span>
@@ -517,6 +559,11 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
                 <span>Enter, space, escape, or click to continue</span>
                 <span>Obsidian ASCII entrance system</span>
               </div>
+=======
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-[#c8ad7e]/58 sm:flex-row sm:text-[0.68rem]">
+              <span>Enter or click to continue</span>
+              <span>Editorial motion system</span>
+>>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
             </div>
           </div>
         </motion.div>

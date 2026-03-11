@@ -1,0 +1,143 @@
+# Gravatar API Documentation v3.0.0 – LLMS.TXT
+
+This document is optimized for AI development environments (Cursor, Windsurf, Bolt, v0, Lovable, Claude, OpenAI, Gemini, and similar assistants). It provides practical, implementation-ready guidance for integrating Gravatar profile and avatar data.
+
+## 1) What Gravatar is
+
+Gravatar provides globally recognized avatars and basic public profile information keyed by an email-address hash.
+
+Common uses:
+- Show user avatars in comments, forums, and admin portals.
+- Enrich profile cards with public Gravatar profile metadata.
+- Provide fallback identity visuals when local profile photos are absent.
+
+## 2) Core integration model
+
+### Input
+- User email address (raw string, e.g. `user@example.com`).
+
+### Required transform
+- Trim whitespace.
+- Lowercase.
+- Hash with SHA-256 (recommended modern approach).
+
+### Output
+- A deterministic hash string used in Gravatar URLs.
+
+## 3) API endpoints
+
+### 3.1 Avatar image endpoint
+
+GET avatar image by hash:
+
+- `https://gravatar.com/avatar/{HASH}`
+
+Common query params:
+- `s=<size>`: image size in pixels (1-2048).
+- `d=<default>`: fallback image strategy (`404`, `mp`, `identicon`, `monsterid`, `wavatar`, `retro`, `robohash`, `blank`, or URL-encoded image URL).
+- `r=<rating>`: max content rating (`g`, `pg`, `r`, `x`).
+
+Example:
+`https://gravatar.com/avatar/{HASH}?s=160&d=identicon&r=g`
+
+### 3.2 Profile endpoint
+
+GET profile JSON by hash:
+
+- `https://gravatar.com/{HASH}.json`
+
+Typical response includes:
+- `entry[].id`
+- `entry[].displayName`
+- `entry[].preferredUsername`
+- `entry[].thumbnailUrl`
+- `entry[].profileUrl`
+- `entry[].aboutMe`
+- `entry[].currentLocation`
+- `entry[].urls[]`
+- `entry[].photos[]`
+
+## 4) Production-safe implementation notes
+
+1. Never send raw emails to Gravatar endpoints.
+2. Always hash client-provided email before URL construction.
+3. If profile endpoint returns non-200, degrade gracefully to local avatar defaults.
+4. Cache successful avatar/profile responses where possible to reduce external calls.
+5. Respect user privacy expectations: document externally fetched profile behavior in your privacy policy.
+
+## 5) TypeScript reference implementation
+
+```ts
+import { createHash } from 'node:crypto';
+
+export function gravatarHash(email: string): string {
+  return createHash('sha256').update(email.trim().toLowerCase(), 'utf8').digest('hex');
+}
+
+export function gravatarAvatarUrl(hash: string, size = 160): string {
+  const params = new URLSearchParams({
+    s: String(size),
+    d: 'identicon',
+    r: 'g',
+  });
+
+  return `https://gravatar.com/avatar/${hash}?${params.toString()}`;
+}
+
+export async function fetchGravatarProfile(hash: string) {
+  const response = await fetch(`https://gravatar.com/${hash}.json`, {
+    headers: { Accept: 'application/json' },
+    cache: 'force-cache',
+  });
+
+  if (!response.ok) {
+    return null;
+  }
+
+  return (await response.json()) as unknown;
+}
+```
+
+## 6) Next.js server usage pattern
+
+- Compute hash in API route or server action.
+- Store only the hash and generated avatar URL if your product does not require profile enrichment.
+- For profile enrichment, perform fetch server-side and sanitize the payload before sending to the client.
+
+## 7) Error handling matrix
+
+- `404` avatar + `d=404`: no Gravatar image exists.
+- `404` profile endpoint: public profile not available.
+- `429` or transient 5xx: retry with backoff and short circuit to defaults.
+- Network timeout: use a local placeholder image immediately.
+
+## 8) Security and privacy checklist
+
+- [ ] No hardcoded secrets required for basic Gravatar reads.
+- [ ] Raw email never logged after hashing step.
+- [ ] External avatar/profile requests disclosed in privacy policy.
+- [ ] Client-facing API responses omit unnecessary third-party metadata.
+- [ ] Rate limiting applied if exposing profile lookup endpoint publicly.
+
+## 9) Quick test commands
+
+Replace `{HASH}` with a known test hash.
+
+```bash
+# Avatar headers check
+curl -I "https://gravatar.com/avatar/{HASH}?s=120&d=identicon&r=g"
+
+# Profile JSON check
+curl -s "https://gravatar.com/{HASH}.json" | jq
+```
+
+## 10) AI assistant prompt seed
+
+Use this short instruction when delegating avatar/profile tasks to coding agents:
+
+"Implement Gravatar with SHA-256 email hashing, server-side profile fetch, fallback-safe avatar URLs (`d=identicon`), and privacy-conscious logging (no raw email). Return typed utilities and integration tests."
+
+---
+
+Version: 3.0.0
+Intended audience: AI coding assistants + developers building production integrations.

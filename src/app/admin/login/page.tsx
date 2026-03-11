@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -18,7 +18,55 @@ export default function AdminLoginPage() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
+  const [isSetupLoading, setIsSetupLoading] = useState(false);
+  const [hasAdminAccount, setHasAdminAccount] = useState(true);
   const { toast } = useToast();
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const response = await fetch('/api/admin/check');
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        setHasAdminAccount((data.adminCount ?? 0) > 0);
+      } catch {
+        setHasAdminAccount(true);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const handleSetupAdmin = async () => {
+    setIsSetupLoading(true);
+    try {
+      const response = await fetch('/api/admin/setup', { method: 'POST' });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Unable to enable admin portal');
+      }
+
+      toast({
+        title: 'Admin portal enabled',
+        description: 'The admin account is ready. Sign in with your admin email and password.',
+      });
+      setHasAdminAccount(true);
+      setEmail(data.email || 'admin@douglasmitchell.info');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to initialize admin user.';
+      toast({
+        title: 'Setup failed',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSetupLoading(false);
+    }
+  };
 
   const handlePasskeyLogin = async () => {
     if (!email) {
@@ -34,7 +82,7 @@ export default function AdminLoginPage() {
 
     try {
       // 1. Get auth options
-      const optionsRes = await fetch('/api/admin/auth/passkey/authenticate/generate-options', {
+      const optionsRes = await fetch('/api/admin/auth/passkey/generate-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
@@ -51,7 +99,7 @@ export default function AdminLoginPage() {
       const authResp = await startAuthentication({ optionsJSON: options });
 
       // 3. Verify on server
-      const verifyRes = await fetch('/api/admin/auth/passkey/authenticate/verify', {
+      const verifyRes = await fetch('/api/admin/auth/passkey/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -70,11 +118,12 @@ export default function AdminLoginPage() {
         const error = await verifyRes.json();
         throw new Error(error.error || 'Verification failed');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
+      const message = error instanceof Error ? error.message : 'Authentication unsuccessful.';
       toast({
         title: 'Passkey failed',
-        description: error.message || 'Authentication unsuccessful.',
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -156,6 +205,21 @@ export default function AdminLoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {!hasAdminAccount && (
+              <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+                <p className="text-sm text-amber-700 dark:text-amber-200">No admin account detected. Enable the admin portal before signing in.</p>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="mt-3 w-full"
+                  onClick={handleSetupAdmin}
+                  disabled={isSetupLoading}
+                >
+                  {isSetupLoading ? 'Enabling admin portal...' : 'Enable Admin Portal'}
+                </Button>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email */}
               <div className="space-y-2">
@@ -259,7 +323,7 @@ export default function AdminLoginPage() {
                 variant="outline"
                 className="w-full"
                 onClick={handlePasskeyLogin}
-                disabled={isLoading || isPasskeyLoading}
+                disabled={isLoading || isPasskeyLoading || !hasAdminAccount}
               >
                 {isPasskeyLoading ? 'Authenticating...' : (
                   <>
