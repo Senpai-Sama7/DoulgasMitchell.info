@@ -1,0 +1,52 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "8355a4690701",
+  "session_id": "ses_3239b3e17ffex7jtd5p7tRzciP",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-11T14:25:23.81694715Z",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    "BLACKBOX.md",
+    "README_INFRASTRUCTURE.md",
+    "bun.lock",
+    "main-site-mobile.png",
+    "splash-overlay-desktop.png",
+    "verify-splash.ts",
+    "SECURITY.md",
+    "docs/history/BLACKBOX.md",
+    "docs/history/README_INFRASTRUCTURE.md",
+    "final.tar",
+    "god-level-ascii-entrance.zip",
+    "overlay-check.png",
+    "splash-overlay-mobile.png",
+    "src/app/api/admin/ai/route.ts",
+    ".junie/memory/language.json",
+    "docs/history/INFRASTRUCTURE.md",
+    "docs/history/SECURITY.md",
+    "package.json",
+    "verify-desktop.png",
+    "verify-mobile.png",
+    "INFRASTRUCTURE.md"
+  ],
+  "agent": "OpenCode",
+  "turn_id": "943d501957e7",
+  "checkpoint_transcript_start": 1,
+  "transcript_lines_at_start": 1,
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-11T14:25:23.814246059Z",
+    "agent_lines": 870,
+    "human_added": 0,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 870,
+    "agent_percentage": 100
+  }
+}
