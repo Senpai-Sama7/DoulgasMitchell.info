@@ -21,7 +21,15 @@ function getTableDiscoveryQuery() {
     return `SELECT tablename AS name FROM pg_tables WHERE schemaname = current_schema()`;
   }
 
-  return `SELECT name FROM sqlite_master WHERE type='table'`;
+  if (
+    databaseUrl.startsWith('file:') ||
+    databaseUrl.startsWith('sqlite:') ||
+    databaseUrl.endsWith('.db')
+  ) {
+    return `SELECT name FROM sqlite_master WHERE type='table'`;
+  }
+
+  return null;
 }
 
 async function hasTables(tableNames: string[]) {
@@ -30,6 +38,12 @@ async function hasTables(tableNames: string[]) {
   if (cached) return cached;
 
   const discoveryQuery = getTableDiscoveryQuery();
+  if (!discoveryQuery) {
+    const availabilityPromise = Promise.resolve(false);
+    tableAvailability.set(key, availabilityPromise);
+    return availabilityPromise;
+  }
+
   const availabilityPromise = db
     .$queryRawUnsafe<Array<{ name: string }>>(discoveryQuery)
     .then((rows) => {
