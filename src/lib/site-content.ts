@@ -645,7 +645,7 @@ export const aboutRoles = [
     stats: 'Published book + companion ecosystem',
   },
   {
-    title: 'Operations Analyst',
+    title: 'Systems Strategist',
     description:
       'Connects product thinking, technical execution, and operational discipline into measurable operating outcomes.',
     stats: 'Systems-level execution',

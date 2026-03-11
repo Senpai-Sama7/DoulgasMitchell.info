@@ -1,10 +1,10 @@
-interface RateLimitOptions {
+export interface RateLimitOptions {
   limit: number;
   windowMs: number;
   prefix?: string;
 }
 
-interface RateLimitState {
+export interface RateLimitState {
   count: number;
   resetAt: number;
 }
@@ -21,7 +21,19 @@ function createStoreKey(identifier: string, prefix = 'global') {
   return `${prefix}:${identifier}`;
 }
 
+// Simple garbage collection to prevent memory leaks from sustained DoS
+function cleanupStore() {
+  const now = Date.now();
+  for (const [key, state] of rateLimitStore.entries()) {
+    if (now > state.resetAt) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+
 export function rateLimit(identifier: string, options: RateLimitOptions): RateLimitResult {
+  cleanupStore(); // Clear expired entries to prevent memory exhaustion
+  
   const now = Date.now();
   const storeKey = createStoreKey(identifier, options.prefix);
   const existing = rateLimitStore.get(storeKey);
@@ -48,6 +60,7 @@ export function rateLimit(identifier: string, options: RateLimitOptions): RateLi
   }
 
   existing.count += 1;
+  rateLimitStore.set(storeKey, existing);
 
   return {
     allowed: true,

@@ -98,7 +98,7 @@ export function SiteFooter() {
             © {currentYear} Douglas Mitchell. All rights reserved.
           </p>
           <p className="font-mono">
-            Built with precision. Designed with intent.
+            Built with precision. Designed with <a href="/admin" className="hover:text-foreground transition-colors cursor-default">intent.</a>
           </p>
         </div>
       </div>

@@ -1,16 +1,16 @@
-const { PrismaClient } = require('@prisma/client');
+import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function checkAdmin() {
-  const admin = await prisma.adminUser.findUnique({
-    where: { username: 'admin' }
+  const admin = await prisma.adminUser.findFirst({
+    where: { role: 'admin' }
   });
   
   if (admin) {
     console.log('✅ Admin user exists');
-    console.log('Username:', admin.username);
     console.log('Email:', admin.email);
-    console.log('Password hash:', admin.passwordHash.substring(0, 20) + '...');
+    console.log('Name:', admin.name);
+    console.log('Password hash set:', !!admin.passwordHash);
   } else {
     console.log('❌ No admin user found');
   }

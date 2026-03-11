@@ -35,11 +35,6 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const isDevelopment = process.env.NODE_ENV === 'development';
 
-  const replaySplash = useCallback(() => {
-    setSplashKey((previous) => previous + 1);
-    setShowSplash(true);
-  }, []);
-
   useEffect(() => {
     if (!showSplash) {
       document.body.style.overflow = 'auto';
@@ -53,16 +48,11 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
         setIsCommandOpen((previous) => !previous);
         return;
       }
-
-      if (isDevelopment && event.key.toLowerCase() === 'o' && event.shiftKey) {
-        event.preventDefault();
-        replaySplash();
-      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDevelopment, replaySplash]);
+  }, [isDevelopment]);
 
   const handleNavigate = useCallback(
     (href: string) => {
@@ -135,14 +125,6 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
 
       <CommandKTrigger onClick={() => setIsCommandOpen(true)} />
 
-      <button
-        type="button"
-        onClick={replaySplash}
-        className="fixed bottom-20 left-6 z-50 rounded-full border border-border bg-background/80 px-3 py-2 text-xs uppercase tracking-[0.24em] text-foreground shadow-lg backdrop-blur-sm transition-colors hover:bg-muted sm:bottom-6 sm:left-auto sm:right-32"
-        aria-label="Replay entrance intro"
-      >
-        Replay Intro
-      </button>
     </>
   );
 }

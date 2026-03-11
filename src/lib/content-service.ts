@@ -413,24 +413,26 @@ export const getAdminContentSnapshot = cache(async () => {
   return withFallback(async () => {
     const [articles, projects, certifications, books] = await Promise.all([
       db.article.findMany({
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ featured: 'desc' }, { order: 'asc' }, { updatedAt: 'desc' }],
         select: {
           id: true,
           title: true,
           slug: true,
           published: true,
           featured: true,
+          order: true,
           updatedAt: true,
         },
       }),
       db.project.findMany({
-        orderBy: { updatedAt: 'desc' },
+        orderBy: [{ featured: 'desc' }, { order: 'asc' }, { updatedAt: 'desc' }],
         select: {
           id: true,
           title: true,
           slug: true,
           status: true,
           featured: true,
+          order: true,
           updatedAt: true,
         },
       }),
@@ -463,6 +465,7 @@ export const getAdminContentSnapshot = cache(async () => {
         slug: article.slug,
         status: article.published ? 'published' : 'draft',
         featured: article.featured,
+        order: article.order,
         updatedAt: article.updatedAt.toISOString(),
         href: `/writing/${article.slug}`,
       })),
@@ -472,6 +475,7 @@ export const getAdminContentSnapshot = cache(async () => {
         slug: project.slug,
         status: project.status,
         featured: project.featured,
+        order: project.order,
         updatedAt: project.updatedAt.toISOString(),
         href: `/work/${project.slug}`,
       })),
