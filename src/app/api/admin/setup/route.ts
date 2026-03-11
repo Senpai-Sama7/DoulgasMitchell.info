@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { DEFAULT_ADMIN_EMAIL } from '@/lib/contact-config';
+import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
 import { env } from '@/lib/env';
 
 export async function POST() {

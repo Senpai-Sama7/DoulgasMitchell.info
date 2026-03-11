@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { DEFAULT_ADMIN_EMAIL } from '@/lib/contact-config';
+import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
 import { startAuthentication } from '@simplewebauthn/browser';
 
 export default function AdminLoginPage() {

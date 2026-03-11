@@ -1,4 +1,4 @@
-import { PRIMARY_CONTACT_EMAIL } from '@/lib/contact-config';
+import { PUBLIC_CONTACT_HREF, PUBLIC_CONTACT_VALUE } from '@/lib/public-contact-config';
 
 export interface HeroMetric {
   label: string;
@@ -96,7 +96,6 @@ export const siteProfile = {
   summary:
     'I design resilient systems that blend operational rigor, AI fluency, and human-centered execution. The result is proof-driven work that looks premium and performs in the real world.',
   location: 'Houston, TX',
-  email: PRIMARY_CONTACT_EMAIL,
   githubUrl: 'https://github.com/Senpai-Sama7',
   linkedinUrl: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
   bookUrl:
@@ -125,7 +124,7 @@ export const socialLinks: SocialLink[] = [
   { label: 'GitHub', href: siteProfile.githubUrl },
   { label: 'LinkedIn', href: siteProfile.linkedinUrl },
   { label: 'Book', href: siteProfile.bookUrl },
-  { label: 'Email', href: `mailto:${siteProfile.email}` },
+  { label: 'Email', href: PUBLIC_CONTACT_HREF },
 ];
 
 export const operatingPrinciples: OperatingPrinciple[] = [
@@ -597,8 +596,8 @@ export const certificationShowcase: CertificationShowcase[] = [
 export const contactMethods: ContactMethod[] = [
   {
     label: 'Email',
-    value: siteProfile.email,
-    href: `mailto:${siteProfile.email}`,
+    value: PUBLIC_CONTACT_VALUE,
+    href: PUBLIC_CONTACT_HREF,
     color: 'hover:text-blue-500',
   },
   {

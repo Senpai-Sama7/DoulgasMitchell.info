@@ -2,6 +2,7 @@
 
 import { Github, Linkedin, Mail, BookOpen } from 'lucide-react';
 import { siteProfile } from '@/lib/site-content';
+import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
 
 const footerLinks = {
   navigation: [
@@ -76,7 +77,7 @@ export function SiteFooter() {
               ))}
               <li>
                 <a
-                  href={`mailto:${siteProfile.email}`}
+                  href={PUBLIC_CONTACT_HREF}
                   className="inline-flex items-center gap-2 text-sm text-foreground hover:text-primary transition-colors"
                 >
                   <Mail className="h-4 w-4" />

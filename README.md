@@ -40,7 +40,7 @@ When not writing or consulting, you can find Douglas mentoring young professiona
 - **Website**: [douglasmitchell.info](https://douglasmitchell.info)
 - **LinkedIn**: [Douglas Mitchell](https://www.linkedin.com/in/douglas-mitchell-bb18b1383)
 - **GitHub**: [@Senpai-sama7](https://github.com/Senpai-sama7)
-- **Email**: [DouglasMitchell@ReliantAI.org](mailto:DouglasMitchell@ReliantAI.org)
+- **Contact**: [Use the site contact form](https://douglasmitchell.info/#contact)
 ---
 
 *"Confidence is not a fixed trait we simply have or lack; it's an ongoing practice. You are the architect of your own belief – build it strong, and build it with care."*

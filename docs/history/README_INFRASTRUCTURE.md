@@ -222,7 +222,7 @@ Everything is:
 1. Read `INFRASTRUCTURE.md` for detailed usage
 2. Check `docs/history/SECURITY_AUDIT.md` for security details
 3. Review `docs/history/SOLUTIONS.md` for implementation guides
-4. Email DouglasMitchell@ReliantAI.org for security issues
+4. Use https://douglasmitchell.info/#contact for security issues
 
 ## 🎉 Congratulations!
 

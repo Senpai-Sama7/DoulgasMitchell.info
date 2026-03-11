@@ -158,13 +158,13 @@ mkdir -p public/.well-known
 
 ```text
 # public/.well-known/security.txt (CREATE THIS FILE)
-Contact: mailto:DouglasMitchell@ReliantAI.org
+Contact: https://douglasmitchell.info/#contact
 Expires: 2027-12-31T23:59:59.000Z
 Preferred-Languages: en
 Canonical: https://douglasmitchell.info/.well-known/security.txt
 
 # Responsible Disclosure Policy
-# Please report security vulnerabilities to DouglasMitchell@ReliantAI.org
+# Please report security vulnerabilities through https://douglasmitchell.info/#contact
 # We will respond within 48 hours and provide updates every 7 days
 # Please allow 90 days for remediation before public disclosure
 ```
@@ -175,7 +175,7 @@ Canonical: https://douglasmitchell.info/.well-known/security.txt
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability, please email DouglasMitchell@ReliantAI.org
+If you discover a security vulnerability, please use the contact form at https://douglasmitchell.info/#contact
 
 **Please do NOT:**
 - Open a public GitHub issue
