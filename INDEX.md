@@ -2,7 +2,7 @@
 
 Single entry point for project documentation: structure, API, key paths, and cross-references.
 
-**See also:** [AGENTS.md](./AGENTS.md) (agent guidance) · [README.md](./README.md) (author/portfolio) · [README_INFRASTRUCTURE.md](./README_INFRASTRUCTURE.md) (infra)
+**See also:** [AGENTS.md](./AGENTS.md) (agent guidance) · [README.md](./README.md) (author/portfolio) · [README_INFRASTRUCTURE.md](./README_INFRASTRUCTURE.md) (infra) · [docs/history/README.md](./docs/history/README.md) (archive)
 
 ---
 
@@ -22,6 +22,8 @@ Single entry point for project documentation: structure, API, key paths, and cro
 ```
 DoulgasMitchell.info/
 ├── AGENTS.md              # AI agent guidance (patterns, commands, key paths)
+├── docs/
+│   └── history/           # Archived audits, reports, roadmaps, and status snapshots
 ├── INDEX.md               # This file — project index
 ├── README.md              # Author/portfolio overview
 ├── README_INFRASTRUCTURE.md
@@ -57,6 +59,7 @@ DoulgasMitchell.info/
 │           ├── index.ts
 │           └── patterns.ts
 ├── scripts/
+│   └── admin/             # Admin maintenance utilities
 ├── db/                    # SQLite DB (e.g. custom.db)
 ├── .kilocode/             # Rule sets (architect, ask, code, debug)
 └── final/                 # Alternate/full build (separate app copy)
@@ -140,7 +143,7 @@ bun run db:generate
 | [README.md](./README.md) | Author bio, books, links. |
 | [README_INFRASTRUCTURE.md](./README_INFRASTRUCTURE.md) | Infrastructure. |
 | [QUICK_START.md](./QUICK_START.md) | Quick start. |
-| Other `*.md` in root | Audits, reports, status (e.g. SECURITY.md, STATUS.md). |
+| [docs/history/README.md](./docs/history/README.md) | Archived audits, reports, roadmaps, and status snapshots. |
 
 ---
 

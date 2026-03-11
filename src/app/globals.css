@@ -77,6 +77,23 @@ button, a, input, select, textarea {
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
+
+  /* Architect Aesthetic variables */
+  --accent-glow: 0 0 15px rgba(var(--primary-rgb), 0.3);
+  --mono-font: var(--font-jetbrains-mono), monospace;
+  --architect-border: 1px solid var(--border);
+}
+
+@utility architect-box {
+  border: var(--architect-border);
+  padding: 1.5rem;
+  font-family: var(--mono-font);
+  position: relative;
+  background: color-mix(in oklch, var(--background), transparent 20%);
+}
+
+@utility glow-primary {
+  box-shadow: var(--accent-glow);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

@@ -179,6 +179,38 @@ export function generateAsciiWave(width: number = 40): string {
   return wave;
 }
 
+// Generate ASCII bar chart
+export function generateBarChart(
+  data: { label: string; value: number }[],
+  options: {
+    width?: number;
+    maxValue?: number;
+    showValues?: boolean;
+  } = {}
+): string {
+  const { width = 30, maxValue = Math.max(...data.map(d => d.value)), showValues = true } = options;
+  
+  return data.map(item => {
+    const barWidth = Math.round((item.value / maxValue) * width);
+    const bar = '█'.repeat(barWidth) + '░'.repeat(width - barWidth);
+    const valueStr = showValues ? ` [${item.value}]` : '';
+    return `${item.label.padEnd(12)} │ ${bar}${valueStr}`;
+  }).join('\n');
+}
+
+// Generate ASCII sparkline (mini trend chart)
+export function generateSparkline(values: number[], width: number = 10): string {
+  const sparkChars = [' ', '▂', '▃', '▄', '▅', '▆', '▇', '█'];
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  
+  return values.slice(-width).map(v => {
+    const index = Math.floor(((v - min) / range) * (sparkChars.length - 1));
+    return sparkChars[index];
+  }).join('');
+}
+
 // Generate glitch text effect characters
 export function glitchText(text: string): string {
   const glitchChars = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`░▒▓█▀▄';

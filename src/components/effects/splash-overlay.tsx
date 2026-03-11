@@ -4,10 +4,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 
 const DESCRIPTORS = [
-<<<<<<< HEAD
   'Operations strategy, delivered with precision.',
   'Applied intelligence, integrated with intent.',
-  'Analysis, AI practice, and authorship in one frame.',];
+  'Analysis, AI practice, and authorship in one frame.',
+];
 
 const SIGNALS = ['ASCII GRID', 'FIELD STACK', 'MOTION INDEX'];
 const STATUS_CODES = ['PRIME', 'LOCK', 'FLOW'];
@@ -64,7 +64,8 @@ function createField(rows: number, cols: number, frame: number, progress: number
     lines.push(line);
   }
 
-  return lines.join('\n');
+  return lines.join('
+');
 }
 
 function createPulseBars(progress: number, frame: number) {
@@ -77,7 +78,8 @@ function createPulseBars(progress: number, frame: number) {
       const bar = `${'#'.repeat(level)}${'.'.repeat(34 - level)}`;
       return `${label.padEnd(5, ' ')} [${bar}] ${pad(level, 2)}`;
     })
-    .join('\n');
+    .join('
+');
 }
 
 function createOrbit(progress: number, frame: number) {
@@ -116,7 +118,8 @@ function createOrbit(progress: number, frame: number) {
     lines.push(line);
   }
 
-  return lines.join('\n');
+  return lines.join('
+');
 }
 
 function createTelemetry(progress: number, frame: number, phase: Phase) {
@@ -130,18 +133,20 @@ function createTelemetry(progress: number, frame: number, phase: Phase) {
     `tension      ${tension}db`,
     `carrier      ${SIGNALS[frame % SIGNALS.length]}`,
     `vector       ${pad(48 + (frame % 37), 2)}`,
-  ].join('\n');
+  ].join('
+');
 }
 
 function createMonogram() {
   return [
     ' ______   __  __ ',
-    '|  __  \\ |  \\/  |',
-    '| |  | | | \\  / |',
-    '| |  | | | |\\/| |',
+    '|  __  \ |  \/  |',
+    '| |  | | | \  / |',
+    '| |  | | | |\/| |',
     '| |__| | | |  | |',
     '|______/ |_|  |_|',
-  ].join('\n');
+  ].join('
+');
 }
 
 export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverlayProps) {
@@ -265,11 +270,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
   return (
     <motion.div
       aria-label="Entrance overlay"
-<<<<<<< HEAD
-      className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-[#020304] text-[#f5efe6]"
-=======
       className="fixed inset-0 z-[9999] cursor-pointer overflow-hidden bg-background text-foreground"
->>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
       initial={{ opacity: 1 }}
       animate={{ opacity: phase === 'exit' ? 0 : 1 }}
       transition={{ duration: prefersReducedMotion ? 0.2 : 0.55, ease: 'easeOut' }}
@@ -280,41 +281,24 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         className="absolute inset-0"
         style={{
           background: `
-<<<<<<< HEAD
-            radial-gradient(circle at 50% 28%, rgba(133, 231, 255, 0.16), transparent 0 24%),
-            radial-gradient(circle at 76% 20%, rgba(244, 186, 112, 0.18), transparent 0 20%),
-            radial-gradient(circle at 20% 78%, rgba(118, 143, 255, 0.14), transparent 0 24%),
-            linear-gradient(180deg, rgba(6, 8, 13, 0.94) 0%, rgba(2, 3, 4, 0.99) 100%)
-=======
             radial-gradient(circle at 50% 34%, hsl(var(--primary) / 0.2), transparent 0 24%),
-            radial-gradient(circle at 20% 18%, hsl(var(--accent) / 0.18), transparent 0 18%),
+            radial-gradient(circle at 20% 18%, hsl(var(--chart-1) / 0.18), transparent 0 18%),
             radial-gradient(circle at 82% 20%, hsl(var(--secondary) / 0.14), transparent 0 20%),
             linear-gradient(180deg, hsl(var(--background) / 0.96) 0%, hsl(var(--muted) / 0.98) 100%)
->>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
           `,
         }}
       />
 
       <div
         aria-hidden="true"
-<<<<<<< HEAD
-        className="absolute inset-0 opacity-55"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.045) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '64px 64px',
-          maskImage: 'radial-gradient(circle at center, black 36%, transparent 92%)',
-=======
-          className="absolute inset-0 opacity-40"
+        className="absolute inset-0 opacity-40"
         style={{
           backgroundImage: `
             linear-gradient(to right, hsl(var(--foreground) / 0.08) 1px, transparent 1px),
             linear-gradient(to bottom, hsl(var(--foreground) / 0.06) 1px, transparent 1px)
           `,
           backgroundSize: '72px 72px',
-          maskImage: 'radial-gradient(circle at center, black 40%, transparent 88%)',
+          maskImage: 'radial-gradient(circle at center, hsl(var(--background)) 40%, transparent 88%)',
         }}
       />
 
@@ -322,8 +306,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         aria-hidden="true"
         className="absolute inset-[24px] rounded-[32px] border border-border/70"
         style={{
-          boxShadow: 'inset 0 0 0 1px hsl(var(--primary) / 0.14), inset 0 0 140px hsl(var(--foreground) / 0.04)',
->>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
+          boxShadow: 'inset 0 0 0 1px hsl(var(--primary) / 0.14), inset 0 0 140px hsl(var(--ring) / 0.4)',
         }}
       />
 
@@ -334,7 +317,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         transition={VEIL_TRANSITION}
         style={{
           background:
-            'linear-gradient(180deg, rgba(2, 3, 4, 0.98) 0%, rgba(2, 3, 4, 0.72) 68%, rgba(2, 3, 4, 0) 100%)',
+            'linear-gradient(180deg, hsl(var(--background) / 0.98) 0%, hsl(var(--background) / 0.72) 68%, hsl(var(--background) / 0) 100%)',
         }}
       />
 
@@ -345,13 +328,13 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
         transition={VEIL_TRANSITION}
         style={{
           background:
-            'linear-gradient(0deg, rgba(2, 3, 4, 0.98) 0%, rgba(2, 3, 4, 0.72) 68%, rgba(2, 3, 4, 0) 100%)',
+            'linear-gradient(0deg, hsl(var(--background) / 0.98) 0%, hsl(var(--background) / 0.72) 68%, hsl(var(--background) / 0) 100%)',
         }}
       />
 
       <motion.pre
         aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-[8%] hidden -translate-x-1/2 whitespace-pre text-[0.5rem] uppercase leading-[1.18] tracking-[0.18em] text-[#81ddf6]/18 xl:block"
+        className="pointer-events-none absolute left-1/2 top-[8%] hidden -translate-x-1/2 whitespace-pre text-[0.5rem] uppercase leading-[1.18] tracking-[0.18em] text-[hsl(var(--accent-foreground))]/18 xl:block"
         animate={prefersReducedMotion ? { opacity: 0.22 } : { y: [0, 10, 0], opacity: [0.16, 0.24, 0.16] }}
         transition={prefersReducedMotion ? undefined : { duration: 8, ease: 'easeInOut', repeat: Infinity }}
         style={{ fontFamily: monoFont }}
@@ -361,7 +344,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
 
       <motion.pre
         aria-hidden="true"
-        className="pointer-events-none absolute bottom-[7%] right-[4%] hidden whitespace-pre text-[0.48rem] leading-[1.16] tracking-[0.14em] text-[#f0b877]/16 lg:block"
+        className="pointer-events-none absolute bottom-[7%] right-[4%] hidden whitespace-pre text-[0.48rem] leading-[1.16] tracking-[0.14em] text-[hsl(var(--chart-1))]/16 lg:block"
         animate={prefersReducedMotion ? { opacity: 0.18 } : { x: [0, -14, 0], opacity: [0.14, 0.22, 0.14] }}
         transition={prefersReducedMotion ? undefined : { duration: 7.5, ease: 'easeInOut', repeat: Infinity }}
         style={{ fontFamily: monoFont }}
@@ -371,7 +354,7 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
 
       <div className="relative flex min-h-screen items-center justify-center px-4 py-6 sm:px-8 lg:px-12">
         <motion.div
-          className="relative w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-white/10 bg-[#07090d]/72 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-6 lg:p-8"
+          className="relative w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-border/10 bg-background/72 p-4 shadow-[0_40px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl sm:p-6 lg:p-8"
           initial={{ opacity: 0, y: 28, scale: 0.98 }}
           animate={{
             opacity: phase === 'exit' ? 0 : 1,
@@ -386,24 +369,24 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
             className="absolute inset-0 rounded-[34px]"
             style={{
               background:
-                'linear-gradient(135deg, rgba(133,231,255,0.08) 0%, rgba(255,255,255,0.02) 28%, rgba(244,186,112,0.06) 100%)',
+                'linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, hsl(var(--background) / 0.02) 28%, hsl(var(--secondary) / 0.06) 100%)',
             }}
           />
 
           <motion.div
             aria-hidden="true"
-            className="absolute left-0 top-0 h-px w-40 bg-gradient-to-r from-transparent via-[#8de7ff] to-transparent"
+            className="absolute left-0 top-0 h-px w-40 bg-gradient-to-r from-transparent via-[hsl(var(--primary))] to-transparent"
             animate={prefersReducedMotion ? { opacity: 0.7 } : { x: ['-15%', '680%'] }}
             transition={prefersReducedMotion ? undefined : { duration: 3.2, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.8 }}
           />
 
           <div className="relative flex flex-col gap-5">
-            <div className="flex flex-col gap-3 border-b border-white/8 pb-4 text-[0.66rem] uppercase tracking-[0.34em] text-[#d7d0c2]/65 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 border-b border-border/8 pb-4 text-[0.66rem] uppercase tracking-[0.34em] text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <span className="h-2 w-2 rounded-full bg-[#85e7ff] shadow-[0_0_16px_rgba(133,231,255,0.9)]" />
+                <span className="h-2 w-2 rounded-full bg-primary shadow-[0_0_16px_hsl(var(--primary)/0.9)]" />
                 <span>Douglas Mitchell / Entrance Overlay</span>
               </div>
-              <div className="flex items-center gap-3 text-[#f0b877]">
+              <div className="flex items-center gap-3 text-accent-foreground">
                 <span>{STATUS_CODES[descriptorIndex]}</span>
                 <span>{pad(Math.round(progress))}%</span>
                 <span>{SIGNALS[signalIndex]}</span>
@@ -412,28 +395,28 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
 
             <div className="grid gap-4 xl:grid-cols-[0.92fr_1.42fr_0.96fr]">
               <motion.div
-                className="rounded-[28px] border border-white/8 bg-black/28 p-4 sm:p-5"
+                className="rounded-[28px] border border-border/8 bg-card p-4 sm:p-5"
                 initial={{ opacity: 0, x: -24 }}
                 animate={{ opacity: phase === 'exit' ? 0 : 1, x: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.2 : 0.65, delay: 0.08 }}
               >
-                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#9fe8fb]/78">
+                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-muted-foreground/78">
                   <span>Field Mesh</span>
                   <span>Live Raster</span>
                 </div>
                 <pre
-                  className="overflow-hidden rounded-[22px] border border-[#85e7ff]/18 bg-[#061017]/72 p-3 text-[0.38rem] leading-[1.18] tracking-[0.16em] text-[#9fe8fb] sm:text-[0.44rem]"
+                  className="overflow-hidden rounded-[22px] border border-primary/18 bg-popover p-3 text-[0.38rem] leading-[1.18] tracking-[0.16em] text-primary sm:text-[0.44rem]"
                   style={{ fontFamily: monoFont }}
                 >
                   {scanField}
                 </pre>
-                <div className="mt-4 rounded-[20px] border border-white/8 bg-white/[0.02] p-3 text-[0.7rem] uppercase tracking-[0.24em] text-[#d6d0c4]/60">
+                <div className="mt-4 rounded-[20px] border border-border/8 bg-muted p-3 text-[0.7rem] uppercase tracking-[0.24em] text-muted-foreground">
                   Prompting, authorship, and systems thinking staged as one signal surface.
                 </div>
               </motion.div>
 
               <motion.div
-                className="relative overflow-hidden rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.015))] px-5 py-6 sm:px-7 sm:py-8"
+                className="relative overflow-hidden rounded-[30px] border border-border/10 bg-card/24 px-5 py-6 sm:px-7 sm:py-8"
                 initial={{ opacity: 0, y: 24 }}
                 animate={{ opacity: phase === 'exit' ? 0 : 1, y: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.2 : 0.72, delay: 0.12 }}
@@ -443,50 +426,39 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
                   className="absolute inset-x-[12%] top-[14%] h-40 rounded-full blur-3xl"
                   style={{
                     background:
-                      'radial-gradient(circle, rgba(133,231,255,0.18) 0%, rgba(133,231,255,0.03) 48%, transparent 76%)',
+                      'radial-gradient(circle, hsl(var(--primary) / 0.18) 0%, hsl(var(--primary) / 0.03) 48%, transparent 76%)',
                   }}
                 />
 
                 <div className="relative flex flex-col items-center text-center">
-                  <p className="mb-4 text-[0.72rem] uppercase tracking-[0.42em] text-[#f0e8d9]/62">ASCII Resonance</p>
+                  <p className="mb-4 text-[0.72rem] uppercase tracking-[0.42em] text-muted-foreground/62">ASCII Resonance</p>
 
                   <pre
                     aria-hidden="true"
-                    className="mb-6 whitespace-pre text-[0.72rem] leading-[1.02] tracking-[0.2em] text-[#f5efe6]/88 sm:text-[0.92rem]"
+                    className="mb-6 whitespace-pre text-[0.72rem] leading-[1.02] tracking-[0.2em] text-foreground/88 sm:text-[0.92rem]"
                     style={{ fontFamily: monoFont }}
                   >
-<<<<<<< HEAD
                     {monogram}
                   </pre>
-=======
-                    Operations Analyst
-                  </h1>
-                  <p className="mx-auto max-w-[34rem] text-sm leading-7 text-[#efe2c6]/72 sm:text-base">
-                    A refined portfolio of operations, intelligent systems, and authored perspective.
-                  </p>
-                </div>
-              </div>
-            </div>
->>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
 
                   <div className="space-y-4">
                     <h1
-                      className="text-[clamp(2.8rem,7vw,7rem)] font-light uppercase leading-[0.88] tracking-[0.14em] text-[#fff9ef]"
+                      className="text-[clamp(2.8rem,7vw,7rem)] font-light uppercase leading-[0.88] tracking-[0.14em] text-primary-foreground"
                       style={{ fontFamily: titleFont }}
                     >
                       Modern
                       <br />
                       ASCII
                     </h1>
-                    <p className="mx-auto max-w-[34rem] text-sm uppercase tracking-[0.28em] text-[#f0b877]/76 sm:text-[0.82rem]">
+                    <p className="mx-auto max-w-[34rem] text-sm uppercase tracking-[0.28em] text-accent-foreground/76 sm:text-[0.82rem]">
                       Visual systems. Signal drama. Editorial control.
                     </p>
                   </div>
 
-                  <div className="mt-6 w-full max-w-[40rem] rounded-[24px] border border-white/10 bg-black/24 px-4 py-4 sm:px-5">
+                  <div className="mt-6 w-full max-w-[40rem] rounded-[24px] border border-border/10 bg-card/24 px-4 py-4 sm:px-5">
                     <motion.p
                       key={descriptorIndex}
-                      className="text-sm leading-7 text-[#ede5d5] sm:text-[1rem]"
+                      className="text-sm leading-7 text-card-foreground sm:text-[1rem]"
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.42, ease: 'easeOut' }}
@@ -496,15 +468,15 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
                   </div>
 
                   <div className="mt-7 flex w-full flex-col items-center gap-4 lg:flex-row lg:justify-center">
-                    <div className="rounded-[24px] border border-[#85e7ff]/24 bg-[#071118]/72 px-5 py-4">
-                      <p className="text-[0.62rem] uppercase tracking-[0.34em] text-[#9fe8fb]/70">Completion</p>
-                      <p className="mt-2 text-[clamp(2.8rem,8vw,5.6rem)] leading-none text-[#eafcff]" style={{ fontFamily: monoFont }}>
+                    <div className="rounded-[24px] border border-primary/24 bg-popover/72 px-5 py-4">
+                      <p className="text-[0.62rem] uppercase tracking-[0.34em] text-muted-foreground/70">Completion</p>
+                      <p className="mt-2 text-[clamp(2.8rem,8vw,5.6rem)] leading-none text-primary-foreground" style={{ fontFamily: monoFont }}>
                         {pad(Math.round(progress))}%
                       </p>
                     </div>
-                    <div className="w-full max-w-[18rem] rounded-[24px] border border-white/8 bg-white/[0.02] px-4 py-4 text-left">
-                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.34em] text-[#f0b877]/70">Telemetry</p>
-                      <pre className="text-[0.72rem] leading-7 text-[#f4ecdf]/80" style={{ fontFamily: monoFont }}>
+                    <div className="w-full max-w-[18rem] rounded-[24px] border border-border/8 bg-muted px-4 py-4 text-left">
+                      <p className="mb-3 text-[0.62rem] uppercase tracking-[0.34em] text-muted-foreground/70">Telemetry</p>
+                      <pre className="text-[0.72rem] leading-7 text-muted-foreground/80" style={{ fontFamily: monoFont }}>
                         {telemetry}
                       </pre>
                     </div>
@@ -513,23 +485,23 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
               </motion.div>
 
               <motion.div
-                className="rounded-[28px] border border-white/8 bg-black/28 p-4 sm:p-5"
+                className="rounded-[28px] border border-border/8 bg-card p-4 sm:p-5"
                 initial={{ opacity: 0, x: 24 }}
                 animate={{ opacity: phase === 'exit' ? 0 : 1, x: 0 }}
                 transition={{ duration: prefersReducedMotion ? 0.2 : 0.68, delay: 0.14 }}
               >
-                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#f0b877]/78">
+                <div className="mb-4 flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-muted-foreground/78">
                   <span>Signal Orbit</span>
                   <span>Load Trace</span>
                 </div>
                 <pre
-                  className="mb-4 overflow-hidden rounded-[22px] border border-[#f0b877]/18 bg-[#140d08]/70 p-3 text-[0.48rem] leading-[1.12] tracking-[0.18em] text-[#ffd7a7] sm:text-[0.56rem]"
+                  className="mb-4 overflow-hidden rounded-[22px] border border-secondary/18 bg-popover/70 p-3 text-[0.48rem] leading-[1.12] tracking-[0.18em] text-secondary sm:text-[0.56rem]"
                   style={{ fontFamily: monoFont }}
                 >
                   {orbit}
                 </pre>
                 <pre
-                  className="overflow-hidden rounded-[22px] border border-white/8 bg-[#090b0f]/82 p-3 text-[0.54rem] leading-[1.55] text-[#f4ecdf]/82 sm:text-[0.64rem]"
+                  className="overflow-hidden rounded-[22px] border border-border/8 bg-card/82 p-3 text-[0.54rem] leading-[1.55] text-card-foreground/82 sm:text-[0.64rem]"
                   style={{ fontFamily: monoFont }}
                 >
                   {pulseBars}
@@ -537,33 +509,9 @@ export function SplashOverlay({ onComplete, minDisplayTime = 5600 }: SplashOverl
               </motion.div>
             </div>
 
-<<<<<<< HEAD
-            <div className="space-y-3 border-t border-white/8 pt-4">
-              <div className="flex items-center justify-between text-[0.62rem] uppercase tracking-[0.3em] text-[#d8d0c1]/60">
-                <span>Signal Lock</span>
-                <span>{Math.round(progress)}% ready</span>
-              </div>
-              <div className="h-[2px] overflow-hidden rounded-full bg-white/10">
-                <motion.div
-                  className="h-full"
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: prefersReducedMotion ? 0.2 : 0.22, ease: 'easeOut' }}
-                  style={{
-                    background:
-                      'linear-gradient(90deg, rgba(133,231,255,0) 0%, rgba(133,231,255,1) 35%, rgba(244,186,112,1) 100%)',
-                    boxShadow: '0 0 18px rgba(133, 231, 255, 0.55)',
-                  }}
-                />
-              </div>
-              <div className="flex flex-col gap-2 text-[0.64rem] uppercase tracking-[0.28em] text-[#bfb7aa]/60 sm:flex-row sm:items-center sm:justify-between">
-                <span>Enter, space, escape, or click to continue</span>
-                <span>Obsidian ASCII entrance system</span>
-              </div>
-=======
-            <div className="flex flex-col items-center justify-between gap-3 border-t border-white/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-[#c8ad7e]/58 sm:flex-row sm:text-[0.68rem]">
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-border/8 pt-5 text-[0.62rem] uppercase tracking-[0.32em] text-muted-foreground/58 sm:flex-row sm:text-[0.68rem]">
               <span>Enter or click to continue</span>
               <span>Editorial motion system</span>
->>>>>>> ca074307fa158335df2a7cc534b863551e06d0a0
             </div>
           </div>
         </motion.div>

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, ChevronRight, Sparkles } from 'lucide-react';
 import { heroMetrics, siteProfile, socialLinks } from '@/lib/site-content';
+import { generateAsciiBox } from '@/lib/ascii/patterns';
 
 const roles = [
   'Operations Analyst',
@@ -11,20 +12,6 @@ const roles = [
   'Systems Strategist',
   'Author',
 ];
-
-const asciiArt = `
-    ╭────────────────────────────────────╮
-    │                                    │
-    │    ┏━━━━━━━━━━━━━━━━━━━━━━┓       │
-    │    ┃ OPERATIONS ANALYST  ┃       │
-    │    ┗━━━━━━━━━━━━━━━━━━━━━━┛       │
-    │                                    │
-    │    • Operations Analysis          │
-    │    • AI & Automation              │
-    │    • Systems Design               │
-    │    • Human Potential              │
-    │                                    │
-    ╰────────────────────────────────────╯`;
 
 export function EnhancedHeroSection() {
   const [displayedRole, setDisplayedRole] = useState(0);
@@ -41,6 +28,17 @@ export function EnhancedHeroSection() {
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.9]);
+
+  const asciiArt = generateAsciiBox([
+    '  ┏━━━━━━━━━━━━━━━━━━━━━━┓',
+    `  ┃ ${roles[displayedRole].toUpperCase().padEnd(20)} ┃`,
+    '  ┗━━━━━━━━━━━━━━━━━━━━━━┛',
+    '',
+    '  • Operations Analysis',
+    '  • AI & Automation',
+    '  • Systems Design',
+    '  • Human Potential',
+  ], { style: 'rounded', padding: 1 });
 
   // Ensure scroll starts at top
   useEffect(() => {

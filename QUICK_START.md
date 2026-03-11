@@ -46,8 +46,8 @@ You're now 100% production-ready.
 
 ## 📚 Learn More
 - `INFRASTRUCTURE.md` - Full usage guide
-- `SECURITY_AUDIT.md` - Security details
-- `IMPLEMENTATION_COMPLETE.md` - What was built
+- `docs/history/SECURITY_AUDIT.md` - Security details
+- `docs/history/IMPLEMENTATION_COMPLETE.md` - What was built
 
 ## 🆘 Quick Commands
 ```bash

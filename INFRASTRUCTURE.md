@@ -228,9 +228,9 @@ Logs are stored in `logs/` directory:
 
 ## 📚 Documentation
 
-- `SECURITY_AUDIT.md` - Complete security assessment
-- `HONEST_ANSWERS.md` - Current state analysis
-- `SOLUTIONS.md` - Detailed implementation guides
+- `docs/history/SECURITY_AUDIT.md` - Complete security assessment
+- `docs/history/HONEST_ANSWERS.md` - Current state analysis
+- `docs/history/SOLUTIONS.md` - Detailed implementation guides
 - `SECURITY.md` - Vulnerability disclosure policy
 - `AGENTS.md` - Project overview for AI agents
 

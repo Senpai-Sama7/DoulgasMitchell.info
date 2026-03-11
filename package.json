@@ -12,7 +12,10 @@
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
-    "db:reset": "prisma migrate reset"
+    "db:reset": "prisma migrate reset",
+    "admin:check": "bun scripts/admin/check-admin.js",
+    "admin:reset": "bun scripts/admin/reset-admin.js",
+    "admin:test-login": "bun scripts/admin/test-login.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

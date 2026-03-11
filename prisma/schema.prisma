@@ -77,6 +77,7 @@ model Project {
   @@index([slug])
   @@index([category])
   @@index([featured])
+  @@index([status])
 }
 
 model Certification {

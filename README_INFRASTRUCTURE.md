@@ -69,11 +69,11 @@ npm run security:audit
 
 ### Documentation
 - `SECURITY.md` - Vulnerability disclosure
-- `SECURITY_AUDIT.md` - Complete audit
-- `HONEST_ANSWERS.md` - Current state
-- `SOLUTIONS.md` - Implementation guides
+- `docs/history/SECURITY_AUDIT.md` - Complete audit
+- `docs/history/HONEST_ANSWERS.md` - Current state
+- `docs/history/SOLUTIONS.md` - Implementation guides
 - `INFRASTRUCTURE.md` - Usage guide
-- `IMPLEMENTATION_COMPLETE.md` - Summary
+- `docs/history/IMPLEMENTATION_COMPLETE.md` - Summary
 - `public/.well-known/security.txt` - Security contact
 
 ## 🎊 Your Score: 85% Production-Ready
@@ -220,8 +220,8 @@ Everything is:
 ## 🆘 Need Help?
 
 1. Read `INFRASTRUCTURE.md` for detailed usage
-2. Check `SECURITY_AUDIT.md` for security details
-3. Review `SOLUTIONS.md` for implementation guides
+2. Check `docs/history/SECURITY_AUDIT.md` for security details
+3. Review `docs/history/SOLUTIONS.md` for implementation guides
 4. Email CEO@DouglasMitchell.info for security issues
 
 ## 🎉 Congratulations!
