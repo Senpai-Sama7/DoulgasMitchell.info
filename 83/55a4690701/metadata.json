@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "8355a4690701",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 0,
+  "files_touched": [
+    ".junie/memory/language.json",
+    "BLACKBOX.md",
+    "INFRASTRUCTURE.md",
+    "README_INFRASTRUCTURE.md",
+    "SECURITY.md",
+    "bun.lock",
+    "docs/history/BLACKBOX.md",
+    "docs/history/INFRASTRUCTURE.md",
+    "docs/history/README_INFRASTRUCTURE.md",
+    "docs/history/SECURITY.md",
+    "final.tar",
+    "god-level-ascii-entrance.zip",
+    "main-site-mobile.png",
+    "overlay-check.png",
+    "package.json",
+    "splash-overlay-desktop.png",
+    "splash-overlay-mobile.png",
+    "src/app/api/admin/ai/route.ts",
+    "verify-desktop.png",
+    "verify-mobile.png",
+    "verify-splash.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/83/55a4690701/0/metadata.json",
+      "transcript": "/83/55a4690701/0/full.jsonl",
+      "content_hash": "/83/55a4690701/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
