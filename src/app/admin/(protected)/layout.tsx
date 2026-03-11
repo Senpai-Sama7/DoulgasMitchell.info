@@ -9,7 +9,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await getSession();
-  
+
   if (!session) {
     redirect('/admin/login');
   }
