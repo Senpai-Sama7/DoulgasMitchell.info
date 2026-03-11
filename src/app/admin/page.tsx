@@ -13,6 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminDashboardData } from '@/lib/content-service';
+import { AdminAIAgent } from '@/components/admin/ai/ai-agent';
 
 export const revalidate = 60; // Refresh dashboard data every 60 seconds
 
@@ -159,6 +160,9 @@ export default async function AdminDashboard() {
 
         {/* Quick Actions & System Status */}
         <div className="space-y-6">
+          {/* AI Agent */}
+          <AdminAIAgent />
+
           {/* Quick Actions */}
           <Card>
             <CardHeader>
