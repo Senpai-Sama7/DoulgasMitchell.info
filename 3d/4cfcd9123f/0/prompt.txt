@@ -1,0 +1,77 @@
+HI
+
+---
+
+run git pull and then git push
+
+---
+
+1
+
+---
+
+i like version 2 what you think?
+
+---
+
+no delete the local changes
+
+---
+
+ok
+
+---
+
+1. you do it
+
+---
+
+you choose
+
+---
+
+yes
+
+---
+
+just fix it you pick'
+
+---
+
+Change aesthetic of the entrance overlay to match the color and style of the rest of the website. and enable the admin portal and have it biometric enabled for keypasses. and remove "Architect" For profession it should say Operations Analyst
+
+---
+
+find it yourself
+
+---
+
+set it up obviously
+
+---
+
+xrun the command "opencode --help" && "codex --help" to see how to prompt and 
+   control them . also search the web to cross reference and confimr. have them 
+   spwan agent and to performa a full sweep of the repo to see all the          
+   enhancement, improvements, optimizations, and features/functions/code it can 
+   fully expand. you are going to act as the orchestator surprivising and       
+   answreing any questions they might have. dont ask me anything until they     
+   have do a fully analysis evelauate of direcory
+
+---
+
+xrun the command "opencode --help" && "codex --help" to see how to prompt and 
+   control them . also search the web to cross reference and confimr. have them 
+   spwan agent and to performa full build of the admin portal with all          
+   enhancement, improvements, optimizations, and features/functions/code it can 
+   fully expand. you are going to act as the orchestator surprivising and       
+   answreing any questions they might have. dont ask me anything until everything is running, tested, real, working and fully funcgional. dont ask me anything, if you have a question you 3 talk and discuss it amougst yourselves and pick. dont stop until everything is done
+
+---
+
+xrun the command "opencode --help" && "codex --help" to see how to prompt and 
+   control them . also search the web to cross reference and confimr. have them 
+   spwan agent and to performa full build of the admin portal with all          
+   enhancement, improvements, optimizations, and features/functions/code it can 
+   fully expand. you are going to act as the orchestator surprivising and       
+   answreing any questions they might have. dont ask me anything until everything is running, tested, real, working and fully funcgional. dont ask me anything, if you have a question you 3 talk and discuss it amougst yourselves and pick. dont stop until everything is done
