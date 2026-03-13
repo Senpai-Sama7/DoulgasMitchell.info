@@ -1,0 +1,34 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "a032258c884a",
+  "session_id": "18ccb1b2-4082-4100-94da-04be6867ef27",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-13T01:24:57.46312392Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".junie/memory/language.json"
+  ],
+  "agent": "Gemini CLI",
+  "model": "gemini-2.5-flash",
+  "turn_id": "930e83b77142",
+  "token_usage": {
+    "input_tokens": 9563,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 7133,
+    "output_tokens": 1,
+    "api_call_count": 1
+  },
+  "session_metrics": {
+    "turn_count": 1
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-13T01:24:57.461075786Z",
+    "agent_lines": 1,
+    "human_added": 1772,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1773,
+    "agent_percentage": 0.05640157924421885
+  }
+}
