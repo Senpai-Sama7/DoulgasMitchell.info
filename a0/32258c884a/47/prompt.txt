@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/knowledge_base/Product Development Request.pdf", "name": "Product Development Request.pdf", "extension": ".pdf", "mime_type": "application/pdf", "size_bytes": 47355, "zone": "20_reference", "sample_text": ""}]
