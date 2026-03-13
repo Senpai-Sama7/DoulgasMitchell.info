@@ -24,7 +24,7 @@ export async function GET(req: Request) {
       return ApiHandler.error('Failed to retrieve analytics summary', 500);
     }
 
-    return ApiHandler.success(summary);
+    return ApiHandler.success({ data: summary });
   } catch (error) {
     return ApiHandler.internalServerError('Analytics retrieval failed', error);
   }

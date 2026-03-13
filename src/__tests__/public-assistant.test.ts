@@ -71,6 +71,8 @@ describe('public assistant', () => {
     expect(reply.refusal).toBe(false);
     expect(reply.answer).toMatch(/Rizz Prompting/i);
     expect(reply.citations[0]?.href).toBe('/writing/rizz-prompting-attractor-based-style-steering');
+    expect(reply.route).toBe('article-detail');
+    expect(reply.confidence).toBeGreaterThan(0.5);
   });
 
   it('refuses unrelated prompts when strict topic mode is enabled', async () => {
@@ -97,5 +99,18 @@ describe('public assistant', () => {
     expect(reply.refusal).toBe(false);
     expect(reply.answer).toMatch(/Systems Architecture Toolkit is a System Design project/i);
     expect(reply.citations[0]?.label).toBe('Systems Architecture Toolkit');
+    expect(reply.decision.action).toBe('proceed');
+  });
+
+  it('supports configurable deferral thresholds', async () => {
+    const reply = await answerPublicQuestion('Systems Architecture Toolkit', {
+      conditionalThreshold: 0.95,
+      deferThreshold: 0.9,
+      strictTopicMode: true,
+    });
+
+    expect(reply.refusal).toBe(false);
+    expect(reply.decision.action).toBe('defer');
+    expect(reply.answer).toMatch(/narrower question/i);
   });
 });

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { startTransition, useEffect, useMemo, useState, lazy, Suspense } from 'react';
+import { startTransition, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Award,
@@ -31,6 +31,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -146,7 +156,7 @@ function ContentTable({
   items: ContentItem[];
   editable: boolean;
   onEdit: (type: ContentType, item: ContentItem) => void;
-  onDelete: (type: ContentType, id: string) => void;
+  onDelete: (type: ContentType, item: ContentItem) => void;
 }) {
   return (
     <Table>
@@ -211,7 +221,7 @@ function ContentTable({
                     <DropdownMenuItem 
                       disabled={!editable} 
                       className="text-destructive focus:text-destructive"
-                      onClick={() => onDelete(type, contentItem.id)}
+                      onClick={() => onDelete(type, contentItem)}
                     >
                       <Trash2 className="mr-2 h-4 w-4" />
                       Delete
@@ -224,6 +234,87 @@ function ContentTable({
         )}
       </TableBody>
     </Table>
+  );
+}
+
+function ContentCardList({
+  type,
+  items,
+  editable,
+  onEdit,
+  onDelete,
+}: {
+  type: ContentType;
+  items: ContentItem[];
+  editable: boolean;
+  onEdit: (type: ContentType, item: ContentItem) => void;
+  onDelete: (type: ContentType, item: ContentItem) => void;
+}) {
+  if (items.length === 0) {
+    return (
+      <div className="rounded-2xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+        No {type}s found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid gap-3 md:hidden">
+      {items.map((contentItem) => (
+        <article key={contentItem.id} className="rounded-2xl border border-border/70 bg-background/70 p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h3 className="truncate text-sm font-semibold">{contentItem.title}</h3>
+              <p className="mt-1 text-xs text-muted-foreground">/{contentItem.slug}</p>
+            </div>
+            {contentItem.featured ? (
+              <Badge variant="default" className="bg-primary/10 text-primary">
+                Featured
+              </Badge>
+            ) : null}
+          </div>
+
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {getStatusBadge(contentItem.status)}
+            <span className="rounded-full border border-border/70 px-2.5 py-1 text-[11px] text-muted-foreground">
+              Updated {new Date(contentItem.updatedAt).toLocaleDateString()}
+            </span>
+          </div>
+
+          <div className="mt-4 grid gap-2 sm:grid-cols-3">
+            <Button variant="outline" size="sm" asChild>
+              <Link
+                href={contentItem.href}
+                target={contentItem.href.startsWith('http') ? '_blank' : undefined}
+                rel={contentItem.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Preview
+              </Link>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!editable}
+              onClick={() => onEdit(type, contentItem)}
+            >
+              <Edit className="mr-2 h-4 w-4" />
+              Edit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!editable}
+              className="border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => onDelete(type, contentItem)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -245,6 +336,8 @@ function EditorDialog({
   onSave: () => void;
 }) {
   const [generating, setGenerating] = useState(false);
+  const [generationMessage, setGenerationMessage] = useState<string | null>(null);
+  const { toast } = useToast();
 
   if (!editor) {
     return null;
@@ -255,11 +348,18 @@ function EditorDialog({
 
   const handleGenerateCaseStudy = async () => {
     if (!fields.title || !fields.description) {
-      alert('Title and description are required for AI generation.');
+      const message = 'Title and description are required before generating a draft.';
+      setGenerationMessage(message);
+      toast({
+        title: 'Draft needs more context',
+        description: message,
+        variant: 'destructive',
+      });
       return;
     }
 
     setGenerating(true);
+    setGenerationMessage('Generating a project narrative draft...');
     try {
       const response = await fetch('/api/admin/content/case-study', {
         method: 'POST',
@@ -277,12 +377,28 @@ function EditorDialog({
       const data = await response.json();
       if (data.success && data.draft) {
         onFieldChange('longDescription', data.draft);
+        setGenerationMessage('Draft generated. Review tone and specifics before publishing.');
+        toast({
+          title: 'Draft generated',
+          description: 'The long description has been populated with a first-pass case study.',
+        });
       } else {
-        alert('Generation failed: ' + (data.error || 'Unknown error'));
+        const message = data.error || 'Unknown error';
+        setGenerationMessage(`Generation failed: ${message}`);
+        toast({
+          title: 'Draft generation failed',
+          description: message,
+          variant: 'destructive',
+        });
       }
     } catch (error) {
       console.error('Generation error:', error);
-      alert('Failed to connect to AI service.');
+      setGenerationMessage('Failed to connect to the AI drafting service.');
+      toast({
+        title: 'Draft generation failed',
+        description: 'Failed to connect to the AI drafting service.',
+        variant: 'destructive',
+      });
     } finally {
       setGenerating(false);
     }
@@ -326,7 +442,7 @@ function EditorDialog({
           {'longDescription' in fields ? (
             <FieldRow label="Long Description">
               {editor.type.toString() === 'Project' && (
-                <div className="mb-2">
+                <div className="mb-2 space-y-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
@@ -341,6 +457,11 @@ function EditorDialog({
                     )}
                     Magic Draft (AI)
                   </Button>
+                  {generationMessage ? (
+                    <p className="text-xs text-muted-foreground" role="status" aria-live="polite">
+                      {generationMessage}
+                    </p>
+                  ) : null}
                 </div>
               )}
               <Textarea 
@@ -470,6 +591,7 @@ const DEFAULT_FIELDS: Record<ContentType, EditorFields> = {
 
 export default function ContentManagementPage() {
   const { toast } = useToast();
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<ContentType>('article');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -478,6 +600,7 @@ export default function ContentManagementPage() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [editorError, setEditorError] = useState<string | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<{ type: ContentType; item: ContentItem } | null>(null);
   const [content, setContent] = useState<ContentApiResponse>({
     success: true,
     editable: false,
@@ -511,6 +634,30 @@ export default function ContentManagementPage() {
     void loadContent();
   }, []);
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTypingTarget =
+        target instanceof HTMLInputElement ||
+        target instanceof HTMLTextAreaElement ||
+        target?.isContentEditable;
+
+      if (event.key === '/' && !isTypingTarget) {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+        searchInputRef.current?.select();
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'n' && content.editable && !isTypingTarget) {
+        event.preventDefault();
+        openCreateEditor();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [content.editable, activeTab]);
+
   const filteredContent = useMemo(() => {
     const normalizedQuery = searchQuery.toLowerCase();
     const matcher = (contentItem: ContentItem) =>
@@ -524,6 +671,24 @@ export default function ContentManagementPage() {
       book: content.books.filter(matcher),
     };
   }, [content, searchQuery]);
+
+  const inventoryCards = [
+    {
+      label: 'Items in view',
+      value: filteredContent[activeTab].length,
+      helper: searchQuery ? 'Filtered by current search' : 'Available in the active collection',
+    },
+    {
+      label: 'Editing mode',
+      value: content.editable ? 'Live' : 'Read only',
+      helper: content.editable ? 'Writes go through the admin API.' : 'Fallback content is visible but not editable.',
+    },
+    {
+      label: 'Content source',
+      value: content.source === 'database' ? 'Database' : 'Fallback',
+      helper: content.source === 'database' ? 'Primary content store is active.' : 'Static fallback content is serving this workspace.',
+    },
+  ] as const;
 
   const openEditor = async (type: ContentType, contentItem: ContentItem) => {
     setLoadingEditor(true);
@@ -569,22 +734,27 @@ export default function ContentManagementPage() {
     });
   };
 
-  const handleDelete = async (type: ContentType, id: string) => {
-    if (!confirm('Are you sure you want to delete this item? This action cannot be undone.')) {
+  const handleDelete = (type: ContentType, item: ContentItem) => {
+    setDeleteCandidate({ type, item });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteCandidate) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/content?type=${type}&id=${id}`, {
+      const response = await fetch(`/api/admin/content?type=${deleteCandidate.type}&id=${deleteCandidate.item.id}`, {
         method: 'DELETE',
       });
-      if (response.ok) {
-        toast({ title: 'Success', description: 'Item deleted successfully.' });
-        void loadContent();
-      } else {
+      if (!response.ok) {
         throw new Error('Failed to delete item.');
       }
-    } catch (err) {
+
+      toast({ title: 'Success', description: `${deleteCandidate.item.title} was deleted.` });
+      setDeleteCandidate(null);
+      void loadContent();
+    } catch {
       toast({ title: 'Error', description: 'Failed to delete item.', variant: 'destructive' });
     }
   };
@@ -626,17 +796,37 @@ export default function ContentManagementPage() {
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
-        <div>
+      <motion.div variants={item} className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-2">
           <h1 className="text-2xl font-bold">Content Management</h1>
           <p className="text-muted-foreground">
             Review the editorial inventory, open previews, and update live metadata.
           </p>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full border border-border/70 px-3 py-1">Source: {content.source}</span>
+            <span className="rounded-full border border-border/70 px-3 py-1">Editing: {content.editable ? 'live' : 'disabled'}</span>
+            <span className="rounded-full border border-border/70 px-3 py-1">Shortcut: / search</span>
+            <span className="rounded-full border border-border/70 px-3 py-1">Shortcut: ⌘/Ctrl + N create</span>
+          </div>
         </div>
         <Button onClick={openCreateEditor} disabled={!content.editable}>
           <Plus className="mr-2 h-4 w-4" />
-          {content.editable ? 'Use row editor' : 'Editing unavailable'}
+          {content.editable ? `Create ${activeTab}` : 'Editing unavailable'}
         </Button>
+      </motion.div>
+
+      <motion.div variants={item} className="grid gap-3 md:grid-cols-3">
+        {inventoryCards.map((card) => (
+          <Card key={card.label} className="border-border/70 bg-card/70">
+            <CardContent className="space-y-2 p-5">
+              <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                {card.label}
+              </div>
+              <div className="text-2xl font-semibold tracking-tight">{card.value}</div>
+              <p className="text-sm text-muted-foreground">{card.helper}</p>
+            </CardContent>
+          </Card>
+        ))}
       </motion.div>
 
       {content.warning || banner ? (
@@ -645,25 +835,30 @@ export default function ContentManagementPage() {
         </motion.div>
       ) : null}
 
-      <motion.div variants={item} className="flex gap-4">
+      <motion.div variants={item} className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            ref={searchInputRef}
             placeholder={`Search ${activeTab}s...`}
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             className="pl-9"
           />
         </div>
-        <Button variant="outline" onClick={() => setSearchQuery('')}>
-          <Filter className="mr-2 h-4 w-4" />
-          Clear Filter
-        </Button>
+        {searchQuery ? (
+          <Button variant="outline" onClick={() => setSearchQuery('')}>
+            <Filter className="mr-2 h-4 w-4" />
+            Clear Filter
+          </Button>
+        ) : (
+          <div className="text-xs text-muted-foreground">Type / to focus search instantly.</div>
+        )}
       </motion.div>
 
       <motion.div variants={item}>
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ContentType)}>
-          <TabsList>
+          <TabsList className="grid h-auto grid-cols-2 gap-2 md:inline-flex">
             <TabsTrigger value="article">
               <FileText className="mr-2 h-4 w-4" />
               Articles
@@ -694,7 +889,12 @@ export default function ContentManagementPage() {
                     Syncing database...
                   </div>
                 ) : (
-                  <ContentTable type="article" items={filteredContent.article} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                  <>
+                    <ContentCardList type="article" items={filteredContent.article} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    <div className="hidden md:block">
+                      <ContentTable type="article" items={filteredContent.article} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -712,7 +912,12 @@ export default function ContentManagementPage() {
                     Syncing database...
                   </div>
                 ) : (
-                  <ContentTable type="project" items={filteredContent.project} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                  <>
+                    <ContentCardList type="project" items={filteredContent.project} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    <div className="hidden md:block">
+                      <ContentTable type="project" items={filteredContent.project} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -730,7 +935,12 @@ export default function ContentManagementPage() {
                     Syncing database...
                   </div>
                 ) : (
-                  <ContentTable type="certification" items={filteredContent.certification} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                  <>
+                    <ContentCardList type="certification" items={filteredContent.certification} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    <div className="hidden md:block">
+                      <ContentTable type="certification" items={filteredContent.certification} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -748,7 +958,12 @@ export default function ContentManagementPage() {
                     Syncing database...
                   </div>
                 ) : (
-                  <ContentTable type="book" items={filteredContent.book} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                  <>
+                    <ContentCardList type="book" items={filteredContent.book} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    <div className="hidden md:block">
+                      <ContentTable type="book" items={filteredContent.book} editable={content.editable} onEdit={openEditor} onDelete={handleDelete} />
+                    </div>
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -770,6 +985,25 @@ export default function ContentManagementPage() {
         onFieldChange={handleFieldChange}
         onSave={handleSave}
       />
+
+      <AlertDialog open={Boolean(deleteCandidate)} onOpenChange={(open) => !open && setDeleteCandidate(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete content item?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteCandidate
+                ? `This will permanently remove ${deleteCandidate.item.title}. This action cannot be undone.`
+                : 'This action cannot be undone.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void confirmDelete()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={loadingEditor} onOpenChange={() => undefined}>
         <DialogContent className="max-w-sm" showCloseButton={false}>

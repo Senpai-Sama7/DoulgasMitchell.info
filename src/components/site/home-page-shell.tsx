@@ -15,6 +15,7 @@ interface PublicAssistantSettings {
   enabled: boolean;
   maxQuestionsPerIp: number;
   welcomeMessage: string;
+  enableDecisionIntelligence: boolean;
 }
 
 interface HomePageShellProps {

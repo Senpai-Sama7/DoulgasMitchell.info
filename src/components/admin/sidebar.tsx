@@ -15,8 +15,9 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 
 interface AdminSidebarProps {
@@ -41,11 +42,13 @@ function SidebarContent({
   user,
   onNavigate,
   onLogout,
+  isLoggingOut,
 }: {
   pathname: string;
   user: AdminSidebarProps['user'];
   onNavigate?: () => void;
   onLogout: () => void;
+  isLoggingOut: boolean;
 }) {
   return (
     <>
@@ -120,9 +123,11 @@ function SidebarContent({
           variant="ghost"
           className="w-full justify-start gap-2 text-muted-foreground hover:text-destructive"
           onClick={onLogout}
+          disabled={isLoggingOut}
+          aria-busy={isLoggingOut}
         >
           <LogOut className="h-4 w-4" />
-          Sign Out
+          {isLoggingOut ? 'Signing Out…' : 'Sign Out'}
         </Button>
       </div>
     </>
@@ -132,11 +137,72 @@ function SidebarContent({
 export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const mobilePanelRef = useRef<HTMLElement>(null);
+  const { toast } = useToast();
 
   const handleLogout = async () => {
-    await fetch('/api/admin/logout', { method: 'POST' });
-    window.location.href = '/admin/login';
+    try {
+      setIsLoggingOut(true);
+      const response = await fetch('/api/admin/logout', { method: 'POST' });
+
+      if (!response.ok) {
+        throw new Error('Unable to sign out right now.');
+      }
+
+      window.location.href = '/admin/login';
+    } catch (error) {
+      toast({
+        title: 'Sign out failed',
+        description: error instanceof Error ? error.message : 'Unable to sign out right now.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
+
+  useEffect(() => {
+    if (!isMobileOpen) {
+      document.body.style.overflow = '';
+      return undefined;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    const focusableElements = mobilePanelRef.current?.querySelectorAll<HTMLElement>(
+      'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    const firstFocusable = focusableElements?.[0];
+    const lastFocusable = focusableElements?.[focusableElements.length - 1];
+    firstFocusable?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileOpen(false);
+        return;
+      }
+
+      if (event.key !== 'Tab' || !focusableElements?.length) {
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === firstFocusable) {
+        event.preventDefault();
+        lastFocusable?.focus();
+      } else if (!event.shiftKey && document.activeElement === lastFocusable) {
+        event.preventDefault();
+        firstFocusable?.focus();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isMobileOpen]);
 
   return (
     <>
@@ -164,6 +230,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
             />
 
             <motion.aside
+              ref={mobilePanelRef}
               initial={{ x: -256 }}
               animate={{ x: 0 }}
               exit={{ x: -256 }}
@@ -176,6 +243,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
                 user={user}
                 onNavigate={() => setIsMobileOpen(false)}
                 onLogout={handleLogout}
+                isLoggingOut={isLoggingOut}
               />
             </motion.aside>
           </>
@@ -184,7 +252,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
       <aside className="hidden w-64 shrink-0 border-r border-border bg-card lg:block">
         <div className="sticky top-0 flex h-screen flex-col">
-          <SidebarContent pathname={pathname} user={user} onLogout={handleLogout} />
+          <SidebarContent pathname={pathname} user={user} onLogout={handleLogout} isLoggingOut={isLoggingOut} />
         </div>
       </aside>
     </>

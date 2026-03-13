@@ -97,21 +97,27 @@ export function EnhancedWritingSection({ articles }: EnhancedWritingSectionProps
               </p>
             </div>
 
-            {/* Category Filter */}
-            <div className="flex gap-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setActiveCategory(category)}
-                  className={`px-4 py-2 text-sm font-mono rounded-lg transition-all ${
-                    activeCategory === category
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted hover:bg-muted/80'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
+            <div className="space-y-2">
+              <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                Filter by topic
+              </p>
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Filter writing archive by category">
+                {categories.map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    aria-pressed={activeCategory === category}
+                    onClick={() => setActiveCategory(category)}
+                    className={`rounded-full px-4 py-2 text-sm font-mono transition-all ${
+                      activeCategory === category
+                        ? 'bg-primary text-primary-foreground shadow-[0_10px_30px_-18px_rgba(15,23,42,0.75)]'
+                        : 'bg-muted hover:bg-muted/80'
+                    }`}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -212,47 +218,73 @@ export function EnhancedWritingSection({ articles }: EnhancedWritingSectionProps
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.5 }}
-          className="mt-12 p-6 border border-border rounded-xl bg-muted/30"
+          className="mt-12 rounded-[1.75rem] border border-border/70 bg-muted/30 p-6 md:p-8"
         >
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h4 className="font-semibold mb-1">Stay Updated</h4>
-              <p className="text-sm text-muted-foreground">
-                Join the private list for new essays, project breakdowns, and systems notes.
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:items-end">
+            <div className="space-y-3">
+              <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                Low-noise subscription
               </p>
+              <h4 className="text-2xl font-semibold tracking-tight">Stay updated without the spam pattern.</h4>
+              <p className="text-sm leading-7 text-muted-foreground">
+                Join the private list for new essays, project breakdowns, and systems notes. Expect signal, not drip-campaign clutter.
+              </p>
+              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                <span className="rounded-full border border-border/70 px-3 py-1">1-2 notes / month</span>
+                <span className="rounded-full border border-border/70 px-3 py-1">Project launches</span>
+                <span className="rounded-full border border-border/70 px-3 py-1">Systems essays</span>
+              </div>
             </div>
-            <form onSubmit={handleSubscribe} className="w-full md:w-auto">
-              <div className="flex flex-col gap-3 md:flex-row">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Your name"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:outline-none focus:border-primary md:w-44"
-                />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="your@email.com"
-                  className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm focus:outline-none focus:border-primary md:w-64"
-                  required
-                />
+
+            <form onSubmit={handleSubscribe} className="space-y-3" aria-describedby="newsletter-meta newsletter-status">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)_auto]">
+                <div className="space-y-2">
+                  <label htmlFor="newsletter-name" className="sr-only">
+                    Name
+                  </label>
+                  <input
+                    id="newsletter-name"
+                    type="text"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Your name"
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="newsletter-email" className="sr-only">
+                    Email address
+                  </label>
+                  <input
+                    id="newsletter-email"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="your@email.com"
+                    className="w-full rounded-2xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:border-primary"
+                    required
+                  />
+                </div>
                 <button type="submit" disabled={isSubmitting} className="cta-button whitespace-nowrap disabled:opacity-60">
                   {isSubmitting ? 'Joining…' : 'Subscribe'}
                 </button>
               </div>
-              {status === 'success' && (
-                <p className="mt-3 inline-flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
-                  <CheckCircle2 className="h-4 w-4" />
-                  You’re in. Expect thoughtful, low-noise updates.
-                </p>
-              )}
-              {status === 'error' && (
-                <p className="mt-3 text-sm text-destructive">
-                  Something went wrong. Please try again in a moment.
-                </p>
-              )}
+              <p id="newsletter-meta" className="text-xs text-muted-foreground">
+                No spam. Unsubscribe whenever you want.
+              </p>
+              <div id="newsletter-status" aria-live="polite" aria-atomic="true">
+                {status === 'success' && (
+                  <p className="inline-flex items-center gap-2 text-sm text-emerald-600 dark:text-emerald-400">
+                    <CheckCircle2 className="h-4 w-4" />
+                    You’re in. Expect thoughtful, low-noise updates.
+                  </p>
+                )}
+                {status === 'error' && (
+                  <p className="text-sm text-destructive">
+                    Something went wrong. Please try again in a moment.
+                  </p>
+                )}
+              </div>
             </form>
           </div>
         </motion.div>

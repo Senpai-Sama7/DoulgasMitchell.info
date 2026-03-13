@@ -14,6 +14,13 @@ interface AdminHeaderProps {
   };
 }
 
+type SearchableAdminItem = {
+  href: string;
+  label: string;
+  description?: string;
+  tags: string[];
+};
+
 const adminDestinations = [
   { href: '/admin', label: 'Dashboard', description: 'Live portfolio, content, and audience overview.', icon: LayoutDashboard, tags: ['home', 'main', 'status'] },
   { href: '/admin/operator', label: 'Operator', description: 'Run audits, site changes, and AI control actions.', icon: Sparkles, tags: ['ai', 'chat', 'agent', 'bot', 'gpt', 'gemini'] },
@@ -39,6 +46,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
   const [searchValue, setSearchValue] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const listboxId = 'admin-quick-jump-results';
 
   const titles: Record<string, string> = {
     '/admin': 'Dashboard',
@@ -58,7 +66,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
       return { destinations: adminDestinations, shortcuts: settingsShortcuts };
     }
 
-    const filterFn = (item: any) => 
+    const filterFn = (item: SearchableAdminItem) =>
       `${item.label} ${item.description || ''} ${item.tags.join(' ')}`.toLowerCase().includes(normalized);
 
     return {
@@ -67,7 +75,13 @@ export function AdminHeader({ user }: AdminHeaderProps) {
     };
   }, [searchValue]);
 
+  const allResults = useMemo(
+    () => [...filteredResults.destinations, ...filteredResults.shortcuts],
+    [filteredResults.destinations, filteredResults.shortcuts]
+  );
+
   const totalResults = filteredResults.destinations.length + filteredResults.shortcuts.length;
+  const activeIndex = totalResults === 0 ? -1 : Math.min(selectedIndex, totalResults - 1);
 
   useEffect(() => {
     const handleShortcut = (event: KeyboardEvent) => {
@@ -99,9 +113,8 @@ export function AdminHeader({ user }: AdminHeaderProps) {
       setSelectedIndex(prev => (prev - 1 + (totalResults || 1)) % (totalResults || 1));
     } else if (e.key === 'Enter') {
       e.preventDefault();
-      const allItems = [...filteredResults.destinations, ...filteredResults.shortcuts];
-      if (allItems[selectedIndex]) {
-        navigateTo(allItems[selectedIndex].href);
+      if (allResults[activeIndex]) {
+        navigateTo(allResults[activeIndex].href);
       }
     } else if (e.key === 'Escape') {
       setSearchValue('');
@@ -131,13 +144,23 @@ export function AdminHeader({ user }: AdminHeaderProps) {
               setSearchValue(event.target.value);
               setSelectedIndex(0);
             }}
-            onFocus={() => setIsSearchOpen(true)}
+            onFocus={() => {
+              if (blurTimeoutRef.current) {
+                clearTimeout(blurTimeoutRef.current);
+              }
+              setIsSearchOpen(true);
+            }}
             onBlur={() => {
               blurTimeoutRef.current = setTimeout(() => setIsSearchOpen(false), 200);
             }}
             onKeyDown={handleKeyDown}
             className="w-full bg-muted/50 pl-9 pr-12 text-sm"
             aria-label="Search and jump to an admin destination"
+            role="combobox"
+            aria-expanded={isSearchOpen}
+            aria-controls={listboxId}
+            aria-autocomplete="list"
+            aria-activedescendant={isSearchOpen && allResults[activeIndex] ? `admin-quick-jump-option-${activeIndex}` : undefined}
           />
           <kbd className="pointer-events-none absolute right-3 top-1/2 hidden -translate-y-1/2 items-center gap-1 text-[10px] font-mono text-muted-foreground lg:inline-flex">
             <span className="rounded bg-muted px-1">⌘</span>
@@ -145,17 +168,25 @@ export function AdminHeader({ user }: AdminHeaderProps) {
           </kbd>
 
           {isSearchOpen && (
-            <div className="absolute right-0 top-[calc(100%+0.5rem)] w-full sm:w-[400px] max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200">
+            <div
+              id={listboxId}
+              role="listbox"
+              aria-label="Admin quick jump results"
+              className="absolute right-0 top-[calc(100%+0.5rem)] w-full sm:w-[400px] max-h-[80vh] overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-2xl animate-in fade-in slide-in-from-top-2 duration-200"
+            >
               {filteredResults.destinations.length > 0 && (
                 <div className="mb-2">
                   <p className="px-2 py-1.5 text-[10px] font-mono uppercase tracking-[0.18em] text-muted-foreground border-b border-border/40 mb-1">
                     Destinations
                   </p>
                   {filteredResults.destinations.map((dest, i) => {
-                    const isActive = i === selectedIndex;
+                    const isActive = i === activeIndex;
                     return (
                       <button
                         key={dest.href}
+                        id={`admin-quick-jump-option-${i}`}
+                        role="option"
+                        aria-selected={isActive}
                         type="button"
                         className={cn(
                           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all",
@@ -183,10 +214,13 @@ export function AdminHeader({ user }: AdminHeaderProps) {
                     Related Settings
                   </p>
                   {filteredResults.shortcuts.map((shortcut, i) => {
-                    const isActive = (i + filteredResults.destinations.length) === selectedIndex;
+                    const isActive = (i + filteredResults.destinations.length) === activeIndex;
                     return (
                       <button
                         key={shortcut.label}
+                        id={`admin-quick-jump-option-${i + filteredResults.destinations.length}`}
+                        role="option"
+                        aria-selected={isActive}
                         type="button"
                         className={cn(
                           "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-all",

@@ -50,6 +50,9 @@ export interface PublicAssistantSettings {
   enabled: boolean;
   maxQuestionsPerIp: number;
   strictTopicMode: boolean;
+  enableDecisionIntelligence: boolean;
+  conditionalThreshold: number;
+  deferThreshold: number;
   welcomeMessage: string;
   refusalMessage: string;
 }
@@ -203,6 +206,9 @@ export const DEFAULT_PUBLIC_ASSISTANT_SETTINGS: PublicAssistantSettings = {
   enabled: true,
   maxQuestionsPerIp: 20,
   strictTopicMode: true,
+  enableDecisionIntelligence: true,
+  conditionalThreshold: 0.58,
+  deferThreshold: 0.38,
   welcomeMessage:
     'Ask about Douglas Mitchell’s public work, projects, writing, certifications, and operating philosophy.',
   refusalMessage:
@@ -374,6 +380,18 @@ export async function saveAdminOperatorSettings(
 
 export async function getPublicAssistantSettings(): Promise<PublicAssistantSettings> {
   const saved = await getSiteConfigValue<Partial<PublicAssistantSettings>>(PUBLIC_ASSISTANT_SETTINGS_KEY, {});
+  const conditionalThreshold = clampNumber(
+    saved.conditionalThreshold,
+    DEFAULT_PUBLIC_ASSISTANT_SETTINGS.conditionalThreshold,
+    0.3,
+    0.95
+  );
+  const deferThreshold = clampNumber(
+    saved.deferThreshold,
+    DEFAULT_PUBLIC_ASSISTANT_SETTINGS.deferThreshold,
+    0.05,
+    conditionalThreshold - 0.05
+  );
 
   return {
     enabled:
@@ -390,6 +408,12 @@ export async function getPublicAssistantSettings(): Promise<PublicAssistantSetti
       typeof saved.strictTopicMode === 'boolean'
         ? saved.strictTopicMode
         : DEFAULT_PUBLIC_ASSISTANT_SETTINGS.strictTopicMode,
+    enableDecisionIntelligence:
+      typeof saved.enableDecisionIntelligence === 'boolean'
+        ? saved.enableDecisionIntelligence
+        : DEFAULT_PUBLIC_ASSISTANT_SETTINGS.enableDecisionIntelligence,
+    conditionalThreshold,
+    deferThreshold,
     welcomeMessage:
       typeof saved.welcomeMessage === 'string' && saved.welcomeMessage.trim()
         ? saved.welcomeMessage.trim()
@@ -405,6 +429,14 @@ export async function savePublicAssistantSettings(
   next: Partial<PublicAssistantSettings>
 ): Promise<PublicAssistantSettings> {
   const current = await getPublicAssistantSettings();
+  const conditionalThreshold =
+    next.conditionalThreshold === undefined
+      ? current.conditionalThreshold
+      : clampNumber(next.conditionalThreshold, current.conditionalThreshold, 0.3, 0.95);
+  const deferThreshold =
+    next.deferThreshold === undefined
+      ? current.deferThreshold
+      : clampNumber(next.deferThreshold, current.deferThreshold, 0.05, conditionalThreshold - 0.05);
 
   const merged: PublicAssistantSettings = {
     enabled:
@@ -419,6 +451,12 @@ export async function savePublicAssistantSettings(
       typeof next.strictTopicMode === 'boolean'
         ? next.strictTopicMode
         : current.strictTopicMode,
+    enableDecisionIntelligence:
+      typeof next.enableDecisionIntelligence === 'boolean'
+        ? next.enableDecisionIntelligence
+        : current.enableDecisionIntelligence,
+    conditionalThreshold,
+    deferThreshold,
     welcomeMessage:
       typeof next.welcomeMessage === 'string' && next.welcomeMessage.trim()
         ? next.welcomeMessage.trim()

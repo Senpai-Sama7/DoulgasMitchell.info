@@ -1,168 +1,55 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Terminal, Cpu, Database, Network, Sparkles, ChevronRight, Command } from 'lucide-react';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
+import {
+  ArrowUpRight,
+  BookOpen,
+  BrainCircuit,
+  ExternalLink,
+  MessageSquare,
+  NotebookTabs,
+} from 'lucide-react';
+import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
+import { bookShowcase, siteProfile } from '@/lib/site-content';
 
-const websites = [
-  { name: 'ReliantAI.org', url: 'https://ReliantAI.org' },
-  { name: 'Nex-Gen.Pro', url: 'https://Nex-Gen.Pro' },
-  { name: 'Gen-H.vercel.app', url: 'https://Gen-H.vercel.app' },
-  { name: 'AdTok.Shop', url: 'https://AdTok.Shop' },
-  { name: 'TheConfidentMind.Shop', url: 'https://TheConfidentMind.Shop' },
-  { name: 'Clear-Desk-Ten.vercel.app', url: 'https://Clear-Desk-Ten.vercel.app' },
-  { name: 'GitHub', url: 'https://github.com/senpai-sama7' },
-  { name: 'LinkedIn', url: 'https://linkedin.com/in/douglas-mitchell-the-architect' },
-];
-
-function JITTerminal() {
-  const [input, setInput] = useState('');
-  const [history, setHistory] = useState<Array<{ type: 'cmd' | 'output' | 'error', text: React.ReactNode }>>([
-    { type: 'output', text: 'Douglas Mitchell OS v4.2.0 initialized.' },
-    { type: 'output', text: 'Type --help to see available commands.' },
-  ]);
-  const [isUpdating, setIsUpdating] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [history, isUpdating]);
-
-  const handleTerminalClick = () => {
-    inputRef.current?.focus();
-  };
-
-  const handleCommand = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-
-    const cmd = input.trim().toLowerCase();
-    setHistory(prev => [...prev, { type: 'cmd', text: input }]);
-    setInput('');
-
-    if (cmd === '--help') {
-      setHistory(prev => [...prev, { 
-        type: 'output', 
-        text: 'Available commands: --help, sudo apt update, git push, nmap, clear, whoami' 
-      }]);
-    } else if (cmd === 'sudo apt update') {
-      setIsUpdating(true);
-      setHistory(prev => [...prev, { type: 'output', text: 'Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease' }]);
-      
-      setTimeout(() => {
-        setHistory(prev => [...prev, { type: 'output', text: 'Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]' }]);
-      }, 500);
-      
-      setTimeout(() => {
-        setHistory(prev => [...prev, { type: 'output', text: 'Fetched 126 kB in 1s (115 kB/s)' }]);
-        setHistory(prev => [...prev, { type: 'output', text: 'Reading package lists... Done' }]);
-        setHistory(prev => [...prev, { type: 'output', text: 'All packages are up to date.' }]);
-        setIsUpdating(false);
-      }, 1500);
-    } else if (cmd === 'git push') {
-      setHistory(prev => [...prev, { type: 'output', text: 'Enumerating objects: 15, done.' }]);
-      setHistory(prev => [...prev, { type: 'output', text: 'Delta compression using up to 18 threads' }]);
-      setHistory(prev => [...prev, { type: 'output', text: 'Redirecting to contact portal...' }]);
-      setTimeout(() => {
-        const contactSection = document.getElementById('contact');
-        if (contactSection) contactSection.scrollIntoView({ behavior: 'smooth' });
-      }, 1000);
-    } else if (cmd === 'nmap') {
-      setHistory(prev => [...prev, { type: 'output', text: 'Starting Nmap 7.80 ( https://nmap.org )' }]);
-      setHistory(prev => [...prev, { 
-        type: 'output', 
-        text: (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
-            {websites.map(site => (
-              <a 
-                key={site.name} 
-                href={site.url} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-primary hover:underline flex items-center gap-1"
-              >
-                <ChevronRight className="h-3 w-3" /> {site.name}
-              </a>
-            ))}
-          </div>
-        )
-      }]);
-    } else if (cmd === 'clear') {
-      setHistory([]);
-    } else if (cmd === 'whoami') {
-      setHistory(prev => [...prev, { type: 'output', text: 'the_architect' }]);
-    } else {
-      setHistory(prev => [...prev, { type: 'error', text: `Command not found: ${cmd}` }]);
-    }
-  };
-
-  return (
-    <div 
-      className="w-full h-[500px] bg-black/95 rounded-2xl border border-primary/20 p-6 font-mono text-sm text-primary/80 overflow-hidden shadow-2xl relative flex flex-col cursor-text"
-      onClick={handleTerminalClick}
-    >
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6 pb-4 border-b border-primary/10">
-        <div className="flex gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-red-500/40" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500/40" />
-          <div className="w-3 h-3 rounded-full bg-green-500/40" />
-        </div>
-        <div className="flex-1 text-center opacity-50 uppercase tracking-[0.3em] text-[10px]">
-          architect_terminal_v4.2
-        </div>
-        <Command className="h-4 w-4 opacity-50" />
-      </div>
-
-      {/* Terminal Output */}
-      <div ref={scrollRef} className="flex-1 overflow-y-auto space-y-2 mb-4 scrollbar-hide">
-        {history.map((line, i) => (
-          <div key={i} className={line.type === 'error' ? 'text-red-400' : line.type === 'cmd' ? 'text-white' : ''}>
-            {line.type === 'cmd' && <span className="text-primary/50 mr-2">guest@dm-os:~$</span>}
-            {line.text}
-          </div>
-        ))}
-        {isUpdating && (
-          <motion.div
-            animate={{ opacity: [1, 0.5, 1] }}
-            transition={{ duration: 0.5, repeat: Infinity }}
-            className="text-primary/70"
-          >
-            Updating system repository...
-          </motion.div>
-        )}
-      </div>
-
-      {/* Input Line */}
-      <form onSubmit={handleCommand} className="flex items-center gap-2">
-        <span className="text-primary/50 whitespace-nowrap">guest@dm-os:~$</span>
-        <input
-          ref={inputRef}
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          className="bg-transparent border-none outline-none text-white w-full p-0 focus:ring-0"
-          spellCheck={false}
-          aria-label="Terminal input"
-        />
-      </form>
-
-      {/* Background Icons */}
-      <div className="absolute bottom-6 right-6 flex gap-6 opacity-10 pointer-events-none">
-        <Cpu className="h-6 w-6" />
-        <Database className="h-6 w-6" />
-        <Network className="h-6 w-6" />
-      </div>
-    </div>
-  );
-}
+const engagementPaths = [
+  {
+    title: 'Read the book',
+    description: 'Go straight to the book and get the full framework in its intended sequence.',
+    href: bookShowcase.amazonUrl,
+    icon: BookOpen,
+    external: true,
+  },
+  {
+    title: 'Ask the archive',
+    description: 'Use the public knowledge console if you want the short version before committing.',
+    href: '#public-assistant',
+    icon: BrainCircuit,
+    external: false,
+  },
+  {
+    title: 'Start a conversation',
+    description: 'If you want to turn the ideas into a product, workflow, or collaboration, reach out directly.',
+    href: '#contact',
+    icon: MessageSquare,
+    external: false,
+  },
+] as const;
 
 export function EnhancedBookSection() {
   return (
     <section id="book" className="section-spacing bg-muted/30 relative overflow-hidden">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
+        aria-hidden="true"
+      >
+        <div className="absolute inset-y-12 left-[8%] w-px bg-gradient-to-b from-transparent via-border to-transparent" />
+        <div className="absolute inset-y-24 right-[10%] w-px bg-gradient-to-b from-transparent via-border to-transparent" />
+        <div className="absolute left-0 top-16 h-px w-48 bg-gradient-to-r from-transparent via-border to-transparent" />
+        <div className="absolute bottom-20 right-0 h-px w-56 bg-gradient-to-l from-transparent via-border to-transparent" />
+      </div>
+
       <div className="editorial-container relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -174,41 +61,199 @@ export function EnhancedBookSection() {
             <span className="font-mono text-xs text-muted-foreground">{'// 04'}</span>
             <div className="h-px flex-1 bg-gradient-to-r from-border to-transparent" />
           </div>
-          <div className="flex items-center gap-3">
-            <Sparkles className="h-5 w-5 text-primary" />
-            <span className="font-mono text-sm text-muted-foreground uppercase tracking-widest">System Command Center</span>
+
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
+            <div>
+              <div className="ascii-marker">Book System</div>
+              <h2 className="editorial-title mt-4 max-w-3xl">A practical manual, not motivational wallpaper.</h2>
+              <p className="editorial-subtitle mt-4 max-w-2xl">
+                <em>{bookShowcase.title}</em> is the confidence framework behind the broader portfolio:
+                structured, psychologically grounded, and designed to convert reflection into action.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-border/70 bg-background/80 p-5 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.45)] backdrop-blur">
+              <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                Why it matters here
+              </div>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                The same operating style shows up in the systems work: evidence over performance, repeatable
+                practice over vague ambition, and design choices that help people act with more clarity.
+              </p>
+            </div>
           </div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-12 items-start">
-          <div className="lg:col-span-2">
-            <JITTerminal />
-          </div>
-          
-          <div className="space-y-8">
-            <div className="p-6 rounded-2xl border border-border bg-background">
-              <h3 className="font-mono text-xs uppercase tracking-widest text-primary mb-4">Quick Shortcuts</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground font-mono">--help</span>
-                  <span className="text-xs opacity-50">View all commands</span>
+        <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+          <motion.article
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="rounded-[2rem] border border-border/70 bg-background/90 p-5 shadow-[0_28px_90px_-60px_rgba(15,23,42,0.55)]"
+          >
+            <div className="grid gap-6 md:grid-cols-[220px_1fr]">
+              <div className="relative mx-auto w-full max-w-[220px]">
+                <div className="absolute -inset-4 rounded-[2rem] bg-gradient-to-br from-primary/14 via-transparent to-primary/6 blur-2xl" />
+                <div className="relative overflow-hidden rounded-[1.5rem] border border-border/70 bg-muted/40">
+                  <Image
+                    src="/images/the-confident-mind.jpg"
+                    alt="Cover of The Confident Mind by Douglas Mitchell"
+                    width={640}
+                    height={960}
+                    className="h-auto w-full object-cover"
+                    sizes="(max-width: 768px) 220px, 280px"
+                  />
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground font-mono">nmap</span>
-                  <span className="text-xs opacity-50">Scan project grid</span>
+              </div>
+
+              <div className="flex flex-col">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                    {bookShowcase.publishDate}
+                  </span>
+                  <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                    {bookShowcase.publisher}
+                  </span>
                 </div>
-                <div className="flex justify-between items-center text-sm">
-                  <span className="text-muted-foreground font-mono">git push</span>
-                  <span className="text-xs opacity-50">Sync to contact</span>
+
+                <h3 className="mt-4 text-3xl font-semibold leading-tight">{bookShowcase.title}</h3>
+                <p className="mt-3 text-base leading-relaxed text-muted-foreground">{bookShowcase.subtitle}</p>
+                <p className="mt-5 text-sm leading-relaxed text-muted-foreground">{bookShowcase.description}</p>
+
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {bookShowcase.highlights.map((highlight) => (
+                    <div
+                      key={highlight}
+                      className="rounded-2xl border border-border/60 bg-muted/35 px-4 py-3 text-sm leading-relaxed text-muted-foreground"
+                    >
+                      <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">Signal</span>
+                      <p className="mt-2">{highlight}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <a
+                    href={bookShowcase.amazonUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="cta-button"
+                  >
+                    <BookOpen className="h-4 w-4" />
+                    Read on Amazon
+                  </a>
+                  <a href="#contact" className="ghost-button">
+                    <MessageSquare className="h-4 w-4" />
+                    Bring it into a project
+                  </a>
                 </div>
               </div>
             </div>
+          </motion.article>
 
-            <div className="p-6 rounded-2xl border border-border bg-muted/40">
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Interact with the Architect's terminal to explore the network, sync with the contact portal, or run system diagnostics.
-              </p>
-            </div>
+          <div className="grid gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 }}
+              className="rounded-[2rem] border border-border/70 bg-background/80 p-6"
+            >
+              <div className="flex items-center gap-3">
+                <NotebookTabs className="h-5 w-5 text-primary" />
+                <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Inside the manual
+                </div>
+              </div>
+              <div className="mt-5 grid gap-3">
+                {bookShowcase.chapters.map((chapter, index) => (
+                  <div
+                    key={chapter}
+                    className="flex items-start gap-4 rounded-2xl border border-border/60 bg-muted/30 px-4 py-3"
+                  >
+                    <span className="font-mono text-xs uppercase tracking-[0.18em] text-primary">
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <div className="text-sm font-medium">{chapter}</div>
+                      <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                        Structured to move from diagnosis to internal evidence to sustainable follow-through.
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.1 }}
+              className="grid gap-6 lg:grid-cols-[1fr_0.95fr]"
+            >
+              <div className="rounded-[2rem] border border-border/70 bg-background/80 p-6">
+                <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Reader response
+                </div>
+                <div className="mt-5 space-y-4">
+                  {bookShowcase.testimonials.map((testimonial) => (
+                    <blockquote
+                      key={testimonial.author}
+                      className="rounded-2xl border border-border/60 bg-muted/30 px-4 py-4 text-sm leading-relaxed text-muted-foreground"
+                    >
+                      <p>“{testimonial.text}”</p>
+                      <footer className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                        {testimonial.author}
+                      </footer>
+                    </blockquote>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-[2rem] border border-border/70 bg-background/80 p-6">
+                <div className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                  Choose your next move
+                </div>
+                <div className="mt-5 grid gap-3">
+                  {engagementPaths.map((path) => (
+                    <a
+                      key={path.title}
+                      href={path.href}
+                      target={path.external ? '_blank' : undefined}
+                      rel={path.external ? 'noopener noreferrer' : undefined}
+                      className="group rounded-2xl border border-border/60 bg-muted/30 px-4 py-4 transition-colors hover:border-primary/35 hover:bg-muted/55"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-2xl border border-border/60 bg-background/80 p-2">
+                          <path.icon className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="text-sm font-medium">{path.title}</div>
+                            {path.external ? (
+                              <ExternalLink className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            ) : (
+                              <ArrowUpRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            )}
+                          </div>
+                          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{path.description}</p>
+                        </div>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+
+                <div className="mt-5 rounded-2xl border border-dashed border-border/70 px-4 py-3 text-sm text-muted-foreground">
+                  Direct contact also works if you already know the direction.
+                  {' '}
+                  <a href={PUBLIC_CONTACT_HREF} className="font-medium text-foreground underline underline-offset-4">
+                    Email {siteProfile.name.split(' ')[0]}
+                  </a>
+                  .
+                </div>
+              </div>
+            </motion.div>
           </div>
         </div>
       </div>

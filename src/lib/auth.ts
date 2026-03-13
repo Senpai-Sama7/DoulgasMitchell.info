@@ -9,6 +9,7 @@ import {
   deleteAdminSessionByToken,
   findAdminSessionByToken,
 } from './admin-compat';
+import { hasTable } from './db-introspection';
 
 function getJwtSecret() {
   const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');
@@ -108,7 +109,21 @@ export async function getSession(): Promise<Session | null> {
 
   const persistedSession = await findAdminSessionByToken(token);
 
-  if (!persistedSession || !persistedSession.isActive) {
+  if (!persistedSession) {
+    // Fallback: trust the JWT token if DB is unreachable
+    if (!(await hasTable('Session'))) {
+      if (new Date() > new Date(session.expiresAt)) {
+        await deleteSession(token);
+        return null;
+      }
+      return session;
+    }
+    
+    await deleteSession(token);
+    return null;
+  }
+
+  if (!persistedSession.isActive) {
     await deleteSession(token);
     return null;
   }

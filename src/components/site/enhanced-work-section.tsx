@@ -82,7 +82,7 @@ export function EnhancedWorkSection({ projects }: EnhancedWorkSectionProps) {
             </div>
 
             {/* Stats */}
-            <div className="flex gap-6">
+            <div className="flex flex-wrap gap-6">
               {stats.map((stat, index) => (
                 <motion.div
                   key={stat.label}
@@ -103,21 +103,27 @@ export function EnhancedWorkSection({ projects }: EnhancedWorkSectionProps) {
             </div>
           </div>
 
-          <div className="mt-8 flex flex-wrap gap-2">
-            {categories.map((category) => (
-              <button
-                key={category}
-                type="button"
-                onClick={() => setActiveCategory(category)}
-                className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                  activeCategory === category
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'border-border bg-background hover:border-primary/40'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+          <div className="mt-8 space-y-2">
+            <p className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+              Filter case studies
+            </p>
+            <div className="flex flex-wrap gap-2" role="group" aria-label="Filter work by category">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  aria-pressed={activeCategory === category}
+                  onClick={() => setActiveCategory(category)}
+                  className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                    activeCategory === category
+                      ? 'border-primary bg-primary text-primary-foreground'
+                      : 'border-border bg-background hover:border-primary/40'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
 
@@ -255,7 +261,7 @@ export function EnhancedWorkSection({ projects }: EnhancedWorkSectionProps) {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="rounded-2xl border border-border bg-background p-6"
+              className="rounded-[1.75rem] border border-border bg-background p-6 xl:sticky xl:top-28"
             >
               <div className="font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
                 Project spotlight
@@ -265,10 +271,27 @@ export function EnhancedWorkSection({ projects }: EnhancedWorkSectionProps) {
                 {spotlightProject.longDescription}
               </p>
 
-              <div className="mt-6 space-y-4">
+              <div className="mt-5 flex flex-wrap gap-2 text-[11px] font-mono uppercase tracking-[0.18em] text-muted-foreground">
+                <span className="rounded-full border border-border/70 px-3 py-1">{spotlightProject.category}</span>
+                <span className="rounded-full border border-border/70 px-3 py-1">{spotlightProject.timeline}</span>
+                <span className="rounded-full border border-border/70 px-3 py-1">{spotlightProject.status}</span>
+              </div>
+
+              <div className="mt-6 space-y-5">
                 <div>
                   <div className="text-xs font-mono uppercase tracking-[0.2em] text-primary">Challenge</div>
                   <p className="mt-2 text-sm text-muted-foreground">{spotlightProject.challenge}</p>
+                </div>
+                <div>
+                  <div className="text-xs font-mono uppercase tracking-[0.2em] text-primary">How it was shaped</div>
+                  <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                    {spotlightProject.solution.slice(0, 3).map((step) => (
+                      <li key={step} className="flex gap-2">
+                        <span className="text-primary">◆</span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
                 <div>
                   <div className="text-xs font-mono uppercase tracking-[0.2em] text-primary">Outcomes</div>

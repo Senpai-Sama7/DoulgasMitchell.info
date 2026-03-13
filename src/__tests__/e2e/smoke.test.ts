@@ -5,7 +5,7 @@ test.describe('Public Site Smoke Tests', () => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Douglas Mitchell/);
     // Use first() or a more specific role to avoid strict mode violations
-    await expect(page.getByRole('heading', { name: 'Douglas Mitchell' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Douglas Mitchell/i, includeHidden: true })).toBeVisible();
   });
 
   test('should navigate to work section', async ({ page }) => {

@@ -117,6 +117,9 @@ const publicAssistantSettingsSchema = z.object({
   enabled: z.boolean().optional(),
   maxQuestionsPerIp: z.number().min(1).max(100).optional(),
   strictTopicMode: z.boolean().optional(),
+  enableDecisionIntelligence: z.boolean().optional(),
+  conditionalThreshold: z.number().min(0.3).max(0.95).optional(),
+  deferThreshold: z.number().min(0.05).max(0.9).optional(),
   welcomeMessage: z.string().trim().min(1).optional(),
   refusalMessage: z.string().trim().min(1).optional(),
 });
@@ -270,6 +273,7 @@ function buildToolSystemPrompt(provider: OperatorProviderStatus | undefined) {
     'If a request exceeds current tool coverage, state the limit plainly and recommend the closest supported action.',
     'Editorial Protocol: When drafting content, prioritize architectural precision, monospaced aesthetics in examples, and OKLCH-aware color descriptions if applicable. Ensure all slugs are kebab-case and SEO-optimized.',
     'SEO Protocol: For every article or project update, consider if the excerpt and title are optimized for clarity and high-signal search intent.',
+    'Decision Protocol: When discussing forecasts, experiments, or performance, expose uncertainty, calibration limits, and the recommended decision tier instead of speaking with false certainty.',
     `Current provider rail: ${activeRail}.`,
   ].join(' ');
 }
@@ -616,7 +620,7 @@ export async function POST(request: NextRequest) {
           },
         }),
         updatePublicAssistant: tool({
-          description: 'Adjust the public assistant guardrails, welcome copy, refusal copy, or per-IP question cap.',
+          description: 'Adjust the public assistant guardrails, confidence thresholds, welcome copy, refusal copy, or per-IP question cap.',
           inputSchema: publicAssistantSettingsSchema,
           execute: async (input) => {
             const settings = await savePublicAssistantSettings(input);

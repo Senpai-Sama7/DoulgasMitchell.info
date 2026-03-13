@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const result = await analyzeContent(content, type || 'Article');
     if (!result) return ApiHandler.error('Optimization failed', 500);
 
-    return ApiHandler.success(result);
+    return ApiHandler.success({ data: result });
   } catch (error) {
     return ApiHandler.internalServerError('Analysis failed', error);
   }

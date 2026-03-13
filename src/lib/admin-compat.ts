@@ -130,8 +130,22 @@ export async function countAdminUsers() {
   return Number(rows[0]?.count ?? 0);
 }
 
+import bcrypt from 'bcryptjs';
+import { env } from '@/lib/env';
+
 export async function findAdminUserByEmail(email: string) {
   if (!(await hasTable('AdminUser'))) {
+    if (env.ADMIN_PASSWORD && email.toLowerCase() === (env.ADMIN_EMAIL?.toLowerCase() || 'douglasmitchell@reliantai.org').toLowerCase()) {
+      return {
+        id: 'fallback-admin',
+        email: env.ADMIN_EMAIL || 'DouglasMitchell@ReliantAI.org',
+        name: 'Douglas Mitchell (Fallback)',
+        passwordHash: await bcrypt.hash(env.ADMIN_PASSWORD, 10),
+        role: 'admin',
+        isActive: true,
+        username: null,
+      } as AdminUserRecord;
+    }
     return null;
   }
 

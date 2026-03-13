@@ -107,6 +107,9 @@ type PublicAssistantSettings = {
   enabled: boolean;
   maxQuestionsPerIp: number;
   strictTopicMode: boolean;
+  enableDecisionIntelligence: boolean;
+  conditionalThreshold: number;
+  deferThreshold: number;
   welcomeMessage: string;
   refusalMessage: string;
 };
@@ -779,7 +782,7 @@ function AdminOperatorConsoleInner() {
                     Public knowledge assistant
                   </CardTitle>
                   <CardDescription>
-                    Zero-cost deterministic assistant for public, non-sensitive questions only.
+                    Public portfolio assistant with optional confidence scoring, deferral tiers, and refusal guardrails.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -837,6 +840,71 @@ function AdminOperatorConsoleInner() {
                         onCheckedChange={(checked) =>
                           setDraftPublicAssistant((current) =>
                             current ? { ...current, strictTopicMode: checked } : current
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-border/70 p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Decision intelligence</p>
+                        <p className="text-xs text-muted-foreground">
+                          Shows confidence, uncertainty, and a defer / conditional / proceed recommendation in the public console.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={draftPublicAssistant.enableDecisionIntelligence}
+                        onCheckedChange={(checked) =>
+                          setDraftPublicAssistant((current) =>
+                            current ? { ...current, enableDecisionIntelligence: checked } : current
+                          )
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="public-conditional-threshold">Conditional threshold</Label>
+                      <Input
+                        id="public-conditional-threshold"
+                        type="number"
+                        min="0.3"
+                        max="0.95"
+                        step="0.01"
+                        value={draftPublicAssistant.conditionalThreshold}
+                        onChange={(event) =>
+                          setDraftPublicAssistant((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  conditionalThreshold: Number(event.target.value),
+                                }
+                              : current
+                          )
+                        }
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="public-defer-threshold">Defer threshold</Label>
+                      <Input
+                        id="public-defer-threshold"
+                        type="number"
+                        min="0.05"
+                        max="0.9"
+                        step="0.01"
+                        value={draftPublicAssistant.deferThreshold}
+                        onChange={(event) =>
+                          setDraftPublicAssistant((current) =>
+                            current
+                              ? {
+                                  ...current,
+                                  deferThreshold: Number(event.target.value),
+                                }
+                              : current
                           )
                         }
                       />

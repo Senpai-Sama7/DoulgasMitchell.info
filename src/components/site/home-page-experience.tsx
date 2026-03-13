@@ -24,7 +24,8 @@ export function HomePageExperience() {
       }
 
       try {
-        setShowSplash(window.sessionStorage.getItem(SPLASH_SEEN_KEY) !== '1');
+        const hasHash = window.location.hash && window.location.hash.length > 1;
+        setShowSplash(!hasHash && window.sessionStorage.getItem(SPLASH_SEEN_KEY) !== '1');
       } catch {
         setShowSplash(false);
       }
@@ -32,6 +33,20 @@ export function HomePageExperience() {
 
     return () => window.clearTimeout(timer);
   }, []);
+
+  // Force scroll to hash if present
+  useEffect(() => {
+    if (!showSplash && window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const timer = setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash, prefersReducedMotion]);
 
   useEffect(() => {
     if (!showSplash) {

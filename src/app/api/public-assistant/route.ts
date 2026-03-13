@@ -48,6 +48,9 @@ export async function POST(request: NextRequest) {
 
     const reply = await answerPublicQuestion(payload.data.question, {
       strictTopicMode: settings.strictTopicMode,
+      enableDecisionIntelligence: settings.enableDecisionIntelligence,
+      conditionalThreshold: settings.conditionalThreshold,
+      deferThreshold: settings.deferThreshold,
     });
 
     return ApiHandler.success({
@@ -55,6 +58,11 @@ export async function POST(request: NextRequest) {
       citations: reply.citations,
       suggestions: reply.suggestions,
       refusal: reply.refusal,
+      route: reply.route,
+      confidence: reply.confidence,
+      confidenceLabel: reply.confidenceLabel,
+      decision: reply.decision,
+      uncertainty: reply.uncertainty,
       remaining: limit.remaining,
       resetAt: limit.resetAt,
     });
