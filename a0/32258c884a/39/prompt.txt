@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/assets/.files/Crisis_12Dimension_Intersectional_Analysis_Report.pdf", "name": "Crisis_12Dimension_Intersectional_Analysis_Report.pdf", "extension": ".pdf", "mime_type": "application/pdf", "size_bytes": 1184127, "zone": "20_reference", "sample_text": "12-DIMENSIONAL INTERSECTIONAL CRISIS\nANALYSIS\nPoor, Semi-Disabled, Gen Z, Dark-Skinned Black, LGBTQ+ Male with HIV,\nMeth Addiction, ADHD, Untreated Childhood Trauma, Unattractive,\nNo Degree, Unemployed\n\nReport Date: 2026-03-12\n\n\f1. Scope and Definitions\n1.1 Objective\nThis report provides a structured data analysis examining an individual occupying an extreme intersection of\nmarginalization across 12 identity dimensions. The analysis applies Critical Race Theory's intersectional framework\ncombined with syndemic theory to understand how these multiple vulnerabilities compound to create a crisis-level\nsituation requiring immediate, multi-dimensional intervention. The objective is to quantify the compound risk, identify\nintervention priorities, and provide an evidence-based framework for addressing this complex case.\n\n1.2 Population Definition\nThe target population for this analysis is an individual who identifies with all 12 of the following dimensions\nsimultaneously: (1) Poverty/low income, (2) Semi-disabled status due to chronic illness (arthritis + IBS), (3) Generation\nZ (born 1997-2012), (4) Dark-skinned Black race (experiencing colorism), (5) LGBTQ+ sexual orientation, (6) Male\ng"}]

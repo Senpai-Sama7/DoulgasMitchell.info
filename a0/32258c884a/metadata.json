@@ -3,7 +3,7 @@
   "checkpoint_id": "a032258c884a",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 39,
+  "checkpoints_count": 40,
   "files_touched": [
     ".junie/memory/language.json"
   ],
@@ -241,13 +241,19 @@
       "transcript": "/a0/32258c884a/38/full.jsonl",
       "content_hash": "/a0/32258c884a/38/content_hash.txt",
       "prompt": "/a0/32258c884a/38/prompt.txt"
+    },
+    {
+      "metadata": "/a0/32258c884a/39/metadata.json",
+      "transcript": "/a0/32258c884a/39/full.jsonl",
+      "content_hash": "/a0/32258c884a/39/content_hash.txt",
+      "prompt": "/a0/32258c884a/39/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 423113,
+    "input_tokens": 433887,
     "cache_creation_tokens": 0,
-    "cache_read_tokens": 271357,
-    "output_tokens": 15107,
-    "api_call_count": 41
+    "cache_read_tokens": 279500,
+    "output_tokens": 15614,
+    "api_call_count": 42
   }
 }
