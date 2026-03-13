@@ -1,8 +1,107 @@
+[WebServer] [0m[2m[35m$[0m [2m[1mNODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log[0m
 
 Running 4 tests using 1 worker
-(node:85444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:129706) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:85444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:129706) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-····
-  4 passed (4.2s)
+··×(node:129928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:129928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+×(node:130093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:130093) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+F(node:130235) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:130235) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+·
+
+  1) [chromium] › src/__tests__/e2e/smoke.test.ts:19:7 › Public Site Smoke Tests › should interact with Public Knowledge Console 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)[22m
+
+
+      26 |     
+      27 |     // Wait for the thinking state or the actual answer
+    > 28 |     await expect(page.getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)).toBeVisible();
+         |                                                                                                                                       ^
+      29 |     
+      30 |     // Check for response (with some timeout to account for the artificial delay)
+      31 |     // The answer should contain the headline or name
+        at /home/donovan/Projects/DoulgasMitchell.info/src/__tests__/e2e/smoke.test.ts:28:135
+
+    Error Context: test-results/smoke-Public-Site-Smoke-Te-6c1f5-th-Public-Knowledge-Console-chromium/error-context.md
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)[22m
+
+
+      26 |     
+      27 |     // Wait for the thinking state or the actual answer
+    > 28 |     await expect(page.getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)).toBeVisible();
+         |                                                                                                                                       ^
+      29 |     
+      30 |     // Check for response (with some timeout to account for the artificial delay)
+      31 |     // The answer should contain the headline or name
+        at /home/donovan/Projects/DoulgasMitchell.info/src/__tests__/e2e/smoke.test.ts:28:135
+
+    Error Context: test-results/smoke-Public-Site-Smoke-Te-6c1f5-th-Public-Knowledge-Console-chromium-retry1/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-Public-Site-Smoke-Te-6c1f5-th-Public-Knowledge-Console-chromium-retry1/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-Public-Site-Smoke-Te-6c1f5-th-Public-Knowledge-Console-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)[22m
+
+
+      26 |     
+      27 |     // Wait for the thinking state or the actual answer
+    > 28 |     await expect(page.getByText(/Analyzing query parameters|Scanning public knowledge archive|Synthesizing deterministic response/i)).toBeVisible();
+         |                                                                                                                                       ^
+      29 |     
+      30 |     // Check for response (with some timeout to account for the artificial delay)
+      31 |     // The answer should contain the headline or name
+        at /home/donovan/Projects/DoulgasMitchell.info/src/__tests__/e2e/smoke.test.ts:28:135
+
+    Error Context: test-results/smoke-Public-Site-Smoke-Te-6c1f5-th-Public-Knowledge-Console-chromium-retry2/error-context.md
+
+  1 failed
+    [chromium] › src/__tests__/e2e/smoke.test.ts:19:7 › Public Site Smoke Tests › should interact with Public Knowledge Console 
+  3 passed (29.7s)

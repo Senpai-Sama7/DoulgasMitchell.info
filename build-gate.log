@@ -2,7 +2,7 @@ $ prisma generate && NODE_ENV=production next build && cp -r .next/static .next/
 Environment variables loaded from .env
 Prisma schema loaded from prisma/schema.prisma
 
-✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 129ms
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client in 139ms
 
 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
 
@@ -12,14 +12,14 @@ Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
 - Environments: .env.local, .env
 
   Creating an optimized production build ...
-✓ Compiled successfully in 13.9s
+✓ Compiled successfully in 15.9s
   Running TypeScript ...
   Collecting page data using 11 workers ...
-  Generating static pages using 11 workers (0/36) ...
-  Generating static pages using 11 workers (9/36) 
-  Generating static pages using 11 workers (18/36) 
-  Generating static pages using 11 workers (27/36) 
-✓ Generating static pages using 11 workers (36/36) in 1604.1ms
+  Generating static pages using 11 workers (0/42) ...
+  Generating static pages using 11 workers (10/42) 
+  Generating static pages using 11 workers (20/42) 
+  Generating static pages using 11 workers (31/42) 
+✓ Generating static pages using 11 workers (42/42) in 4.5s
   Finalizing page optimization ...
 
 Route (app)                                                 Revalidate  Expire
@@ -34,6 +34,7 @@ Route (app)                                                 Revalidate  Expire
 ├ ƒ /admin/security
 ├ ƒ /api
 ├ ƒ /api/admin/ai
+├ ƒ /api/admin/ai/optimize
 ├ ƒ /api/admin/analytics
 ├ ƒ /api/admin/auth
 ├ ƒ /api/admin/auth/passkey/generate-options
@@ -42,8 +43,12 @@ Route (app)                                                 Revalidate  Expire
 ├ ƒ /api/admin/auth/passkey/verify
 ├ ƒ /api/admin/check
 ├ ƒ /api/admin/content
+├ ƒ /api/admin/content/case-study
 ├ ƒ /api/admin/content/reorder
 ├ ƒ /api/admin/logout
+├ ƒ /api/admin/media/ai-alt
+├ ƒ /api/admin/notes
+├ ƒ /api/admin/notifications
 ├ ƒ /api/admin/operator
 ├ ƒ /api/admin/setup
 ├ ƒ /api/admin/webauthn/register/options
@@ -54,6 +59,7 @@ Route (app)                                                 Revalidate  Expire
 ├ ƒ /api/public-assistant
 ├ ƒ /api/seed
 ├ ƒ /api/upload
+├ ○ /notes
 ├ ○ /robots.txt
 ├ ƒ /search
 ├ ○ /sitemap.xml
