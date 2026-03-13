@@ -5,7 +5,37 @@
   "branch": "main",
   "checkpoints_count": 46,
   "files_touched": [
-    ".junie/memory/language.json"
+    ".junie/memory/language.json",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "next.config.ts",
+    "src/app/admin/(protected)/media/page.tsx",
+    "src/app/admin/login/page.tsx",
+    "src/app/api/admin/ai/route.ts",
+    "src/app/api/admin/auth/passkey/generate-options/route.ts",
+    "src/app/api/admin/auth/passkey/register/generate-options/route.ts",
+    "src/app/api/admin/auth/passkey/register/verify/route.ts",
+    "src/app/api/admin/auth/passkey/verify/route.ts",
+    "src/app/api/admin/auth/route.ts",
+    "src/app/api/admin/check/route.ts",
+    "src/app/api/admin/setup/route.ts",
+    "src/app/api/analytics/page-view/route.ts",
+    "src/app/api/upload/route.ts",
+    "src/app/error.tsx",
+    "src/app/layout.tsx",
+    "src/app/loading.tsx",
+    "src/app/not-found.tsx",
+    "src/app/search/page.tsx",
+    "src/components/effects/particle-title.tsx",
+    "src/components/site/home-page-shell.tsx",
+    "src/components/site/page-view-tracker.tsx",
+    "src/lib/activity.ts",
+    "src/lib/admin-ai.ts",
+    "src/lib/admin-compat.ts",
+    "src/lib/auth.ts",
+    "src/lib/content-service.ts",
+    "src/lib/db-introspection.ts"
   ],
   "sessions": [
     {
@@ -283,6 +313,12 @@
       "transcript": "/a0/32258c884a/45/full.jsonl",
       "content_hash": "/a0/32258c884a/45/content_hash.txt",
       "prompt": "/a0/32258c884a/45/prompt.txt"
+    },
+    {
+      "metadata": "/a0/32258c884a/46/metadata.json",
+      "transcript": "/a0/32258c884a/46/full.jsonl",
+      "content_hash": "/a0/32258c884a/46/content_hash.txt",
+      "prompt": ""
     }
   ],
   "token_usage": {
