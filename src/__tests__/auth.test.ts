@@ -57,17 +57,17 @@ describe('Authentication', () => {
       clearRateLimit('test-ip');
     });
 
-    it('should allow initial attempts', () => {
-      const allowed = checkRateLimit('test-ip');
+    it('should allow initial attempts', async () => {
+      const allowed = await checkRateLimit('test-ip');
       expect(allowed).toBe(true);
     });
 
-    it('should track multiple attempts', () => {
+    it('should track multiple attempts', async () => {
       for (let i = 0; i < 4; i++) {
-        expect(checkRateLimit('test-ip')).toBe(true);
+        await expect(checkRateLimit('test-ip')).resolves.toBe(true);
       }
-      expect(checkRateLimit('test-ip')).toBe(true); // 5th attempt
-      expect(checkRateLimit('test-ip')).toBe(false); // 6th attempt - blocked
+      await expect(checkRateLimit('test-ip')).resolves.toBe(true); // 5th attempt
+      await expect(checkRateLimit('test-ip')).resolves.toBe(false); // 6th attempt - blocked
     });
   });
 });

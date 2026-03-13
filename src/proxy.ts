@@ -11,6 +11,9 @@ function getJwtSecret() {
   return new TextEncoder().encode(secret);
 }
 
+const JWT_ISSUER = 'douglasmitchell.info';
+const JWT_AUDIENCE = 'admin-portal';
+
 // Routes that don't require authentication under /admin
 const publicAdminRoutes = [
   '/admin/login',
@@ -45,7 +48,10 @@ export async function proxy(request: NextRequest) {
 
     // Verify the JWT token
     try {
-      await jwtVerify(token, getJwtSecret());
+      await jwtVerify(token, getJwtSecret(), {
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE,
+      });
       return NextResponse.next();
     } catch (error) {
       console.error('Middleware token verification failed:', error);

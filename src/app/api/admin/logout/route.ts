@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { deleteSession } from '@/lib/auth';
+import { validateTrustedOrigin } from '@/lib/request';
 
 // POST /api/admin/logout - Logout user
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const cookieStore = await cookies();
     const token = cookieStore.get('admin-session')?.value;
     

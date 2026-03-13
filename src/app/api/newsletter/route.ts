@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { logActivity } from '@/lib/activity';
 import { newsletterSubscriptionSchema } from '@/lib/forms';
+import { upsertNewsletterSubscriber } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
-import { getClientIp } from '@/lib/request';
+import {
+  getClientIp,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
+    const body = await readJsonBody(request);
     const parsed = newsletterSubscriptionSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -18,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const clientIp = getClientIp(request);
-    const limit = rateLimit(clientIp, {
+    const limit = await rateLimit(clientIp, {
       limit: 8,
       windowMs: 60 * 60 * 1000,
       prefix: 'newsletter',
@@ -33,17 +43,9 @@ export async function POST(request: NextRequest) {
 
     const { email, name, source } = parsed.data;
 
-    const subscriber = await db.newsletter.upsert({
-      where: { email },
-      update: {
-        isActive: true,
-        name: name || undefined,
-      },
-      create: {
-        email,
-        name: name || undefined,
-        confirmedAt: new Date(),
-      },
+    const subscriber = await upsertNewsletterSubscriber({
+      email,
+      name: name || undefined,
     });
 
     await logActivity({
@@ -61,6 +63,13 @@ export async function POST(request: NextRequest) {
       message: 'Subscribed successfully.',
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json(
+        { error: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
+    }
+
     console.error('Newsletter subscription error:', error);
     return NextResponse.json(
       { error: 'Unable to subscribe right now.' },

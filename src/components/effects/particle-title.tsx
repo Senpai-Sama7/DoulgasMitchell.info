@@ -105,15 +105,17 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
 
   return (
     <div className="relative inline-block py-4">
+      <h1 className="sr-only">{firstName} {lastName}</h1>
       <AnimatePresence mode="wait">
         {phase === 'typing' && (
           <motion.div
             key="typing"
             exit={{ opacity: 0, filter: 'blur(20px)', scale: 1.1 }}
             className="font-mono text-3xl md:text-5xl lg:text-7xl tracking-tighter text-primary/80 flex flex-col items-center"
+            aria-hidden="true"
           >
-            <div className="flex gap-1">{renderAsciiText(firstName)}</div>
-            <div className="flex gap-1 text-foreground/60 mt-2">{renderAsciiText(lastName)}</div>
+            <div className="flex min-h-[1em] gap-1">{renderAsciiText(typedFirst)}</div>
+            <div className="mt-2 flex min-h-[1em] gap-1 text-foreground/60">{renderAsciiText(typedLast)}</div>
             <motion.span
               animate={{ opacity: [1, 0] }}
               transition={{ duration: 0.5, repeat: Infinity }}
@@ -128,6 +130,7 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="relative flex flex-col items-center"
+            aria-hidden="true"
           >
             {/* Background Particles Cluster */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-visible">
@@ -144,7 +147,7 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
             </div>
 
             {/* Skeuomorphic High-Fidelity Solid Text */}
-            <motion.h1 
+            <motion.div 
               initial={{ scale: 0.8, filter: 'blur(30px)', opacity: 0 }}
               animate={{ scale: 1, filter: 'blur(0px)', opacity: 1 }}
               className="editorial-title relative z-10 text-center"
@@ -155,19 +158,20 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
             >
               <span className="block text-foreground drop-shadow-2xl">{firstName}</span>
               <span className="block text-primary drop-shadow-2xl mt-1">{lastName}</span>
-            </motion.h1>
+            </motion.div>
           </motion.div>
         )}
 
         {phase === 'final' && (
-          <motion.h1 
+          <motion.div 
             key="final"
             initial={{ opacity: 1 }}
             className="editorial-title text-center"
+            aria-hidden="true"
           >
             <span className="block text-foreground">{firstName}</span>
             <span className="block text-primary mt-1">{lastName}</span>
-          </motion.h1>
+          </motion.div>
         )}
       </AnimatePresence>
     </div>

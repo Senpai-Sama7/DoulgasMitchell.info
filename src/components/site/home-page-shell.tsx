@@ -1,122 +1,55 @@
-'use client';
-
-import { useCallback, useEffect, useState } from 'react';
-import { motion, useReducedMotion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import {
-  CertificationsSection,
-  EnhancedAboutSection,
-  EnhancedBookSection,
-  EnhancedContactSection,
-  EnhancedHeroSection,
-  EnhancedWorkSection,
-  EnhancedWritingSection,
-  SiteFooter,
-  SiteHeader,
-} from '@/components/site';
-import { CommandKTrigger, CommandPalette, SplashOverlay } from '@/components/effects';
-import { PageViewTracker } from '@/components/site/page-view-tracker';
+import { CertificationsSection } from '@/components/site/certifications-section';
+import { EnhancedAboutSection } from '@/components/site/enhanced-about-section';
+import { EnhancedBookSection } from '@/components/site/enhanced-book-section';
+import { EnhancedContactSection } from '@/components/site/enhanced-contact-section';
+import { EnhancedHeroSection } from '@/components/site/enhanced-hero-section';
+import { PublicKnowledgeConsole } from '@/components/site/public-knowledge-console';
+import { EnhancedWorkSection } from '@/components/site/enhanced-work-section';
+import { EnhancedWritingSection } from '@/components/site/enhanced-writing-section';
+import { SiteFooter } from '@/components/site/footer';
+import { SiteHeader } from '@/components/site/header';
+import { HomePageExperience } from '@/components/site/home-page-experience';
 import type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowcase } from '@/lib/site-content';
-import { useTheme } from '@/lib/theme';
+
+interface PublicAssistantSettings {
+  enabled: boolean;
+  maxQuestionsPerIp: number;
+  welcomeMessage: string;
+}
 
 interface HomePageShellProps {
   articles: ArticleShowcase[];
   book: BookShowcase;
   certifications: CertificationShowcase[];
   projects: ProjectShowcase[];
+  contentSource?: 'database' | 'fallback';
+  contentWarning?: string | null;
+  publicAssistant: PublicAssistantSettings;
 }
 
-const SPLASH_SEEN_KEY = 'dm-splash-seen';
-
-export function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {
-  const { scrollYProgress } = useScroll();
-  const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-  const [showSplash, setShowSplash] = useState(false);
-  const { isDark, toggle } = useTheme();
-  const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
-
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setShowSplash(false);
-        return;
-      }
-
-      try {
-        setShowSplash(window.sessionStorage.getItem(SPLASH_SEEN_KEY) !== '1');
-      } catch {
-        setShowSplash(false);
-      }
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!showSplash) {
-      document.body.style.overflow = 'auto';
-    }
-  }, [showSplash]);
-
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setIsCommandOpen((previous) => !previous);
-        return;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const handleNavigate = useCallback(
-    (href: string) => {
-      if (href === '#') {
-        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-        return;
-      }
-
-      const element = document.querySelector(href);
-      if (element instanceof HTMLElement) {
-        element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-      }
-    },
-    [prefersReducedMotion]
-  );
-
+export function HomePageShell({
+  articles,
+  book: _book,
+  certifications,
+  projects,
+  contentSource = 'database',
+  contentWarning,
+  publicAssistant,
+}: HomePageShellProps) {
   return (
     <>
-      <PageViewTracker />
-
-      <AnimatePresence>
-        {showSplash && (
-          <SplashOverlay 
-            minDisplayTime={2400}
-            onComplete={() => {
-              setShowSplash(false);
-              try {
-                window.sessionStorage.setItem(SPLASH_SEEN_KEY, '1');
-              } catch {
-                // Ignore session storage write failures.
-              }
-            }} 
-          />
-        )}
-      </AnimatePresence>
-
-      <motion.div
-        className="scroll-progress"
-        style={{
-          scaleX,
-          backgroundColor: isDark ? '#fafafa' : '#171717',
-        }}
-      />
-
+      <HomePageExperience />
       <SiteHeader />
 
       <main id="main-content" className="flex-1">
+        {contentSource === 'fallback' && contentWarning ? (
+          <div className="editorial-container pt-24">
+            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+              {contentWarning}
+            </div>
+          </div>
+        ) : null}
+
         <EnhancedHeroSection />
 
         <div className="editorial-container">
@@ -132,21 +65,11 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
         <EnhancedBookSection />
         <EnhancedWritingSection articles={articles} />
         <CertificationsSection items={certifications} />
+        <PublicKnowledgeConsole settings={publicAssistant} />
         <EnhancedContactSection />
       </main>
 
       <SiteFooter />
-
-      <CommandPalette
-        isOpen={isCommandOpen}
-        onClose={() => setIsCommandOpen(false)}
-        onNavigate={handleNavigate}
-        isDark={isDark}
-        onToggleTheme={toggle}
-      />
-
-      <CommandKTrigger onClick={() => setIsCommandOpen(true)} />
-
     </>
   );
 }

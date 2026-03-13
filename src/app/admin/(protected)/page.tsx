@@ -9,11 +9,11 @@ import {
   Plus,
   ArrowUpRight,
   Users,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminDashboardData } from '@/lib/content-service';
-import { AdminAIAgent } from '@/components/admin/ai/ai-agent';
 
 export const revalidate = 60; // Refresh dashboard data every 60 seconds
 
@@ -77,7 +77,7 @@ export default async function AdminDashboard() {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link href="/" target="_blank">
+            <Link href="/" target="_blank" rel="noopener noreferrer">
             <Eye className="h-4 w-4 mr-2" />
             Preview Site
             </Link>
@@ -160,8 +160,25 @@ export default async function AdminDashboard() {
 
         {/* Quick Actions & System Status */}
         <div className="space-y-6">
-          {/* AI Agent */}
-          <AdminAIAgent />
+          <Card className="border-border/60">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Architect Operator
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Use the dedicated operator console for live site audits, content mutations, provider routing, and public-assistant guardrails.
+              </p>
+              <Button asChild className="w-full justify-between">
+                <Link href="/admin/operator">
+                  Open operator console
+                  <ArrowUpRight className="h-4 w-4" />
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Quick Actions */}
           <Card>

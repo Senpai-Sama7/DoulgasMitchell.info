@@ -4,16 +4,33 @@ import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import { createPasskeyRecord, findAdminUserById } from '@/lib/admin-compat';
+import {
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 
 export async function POST(request: NextRequest) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await readJsonBody<{
+      response?: unknown;
+      deviceName?: string;
+    }>(request);
     const { response, deviceName } = body;
+
+    if (!response || typeof response !== 'object') {
+      return NextResponse.json({ error: 'Registration response is required' }, { status: 400 });
+    }
 
     const user = await findAdminUserById(session.userId);
 
@@ -57,6 +74,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Registration failed' }, { status: 400 });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
+
     console.error('Passkey register verify error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

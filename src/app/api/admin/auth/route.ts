@@ -1,7 +1,13 @@
 import { NextRequest } from 'next/server';
 import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
-import { getClientIp, getUserAgent } from '@/lib/request';
+import {
+  getClientIp,
+  getUserAgent,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 import { ApiHandler } from '@/lib/api-response';
 import { findAdminUserByEmail, updateAdminLastLogin } from '@/lib/admin-compat';
 
@@ -31,7 +37,12 @@ export async function GET() {
 // POST /api/admin/auth - Login
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return ApiHandler.forbidden(originCheck.reason);
+    }
+
+    const body = await readJsonBody<{ email?: string; password?: string }>(request);
     const { email, password } = body;
 
     // Validation
@@ -41,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Rate limiting
     const clientIp = getClientIp(request);
-    if (!checkRateLimit(clientIp)) {
+    if (!(await checkRateLimit(clientIp))) {
       return ApiHandler.error('Too many login attempts. Please try again later.', 429);
     }
 
@@ -94,6 +105,10 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return ApiHandler.error('Request body must be valid JSON.', 400);
+    }
+
     return ApiHandler.internalServerError('Login error', error);
   }
 }

@@ -26,6 +26,11 @@ describe('File Upload', () => {
       expect(result.valid).toBe(false);
       expect(result.error).toContain('not allowed');
     });
+
+    it('should reject svg uploads', () => {
+      const result = validateFileType('image/svg+xml');
+      expect(result.valid).toBe(false);
+    });
   });
 
   describe('File size validation', () => {

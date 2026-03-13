@@ -1,4 +1,7 @@
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth';
+import { env } from '@/lib/env';
+import { validateTrustedOrigin } from '@/lib/request';
 import { featuredArticles } from '@/lib/site-content';
 
 // Seed data for the editorial platform
@@ -81,6 +84,10 @@ const seedCertifications = [
 ];
 
 export async function GET() {
+  if (env.NODE_ENV === 'production' && env.ALLOW_ADMIN_SEED_API !== 'true') {
+    return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
   return NextResponse.json({
     message: 'Seed data endpoint',
     data: {
@@ -92,8 +99,22 @@ export async function GET() {
   });
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    if (env.NODE_ENV === 'production' && env.ALLOW_ADMIN_SEED_API !== 'true') {
+      return NextResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+
+    const session = await getSession();
+    if (!session || session.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const { db } = await import('@/lib/db');
 
     // Seed articles

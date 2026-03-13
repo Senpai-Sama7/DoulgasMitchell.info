@@ -102,6 +102,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const showRuntimeAnalytics = process.env.NODE_ENV === 'production';
+  const themeBootstrapScript = `
+    try {
+      const storedTheme = window.localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const isDark = storedTheme === 'dark' || (!storedTheme && prefersDark);
+      document.documentElement.classList.toggle('dark', isDark);
+    } catch {}
+  `;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -155,7 +163,7 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
         <link rel="icon" href="/icons/favicon-32x32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icons/favicon-192x192.png" sizes="192x192" type="image/png" />
@@ -164,9 +172,10 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
         {/* Skip Link for Accessibility */}
         <a href="#main-content" className="skip-link">

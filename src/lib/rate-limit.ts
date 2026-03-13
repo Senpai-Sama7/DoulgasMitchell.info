@@ -1,3 +1,5 @@
+import { isRedisActive, redis } from '@/lib/redis';
+
 export interface RateLimitOptions {
   limit: number;
   windowMs: number;
@@ -31,7 +33,7 @@ function cleanupStore() {
   }
 }
 
-export function rateLimit(identifier: string, options: RateLimitOptions): RateLimitResult {
+function rateLimitInMemory(identifier: string, options: RateLimitOptions): RateLimitResult {
   cleanupStore(); // Clear expired entries to prevent memory exhaustion
   
   const now = Date.now();
@@ -67,6 +69,44 @@ export function rateLimit(identifier: string, options: RateLimitOptions): RateLi
     remaining: Math.max(options.limit - existing.count, 0),
     resetAt: existing.resetAt,
   };
+}
+
+async function rateLimitInRedis(identifier: string, options: RateLimitOptions): Promise<RateLimitResult> {
+  const now = Date.now();
+  const storeKey = createStoreKey(identifier, options.prefix);
+
+  const count = await redis!.incr(storeKey);
+
+  if (count === 1) {
+    await redis!.pexpire(storeKey, options.windowMs);
+  }
+
+  let ttl = await redis!.pttl(storeKey);
+  if (ttl < 0) {
+    await redis!.pexpire(storeKey, options.windowMs);
+    ttl = options.windowMs;
+  }
+
+  const resetAt = now + ttl;
+  const allowed = count <= options.limit;
+
+  return {
+    allowed,
+    remaining: allowed ? Math.max(options.limit - count, 0) : 0,
+    resetAt,
+  };
+}
+
+export async function rateLimit(identifier: string, options: RateLimitOptions): Promise<RateLimitResult> {
+  if (!isRedisActive()) {
+    return rateLimitInMemory(identifier, options);
+  }
+
+  try {
+    return await rateLimitInRedis(identifier, options);
+  } catch {
+    return rateLimitInMemory(identifier, options);
+  }
 }
 
 export function clearRateLimit(identifier: string, prefix = 'global') {

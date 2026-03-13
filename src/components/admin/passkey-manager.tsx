@@ -153,7 +153,14 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                             </p>
                           </div>
                         </div>
-                        <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-destructive">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="text-muted-foreground hover:text-destructive"
+                          aria-label={`Passkey removal is not available yet for ${pk.deviceName || 'this device'}`}
+                          title="Passkey removal is not available from this interface yet."
+                          disabled
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </motion.div>

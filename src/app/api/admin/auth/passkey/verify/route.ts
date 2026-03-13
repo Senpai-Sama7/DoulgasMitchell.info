@@ -2,8 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyAuthentication } from '@/lib/webauthn';
 import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { createSession, setSessionCookie, clearRateLimit } from '@/lib/auth';
-import { getClientIp, getUserAgent } from '@/lib/request';
+import {
+  getClientIp,
+  getUserAgent,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 import { logActivity } from '@/lib/activity';
+import { rateLimit } from '@/lib/rate-limit';
 import {
   findAdminUserByEmail,
   getAdminPasskeysForUser,
@@ -13,11 +20,30 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
+    const body = await readJsonBody<{
+      email?: string;
+      response?: { id?: string };
+    }>(request);
     const { email, response } = body;
 
     if (!email || !response) {
       return NextResponse.json({ error: 'Email and response are required' }, { status: 400 });
+    }
+
+    const clientIp = getClientIp(request);
+    const limit = await rateLimit(`${clientIp}:${String(email).toLowerCase()}`, {
+      limit: 10,
+      windowMs: 15 * 60 * 1000,
+      prefix: 'passkey-auth-verify',
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many passkey attempts. Please try again later.' }, { status: 429 });
     }
 
     const expectedChallenge = await consumePasskeyChallengeCookie('auth', email);
@@ -53,7 +79,6 @@ export async function POST(request: NextRequest) {
       await updateAdminLastLogin(user.id);
 
       // Create session
-      const clientIp = getClientIp(request);
       const token = await createSession(user.id, user.email, user.name || 'Admin', {
         ipAddress: clientIp,
         userAgent: getUserAgent(request),
@@ -85,6 +110,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: 'Verification failed' }, { status: 401 });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
+
     console.error('Passkey verify error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

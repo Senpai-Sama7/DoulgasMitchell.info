@@ -162,7 +162,7 @@ function JITTerminal() {
 
 export function EnhancedBookSection() {
   return (
-    <section id="terminal" className="section-spacing bg-muted/30 relative overflow-hidden">
+    <section id="book" className="section-spacing bg-muted/30 relative overflow-hidden">
       <div className="editorial-container relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

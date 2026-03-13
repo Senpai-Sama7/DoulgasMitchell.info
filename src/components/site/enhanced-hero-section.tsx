@@ -27,12 +27,6 @@ export function EnhancedHeroSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
   const scale = useTransform(scrollYProgress, [0, 0.8], [1, 0.95]);
 
-
-  // Ensure scroll starts at top
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   // Role rotation
   useEffect(() => {
     if (prefersReducedMotion) return;
@@ -100,13 +94,9 @@ export function EnhancedHeroSection() {
               <span className="font-mono text-lg text-muted-foreground/30">──╮</span>
             </div>
 
-            <h1 
-              // @ts-ignore
-              fetchPriority="high"
-              className="editorial-title mb-2 relative"
-            >
+            <div className="editorial-title mb-2 relative">
               <ParticleTitle firstName="Douglas" lastName="Mitchell" />
-            </h1>
+            </div>
 
             {/* ASCII Bottom Decoration */}
             <div className="flex items-center justify-center gap-4 mt-2 mb-6">

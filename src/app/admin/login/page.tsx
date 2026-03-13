@@ -6,7 +6,6 @@ import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Fingerprint } from 'lucide
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
@@ -16,7 +15,6 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const [isSetupLoading, setIsSetupLoading] = useState(false);
@@ -251,14 +249,10 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted to-background p-4">
+    <main id="main-content" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-muted to-background p-4">
       {/* Background ASCII Pattern */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-[0.02]">
-        <pre className="font-mono text-[8px] text-foreground leading-none">
-          {asciiRows.map((row, index) => (
-            <div key={index}>{row}</div>
-          ))}
-        </pre>
+        <pre className="font-mono text-[8px] text-foreground leading-none">{asciiRows.join('\n')}</pre>
       </div>
 
       <motion.div
@@ -336,6 +330,8 @@ export default function AdminLoginPage() {
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    aria-pressed={showPassword}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -346,18 +342,11 @@ export default function AdminLoginPage() {
                 </div>
               </div>
 
-              {/* Remember Me & Forgot Password */}
+              {/* Session & recovery */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="remember"
-                    checked={rememberMe}
-                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
-                  />
-                  <Label htmlFor="remember" className="text-sm font-normal">
-                    Remember me
-                  </Label>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  Admin sessions stay active on this device for up to 7 days.
+                </p>
                 <button
                   type="button"
                   onClick={handleForgotPassword}
@@ -424,6 +413,6 @@ export default function AdminLoginPage() {
           Protected by enterprise-grade security
         </p>
       </motion.div>
-    </div>
+    </main>
   );
 }

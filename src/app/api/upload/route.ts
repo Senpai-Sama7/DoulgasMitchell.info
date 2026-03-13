@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
-import { getClientIp } from '@/lib/request';
+import {
+  getClientIp,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 import { rateLimit } from '@/lib/rate-limit';
 import { formatFileSize, getFileCategory } from '@/lib/upload';
 import { deleteStoredAsset, processFileUpload } from '@/lib/upload-server';
@@ -11,6 +16,11 @@ import { hasTable } from '@/lib/db-introspection';
 // POST /api/upload - Upload files
 export async function POST(request: NextRequest) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     // Check authentication
     const session = await getSession();
     if (!session) {
@@ -38,7 +48,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadLimit = rateLimit(`${session.userId}:${getClientIp(request)}`, {
+    const uploadLimit = await rateLimit(`${session.userId}:${getClientIp(request)}`, {
       limit: 20,
       windowMs: 15 * 60 * 1000,
       prefix: 'upload',
@@ -177,19 +187,24 @@ export async function GET(request: NextRequest) {
     const total = await db.media.count({ where });
 
     // Get media files
+    const includeUsageCounts = (await hasTable('ArticleMedia')) && (await hasTable('ProjectMedia'));
     const media = await db.media.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
-      include: {
-        _count: {
-          select: {
-            articleUsages: true,
-            projectUsages: true,
-          },
-        },
-      },
+      ...(includeUsageCounts
+        ? {
+            include: {
+              _count: {
+                select: {
+                  articleUsages: true,
+                  projectUsages: true,
+                },
+              },
+            },
+          }
+        : {}),
     });
 
     return NextResponse.json({
@@ -214,6 +229,11 @@ export async function GET(request: NextRequest) {
 // DELETE /api/upload - Delete media files
 export async function DELETE(request: NextRequest) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const session = await getSession();
     if (!session) {
       return NextResponse.json(
@@ -229,7 +249,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const body = await readJsonBody<{ ids?: string[] }>(request);
     const { ids } = body;
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -274,6 +294,13 @@ export async function DELETE(request: NextRequest) {
       deleted: result.count,
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json(
+        { error: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
+    }
+
     console.error('Media delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete media' },

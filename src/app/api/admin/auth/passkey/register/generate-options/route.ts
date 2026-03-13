@@ -3,9 +3,15 @@ import { getRegistrationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { findAdminUserById } from '@/lib/admin-compat';
+import { validateTrustedOrigin } from '@/lib/request';
 
 export async function POST(request: NextRequest) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

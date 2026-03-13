@@ -32,10 +32,23 @@ const envSchema = z.object({
   // App config
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   NEXT_PUBLIC_SITE_URL: z.string().url().default('https://douglasmitchell.info'),
+  ALLOW_PUBLIC_ADMIN_SETUP: z.string().default('false'),
+  ALLOW_ADMIN_SEED_API: z.string().default('false'),
 
   // AI
   GOOGLE_GEMINI_API_KEY: z.string().optional(),
   GEMINI_API_KEY: z.string().optional(),
+  GROQ_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  SAMBANOVA_API_KEY: z.string().optional(),
+  CEREBRAS_API_KEY: z.string().optional(),
+  MISTRAL_API_KEY: z.string().optional(),
+  MINIMAX_API_KEY: z.string().optional(),
+  OLLAMA_CLOUD_API_KEY: z.string().optional(),
+  OLLAMA_CLOUD_BASE_URL: z.string().url().optional(),
+  OPENCODE_ZEN_API_KEY: z.string().optional(),
+  OPENCODE_ZEN_BASE_URL: z.string().url().optional(),
+  OPENAI_API_KEY: z.string().optional(),
   
   // Features
   ENABLE_PASSKEYS: z.string().default('true'),
@@ -73,9 +86,11 @@ export const env = getEnv();
 
 // Feature flags
 export const features = {
-  passkeys: env.ENABLE_PASSKEYS === 'true' && env.ADMIN_PASSWORD,
+  passkeys: env.ENABLE_PASSKEYS === 'true',
   analytics: env.ENABLE_ANALYTICS === 'true',
   email: env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS,
   s3: env.STORAGE_PROVIDER === 's3' && env.S3_BUCKET && env.S3_ACCESS_KEY,
   redis: env.UPSTASH_REDIS_URL && env.UPSTASH_REDIS_TOKEN,
+  publicAdminSetup: env.ALLOW_PUBLIC_ADMIN_SETUP === 'true',
+  adminSeedApi: env.ALLOW_ADMIN_SEED_API === 'true',
 } as const;

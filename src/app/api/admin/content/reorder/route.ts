@@ -1,8 +1,22 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { ApiHandler } from '@/lib/api-response';
 import { logActivity } from '@/lib/activity';
+import {
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
+
+const reorderSchema = z.object({
+  type: z.enum(['article', 'project', 'certification']),
+  items: z.array(z.object({
+    id: z.string().trim().min(1),
+    order: z.number().int().min(0),
+  })).min(1),
+});
 
 export async function PATCH(request: Request) {
   const session = await getSession();
@@ -11,20 +25,22 @@ export async function PATCH(request: Request) {
     return ApiHandler.unauthorized();
   }
 
+  const originCheck = validateTrustedOrigin(request);
+  if (!originCheck.allowed) {
+    return ApiHandler.forbidden(originCheck.reason);
+  }
+
   try {
-    const { type, items } = await request.json();
-
-    if (!type || !Array.isArray(items)) {
-      return ApiHandler.error('Missing type or items array', 400);
+    const payload = reorderSchema.safeParse(await readJsonBody(request));
+    if (!payload.success) {
+      return ApiHandler.error('Invalid content reorder payload.', 400, payload.error.flatten());
     }
 
-    if (type !== 'article' && type !== 'project' && type !== 'certification') {
-      return ApiHandler.error('Invalid content type', 400);
-    }
+    const { type, items } = payload.data;
 
     // Perform atomic updates in a transaction
     await db.$transaction(
-      items.map((item: { id: string; order: number }) => {
+      items.map((item) => {
         if (type === 'article') {
           return db.article.update({
             where: { id: item.id },
@@ -53,6 +69,10 @@ export async function PATCH(request: Request) {
 
     return ApiHandler.success({ message: `Successfully reordered ${type}s` });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return ApiHandler.error('Request body must be valid JSON.', 400);
+    }
+
     console.error('Reorder error:', error);
     return ApiHandler.internalServerError('Failed to update content order', error);
   }

@@ -64,6 +64,6 @@ export class ApiHandler {
    */
   static internalServerError(error = 'Internal server error', details?: unknown) {
     console.error(`[API Error] ${error}:`, details);
-    return this.error(error, 500, details);
+    return this.error(error, 500);
   }
 }

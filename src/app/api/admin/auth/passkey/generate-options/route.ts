@@ -2,14 +2,36 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { findAdminUserByEmail, getAdminPasskeysForUser } from '@/lib/admin-compat';
+import {
+  getClientIp,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
+import { rateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
+    const body = await readJsonBody<{ email?: string }>(request);
     const { email } = body;
 
     if (!email) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    }
+
+    const limit = await rateLimit(`${getClientIp(request)}:${String(email).toLowerCase()}`, {
+      limit: 10,
+      windowMs: 15 * 60 * 1000,
+      prefix: 'passkey-auth-options',
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json({ error: 'Too many passkey attempts. Please try again later.' }, { status: 429 });
     }
 
     const user = await findAdminUserByEmail(email);
@@ -34,6 +56,10 @@ export async function POST(request: NextRequest) {
       options,
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
+
     console.error('Passkey options error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

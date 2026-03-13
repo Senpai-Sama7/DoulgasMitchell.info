@@ -1,8 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
-import { getClientIp, getUserAgent } from '@/lib/request';
 import { hasTable } from '@/lib/db-introspection';
+import { rateLimit } from '@/lib/rate-limit';
+import {
+  getClientIp,
+  getUserAgent,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 
 const pageViewSchema = z.object({
   path: z.string().trim().min(1).max(200),
@@ -12,11 +19,16 @@ const pageViewSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ success: true }, { status: 202 });
+    }
+
     if (!(await hasTable('PageView'))) {
       return NextResponse.json({ success: true });
     }
 
-    const body = await request.json();
+    const body = await readJsonBody(request);
     const parsed = pageViewSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -24,19 +36,33 @@ export async function POST(request: NextRequest) {
     }
 
     const { path, sessionId, referrer } = parsed.data;
+    const clientIp = getClientIp(request);
+    const limit = await rateLimit(clientIp, {
+      limit: 120,
+      windowMs: 15 * 60 * 1000,
+      prefix: 'page-view',
+    });
+
+    if (!limit.allowed) {
+      return NextResponse.json({ success: true }, { status: 202 });
+    }
 
     await db.pageView.create({
       data: {
         path,
         sessionId,
         referrer: referrer || undefined,
-        ipAddress: getClientIp(request),
+        ipAddress: clientIp,
         userAgent: getUserAgent(request),
       },
     });
 
     return NextResponse.json({ success: true });
-  } catch {
+  } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+    }
+
     return NextResponse.json({ success: true });
   }
 }

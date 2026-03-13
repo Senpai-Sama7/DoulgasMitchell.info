@@ -13,6 +13,11 @@ import {
   resolveAdminAiModel,
   saveAdminAiSettings,
 } from '@/lib/admin-ai';
+import {
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 
 async function requireAdminSession() {
   const session = await getSession();
@@ -51,8 +56,13 @@ export async function PUT(req: Request) {
     return ApiHandler.unauthorized();
   }
 
+  const originCheck = validateTrustedOrigin(req);
+  if (!originCheck.allowed) {
+    return ApiHandler.forbidden(originCheck.reason);
+  }
+
   try {
-    const body = await req.json();
+    const body = await readJsonBody<Record<string, unknown>>(req);
     const selectedModel =
       typeof body.selectedModel === 'string' && body.selectedModel.trim()
         ? body.selectedModel.trim()
@@ -60,6 +70,10 @@ export async function PUT(req: Request) {
     const customModel =
       typeof body.customModel === 'string'
         ? body.customModel.trim()
+        : undefined;
+    const monthlyBudgetUsd =
+      typeof body.monthlyBudgetUsd === 'number' && Number.isFinite(body.monthlyBudgetUsd)
+        ? body.monthlyBudgetUsd
         : undefined;
 
     if (selectedModel && selectedModel !== CUSTOM_ADMIN_AI_MODEL_ID && !isAdminAiCatalogModel(selectedModel)) {
@@ -73,7 +87,7 @@ export async function PUT(req: Request) {
     const settings = await saveAdminAiSettings({
       selectedModel,
       customModel,
-      monthlyBudgetUsd: body.monthlyBudgetUsd,
+      monthlyBudgetUsd,
     });
     const usage = await getAdminAiUsage();
 
@@ -83,6 +97,10 @@ export async function PUT(req: Request) {
       budget: buildAdminAiBudgetSummary(settings, usage),
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return ApiHandler.error('Request body must be valid JSON.', 400);
+    }
+
     return ApiHandler.internalServerError('Failed to save AI settings', error);
   }
 }
@@ -94,16 +112,22 @@ export async function POST(req: Request) {
       return ApiHandler.unauthorized();
     }
 
-    const { message } = await req.json();
+    const originCheck = validateTrustedOrigin(req);
+    if (!originCheck.allowed) {
+      return ApiHandler.forbidden(originCheck.reason);
+    }
+
+    const { message } = await readJsonBody<{ message?: string }>(req);
     if (!message) {
       return ApiHandler.error('Message is required');
     }
 
     const apiKey = process.env.GOOGLE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return ApiHandler.success({
-        reply: '[SYSTEM ERROR] Missing Google Gemini API key in environment.',
-      });
+      return ApiHandler.error(
+        'Google Gemini is not configured. Add `GEMINI_API_KEY` or `GOOGLE_GEMINI_API_KEY` to enable admin chat.',
+        503
+      );
     }
 
     const settings = await getAdminAiSettings();
@@ -134,12 +158,16 @@ export async function POST(req: Request) {
       usage,
     });
   } catch (error: unknown) {
+    if (isInvalidJsonBodyError(error)) {
+      return ApiHandler.error('Request body must be valid JSON.', 400);
+    }
+
     console.error('AI Route Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown AI provider failure.';
     if (/API key not valid|API_KEY_INVALID/i.test(message)) {
       return ApiHandler.error('Gemini API key is invalid. Update `GEMINI_API_KEY` or `GOOGLE_GEMINI_API_KEY` in the environment.', 502);
     }
 
-    return ApiHandler.error(`AI request failed: ${message}`, 500);
+    return ApiHandler.error('AI request failed because the provider did not return a usable response.', 502);
   }
 }

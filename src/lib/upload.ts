@@ -1,6 +1,6 @@
 // File type configurations
 export const ALLOWED_MIME_TYPES = {
-  image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml'],
+  image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'],
   video: ['video/mp4', 'video/webm', 'video/ogg'],
   audio: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm'],
   document: [

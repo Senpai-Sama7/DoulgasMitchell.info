@@ -12,7 +12,13 @@ import {
   featuredProjects,
 } from '@/lib/site-content';
 import { getAdminPasskeysForUser, getAdminSecuritySummary } from '@/lib/admin-compat';
-import { hasColumns } from '@/lib/db-introspection';
+import { hasColumns, hasTable } from '@/lib/db-introspection';
+import {
+  countContactSubmissions,
+  countMediaRecords,
+  countNewsletterSubscribers,
+  getRecentActivityEntries,
+} from '@/lib/operational-compat';
 
 export interface SearchableArticle {
   slug: string;
@@ -33,6 +39,27 @@ export interface SearchableProject {
   status: string;
   featured: boolean;
   updatedAt: string;
+}
+
+interface AdminSnapshotItem {
+  id: string;
+  title: string;
+  slug: string;
+  status: string;
+  featured: boolean;
+  updatedAt: string;
+  href: string;
+  order?: number;
+}
+
+interface AdminContentSnapshot {
+  editable: boolean;
+  source: 'database' | 'fallback';
+  warning: string | null;
+  articles: AdminSnapshotItem[];
+  projects: AdminSnapshotItem[];
+  certifications: AdminSnapshotItem[];
+  books: AdminSnapshotItem[];
 }
 
 const tableAvailability = new Map<string, Promise<boolean>>();
@@ -252,6 +279,8 @@ export const getLandingPageData = cache(async () => {
       articles: featuredArticles,
       certifications: certificationShowcase,
       book: bookShowcase,
+      contentSource: 'fallback' as const,
+      contentWarning: 'Live content storage is unavailable, so the site is serving the built-in editorial fallback dataset.',
     };
   }
 
@@ -297,6 +326,8 @@ export const getLandingPageData = cache(async () => {
     articles,
     certifications,
     book,
+    contentSource: 'database' as const,
+    contentWarning: null,
   };
 });
 
@@ -425,50 +456,15 @@ export const getSearchableContent = cache(async () => {
 });
 
 export const getAdminDashboardData = cache(async () => {
-  const canUseAdminTables = await hasTables([
-    'ActivityLog',
-    'Article',
-    'ContactSubmission',
-    'Media',
-    'Newsletter',
-    'PageView',
-    'Project',
-  ]);
-
-  if (!canUseAdminTables) {
-    return {
-      stats: {
-        articles: featuredArticles.length,
-        projects: featuredProjects.length,
-        media: 0,
-        contacts: 0,
-        subscribers: 0,
-        pageViews: 0,
-      },
-      recentActivity: [],
-    };
-  }
-
   return withFallback(async () => {
     const [articles, projects, media, contacts, subscribers, pageViews, recentActivity] = await Promise.all([
-      db.article.count(),
-      db.project.count(),
-      db.media.count(),
-      db.contactSubmission.count(),
-      db.newsletter.count({ where: { isActive: true } }),
-      db.pageView.count(),
-      db.activityLog.findMany({
-        orderBy: { createdAt: 'desc' },
-        take: 8,
-        include: {
-          user: {
-            select: {
-              name: true,
-              email: true,
-            },
-          },
-        },
-      }),
+      (await hasTables(['Article'])) ? db.article.count() : featuredArticles.length,
+      (await hasTables(['Project'])) ? db.project.count() : featuredProjects.length,
+      countMediaRecords(),
+      countContactSubmissions(),
+      countNewsletterSubscribers(),
+      (await hasTable('PageView')) ? db.pageView.count() : 0,
+      getRecentActivityEntries(8),
     ]);
 
     return {
@@ -486,7 +482,7 @@ export const getAdminDashboardData = cache(async () => {
         resource: entry.resource,
         resourceId: entry.resourceId,
         relativeTime: formatDistanceToNowStrict(entry.createdAt, { addSuffix: true }),
-        actor: entry.user?.name || entry.user?.email || 'System',
+        actor: entry.actor || 'System',
       })),
     };
   }, {
@@ -503,50 +499,62 @@ export const getAdminDashboardData = cache(async () => {
 });
 
 export const getAdminContentSnapshot = cache(async () => {
+  const fallbackSnapshot: AdminContentSnapshot = {
+    editable: false,
+    source: 'fallback' as const,
+    warning: 'Content tables are unavailable. You can preview the fallback inventory, but editing is disabled until the database is provisioned.',
+    articles: featuredArticles.map((article) => ({
+      id: article.slug,
+      title: article.title,
+      slug: article.slug,
+      status: 'published',
+      featured: article.featured,
+      order: 0,
+      updatedAt: new Date().toISOString(),
+      href: `/writing/${article.slug}`,
+    })),
+    projects: featuredProjects.map((project) => ({
+      id: project.slug,
+      title: project.title,
+      slug: project.slug,
+      status: 'published',
+      featured: project.featured,
+      order: 0,
+      updatedAt: new Date().toISOString(),
+      href: `/work/${project.slug}`,
+    })),
+    certifications: certificationShowcase.map((certification) => ({
+      id: certification.id,
+      title: certification.title,
+      slug: certification.id,
+      status: 'published',
+      featured: certification.featured,
+      updatedAt: new Date().toISOString(),
+      href: certification.credentialUrl,
+    })),
+    books: [
+      {
+        id: 'book',
+        title: bookShowcase.title,
+        slug: 'book',
+        status: 'published',
+        featured: true,
+        updatedAt: new Date().toISOString(),
+        href: bookShowcase.amazonUrl,
+      },
+    ],
+  };
+
+  const degradedSnapshot: AdminContentSnapshot = {
+    ...fallbackSnapshot,
+    warning: 'The live content query failed, so the admin is showing fallback inventory.',
+  };
+
   if (!(await hasTables(['Article', 'Book', 'Certification', 'Project']))) {
-    return {
-      articles: featuredArticles.map((article) => ({
-        id: article.slug,
-        title: article.title,
-        slug: article.slug,
-        status: 'published',
-        featured: article.featured,
-        updatedAt: new Date().toISOString(),
-        href: `/writing/${article.slug}`,
-      })),
-      projects: featuredProjects.map((project) => ({
-        id: project.slug,
-        title: project.title,
-        slug: project.slug,
-        status: 'published',
-        featured: project.featured,
-        updatedAt: new Date().toISOString(),
-        href: `/work/${project.slug}`,
-      })),
-      certifications: certificationShowcase.map((certification) => ({
-        id: certification.id,
-        title: certification.title,
-        slug: certification.id,
-        status: 'published',
-        featured: certification.featured,
-        updatedAt: new Date().toISOString(),
-        href: certification.credentialUrl,
-      })),
-      books: [
-        {
-          id: 'book',
-          title: bookShowcase.title,
-          slug: 'book',
-          status: 'published',
-          featured: true,
-          updatedAt: new Date().toISOString(),
-          href: bookShowcase.amazonUrl,
-        },
-      ],
-    };
+    return fallbackSnapshot;
   }
 
-  return withFallback(async () => {
+  return withFallback(async (): Promise<AdminContentSnapshot> => {
     const [articles, projects, certifications, books] = await Promise.all([
       db.article.findMany({
         orderBy: [{ featured: 'desc' }, { order: 'asc' }, { updatedAt: 'desc' }],
@@ -595,6 +603,9 @@ export const getAdminContentSnapshot = cache(async () => {
     ]);
 
     return {
+      editable: true,
+      source: 'database' as const,
+      warning: null as string | null,
       articles: articles.map((article) => ({
         id: article.id,
         title: article.title,
@@ -634,46 +645,7 @@ export const getAdminContentSnapshot = cache(async () => {
         href: book.amazonUrl || '#',
       })),
     };
-  }, {
-    articles: featuredArticles.map((article) => ({
-      id: article.slug,
-      title: article.title,
-      slug: article.slug,
-      status: 'published',
-      featured: article.featured,
-      updatedAt: new Date().toISOString(),
-      href: `/writing/${article.slug}`,
-    })),
-    projects: featuredProjects.map((project) => ({
-      id: project.slug,
-      title: project.title,
-      slug: project.slug,
-      status: 'published',
-      featured: project.featured,
-      updatedAt: new Date().toISOString(),
-      href: `/work/${project.slug}`,
-    })),
-    certifications: certificationShowcase.map((certification) => ({
-      id: certification.id,
-      title: certification.title,
-      slug: certification.id,
-      status: 'published',
-      featured: certification.featured,
-      updatedAt: new Date().toISOString(),
-      href: certification.credentialUrl,
-    })),
-    books: [
-      {
-        id: 'book',
-        title: bookShowcase.title,
-        slug: 'book',
-        status: 'published',
-        featured: true,
-        updatedAt: new Date().toISOString(),
-        href: bookShowcase.amazonUrl,
-      },
-    ],
-  });
+  }, degradedSnapshot);
 });
 
 export const getAdminAnalyticsData = cache(async () => {
@@ -686,16 +658,23 @@ export const getAdminAnalyticsData = cache(async () => {
     pageViewSeries: [] as Array<{ date: string; views: number }>,
   };
 
-  if (!(await hasTables(['ContactSubmission', 'Newsletter', 'PageView']))) {
-    return fallback;
+  const [contactSubmissions, newsletterSubscribers] = await Promise.all([
+    countContactSubmissions(),
+    countNewsletterSubscribers(),
+  ]);
+
+  if (!(await hasTable('PageView'))) {
+    return {
+      ...fallback,
+      contactSubmissions,
+      newsletterSubscribers,
+    };
   }
 
   return withFallback(async () => {
-    const [totalPageViews, uniqueSessions, contactSubmissions, newsletterSubscribers, pageViews] = await Promise.all([
+    const [totalPageViews, uniqueSessions, pageViews] = await Promise.all([
       db.pageView.count(),
       db.pageView.groupBy({ by: ['sessionId'] }),
-      db.contactSubmission.count(),
-      db.newsletter.count({ where: { isActive: true } }),
       db.pageView.findMany({
         orderBy: { createdAt: 'desc' },
         take: 500,
@@ -731,7 +710,11 @@ export const getAdminAnalyticsData = cache(async () => {
       topPages,
       pageViewSeries,
     };
-  }, fallback);
+  }, {
+    ...fallback,
+    contactSubmissions,
+    newsletterSubscribers,
+  });
 });
 
 export const getAdminSecurityData = cache(async () => {

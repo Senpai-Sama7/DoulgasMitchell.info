@@ -1,13 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { logActivity } from '@/lib/activity';
 import { contactSubmissionSchema } from '@/lib/forms';
+import { createContactSubmissionRecord } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
-import { getClientIp } from '@/lib/request';
+import {
+  getClientIp,
+  isInvalidJsonBodyError,
+  readJsonBody,
+  validateTrustedOrigin,
+} from '@/lib/request';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
+    const body = await readJsonBody(request);
     const parsed = contactSubmissionSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -18,7 +28,7 @@ export async function POST(request: NextRequest) {
     }
 
     const clientIp = getClientIp(request);
-    const limit = rateLimit(clientIp, {
+    const limit = await rateLimit(clientIp, {
       limit: 5,
       windowMs: 15 * 60 * 1000,
       prefix: 'contact',
@@ -38,15 +48,12 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const submission = await db.contactSubmission.create({
-        data: {
-          name,
-          email,
-          subject: subject || null,
-          message,
-          source: source || 'website',
-          status: 'new',
-        },
+      const submission = await createContactSubmissionRecord({
+        name,
+        email,
+        subject: subject || null,
+        message,
+        source: source || 'website',
       });
 
       await logActivity({
@@ -71,6 +78,13 @@ export async function POST(request: NextRequest) {
       message: 'Contact submission received',
     });
   } catch (error) {
+    if (isInvalidJsonBodyError(error)) {
+      return NextResponse.json(
+        { error: 'Request body must be valid JSON.' },
+        { status: 400 }
+      );
+    }
+
     console.error('Contact submission error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },

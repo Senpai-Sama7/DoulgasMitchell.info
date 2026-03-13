@@ -21,6 +21,8 @@ function getJwtSecret() {
 }
 
 const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
+const JWT_ISSUER = 'douglasmitchell.info';
+const JWT_AUDIENCE = 'admin-portal';
 
 export interface Session {
   id: string;
@@ -45,6 +47,8 @@ export async function verifyPassword(password: string, hashedPassword: string): 
 export async function createToken(payload: object): Promise<string> {
   return new SignJWT({ ...payload })
     .setProtectedHeader({ alg: 'HS256' })
+    .setIssuer(JWT_ISSUER)
+    .setAudience(JWT_AUDIENCE)
     .setIssuedAt()
     .setExpirationTime('7d')
     .sign(getJwtSecret());
@@ -53,7 +57,10 @@ export async function createToken(payload: object): Promise<string> {
 // Verify JWT token
 export async function verifyToken(token: string): Promise<Session | null> {
   try {
-    const { payload } = await jwtVerify(token, getJwtSecret());
+    const { payload } = await jwtVerify(token, getJwtSecret(), {
+      issuer: JWT_ISSUER,
+      audience: JWT_AUDIENCE,
+    });
     return payload as unknown as Session;
   } catch {
     return null;
@@ -147,12 +154,14 @@ export async function setSessionCookie(token: string): Promise<void> {
 }
 
 // Rate limiting for login attempts
-export function checkRateLimit(identifier: string): boolean {
-  return rateLimit(identifier, {
+export async function checkRateLimit(identifier: string): Promise<boolean> {
+  const result = await rateLimit(identifier, {
     limit: 5,
     windowMs: 15 * 60 * 1000,
     prefix: 'login',
-  }).allowed;
+  });
+
+  return result.allowed;
 }
 
 // Clear rate limit

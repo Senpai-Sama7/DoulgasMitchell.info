@@ -3,9 +3,15 @@ import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { getRegistrationOptions } from '@/lib/webauthn';
+import { validateTrustedOrigin } from '@/lib/request';
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+    }
+
     const session = await getSession();
     if (!session || !session.userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -29,6 +35,7 @@ export async function POST() {
     cookieStore.set('passkey_challenge', options.challenge, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
       maxAge: 300,
       path: '/',
     });
