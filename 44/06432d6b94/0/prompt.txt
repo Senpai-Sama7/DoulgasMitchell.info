@@ -1,0 +1,103 @@
+run "vercel --prod" fix any problem you encounter
+
+---
+
+run "vercel --prod" fix any problem you encounter
+
+---
+
+move GEMINI.md out the directory
+
+---
+
+You are an AI agent that brings the power of Gemini directly into the terminal. Your task is to analyze the current directory and generate a comprehensive GEMINI.md file to be used as instructional context for future interactions.
+
+**Analysis Process:**
+
+1.  **Initial Exploration:**
+    *   Start by listing the files and directories to get a high-level overview of the structure.
+    *   Read the README file (e.g., `README.md`, `README.txt`) if it exists. This is often the best place to start.
+
+2.  **Iterative Deep Dive (up to 10 files):**
+    *   Based on your initial findings, select a few files that seem most important (e.g., configuration files, main source files, documentation).
+    *   Read them. As you learn more, refine your understanding and decide which files to read next. You don't need to decide all 10 files at once. Let your discoveries guide your exploration.
+
+3.  **Identify Project Type:**
+    *   **Code Project:** Look for clues like `package.json`, `requirements.txt`, `pom.xml`, `go.mod`, `Cargo.toml`, `build.gradle`, or a `src` directory. If you find them, this is likely a software project.
+    *   **Non-Code Project:** If you don't find code-related files, this might be a directory for documentation, research papers, notes, or something else.
+
+**GEMINI.md Content Generation:**
+
+**For a Code Project:**
+
+*   **Project Overview:** Write a clear and concise summary of the project's purpose, main technologies, and architecture.
+*   **Building and Running:** Document the key commands for building, running, and testing the project. Infer these from the files you've read (e.g., `scripts` in `package.json`, `Makefile`, etc.). If you can't find explicit commands, provide a placeholder with a TODO.
+*   **Development Conventions:** Describe any coding styles, testing practices, or contribution guidelines you can infer from the codebase.
+
+**For a Non-Code Project:**
+
+*   **Directory Overview:** Describe the purpose and contents of the directory. What is it for? What kind of information does it hold?
+*   **Key Files:** List the most important files and briefly explain what they contain.
+*   **Usage:** Explain how the contents of this directory are intended to be used.
+
+**Final Output:**
+
+Write the complete content to the `GEMINI.md` file. The output must be well-formatted Markdown.
+
+---
+
+i want you to do a deep dive of everything so you can really understand all of the bits and pieces. Im telling you this now that if you try to skip any parts it will break my website so im asking nicely to please prepare yourself for a rigorous codebase analysis and evaluation: Perform a deep nalyzesis the current directory and 
+project structure to generate a 
+tailored scaffold file (AGENTS.md/
+GEMINI.md/CLAUDE.md) that provides 
+context to AI coding agents. The 
+command examines your codebase and 
+creates project-specific instructions
+loaded before any task, including. Make sure to look at this from an expert point of view and make sure all the question that would ask while looking though this project can be clearly answered in detail, with specific and  able to reference real parts/components, and provide comprehensive context that is knowledge graph aware and semantically cohesive. :
+
+- Architecture details
+- Coding conventions  
+- Testing requirements
+- Preferred tools/commands
+- Style guidelines
+- Semantic code analysis features (
+symbol search, references, 
+definitions, diagnostics)
+
+---
+
+Take on the persona of an expert what would get this job done the best. asking and answering all the necessary questions. and mapping everything out perfectly. Proceed with the most logical next step(s) systematically using advanced, multi-layered logic, reasoning, and sequential thinking, CoT and ToT. Refrain from stopping or asking for my input until everything is done, tested and verified to be real, working and fully functional
+
+---
+
+use all your firecrawl tools to do a full audit of my website
+
+---
+
+fix everything you found but also fix all the problems in the admin portal as well as well as the ai chat box that suppose to be public facing on the main page. && ---ADMIN PORTAL---
+
+-add API_KEY tester 
+- more verbose Analytics telemtry -- on par with google analytics
+- in Content Tab - the "+ Use row editor" & "Filter"button is dead 
+- Content Tab is fake; doesn't tie to real metrics, files, or items on the page
+- the search "Jump to an admin surface" show not only search from the name of - the tabs but also semantic/exact match words for things in setting (e.g."AI", "password", "posts", "chat") and there should be a list of related  setting tied to what you are searching for. 
+- can't actually add post (suppose to be able to render all kinds of multi-media and file types .doxc, txt, md, html, json, tsx, jsx, mp4, mp3, exel, ppt., etc.) and suppose to be adaptive and response so that it perfectly fit the post box ( not extend outside of it or vice versa) even interactive
+artifacts 
+
+- the chatbox in the admin portal cant really make material changes and doesn't seem to be connect to anythign real on the page. just says they can do thing that they later say they cant
+    -additonally the chatbox is suppose to be a JIT on the fly, real time editor and post maker, editor, along with fully control of controllign and modifing the website, front facing and admin portal.
+
+- example of screenshots of some of the problem can be found: "/home/donovan/Pictures/blog-problems/"
+
+- also the mobile rendering of the website and admin portal isnt scalling correctly a lot of the text, containers only showing half. 
+
+-
+
+---
+
+continue
+
+---
+
+perform a code review, hostile audit and vulnuerabiltiy scan of the entire repo. fix any problem you might encounter . but first use CoT, ToT, Sequential thinking, and multi-step reasoning to plan out the orchestration fromt he perspective of a DevOps & Quality Architect to make sure you are answering all of the question that need to asked during this rigorous evaluation. Always proceed with the most logical next step(s). Refrain from stoping until everything is ran, tested, validated WITH verifiable proof. EACH COMPONENT must be stressed and attacked (and fixed, if broken) before moving on to the next task. You are to /compact you memory and summarize after every phase and reset before moving to the next phase of sub-tasks.
+'

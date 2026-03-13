@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.5.0",
+  "checkpoint_id": "4406432d6b94",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 9,
+  "files_touched": [
+    ".firecrawl/about.md",
+    ".firecrawl/article-rizz.md",
+    ".firecrawl/home.md",
+    ".firecrawl/map.json",
+    ".firecrawl/project-ai.md",
+    ".firecrawl/structured-data.json",
+    ".firecrawl/work-crawl.md",
+    ".firecrawl/writing-crawl.md",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "GEMINI.md",
+    "pnpm-lock.yaml",
+    "src/app/admin/(protected)/analytics/page.tsx",
+    "src/app/admin/(protected)/content/page.tsx",
+    "src/app/admin/(protected)/layout.tsx",
+    "src/app/api/admin/content/route.ts",
+    "src/app/api/admin/operator/route.ts",
+    "src/app/globals.css",
+    "src/app/sitemap.ts",
+    "src/app/work/[slug]/page.tsx",
+    "src/app/writing/[slug]/page.tsx",
+    "src/components/admin/header.tsx",
+    "src/components/admin/operator-console.tsx",
+    "src/components/site/content-renderer.tsx",
+    "src/components/site/enhanced-hero-section.tsx",
+    "src/components/site/footer.tsx",
+    "src/components/site/header.tsx",
+    "src/components/site/public-knowledge-console.tsx",
+    "src/lib/admin-content.ts",
+    "src/lib/content-service.ts",
+    "src/lib/upload.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/44/06432d6b94/0/metadata.json",
+      "transcript": "/44/06432d6b94/0/full.jsonl",
+      "content_hash": "/44/06432d6b94/0/content_hash.txt",
+      "prompt": "/44/06432d6b94/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 42453679,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 38808233,
+    "output_tokens": 49899,
+    "api_call_count": 337
+  }
+}
