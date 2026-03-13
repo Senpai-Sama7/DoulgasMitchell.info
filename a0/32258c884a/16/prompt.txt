@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/assets/.files/GenZ_Black_LGBTQ_Male_Intersectional_Analysis_Report.pdf", "name": "GenZ_Black_LGBTQ_Male_Intersectional_Analysis_Report.pdf", "extension": ".pdf", "mime_type": "application/pdf", "size_bytes": 835864, "zone": "20_reference", "sample_text": "Gen Z Black LGBTQ+ Male:\nIntersectional Analysis Report\nUnderstanding Compounding Risk Factors, Mental Health Disparities, and Intervention\nStrategies\n\nReport Date: 2026-03-12\n\n\f1. Scope and Definitions\n1.1 Objective\nThis report provides a structured data analysis examining the intersectional experiences of Gen Z Black\nLGBTQ+ males in the United States. The analysis applies Critical Race Theory's intersectional framework\nto understand how the convergence of four identity dimensions\u2014generation (Gen Z, born 1997-2012),\nrace (Black/African American), sexual orientation/gender identity (LGBTQ+), and gender (male)\u2014creates\nunique patterns of risk, resilience, and need for targeted interventions.\n\n1.2 Key Metrics\nMetric Category\n\nIndicators\n\nData Source\n\nMental Health\n\nSuicide ideation, depression, anxiety rates\n\nTrevor Project, CDC\n\nDiscrimination\n\nRace, sexuality, and intersectional discrimination\n\nHRC, Williams Institute\n\nHealth Disparities\n\nHIV risk, healthcare access barriers\n\nCDC, NIH\n\nEconomic Factors\n\nEmployment discrimination, poverty rates\n\nMAP, Williams Institute\n\nTable 1: Key Metrics and Data Sources\n\n1.3 Population Definition\nThe target population for this analysis comprises "}]
