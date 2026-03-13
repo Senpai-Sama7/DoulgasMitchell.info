@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/knowledge_base/learning_my_way/learning-my-way/workspace-9dd5d2a9-ac40-4750-9dc0-204faad15438.tar", "name": "workspace-9dd5d2a9-ac40-4750-9dc0-204faad15438.tar", "extension": ".tar", "mime_type": "application/x-tar", "size_bytes": 8771097, "zone": "20_reference", "sample_text": ".dockerignore\n.gitignore\nCaddyfile\nIMPLEMENTATION_SUMMARY.md\nPDF_ANALYSIS.md\nPHASE1_COMPLETE.md\nREADME.md\nbun.lock\ncomponents.json\ndb/custom.db\neslint.config.mjs\nexamples/websocket/frontend.tsx\nexamples/websocket/server.ts\nlib/cache.ts\nlib/db.ts\nlib/error-handler.ts\nmini-services/.gitkeep\nnext.config.ts\npackage.json\npostcss.config.mjs\nprisma/schema.prisma\npublic/logo.svg\npublic/robots.txt\nskills/ASR/LICENSE.txt\nskills/ASR/SKILL.md\nskills/ASR/scripts/asr.ts\nskills/LLM/LICENSE.txt\nskills/LLM/SKILL.md\nskills/LLM/scripts/chat.ts\nskills/TTS/LICENSE.txt\nskills/TTS/SKILL.md\nskills/TTS/tts.ts\nskills/VLM/LICENSE.txt\nskills/VLM/SKILL.md\nskills/VLM/scripts/vlm.ts\nskills/__MACOSX/._ASR\nskills/__MACOSX/._LLM\nskills/__MACOSX/._VLM\nskills/__MACOSX/._canvas-design\nskills/__MACOSX/._document-skills\nskills/__MACOSX/._docx\nskills/__MACOSX/._frontend-design\nskills/__MACOSX/._image-generation\nskills/__MACOSX/._pdf\nskills/__MACOSX/._pptx\nskills/__MACOSX/._video-generation\nskills/__MACOSX/._web-reader\nskills/__MACOSX/._web-search\nskills/__MACOSX/._xlsx\nskills/__MACOSX/ASR/._.DS_Store\nskills/__MACOSX/ASR/._LICENSE.txt\nskills/__MACOSX/ASR/._SKILL.md\nskills/__MACOSX/ASR/._scripts\nskills/__MACOSX/ASR/scripts"}]
