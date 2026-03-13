@@ -74,6 +74,7 @@ const motionItem = {
 export default function MediaLibraryPage() {
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
+  const [featureAvailable, setFeatureAvailable] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -96,6 +97,7 @@ export default function MediaLibraryPage() {
 
       if (data.success) {
         setMedia(data.media);
+        setFeatureAvailable(data.featureAvailable !== false);
       }
     } catch (error) {
       console.error('Failed to fetch media:', error);
@@ -190,7 +192,7 @@ export default function MediaLibraryPage() {
         </div>
         <Dialog open={uploaderOpen} onOpenChange={setUploaderOpen}>
           <DialogTrigger asChild>
-            <Button>
+            <Button disabled={!featureAvailable}>
               <Upload className="h-4 w-4 mr-2" />
               Upload Files
             </Button>
@@ -199,15 +201,29 @@ export default function MediaLibraryPage() {
             <DialogHeader>
               <DialogTitle>Upload Media</DialogTitle>
             </DialogHeader>
-            <MediaUploader
-              onUploadComplete={() => {
-                fetchMedia();
-                setUploaderOpen(false);
-              }}
-            />
+            {featureAvailable ? (
+              <MediaUploader
+                onUploadComplete={() => {
+                  fetchMedia();
+                  setUploaderOpen(false);
+                }}
+              />
+            ) : (
+              <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
+                The media library is disabled until the `Media` table is provisioned for this environment.
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
+
+      {!featureAvailable && (
+        <Card className="border-amber-500/30 bg-amber-500/5">
+          <CardContent className="py-4 text-sm text-amber-700 dark:text-amber-200">
+            Media storage is not provisioned in the current database, so uploads and asset management are unavailable in this environment.
+          </CardContent>
+        </Card>
+      )}
 
       {/* Filters & Search */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -290,15 +306,19 @@ export default function MediaLibraryPage() {
       ) : media.length === 0 ? (
         <div className="text-center py-12">
           <FolderOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <p className="text-muted-foreground">No media files found</p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => setUploaderOpen(true)}
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            Upload your first file
-          </Button>
+          <p className="text-muted-foreground">
+            {featureAvailable ? 'No media files found' : 'Media results are unavailable in this environment'}
+          </p>
+          {featureAvailable && (
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => setUploaderOpen(true)}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload your first file
+            </Button>
+          )}
         </div>
       ) : (
         <motion.div

@@ -11,6 +11,29 @@ import {
   featuredArticles,
   featuredProjects,
 } from '@/lib/site-content';
+import { getAdminPasskeysForUser, getAdminSecuritySummary } from '@/lib/admin-compat';
+import { hasColumns } from '@/lib/db-introspection';
+
+export interface SearchableArticle {
+  slug: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  tags: string[];
+  featured: boolean;
+  updatedAt: string;
+}
+
+export interface SearchableProject {
+  slug: string;
+  title: string;
+  description: string;
+  category: string;
+  techStack: string[];
+  status: string;
+  featured: boolean;
+  updatedAt: string;
+}
 
 const tableAvailability = new Map<string, Promise<boolean>>();
 
@@ -310,6 +333,94 @@ export const getProjectBySlug = cache(async (slug: string) => {
     if (!project) return fallback;
 
     return mapDbProjectToShowcase(project);
+  }, fallback);
+});
+
+export const getSearchableContent = cache(async () => {
+  const fallback = {
+    articles: featuredArticles.map((article) => ({
+      slug: article.slug,
+      title: article.title,
+      excerpt: article.excerpt,
+      category: article.category,
+      tags: article.tags,
+      featured: article.featured,
+      updatedAt: new Date().toISOString(),
+    })),
+    projects: featuredProjects.map((project) => ({
+      slug: project.slug,
+      title: project.title,
+      description: project.description,
+      category: project.category,
+      techStack: project.techStack,
+      status: project.status,
+      featured: project.featured,
+      updatedAt: new Date().toISOString(),
+    })),
+  };
+
+  if (!(await hasTables(['Article', 'Project']))) {
+    return fallback;
+  }
+
+  return withFallback(async () => {
+    const [articles, projects] = await Promise.all([
+      db.article.findMany({
+        where: { published: true },
+        orderBy: [{ featured: 'desc' }, { publishedAt: 'desc' }, { updatedAt: 'desc' }],
+        select: {
+          slug: true,
+          title: true,
+          excerpt: true,
+          category: true,
+          tags: true,
+          featured: true,
+          publishedAt: true,
+          updatedAt: true,
+        },
+      }),
+      db.project.findMany({
+        orderBy: [{ featured: 'desc' }, { updatedAt: 'desc' }],
+        select: {
+          slug: true,
+          title: true,
+          description: true,
+          category: true,
+          techStack: true,
+          status: true,
+          featured: true,
+          updatedAt: true,
+        },
+      }),
+    ]);
+
+    return {
+      articles:
+        articles.length > 0
+          ? articles.map<SearchableArticle>((article) => ({
+              slug: article.slug,
+              title: article.title,
+              excerpt: article.excerpt,
+              category: titleCaseCategory(article.category),
+              tags: parseStringArray(article.tags),
+              featured: article.featured,
+              updatedAt: (article.publishedAt ?? article.updatedAt).toISOString(),
+            }))
+          : fallback.articles,
+      projects:
+        projects.length > 0
+          ? projects.map<SearchableProject>((project) => ({
+              slug: project.slug,
+              title: project.title,
+              description: project.description,
+              category: titleCaseCategory(project.category),
+              techStack: parseStringArray(project.techStack),
+              status: titleCaseCategory(project.status),
+              featured: project.featured,
+              updatedAt: project.updatedAt.toISOString(),
+            }))
+          : fallback.projects,
+    };
   }, fallback);
 });
 
@@ -637,8 +748,25 @@ export const getAdminSecurityData = cache(async () => {
     }>,
   };
 
-  if (!(await hasTables(['AdminUser', 'PasskeyCredential', 'Session']))) {
+  const legacySummary = await getAdminSecuritySummary();
+
+  if (!(await hasTables(['AdminUser', 'PasskeyCredential', 'Session'])) && !legacySummary) {
     return fallback;
+  }
+
+  if (legacySummary) {
+    return {
+      activeSessions: legacySummary.activeSessions,
+      passkeysRegistered: legacySummary.passkeysRegistered,
+      adminUsers: legacySummary.adminUsers,
+      recentSessions: legacySummary.recentSessions.map((session) => ({
+        id: session.id,
+        email: session.email,
+        lastSeen: formatDistanceToNowStrict(session.createdAt, { addSuffix: true }),
+        ipAddress: session.ipAddress || 'unknown',
+        userAgent: session.userAgent || 'unknown',
+      })),
+    };
   }
 
   return withFallback(async () => {
@@ -676,11 +804,24 @@ export const getAdminSecurityData = cache(async () => {
 });
 
 export const getUserPasskeys = cache(async (userId: string) => {
-  if (!(await hasTables(['PasskeyCredential']))) {
-    return [];
-  }
-
   return withFallback(async () => {
+    const legacyPasskeys = await getAdminPasskeysForUser(userId);
+    const supportsCurrentPasskeyShape = await hasColumns('PasskeyCredential', ['userId', 'credentialId']);
+
+    if (legacyPasskeys.length > 0 || !supportsCurrentPasskeyShape) {
+      return legacyPasskeys.map((passkey) => ({
+        id: passkey.id,
+        credentialId: passkey.credentialId,
+        deviceName: passkey.deviceName,
+        createdAt: passkey.createdAt,
+        lastUsedAt: passkey.lastUsedAt,
+      }));
+    }
+
+    if (!(await hasTables(['PasskeyCredential']))) {
+      return [];
+    }
+
     return await db.passkeyCredential.findMany({
       where: { userId },
       orderBy: { createdAt: 'desc' },

@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { verifyAuthentication } from '@/lib/webauthn';
 import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { createSession, setSessionCookie, clearRateLimit } from '@/lib/auth';
 import { getClientIp, getUserAgent } from '@/lib/request';
 import { logActivity } from '@/lib/activity';
+import {
+  findAdminUserByEmail,
+  getAdminPasskeysForUser,
+  updateAdminLastLogin,
+  updatePasskeyCounter,
+} from '@/lib/admin-compat';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,16 +25,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid or expired challenge' }, { status: 400 });
     }
 
-    const user = await db.adminUser.findUnique({
-      where: { email },
-      include: { passkeys: true },
-    });
+    const user = await findAdminUserByEmail(email);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const passkey = user.passkeys.find(p => p.credentialId === response.id);
+    const passkeys = await getAdminPasskeysForUser(user.id);
+    const passkey = passkeys.find((item) => item.credentialId === response.id);
     if (!passkey) {
       return NextResponse.json({ error: 'Passkey not recognized' }, { status: 401 });
     }
@@ -44,19 +47,10 @@ export async function POST(request: NextRequest) {
       const { newCounter } = verification.authenticationInfo;
 
       // Update passkey counter
-      await db.passkeyCredential.update({
-        where: { id: passkey.id },
-        data: { 
-          counter: newCounter,
-          lastUsedAt: new Date(),
-        },
-      });
+      await updatePasskeyCounter({ id: passkey.id, counter: newCounter });
 
       // Update user last login
-      await db.adminUser.update({
-        where: { id: user.id },
-        data: { lastLoginAt: new Date() },
-      });
+      await updateAdminLastLogin(user.id);
 
       // Create session
       const clientIp = getClientIp(request);

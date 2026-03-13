@@ -6,6 +6,7 @@ import { getClientIp } from '@/lib/request';
 import { rateLimit } from '@/lib/rate-limit';
 import { formatFileSize, getFileCategory } from '@/lib/upload';
 import { deleteStoredAsset, processFileUpload } from '@/lib/upload-server';
+import { hasTable } from '@/lib/db-introspection';
 
 // POST /api/upload - Upload files
 export async function POST(request: NextRequest) {
@@ -16,6 +17,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!(await hasTable('Media'))) {
+      return NextResponse.json(
+        { error: 'Media library is unavailable until the Media table is provisioned.' },
+        { status: 503 }
       );
     }
 
@@ -133,6 +141,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    if (!(await hasTable('Media'))) {
+      return NextResponse.json({
+        success: true,
+        media: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+        },
+        featureAvailable: false,
+      });
+    }
+
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
     const folder = searchParams.get('folder');
@@ -197,6 +219,13 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
+      );
+    }
+
+    if (!(await hasTable('Media'))) {
+      return NextResponse.json(
+        { error: 'Media library is unavailable until the Media table is provisioned.' },
+        { status: 503 }
       );
     }
 

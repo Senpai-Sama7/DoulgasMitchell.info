@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { countAdminUsers } from '@/lib/admin-compat';
 
 export async function GET() {
   try {
-    const count = await db.adminUser.count();
+    const count = await countAdminUsers();
     return NextResponse.json({ 
       success: true, 
       adminCount: count,

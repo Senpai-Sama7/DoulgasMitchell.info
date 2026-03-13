@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { db } from '@/lib/db';
 import { getClientIp, getUserAgent } from '@/lib/request';
+import { hasTable } from '@/lib/db-introspection';
 
 const pageViewSchema = z.object({
   path: z.string().trim().min(1).max(200),
@@ -11,6 +12,10 @@ const pageViewSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    if (!(await hasTable('PageView'))) {
+      return NextResponse.json({ success: true });
+    }
+
     const body = await request.json();
     const parsed = pageViewSchema.safeParse(body);
 

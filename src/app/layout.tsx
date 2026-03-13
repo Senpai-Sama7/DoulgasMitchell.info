@@ -101,6 +101,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const showRuntimeAnalytics = process.env.NODE_ENV === 'production';
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -179,8 +181,8 @@ export default function RootLayout({
         
         {/* Toast Notifications */}
         <Toaster />
-        <Analytics />
-        <SpeedInsights />
+        {showRuntimeAnalytics && <Analytics />}
+        {showRuntimeAnalytics && <SpeedInsights />}
       </body>
     </html>
   );

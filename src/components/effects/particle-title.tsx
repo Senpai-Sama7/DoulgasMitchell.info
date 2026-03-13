@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ParticleTitleProps {
@@ -12,32 +12,40 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
   const [phase, setPhase] = useState<'typing' | 'solidifying' | 'final'>('typing');
   const [typedFirst, setTypedFirst] = useState('');
   const [typedLast, setTypedLast] = useState('');
+  const seedSource = `${firstName}:${lastName}`;
 
   useEffect(() => {
     let firstIdx = 0;
     let lastIdx = 0;
-    
+    let typeLast: ReturnType<typeof setInterval> | undefined;
+    let solidifyTimeout: ReturnType<typeof setTimeout> | undefined;
+
     const typeFirst = setInterval(() => {
       if (firstIdx <= firstName.length) {
         setTypedFirst(firstName.slice(0, firstIdx));
         firstIdx++;
       } else {
         clearInterval(typeFirst);
-        const typeLast = setInterval(() => {
+        typeLast = setInterval(() => {
           if (lastIdx <= lastName.length) {
             setTypedLast(lastName.slice(0, lastIdx));
             lastIdx++;
           } else {
             clearInterval(typeLast);
-            setTimeout(() => setPhase('solidifying'), 500);
+            solidifyTimeout = setTimeout(() => setPhase('solidifying'), 500);
           }
         }, 80);
       }
     }, 80);
 
     return () => {
-      clearInterval(firstIdx as any);
-      clearInterval(lastIdx as any);
+      clearInterval(typeFirst);
+      if (typeLast) {
+        clearInterval(typeLast);
+      }
+      if (solidifyTimeout) {
+        clearTimeout(solidifyTimeout);
+      }
     };
   }, [firstName, lastName]);
 
@@ -48,18 +56,38 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
     }
   }, [phase]);
 
-  const particles = Array.from({ length: 120 }).map((_, i) => ({
-    id: i,
-    initialX: Math.random() * 800 - 400,
-    initialY: Math.random() * 400 - 200,
-    size: Math.random() * 4 + 1,
-    delay: Math.random() * 0.5,
-  }));
+  const hashValue = (input: string) => {
+    let hash = 2166136261;
 
-  const getAsciiBlock = (char: string) => {
+    for (let i = 0; i < input.length; i++) {
+      hash ^= input.charCodeAt(i);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    return hash >>> 0;
+  };
+
+  const seededValue = (key: string) => {
+    return hashValue(`${seedSource}:${key}`) / 0xffffffff;
+  };
+
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 120 }).map((_, i) => ({
+        id: i,
+        initialX: seededValue(`particle:${i}:x`) * 800 - 400,
+        initialY: seededValue(`particle:${i}:y`) * 400 - 200,
+        size: seededValue(`particle:${i}:size`) * 4 + 1,
+        delay: seededValue(`particle:${i}:delay`) * 0.5,
+      })),
+    [seedSource]
+  );
+
+  const getAsciiBlock = (char: string, index: number) => {
     if (char === ' ') return ' ';
     const blocks = ['█', '▓', '▒', '░'];
-    return blocks[Math.floor(Math.random() * blocks.length)];
+    const blockIndex = Math.floor(seededValue(`glyph:${index}:${char}`) * blocks.length) % blocks.length;
+    return blocks[blockIndex];
   };
 
   const renderAsciiText = (text: string) => {
@@ -70,7 +98,7 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
         animate={{ opacity: 1 }}
         className="inline-block"
       >
-        {getAsciiBlock(char)}
+        {getAsciiBlock(char, i)}
       </motion.span>
     ));
   };

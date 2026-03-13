@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { getRegistrationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
+import { findAdminUserById } from '@/lib/admin-compat';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,9 +11,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await db.adminUser.findUnique({
-      where: { id: session.userId },
-    });
+    const user = await findAdminUserById(session.userId);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

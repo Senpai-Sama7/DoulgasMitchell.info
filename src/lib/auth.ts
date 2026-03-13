@@ -3,8 +3,12 @@ import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
 import { env } from './env';
-import { db } from './db';
 import { clearRateLimit as clearScopedRateLimit, rateLimit } from './rate-limit';
+import {
+  createAdminSessionRecord,
+  deleteAdminSessionByToken,
+  findAdminSessionByToken,
+} from './admin-compat';
 
 function getJwtSecret() {
   const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');
@@ -74,15 +78,12 @@ export async function createSession(
     expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
   });
 
-  // Store in database
-  await db.session.create({
-    data: {
-      token,
-      userId,
-      expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
-      ipAddress: options?.ipAddress,
-      userAgent: options?.userAgent,
-    },
+  await createAdminSessionRecord({
+    token,
+    userId,
+    expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
+    ipAddress: options?.ipAddress,
+    userAgent: options?.userAgent,
   });
 
   return token;
@@ -98,21 +99,9 @@ export async function getSession(): Promise<Session | null> {
   const session = await verifyToken(token);
   if (!session) return null;
 
-  const persistedSession = await db.session.findUnique({
-    where: { token },
-    include: {
-      user: {
-        select: {
-          email: true,
-          name: true,
-          role: true,
-          isActive: true,
-        },
-      },
-    },
-  }).catch(() => null);
+  const persistedSession = await findAdminSessionByToken(token);
 
-  if (!persistedSession || !persistedSession.user.isActive) {
+  if (!persistedSession || !persistedSession.isActive) {
     await deleteSession(token);
     return null;
   }
@@ -126,9 +115,9 @@ export async function getSession(): Promise<Session | null> {
   return {
     id: persistedSession.id,
     userId: persistedSession.userId,
-    email: persistedSession.user.email,
-    name: persistedSession.user.name || session.name,
-    role: persistedSession.user.role as Session['role'],
+    email: persistedSession.email,
+    name: persistedSession.name || session.name,
+    role: persistedSession.role as Session['role'],
     expiresAt: persistedSession.expiresAt,
   };
 }
@@ -139,9 +128,7 @@ export async function deleteSession(token: string): Promise<void> {
   cookieStore.delete('admin-session');
   
   try {
-    await db.session.delete({
-      where: { token },
-    });
+    await deleteAdminSessionByToken(token);
   } catch {
     // Session might not exist in DB
   }

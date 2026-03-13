@@ -135,6 +135,11 @@ export async function POST(req: Request) {
     });
   } catch (error: unknown) {
     console.error('AI Route Error:', error);
-    return ApiHandler.error('[SYSTEM ERROR] Neural Net connection dropped.', 500);
+    const message = error instanceof Error ? error.message : 'Unknown AI provider failure.';
+    if (/API key not valid|API_KEY_INVALID/i.test(message)) {
+      return ApiHandler.error('Gemini API key is invalid. Update `GEMINI_API_KEY` or `GOOGLE_GEMINI_API_KEY` in the environment.', 502);
+    }
+
+    return ApiHandler.error(`AI request failed: ${message}`, 500);
   }
 }

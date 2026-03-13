@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,15 @@ export default function AdminLoginPage() {
   const [isSetupLoading, setIsSetupLoading] = useState(false);
   const [hasAdminAccount, setHasAdminAccount] = useState(true);
   const { toast } = useToast();
+  const asciiRows = useMemo(
+    () =>
+      Array.from({ length: 50 }, (_, rowIndex) =>
+        Array.from({ length: 100 }, (_, columnIndex) =>
+          (rowIndex * 17 + columnIndex * 31 + 7) % 2 === 0 ? '1' : '0'
+        ).join('')
+      ),
+    []
+  );
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -41,10 +50,48 @@ export default function AdminLoginPage() {
     checkAdminStatus();
   }, []);
 
+  const readErrorMessage = async (response: Response, fallback: string) => {
+    try {
+      const data = await response.json();
+      if (typeof data?.error === 'string' && data.error.trim()) {
+        return data.error;
+      }
+      if (typeof data?.message === 'string' && data.message.trim()) {
+        return data.message;
+      }
+    } catch {
+      return fallback;
+    }
+
+    return fallback;
+  };
+
   const handleSetupAdmin = async () => {
+    if (!email.trim()) {
+      toast({
+        title: 'Email required',
+        description: 'Enter the admin email address you want to initialize.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (password.trim().length < 8) {
+      toast({
+        title: 'Password required',
+        description: 'Enter an admin password with at least 8 characters before enabling the portal.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSetupLoading(true);
     try {
-      const response = await fetch('/api/admin/setup', { method: 'POST' });
+      const response = await fetch('/api/admin/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name: 'Douglas Mitchell' }),
+      });
       const data = await response.json();
 
       if (!response.ok) {
@@ -53,7 +100,7 @@ export default function AdminLoginPage() {
 
       toast({
         title: 'Admin portal enabled',
-        description: 'The admin account is ready. Sign in with your admin email and password.',
+        description: 'The admin account is ready. Sign in with the credentials you just entered.',
       });
       setHasAdminAccount(true);
       setEmail(data.email || DEFAULT_ADMIN_EMAIL);
@@ -82,7 +129,6 @@ export default function AdminLoginPage() {
     setIsPasskeyLoading(true);
 
     try {
-      // 1. Get auth options
       const optionsRes = await fetch('/api/admin/auth/passkey/generate-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -90,16 +136,45 @@ export default function AdminLoginPage() {
       });
 
       if (!optionsRes.ok) {
-        const error = await optionsRes.json();
-        throw new Error(error.error || 'Failed to get authentication options');
+        const message = await readErrorMessage(optionsRes, 'Failed to get authentication options');
+        throw new Error(message);
       }
-      
-      const options = await optionsRes.json();
 
-      // 2. Start authentication
-      const authResp = await startAuthentication({ optionsJSON: options });
+      const optionsPayload = await optionsRes.json();
 
-      // 3. Verify on server
+      if (!optionsPayload.available) {
+        toast({
+          title: 'No passkeys registered',
+          description: 'Sign in with your password first, then register a passkey from the Security page.',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      const options = optionsPayload.options;
+
+      let authResp;
+      try {
+        authResp = await startAuthentication({ optionsJSON: options });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Authentication was cancelled.';
+
+        if (
+          message.includes('NotAllowedError') ||
+          message.includes('timed out') ||
+          message.includes('cancelled') ||
+          message.includes('canceled')
+        ) {
+          toast({
+            title: 'Passkey cancelled',
+            description: 'The passkey prompt was dismissed before authentication completed.',
+          });
+          return;
+        }
+
+        throw error;
+      }
+
       const verifyRes = await fetch('/api/admin/auth/passkey/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -116,11 +191,9 @@ export default function AdminLoginPage() {
         });
         window.location.href = '/admin';
       } else {
-        const error = await verifyRes.json();
-        throw new Error(error.error || 'Verification failed');
+        throw new Error(await readErrorMessage(verifyRes, 'Verification failed'));
       }
     } catch (error: unknown) {
-      console.error(error);
       const message = error instanceof Error ? error.message : 'Authentication unsuccessful.';
       toast({
         title: 'Passkey failed',
@@ -182,12 +255,8 @@ export default function AdminLoginPage() {
       {/* Background ASCII Pattern */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none opacity-[0.02]">
         <pre className="font-mono text-[8px] text-foreground leading-none">
-          {Array(50).fill(null).map((_, i) => (
-            <div key={i}>
-              {Array(100).fill(null).map((_, j) => (
-                <span key={j}>{Math.random() > 0.5 ? '1' : '0'}</span>
-              ))}
-            </div>
+          {asciiRows.map((row, index) => (
+            <div key={index}>{row}</div>
           ))}
         </pre>
       </div>
@@ -217,7 +286,7 @@ export default function AdminLoginPage() {
           <CardContent>
             {!hasAdminAccount && (
               <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-                <p className="text-sm text-amber-700 dark:text-amber-200">No admin account detected. Enable the admin portal before signing in.</p>
+                <p className="text-sm text-amber-700 dark:text-amber-200">No admin account detected. Enter your email and a new password, then enable the admin portal.</p>
                 <Button
                   type="button"
                   variant="secondary"
@@ -243,6 +312,7 @@ export default function AdminLoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="pl-9"
+                    autoComplete="username"
                     required
                   />
                 </div>
@@ -259,6 +329,7 @@ export default function AdminLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pl-9 pr-10"
+                    autoComplete={hasAdminAccount ? 'current-password' : 'new-password'}
                     required
                   />
                   <button

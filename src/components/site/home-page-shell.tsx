@@ -25,15 +25,32 @@ interface HomePageShellProps {
   projects: ProjectShowcase[];
 }
 
+const SPLASH_SEEN_KEY = 'dm-splash-seen';
+
 export function HomePageShell({ articles, book, certifications, projects }: HomePageShellProps) {
   const { scrollYProgress } = useScroll();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(true);
-  const [splashKey, setSplashKey] = useState(0);
   const prefersReducedMotion = useReducedMotion();
+  const [showSplash, setShowSplash] = useState(false);
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
-  const isDevelopment = process.env.NODE_ENV === 'development';
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setShowSplash(false);
+        return;
+      }
+
+      try {
+        setShowSplash(window.sessionStorage.getItem(SPLASH_SEEN_KEY) !== '1');
+      } catch {
+        setShowSplash(false);
+      }
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (!showSplash) {
@@ -52,7 +69,7 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isDevelopment]);
+  }, []);
 
   const handleNavigate = useCallback(
     (href: string) => {
@@ -76,9 +93,14 @@ export function HomePageShell({ articles, book, certifications, projects }: Home
       <AnimatePresence>
         {showSplash && (
           <SplashOverlay 
-            key={`splash-${splashKey}`} 
+            minDisplayTime={2400}
             onComplete={() => {
               setShowSplash(false);
+              try {
+                window.sessionStorage.setItem(SPLASH_SEEN_KEY, '1');
+              } catch {
+                // Ignore session storage write failures.
+              }
             }} 
           />
         )}

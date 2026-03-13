@@ -1,9 +1,9 @@
 import { NextRequest } from 'next/server';
-import { db } from '@/lib/db';
 import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import { getClientIp, getUserAgent } from '@/lib/request';
 import { ApiHandler } from '@/lib/api-response';
+import { findAdminUserByEmail, updateAdminLastLogin } from '@/lib/admin-compat';
 
 // GET /api/admin/auth - Check current session
 export async function GET() {
@@ -46,9 +46,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user
-    const user = await db.adminUser.findUnique({
-      where: { email },
-    });
+    const user = await findAdminUserByEmail(email);
 
     if (!user) {
       return ApiHandler.unauthorized('Invalid credentials');
@@ -66,10 +64,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Update last login
-    await db.adminUser.update({
-      where: { id: user.id },
-      data: { lastLoginAt: new Date() },
-    });
+    await updateAdminLastLogin(user.id);
 
     // Create session
     const token = await createSession(user.id, user.email, user.name || 'Admin', {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto';
 import { db } from '@/lib/db';
+import { hasTable } from '@/lib/db-introspection';
 
 export type AdminAiModelStatus = 'stable' | 'preview' | 'alias';
 
@@ -182,6 +183,10 @@ function parseJson<T>(value: string | null | undefined, fallback: T): T {
 }
 
 async function getSiteConfigValue<T>(key: string, fallback: T): Promise<T> {
+  if (!(await hasTable('SiteConfig'))) {
+    return fallback;
+  }
+
   const record = await db.siteConfig.findUnique({
     where: { key },
     select: { value: true },
@@ -191,6 +196,10 @@ async function getSiteConfigValue<T>(key: string, fallback: T): Promise<T> {
 }
 
 async function setSiteConfigValue<T>(key: string, value: T): Promise<void> {
+  if (!(await hasTable('SiteConfig'))) {
+    return;
+  }
+
   await db.siteConfig.upsert({
     where: { key },
     create: {

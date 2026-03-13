@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
 import { verifyRegistration } from '@/lib/webauthn';
 import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
+import { createPasskeyRecord, findAdminUserById } from '@/lib/admin-compat';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { response, deviceName } = body;
 
-    const user = await db.adminUser.findUnique({
-      where: { id: session.userId },
-    });
+    const user = await findAdminUserById(session.userId);
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
@@ -35,14 +33,12 @@ export async function POST(request: NextRequest) {
       const { id: credentialID, publicKey: credentialPublicKey, counter } = credential;
 
       // Save the new passkey to the database
-      await db.passkeyCredential.create({
-        data: {
-          userId: user.id,
-          credentialId: credentialID,
-          publicKey: Buffer.from(credentialPublicKey),
-          counter,
-          deviceName: deviceName || 'New Device',
-        },
+      await createPasskeyRecord({
+        userId: user.id,
+        credentialId: credentialID,
+        publicKey: credentialPublicKey,
+        counter,
+        deviceName: deviceName || 'New Device',
       });
 
       await logActivity({
