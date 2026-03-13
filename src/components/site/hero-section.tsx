@@ -34,9 +34,9 @@ export function HeroSection() {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const { scrollY } = useScroll();
-  const opacity = useTransform(scrollY, [0, 400], [1, 0]);
-  const scale = useTransform(scrollY, [0, 400], [1, 0.95]);
-  const y = useTransform(scrollY, [0, 400], [0, 50]);
+  const opacity = useTransform(scrollY, [0, 800], [1, 0]);
+  const scale = useTransform(scrollY, [0, 800], [1, 0.95]);
+  const y = useTransform(scrollY, [0, 800], [0, 50]);
 
   return (
     <section ref={containerRef} className="relative min-h-screen flex items-center justify-center overflow-hidden">

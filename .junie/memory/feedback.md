@@ -94,3 +94,19 @@
     "NEW INSTRUCTION": "WHEN auditing site links THEN live-check all routes and anchors and include curl/HTTP proofs."
 }
 
+[2026-03-13 18:02] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Scroll fade timing",
+    "EXPECTATION": "The referenced section should remain readable longer; the fade-out on scroll is too fast.",
+    "NEW INSTRUCTION": "WHEN adding scroll-driven fades to hero/sections THEN increase fade-out to ≥70% scroll with ease-out."
+}
+
+[2026-03-13 18:04] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Scroll fade timing",
+    "EXPECTATION": "The referenced section should remain readable longer; its scroll-driven fade occurs too early and too quickly.",
+    "NEW INSTRUCTION": "WHEN a section’s content fades on scroll THEN delay fade until ≥90% scroll and use ease-out."
+}
+

@@ -60,9 +60,9 @@ export function EnhancedHeroSection() {
     offset: ['start start', 'end start'],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '24%']);
-  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.8], [1, 0.97]);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
+  const opacity = useTransform(scrollYProgress, [0.5, 1], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0.5, 1], [1, 0.97]);
   const mediaOpacity = useTransform(scrollYProgress, [0, 1], [0.18, 0.06]);
 
   useEffect(() => {
