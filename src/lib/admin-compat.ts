@@ -323,6 +323,10 @@ export async function createAdminSessionRecord(input: {
   ipAddress?: string;
   userAgent?: string;
 }) {
+  if (!(await hasTable('Session'))) {
+    return;
+  }
+
   const columns = await getSessionColumns();
   const now = new Date();
   const userIdColumn = columns.has('userId') ? 'userId' : 'adminUserId';

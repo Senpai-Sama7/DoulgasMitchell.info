@@ -110,3 +110,11 @@
     "NEW INSTRUCTION": "WHEN a section’s content fades on scroll THEN delay fade until ≥90% scroll and use ease-out."
 }
 
+[2026-03-13 18:09] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Scroll fade timing",
+    "EXPECTATION": "The referenced section fades out too quickly on scroll; it should remain readable significantly longer before starting to fade.",
+    "NEW INSTRUCTION": "WHEN a section uses scroll-driven fade THEN keep opacity 1 until ≥85% scroll, then ease-out to 0 by 100%."
+}
+
