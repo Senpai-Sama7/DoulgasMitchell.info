@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/knowledge_base/learning_my_way/learning-my-way/complete_code.zip", "name": "complete_code.zip", "extension": ".zip", "mime_type": "application/zip", "size_bytes": 9151716, "zone": "20_reference", "sample_text": "Archive:  /mnt/external/20_reference/knowledge_base/learning_my_way/learning-my-way/complete_code.zip\n  Length      Date    Time    Name\n---------  ---------- -----   ----\n        0  2025-12-30 19:48   learn/\n     1510  2025-12-20 02:46   learn/eslint.config.mjs\n        0  2025-12-30 19:48   learn/examples/\n        0  2025-12-30 19:48   learn/examples/websocket/\n     3536  2025-12-20 02:46   learn/examples/websocket/server.ts\n     6310  2025-12-20 02:46   learn/examples/websocket/frontend.tsx\n      280  2025-12-20 02:46   learn/next.config.ts\n        0  2025-12-30 19:48   learn/upload/\n  6062812  2025-12-30 19:21   learn/upload/2509.13348v4.pdf\n     3224  2025-12-30 19:51   learn/package.json\n   251971  2025-12-20 02:46   learn/bun.lock\n        0  2025-12-30 19:48   learn/prisma/\n     3870  2025-12-26 09:02   learn/prisma/schema.prisma\n    12221  2025-12-30 19:26   learn/PDF_ANALYSIS.md\n    16162  2025-12-30 19:39   learn/IMPLEMENTATION_SUMMARY.md\n        0  2025-12-30 19:48   learn/skills/\n        0  2025-12-30 19:48   learn/skills/docx/\n     1467  2025-12-03 03:51   learn/skills/docx/LICENSE.txt\n    23572  2025-12-03 03:51   learn/skills/docx/ooxml.md\n        0  2025-12-30 19:48 "}]
