@@ -1,0 +1,46 @@
+{
+  "sessionId": "1b128740-7f12-4b43-a7af-d49c86afa9a7",
+  "projectHash": "66e1060440f762abf22f144cf3a52fcefedb7b0bcd19ffaa34bc5170311487f1",
+  "startTime": "2026-03-12T21:05:17.873Z",
+  "lastUpdated": "2026-03-12T21:05:22.065Z",
+  "messages": [
+    {
+      "id": "15a6d83c-6a3e-4268-ae25-e17b8c19877b",
+      "timestamp": "2026-03-12T21:05:17.873Z",
+      "type": "user",
+      "content": [
+        {
+          "text": "Reply with exactly: GEMINI_OK"
+        }
+      ]
+    },
+    {
+      "id": "52a1881f-da9a-4fff-b7c0-3e05cb3a35c1",
+      "timestamp": "2026-03-12T21:05:22.065Z",
+      "type": "gemini",
+      "content": "GEMINI_OK",
+      "thoughts": [
+        {
+          "subject": "Processing Directives",
+          "description": "I am focusing on the explicit instruction to reply with \"GEMINI_OK\". All other contextual information is secondary to this immediate, executable command. My current thought process is directed solely towards fulfilling this request.",
+          "timestamp": "2026-03-12T21:05:20.667Z"
+        },
+        {
+          "subject": "Responding with Directive",
+          "description": "My current focus is entirely on the explicit instruction to reply with \"GEMINI_OK\". I am prioritizing this direct command, disregarding all other provided context to ensure precise adherence to the request.",
+          "timestamp": "2026-03-12T21:05:21.402Z"
+        }
+      ],
+      "tokens": {
+        "input": 8953,
+        "output": 4,
+        "cached": 0,
+        "thoughts": 95,
+        "tool": 0,
+        "total": 9052
+      },
+      "model": "gemini-2.5-flash-lite"
+    }
+  ],
+  "kind": "main"
+}
