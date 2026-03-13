@@ -654,8 +654,10 @@ export const getAdminAnalyticsData = cache(async () => {
     uniqueSessions: 0,
     contactSubmissions: 0,
     newsletterSubscribers: 0,
-    topPages: [] as Array<{ path: string; views: number }>,
-    pageViewSeries: [] as Array<{ date: string; views: number }>,
+    topPages: [] as Array<{ path: string; views: number; uniqueVisitors: number }>,
+    pageViewSeries: [] as Array<{ date: string; views: number; sessions: number }>,
+    browserBreakdown: [] as Array<{ browser: string; count: number }>,
+    deviceBreakdown: [] as Array<{ device: string; count: number }>,
   };
 
   const [contactSubmissions, newsletterSubscribers] = await Promise.all([
@@ -672,43 +674,75 @@ export const getAdminAnalyticsData = cache(async () => {
   }
 
   return withFallback(async () => {
-    const [totalPageViews, uniqueSessions, pageViews] = await Promise.all([
+    // Get last 30 days of data for richer telemetry
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [totalPageViews, uniqueSessionsResult, pageViews] = await Promise.all([
       db.pageView.count(),
       db.pageView.groupBy({ by: ['sessionId'] }),
       db.pageView.findMany({
+        where: { createdAt: { gte: thirtyDaysAgo } },
         orderBy: { createdAt: 'desc' },
-        take: 500,
       }),
     ]);
 
     const topPages = (Object.entries(
-      pageViews.reduce<Record<string, number>>((acc, pageView) => {
-        acc[pageView.path] = (acc[pageView.path] || 0) + 1;
+      pageViews.reduce<Record<string, { views: number; sessions: Set<string> }>>((acc, pv) => {
+        if (!acc[pv.path]) acc[pv.path] = { views: 0, sessions: new Set() };
+        acc[pv.path].views++;
+        acc[pv.path].sessions.add(pv.sessionId);
         return acc;
       }, {})
-    ) as Array<[string, number]>)
-      .map(([path, views]) => ({ path, views }))
+    ) as Array<[string, { views: number; sessions: Set<string> }]>)
+      .map(([path, data]) => ({ 
+        path, 
+        views: data.views, 
+        uniqueVisitors: data.sessions.size 
+      }))
       .sort((a, b) => b.views - a.views)
-      .slice(0, 5);
+      .slice(0, 10);
 
-    const pageViewSeries = (Object.entries(
-      pageViews.reduce<Record<string, number>>((acc, pageView) => {
-        const key = pageView.createdAt.toISOString().slice(0, 10);
-        acc[key] = (acc[key] || 0) + 1;
+    const seriesMap = pageViews.reduce<Record<string, { views: number; sessions: Set<string> }>>((acc, pv) => {
+      const key = pv.createdAt.toISOString().slice(0, 10);
+      if (!acc[key]) acc[key] = { views: 0, sessions: new Set() };
+      acc[key].views++;
+      acc[key].sessions.add(pv.sessionId);
+      return acc;
+    }, {});
+
+    const pageViewSeries = Object.entries(seriesMap)
+      .map(([date, data]) => ({ 
+        date, 
+        views: data.views, 
+        sessions: data.sessions.size 
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .slice(-21);
+
+    const browserBreakdown = (Object.entries(
+      pageViews.reduce<Record<string, number>>((acc, pv) => {
+        const ua = pv.userAgent || 'unknown';
+        const browser = ua.includes('Firefox') ? 'Firefox' : 
+                        ua.includes('Chrome') ? 'Chrome' : 
+                        ua.includes('Safari') ? 'Safari' : 
+                        ua.includes('Edge') ? 'Edge' : 'Other';
+        acc[browser] = (acc[browser] || 0) + 1;
         return acc;
       }, {})
     ) as Array<[string, number]>)
-      .map(([date, views]) => ({ date, views }))
-      .sort((a, b) => a.date.localeCompare(b.date))
-      .slice(-14);
+      .map(([browser, count]) => ({ browser, count }))
+      .sort((a, b) => b.count - a.count);
 
     return {
       totalPageViews,
-      uniqueSessions: uniqueSessions.length,
+      uniqueSessions: uniqueSessionsResult.length,
       contactSubmissions,
       newsletterSubscribers,
       topPages,
       pageViewSeries,
+      browserBreakdown,
+      deviceBreakdown: [], // Future enhancement
     };
   }, {
     ...fallback,

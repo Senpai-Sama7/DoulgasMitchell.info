@@ -12,6 +12,8 @@ import {
 import { z } from 'zod/v3';
 import { getSession } from '@/lib/auth';
 import {
+  createContentEditorItem,
+  deleteContentEditorItem,
   getContentEditorItem,
   updateContentEditorItem,
 } from '@/lib/admin-content';
@@ -397,6 +399,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await readJsonBody<Record<string, unknown>>(request);
+
+    // Diagnostic branch: test provider configuration
+    if (typeof body.testProvider === 'string') {
+      const providerId = providerIdSchema.parse(body.testProvider);
+      const settings = await getAdminOperatorSettings();
+      const status = getOperatorProviderStatuses().find((p) => p.id === providerId);
+
+      if (!status) {
+        return ApiHandler.error('Provider not found in catalog.');
+      }
+
+      const validation = await validateOperationalProvider(status, settings);
+      return ApiHandler.success({
+        valid: validation.valid,
+        error: validation.error,
+        model: validation.valid ? getOperatorProviderModel(settings, providerId) : null,
+      });
+    }
+
     const messages = Array.isArray(body.messages) ? (body.messages as UIMessage[]) : null;
 
     if (!messages || messages.length === 0) {
@@ -611,6 +632,74 @@ export async function POST(request: NextRequest) {
             });
 
             return settings;
+          },
+        }),
+        createArticle: tool({
+          description: 'Create a new article. Requires title, slug, excerpt, category, status, and content.',
+          inputSchema: toolArticleFieldsSchema,
+          execute: async (fields) => {
+            const item = await createContentEditorItem('article', fields);
+            await logActivity({
+              action: 'create',
+              resource: 'article',
+              resourceId: item?.id,
+              userId: session.userId,
+              request,
+              details: { via: 'operator' },
+            });
+            return item;
+          },
+        }),
+        createProject: tool({
+          description: 'Create a new project. Requires title, slug, description, category, status, and techStackText.',
+          inputSchema: toolProjectFieldsSchema,
+          execute: async (fields) => {
+            const item = await createContentEditorItem('project', fields);
+            await logActivity({
+              action: 'create',
+              resource: 'project',
+              resourceId: item?.id,
+              userId: session.userId,
+              request,
+              details: { via: 'operator' },
+            });
+            return item;
+          },
+        }),
+        deleteContent: tool({
+          description: 'Delete a content item by type and ID. Use with extreme caution.',
+          inputSchema: z.object({
+            type: toolContentTypeSchema,
+            id: z.string().min(1),
+          }),
+          execute: async ({ type, id }) => {
+            const success = await deleteContentEditorItem(type, id);
+            if (success) {
+              await logActivity({
+                action: 'delete',
+                resource: type,
+                resourceId: id,
+                userId: session.userId,
+                request,
+              });
+            }
+            return { success };
+          },
+        }),
+        proposeVisualArtifact: tool({
+          description: 'Propose a rich visual artifact, UI component, or layout change. Use this to show Douglas Mitchell what a JIT edit would look like.',
+          inputSchema: z.object({
+            title: z.string().min(1),
+            description: z.string().optional(),
+            type: z.enum(['ui', 'code', 'diagram', 'layout']),
+            content: z.string().min(1),
+          }),
+          execute: async (input) => {
+            return {
+              ...input,
+              proprosalId: crypto.randomUUID(),
+              timestamp: new Date().toISOString(),
+            };
           },
         }),
       },

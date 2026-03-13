@@ -40,7 +40,7 @@ export function EnhancedHeroSection() {
   return (
     <section 
       ref={containerRef}
-      className="relative min-h-[90vh] flex items-start justify-center pt-16 md:pt-24 lg:pt-32"
+      className="relative min-h-[90vh] flex items-start justify-center pt-16 md:pt-24 lg:pt-32 overflow-hidden"
     >
       {/* ASCII Grid Background */}
       <div 

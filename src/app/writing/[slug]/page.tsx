@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown';
+import { ContentRenderer } from '@/components/site/content-renderer';
 import { ArrowLeft, Clock, Sparkles } from 'lucide-react';
 import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { SiteFooter, SiteHeader } from '@/components/site';
@@ -99,8 +99,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </div>
           </div>
 
-          <article className="reading-content mx-auto mt-10">
-            <ReactMarkdown>{article.content}</ReactMarkdown>
+          <article className="mx-auto mt-10">
+            <ContentRenderer content={article.content} />
           </article>
         </div>
       </main>

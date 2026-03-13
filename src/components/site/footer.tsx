@@ -6,10 +6,10 @@ import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
 
 const footerLinks = {
   navigation: [
-    { href: '#about', label: 'About' },
-    { href: '#work', label: 'Work' },
-    { href: '#writing', label: 'Writing' },
-    { href: '#contact', label: 'Contact' },
+    { href: '/#about', label: 'About' },
+    { href: '/#work', label: 'Work' },
+    { href: '/#writing', label: 'Writing' },
+    { href: '/#contact', label: 'Contact' },
   ],
   external: [
     { href: siteProfile.githubUrl, label: 'GitHub', icon: Github },

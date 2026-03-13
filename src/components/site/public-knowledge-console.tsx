@@ -178,8 +178,8 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
             </Suggestions>
           </div>
 
-          <div className="rounded-[32px] border border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur">
-            <Conversation className="h-[34rem] rounded-[32px]">
+          <div className="rounded-[32px] border border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur overflow-hidden">
+            <Conversation className="h-[28rem] md:h-[34rem] rounded-[32px]">
               <ConversationContent className="gap-5 p-6">
                 {messages.map((message) => (
                   <Message key={message.id} from={message.role === 'assistant' ? 'assistant' : 'user'}>

@@ -10,6 +10,8 @@ import {
 } from '@/lib/request';
 import {
   contentTypeSchema,
+  createContentEditorItem,
+  deleteContentEditorItem,
   ensureEditableContentStorage,
   getContentEditorItem,
   updateContentEditorItem,
@@ -18,6 +20,11 @@ import {
 const patchSchema = z.object({
   type: contentTypeSchema,
   id: z.string().trim().min(1),
+  fields: z.record(z.string(), z.union([z.string(), z.boolean()])),
+});
+
+const postSchema = z.object({
+  type: contentTypeSchema,
   fields: z.record(z.string(), z.union([z.string(), z.boolean()])),
 });
 
@@ -101,5 +108,68 @@ export async function PATCH(request: Request) {
     }
 
     return ApiHandler.internalServerError('Failed to update content item', error);
+  }
+}
+
+export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) return ApiHandler.unauthorized();
+
+  const originCheck = validateTrustedOrigin(request);
+  if (!originCheck.allowed) return ApiHandler.forbidden(originCheck.reason);
+
+  try {
+    const body = await readJsonBody(request);
+    const parsed = postSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return ApiHandler.error('Invalid content creation payload.', 400, parsed.error.flatten());
+    }
+
+    const item = await createContentEditorItem(parsed.data.type, parsed.data.fields);
+
+    await logActivity({
+      action: 'create',
+      resource: parsed.data.type,
+      resourceId: item?.id,
+      userId: session.userId,
+      details: { type: parsed.data.type },
+    });
+
+    return ApiHandler.success({ item }, 'Content created successfully.');
+  } catch (error) {
+    return ApiHandler.internalServerError('Failed to create content item', error);
+  }
+}
+
+export async function DELETE(request: Request) {
+  const session = await getSession();
+  if (!session) return ApiHandler.unauthorized();
+
+  const originCheck = validateTrustedOrigin(request);
+  if (!originCheck.allowed) return ApiHandler.forbidden(originCheck.reason);
+
+  try {
+    const { searchParams } = new URL(request.url);
+    const type = searchParams.get('type') as any;
+    const id = searchParams.get('id');
+
+    if (!type || !id) return ApiHandler.error('Type and ID are required.', 400);
+
+    const success = await deleteContentEditorItem(type, id);
+
+    if (success) {
+      await logActivity({
+        action: 'delete',
+        resource: type,
+        resourceId: id,
+        userId: session.userId,
+      });
+      return ApiHandler.success(undefined, 'Content deleted successfully.');
+    }
+
+    return ApiHandler.error('Failed to delete content item.');
+  } catch (error) {
+    return ApiHandler.internalServerError('Failed to delete content item', error);
   }
 }

@@ -10,11 +10,11 @@ import { siteProfile } from '@/lib/site-content';
 import { useTheme } from '@/lib/theme';
 
 const navLinks = [
-  { href: '#about', label: 'About' },
-  { href: '#work', label: 'Work' },
-  { href: '#writing', label: 'Writing' },
-  { href: '#book', label: 'Book' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/#about', label: 'About' },
+  { href: '/#work', label: 'Work' },
+  { href: '/#writing', label: 'Writing' },
+  { href: '/#book', label: 'Book' },
+  { href: '/#contact', label: 'Contact' },
 ];
 
 export function SiteHeader() {

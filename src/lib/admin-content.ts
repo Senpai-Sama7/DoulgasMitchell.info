@@ -374,3 +374,104 @@ export async function updateContentEditorItem(input: UpdateEditableContentInput)
 
   return getContentEditorItem(input.type, input.id);
 }
+
+export async function createContentEditorItem(type: ContentType, fields: unknown): Promise<EditableContentItem | null> {
+  const id = crypto.randomUUID();
+  
+  switch (type) {
+    case 'article': {
+      const parsed = articleEditorFieldsSchema.parse(fields);
+      await db.article.create({
+        data: {
+          id,
+          title: parsed.title,
+          slug: parsed.slug,
+          excerpt: parsed.excerpt,
+          category: parsed.category,
+          featured: parsed.featured,
+          published: parsed.status === 'published',
+          publishedAt: parsed.status === 'published' ? new Date() : null,
+          content: parsed.content,
+          tags: '[]',
+        },
+      });
+      break;
+    }
+
+    case 'project': {
+      const parsed = projectEditorFieldsSchema.parse(fields);
+      await db.project.create({
+        data: {
+          id,
+          title: parsed.title,
+          slug: parsed.slug,
+          description: parsed.description,
+          longDescription: normalizeOptional(parsed.longDescription),
+          category: parsed.category,
+          featured: parsed.featured,
+          status: parsed.status,
+          techStack: normalizeJsonList(parsed.techStackText),
+        },
+      });
+      break;
+    }
+
+    case 'certification': {
+      const parsed = certificationEditorFieldsSchema.parse(fields);
+      await db.certification.create({
+        data: {
+          id,
+          title: parsed.title,
+          issuer: parsed.issuer,
+          description: normalizeOptional(parsed.description),
+          credentialUrl: normalizeOptional(parsed.credentialUrl),
+          featured: parsed.featured,
+          skills: normalizeJsonList(parsed.skillsText ?? ''),
+          issueDate: new Date(),
+        },
+      });
+      break;
+    }
+
+    case 'book': {
+      const parsed = bookEditorFieldsSchema.parse(fields);
+      await db.book.create({
+        data: {
+          id,
+          title: parsed.title,
+          subtitle: normalizeOptional(parsed.subtitle),
+          description: parsed.description,
+          amazonUrl: normalizeOptional(parsed.amazonUrl),
+          publisher: normalizeOptional(parsed.publisher),
+          featured: parsed.featured,
+        },
+      });
+      break;
+    }
+  }
+
+  return getContentEditorItem(type, id);
+}
+
+export async function deleteContentEditorItem(type: ContentType, id: string): Promise<boolean> {
+  try {
+    switch (type) {
+      case 'article':
+        await db.article.delete({ where: { id } });
+        break;
+      case 'project':
+        await db.project.delete({ where: { id } });
+        break;
+      case 'certification':
+        await db.certification.delete({ where: { id } });
+        break;
+      case 'book':
+        await db.book.delete({ where: { id } });
+        break;
+    }
+    return true;
+  } catch (error) {
+    console.error(`Failed to delete ${type} ${id}:`, error);
+    return false;
+  }
+}

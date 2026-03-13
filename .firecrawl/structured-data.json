@@ -1,0 +1,33 @@
+{
+  "success": true,
+  "id": "019ce656-c88e-77fb-9d40-6f263141ee29",
+  "status": "completed",
+  "data": {
+    "featured_projects": [
+      {
+        "title": "AI Workflow Automation",
+        "slug": "ai-workflow-automation",
+        "description": "A decision-support automation layer that turns noisy operational handoffs into structured, auditable workflow execution."
+      },
+      {
+        "title": "The Confident Mind Platform",
+        "slug": "confident-mind-platform",
+        "description": "A premium digital companion for the book with guided exercises, reflection prompts, and progress-oriented follow-through."
+      },
+      {
+        "title": "Systems Architecture Toolkit",
+        "slug": "systems-architecture-toolkit",
+        "description": "A reusable toolkit for building maintainable systems with better boundaries, observability, and delivery discipline."
+      }
+    ],
+    "featured_articles": [
+      {
+        "title": "Rizz Prompting: Attractor-Based Style Steering in LLMs",
+        "slug": "rizz-prompting-attractor-based-style-steering",
+        "description": "An editorial adaptation of the working paper arguing that great prompting is less about commanding a model and more about arranging the conditions it naturally wants to continue."
+      }
+    ]
+  },
+  "creditsUsed": 0,
+  "expiresAt": "2026-03-14T08:36:55.335Z"
+}

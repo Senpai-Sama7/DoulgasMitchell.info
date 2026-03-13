@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { ContentRenderer } from '@/components/site/content-renderer';
 import { ArrowLeft, ArrowUpRight, Github } from 'lucide-react';
 import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { SiteFooter, SiteHeader } from '@/components/site';
@@ -76,9 +77,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
               <h1 className="mt-6 editorial-title">{project.title}</h1>
               <p className="mt-4 editorial-subtitle">{project.description}</p>
 
-              <p className="mt-6 max-w-3xl text-base leading-relaxed text-muted-foreground">
-                {project.longDescription}
-              </p>
+              <div className="mt-6 max-w-3xl">
+                <ContentRenderer content={project.longDescription} />
+              </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
                 {project.githubUrl && (

@@ -15,6 +15,13 @@ import {
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import {
+  Artifact,
+  ArtifactContent,
+  ArtifactDescription,
+  ArtifactHeader,
+  ArtifactTitle,
+} from '@/components/ai-elements/artifact';
+import {
   Conversation,
   ConversationContent,
   ConversationEmptyState,
@@ -195,6 +202,39 @@ function ProviderGlyph({
 
 function OperatorToolPart({ part }: { part: any }) {
   const isDynamic = part.type === 'dynamic-tool';
+  const toolName = isDynamic ? part.toolName : part.type.replace('tool-', '');
+
+  if (toolName === 'proposeVisualArtifact' && part.state === 'output-available' && part.output) {
+    const data = part.output;
+    return (
+      <Artifact className="my-4">
+        <ArtifactHeader>
+          <div>
+            <ArtifactTitle>{data.title}</ArtifactTitle>
+            {data.description && <ArtifactDescription>{data.description}</ArtifactDescription>}
+          </div>
+          <Badge variant="outline" className="font-mono text-[10px] uppercase tracking-wider">
+            {data.type}
+          </Badge>
+        </ArtifactHeader>
+        <ArtifactContent>
+          {data.type === 'code' || data.type === 'ui' ? (
+            <div className="rounded-lg border border-border bg-muted/30 p-4 font-mono text-xs overflow-auto max-h-96">
+              <pre>{data.content}</pre>
+            </div>
+          ) : (
+            <div className="prose prose-sm dark:prose-invert max-w-none">
+              {data.content}
+            </div>
+          )}
+          <div className="mt-4 flex justify-end gap-2">
+            <Button size="sm" variant="outline">Discard</Button>
+            <Button size="sm">Apply Change</Button>
+          </div>
+        </ArtifactContent>
+      </Artifact>
+    );
+  }
 
   return (
     <Tool defaultOpen={part.state !== 'output-available'}>
@@ -211,11 +251,37 @@ function OperatorToolPart({ part }: { part: any }) {
   );
 }
 
-function ProviderStatusBadge({ provider }: { provider: OperatorProviderStatus }) {
+function ProviderStatusBadge({
+  provider,
+  onTest,
+  isTesting,
+}: {
+  provider: OperatorProviderStatus;
+  onTest?: (id: OperatorProviderId) => void;
+  isTesting?: boolean;
+}) {
   return (
-    <Badge variant={provider.configured ? 'secondary' : 'outline'}>
-      {provider.configured ? 'Key present' : 'Missing key'}
-    </Badge>
+    <div className="flex items-center gap-2">
+      {onTest && provider.configured && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 rounded-full"
+          onClick={() => onTest(provider.id)}
+          disabled={isTesting}
+          title="Test API Key"
+        >
+          {isTesting ? (
+            <Loader2 className="h-3 w-3 animate-spin" />
+          ) : (
+            <ShieldCheck className="h-3.5 w-3.5 text-muted-foreground hover:text-primary" />
+          )}
+        </Button>
+      )}
+      <Badge variant={provider.configured ? 'secondary' : 'outline'}>
+        {provider.configured ? 'Key present' : 'Missing key'}
+      </Badge>
+    </div>
   );
 }
 
@@ -227,6 +293,40 @@ export function AdminOperatorConsole() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isProviderPickerOpen, setIsProviderPickerOpen] = useState(false);
+  const [testingProvider, setTestingProvider] = useState<OperatorProviderId | null>(null);
+
+  async function testProvider(providerId: OperatorProviderId) {
+    try {
+      setTestingProvider(providerId);
+      const response = await fetch('/api/admin/operator', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testProvider: providerId }),
+      });
+      const payload = await response.json();
+
+      if (payload.success && payload.valid) {
+        toast({
+          title: 'API Key Valid',
+          description: `${providerId} is online using model: ${payload.model}`,
+        });
+      } else {
+        toast({
+          title: 'API Key Invalid',
+          description: payload.error || `${providerId} validation failed. Check your environment variables.`,
+          variant: 'destructive',
+        });
+      }
+    } catch (err) {
+      toast({
+        title: 'Validation failed',
+        description: 'An unexpected error occurred during API key testing.',
+        variant: 'destructive',
+      });
+    } finally {
+      setTestingProvider(null);
+    }
+  }
 
   const {
     messages,
@@ -616,7 +716,11 @@ export function AdminOperatorConsole() {
                                     {provider.recommended ? <Badge variant="secondary">recommended</Badge> : null}
                                     {provider.freeTierFriendly ? <Badge variant="outline">free-first</Badge> : null}
                                   </div>
-                                  <ProviderStatusBadge provider={provider} />
+                                  <ProviderStatusBadge
+                                    provider={provider}
+                                    onTest={testProvider}
+                                    isTesting={testingProvider === provider.id}
+                                  />
                                 </div>
                               </ModelSelectorItem>
                             ))}
@@ -779,7 +883,11 @@ export function AdminOperatorConsole() {
                           </div>
                           <p className="text-xs text-muted-foreground">{provider.description}</p>
                         </div>
-                        <ProviderStatusBadge provider={provider} />
+                        <ProviderStatusBadge
+                                    provider={provider}
+                                    onTest={testProvider}
+                                    isTesting={testingProvider === provider.id}
+                                  />
                       </div>
                     ))}
                   </div>
