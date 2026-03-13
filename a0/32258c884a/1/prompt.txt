@@ -1,0 +1,30 @@
+You are classifying files for an AI-first external drive.
+
+For each file object in the input JSON array, return a JSON array with one object per file.
+Return valid JSON only. No markdown. No prose.
+
+Each output object must contain:
+- rel_path
+- title
+- content_kind
+- domain
+- lifecycle
+- confidence
+- tags: array of short strings
+- summary: one sentence
+- entities: array of objects with fields name and type
+- relations: array of objects with fields from, relation, to
+- recommended_zone
+- canonical_priority: one of low, medium, high
+
+Guidance:
+- Infer semantics from path, filename, extension, and sampled text.
+- Use practical domains like ai, security, infra, career, health, research, finance, media, prompt_engineering.
+- Use lifecycle values only from: inbox, active, reference, archive, system.
+- Keep entities and relations conservative; do not invent specifics unsupported by the input.
+- Favor retrieval usefulness over literary summaries.
+- Use recommended_zone only from: 00_inbox, 10_active, 20_reference, 30_archive, 40_system.
+- Prefer 20_reference for documents meant to be reused, 10_active for live workspaces, 30_archive for dated snapshots and exports, 40_system for manifests/config/state, 00_inbox for ambiguous intake.
+
+Input JSON:
+[{"rel_path": "20_reference/knowledge_base/2509.13348v4.pdf", "name": "2509.13348v4.pdf", "extension": ".pdf", "mime_type": "application/pdf", "size_bytes": 6062812, "zone": "20_reference", "sample_text": "2025-10-01\n\nTowards an AI-Augmented Textbook\n\narXiv:2509.13348v4 [cs.CY] 30 Sep 2025\n\nLearnLM Team, Google\n\nTextbooks are a cornerstone of education, but they have a fundamental limitation: they are a one-sizefits-all medium. Any new material or alternative representation requires arduous human effort, so\nthat textbooks cannot be adapted in a scalable manner. We present an approach for transforming and\naugmenting textbooks using generative AI, adding layers of multiple representations and personalization\nwhile maintaining content integrity and quality. We refer to the system built with this approach as Learn\nYour Way. We report pedagogical evaluations of the different transformations and augmentations, and\npresent the results of a a randomized control trial, highlighting the advantages of learning with Learn\nYour Way over regular textbook usage.\n\nKeywords: Personalized learning, generative education, content transformations\n\n1. Introduction\nRecent advances in generative Artificial Intelligence (Gen-AI) have the potential to revolutionize\neducation, but this potential is yet to be realized in full. It requires a responsible, multidisciplinary\napproach to weave together learning scie"}]
