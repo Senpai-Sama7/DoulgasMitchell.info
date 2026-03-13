@@ -145,6 +145,10 @@ export function getUserAgent(request: RequestLike) {
   return request.headers.get('user-agent') || 'unknown';
 }
 
+export function getAnonymousFingerprint(request: RequestLike) {
+  return buildAnonymousFingerprint(request);
+}
+
 export async function readJsonBody<T = unknown>(request: RequestLike) {
   try {
     return (await request.json()) as T;

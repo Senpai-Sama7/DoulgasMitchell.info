@@ -60,12 +60,30 @@ export function EnhancedHeroSection() {
       {/* Radial gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none z-[2]" />
 
+      {/* Centered DM Logo Video */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[3]">
+        <motion.div 
+          style={{ opacity: useTransform(scrollYProgress, [0, 1], [0.15, 0.05]) }}
+          className="w-[300px] h-[300px] md:w-[600px] md:h-[600px] rounded-full overflow-hidden border border-primary/10 mix-blend-screen grayscale contrast-125 flex items-center justify-center -translate-y-12"
+        >
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="w-full h-full object-cover"
+          >
+            <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+          </video>
+        </motion.div>
+      </div>
+
       {/* Content */}
       <motion.div
         style={{ y: prefersReducedMotion ? 0 : y, opacity, scale }}
-        className="editorial-container py-10 md:py-20 relative z-10"
+        className="editorial-container py-2 md:py-8 lg:py-12 relative z-10"
       >
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto -mt-8 md:-mt-16">
 
           {/* Mobile ASCII Marker */}
           <motion.div 

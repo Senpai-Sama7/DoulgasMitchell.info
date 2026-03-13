@@ -13,9 +13,16 @@ import {
   CheckCircle,
   AlertCircle,
   Loader2,
+  FolderOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { formatFileSize, getFileCategory, isPreviewable } from '@/lib/upload';
 
@@ -37,15 +44,20 @@ interface MediaUploaderProps {
   onUploadComplete?: (files: UploadFile[]) => void;
   maxFiles?: number;
   className?: string;
+  defaultFolder?: string | null;
+  availableFolders?: string[];
 }
 
 export function MediaUploader({
   onUploadComplete,
   maxFiles = 10,
   className,
+  defaultFolder = null,
+  availableFolders = [],
 }: MediaUploaderProps) {
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [targetFolder, setTargetFolder] = useState<string | null>(defaultFolder);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadFile[] = acceptedFiles.map((file) => ({
@@ -95,6 +107,10 @@ export function MediaUploader({
     pendingFiles.forEach((file) => {
       formData.append('files', file.file);
     });
+
+    if (targetFolder) {
+      formData.append('folder', targetFolder);
+    }
 
     try {
       const response = await fetch('/api/upload', {
@@ -174,6 +190,35 @@ export function MediaUploader({
 
   return (
     <div className={cn('space-y-4', className)}>
+      {/* Folder Selection */}
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted-foreground">Target Folder:</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="sm" className="h-8">
+              <FolderOpen className="h-3.5 w-3.5 mr-2" />
+              {targetFolder || 'Root'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem onClick={() => setTargetFolder(null)}>
+              Root
+            </DropdownMenuItem>
+            {availableFolders.map(f => (
+              <DropdownMenuItem key={f} onClick={() => setTargetFolder(f)}>
+                {f}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuItem onClick={() => {
+              const name = prompt('New folder name:');
+              if (name) setTargetFolder(name);
+            }}>
+              + New Folder
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       {/* Dropzone */}
       <div
         {...getRootProps()}

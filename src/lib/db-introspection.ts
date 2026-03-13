@@ -7,6 +7,16 @@ function quoteTableName(tableName: string) {
 }
 
 export async function getTableColumns(tableName: string) {
+  // Strict allowlist for tables that can be introspected
+  const ALLOWED_TABLES = new Set([
+    'ActivityLog', 'Media', 'Article', 'Project', 'Book', 'Certification',
+    'AdminUser', 'AdminSession', 'AdminPasskey', 'NewsletterSubscriber', 'ContactMessage'
+  ]);
+
+  if (!ALLOWED_TABLES.has(tableName)) {
+    return new Set<string>();
+  }
+
   const cached = tableColumnsCache.get(tableName);
   if (cached) {
     return cached;

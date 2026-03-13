@@ -1,0 +1,2128 @@
+[
+  {
+    "page": "home",
+    "viewport": "desktop",
+    "totalElements": 57,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "BUTTON",
+        "text": "Command ⌘ K",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "01 VIEW MY WORK",
+        "href": "#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "02 Learn More",
+        "href": "#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LEARN MORE",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "BUTTON",
+        "text": "AI Automation",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "BUTTON",
+        "text": "Web Development",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-21",
+        "tag": "BUTTON",
+        "text": "System Design",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-22",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-23",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/ai-workflow-automation",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-24",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-25",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/confident-mind-platform",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-26",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-27",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/systems-architecture-toolkit",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-28",
+        "tag": "A",
+        "text": "READ CASE STUDY",
+        "href": "/work/ai-workflow-automation",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-29",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-30",
+        "tag": "A",
+        "text": "View All Projects on GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-31",
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-32",
+        "tag": "BUTTON",
+        "text": "Research",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-33",
+        "tag": "A",
+        "text": "Rizz Prompting: Attractor-Based Style Steering in ",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-34",
+        "tag": "A",
+        "text": "Read",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-35",
+        "tag": "BUTTON",
+        "text": "SUBSCRIBE",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-36",
+        "tag": "A",
+        "text": "GOOGLE Google AI Professional Certificate  Applied",
+        "href": "https://www.credly.com/users/douglas-mitchell.887417ae/badges",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-37",
+        "tag": "A",
+        "text": "ANTHROPIC Anthropic AI Safety  Credential focused ",
+        "href": "https://verify.skilljar.com/c/kcmc2byhr4ay",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-38",
+        "tag": "BUTTON",
+        "text": "What kind of work does Douglas Mitchell do?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-39",
+        "tag": "BUTTON",
+        "text": "What are the standout projects on this site?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-40",
+        "tag": "BUTTON",
+        "text": "Tell me about The Confident Mind.",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-41",
+        "tag": "BUTTON",
+        "text": "What certifications are featured here?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-42",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-43",
+        "tag": "BUTTON",
+        "text": "Ask",
+        "href": null,
+        "isDisabled": true,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-44",
+        "tag": "A",
+        "text": "email Use the secure contact form",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-45",
+        "tag": "A",
+        "text": "github @Senpai-Sama7",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-46",
+        "tag": "A",
+        "text": "linkedin douglas-mitchell-the-architect",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-47",
+        "tag": "BUTTON",
+        "text": "SEND MESSAGE CTRL+ENTER",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-48",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-49",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-50",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-51",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-52",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-53",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-54",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-55",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-56",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "home",
+    "viewport": "mobile",
+    "totalElements": 56,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "01 VIEW MY WORK",
+        "href": "#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "02 Learn More",
+        "href": "#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LEARN MORE",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "BUTTON",
+        "text": "AI Automation",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "BUTTON",
+        "text": "Web Development",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-21",
+        "tag": "BUTTON",
+        "text": "System Design",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-22",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-23",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/ai-workflow-automation",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-24",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-25",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/confident-mind-platform",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-26",
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-27",
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/systems-architecture-toolkit",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-28",
+        "tag": "A",
+        "text": "READ CASE STUDY",
+        "href": "/work/ai-workflow-automation",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-29",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-30",
+        "tag": "A",
+        "text": "View All Projects on GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-31",
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-32",
+        "tag": "BUTTON",
+        "text": "Research",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-33",
+        "tag": "A",
+        "text": "Rizz Prompting: Attractor-Based Style Steering in ",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-34",
+        "tag": "A",
+        "text": "Read",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-35",
+        "tag": "BUTTON",
+        "text": "SUBSCRIBE",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-36",
+        "tag": "A",
+        "text": "GOOGLE Google AI Professional Certificate  Applied",
+        "href": "https://www.credly.com/users/douglas-mitchell.887417ae/badges",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-37",
+        "tag": "A",
+        "text": "ANTHROPIC Anthropic AI Safety  Credential focused ",
+        "href": "https://verify.skilljar.com/c/kcmc2byhr4ay",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-38",
+        "tag": "BUTTON",
+        "text": "What kind of work does Douglas Mitchell do?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-39",
+        "tag": "BUTTON",
+        "text": "What are the standout projects on this site?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-40",
+        "tag": "BUTTON",
+        "text": "Tell me about The Confident Mind.",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-41",
+        "tag": "BUTTON",
+        "text": "What certifications are featured here?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-42",
+        "tag": "BUTTON",
+        "text": "Ask",
+        "href": null,
+        "isDisabled": true,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-43",
+        "tag": "A",
+        "text": "email Use the secure contact form",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-44",
+        "tag": "A",
+        "text": "github @Senpai-Sama7",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-45",
+        "tag": "A",
+        "text": "linkedin douglas-mitchell-the-architect",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-46",
+        "tag": "BUTTON",
+        "text": "SEND MESSAGE CTRL+ENTER",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-47",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-48",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-49",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-50",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-51",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-52",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-53",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-54",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-55",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "work",
+    "viewport": "desktop",
+    "totalElements": 21,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "work",
+    "viewport": "mobile",
+    "totalElements": 21,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "writing",
+    "viewport": "desktop",
+    "totalElements": 21,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "writing",
+    "viewport": "mobile",
+    "totalElements": 21,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "A",
+        "text": "// Douglas Mitchell",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-5",
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-6",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": false,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-7",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-8",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-9",
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-10",
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-11",
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-12",
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-13",
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-14",
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-15",
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-16",
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-17",
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-18",
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-19",
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-20",
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "admin-login",
+    "viewport": "desktop",
+    "totalElements": 5,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  },
+  {
+    "page": "admin-login",
+    "viewport": "mobile",
+    "totalElements": 5,
+    "elements": [
+      {
+        "id": "el-0",
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-1",
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-2",
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-3",
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      },
+      {
+        "id": "el-4",
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "isDisabled": false,
+        "isVisible": true,
+        "isBroken": false,
+        "issue": ""
+      }
+    ]
+  }
+]

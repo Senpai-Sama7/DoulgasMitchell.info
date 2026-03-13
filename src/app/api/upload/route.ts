@@ -62,6 +62,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Process each file
+    const folder = formData.get('folder') as string | null;
+
     const results = await Promise.all(
       files.map(async (file) => {
         const uploadResult = await processFileUpload(file);
@@ -88,6 +90,8 @@ export async function POST(request: NextRequest) {
             duration: uploadResult.duration,
             url: uploadResult.url!,
             thumbnailUrl: uploadResult.thumbnailUrl,
+            colorPalette: uploadResult.colorPalette ? JSON.stringify(uploadResult.colorPalette) : undefined,
+            folder: folder || undefined,
             uploadedById: session.userId,
           },
         });
@@ -171,6 +175,18 @@ export async function GET(request: NextRequest) {
     const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
     const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '20', 10), 1), 100);
     const search = searchParams.get('search');
+    const getFolders = searchParams.get('folders') === 'true';
+
+    if (getFolders) {
+      const folders = await db.media.findMany({
+        select: { folder: true },
+        distinct: ['folder'],
+      });
+      return NextResponse.json({
+        success: true,
+        folders: folders.map(f => f.folder).filter(Boolean),
+      });
+    }
 
     // Build where clause
     const where: any = {};
@@ -226,7 +242,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// DELETE /api/upload - Delete media files
+// DELETE /api/upload - Delete or Move media files
 export async function DELETE(request: NextRequest) {
   try {
     const originCheck = validateTrustedOrigin(request);
@@ -249,14 +265,37 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const body = await readJsonBody<{ ids?: string[] }>(request);
-    const { ids } = body;
+    const body = await readJsonBody<{ ids?: string[]; action?: 'delete' | 'move'; folder?: string }>(request);
+    const { ids, action = 'delete', folder } = body;
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return NextResponse.json(
         { error: 'No media IDs provided' },
         { status: 400 }
       );
+    }
+
+    if (action === 'move') {
+      const result = await db.media.updateMany({
+        where: { id: { in: ids } },
+        data: { folder: folder || undefined },
+      });
+
+      await logActivity({
+        action: 'move',
+        resource: 'media',
+        userId: session.userId,
+        request,
+        details: {
+          moved: result.count,
+          folder: folder || 'root',
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        moved: result.count,
+      });
     }
 
     const mediaItems = await db.media.findMany({

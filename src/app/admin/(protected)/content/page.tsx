@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { startTransition, useEffect, useMemo, useState } from 'react';
+import { startTransition, useEffect, useMemo, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Award,
@@ -16,6 +16,7 @@ import {
   MoreHorizontal,
   Plus,
   Search,
+  Sparkles,
   Trash2,
   X,
 } from 'lucide-react';
@@ -44,6 +45,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+
+const MarkdownEditor = lazy(() => import('@/components/admin/markdown-editor'));
 
 type ContentType = 'article' | 'project' | 'certification' | 'book';
 
@@ -241,12 +244,49 @@ function EditorDialog({
   onFieldChange: (key: string, value: string | boolean) => void;
   onSave: () => void;
 }) {
+  const [generating, setGenerating] = useState(false);
+
   if (!editor) {
     return null;
   }
 
   const fields = editor.fields;
   const isNew = !editor.id;
+
+  const handleGenerateCaseStudy = async () => {
+    if (!fields.title || !fields.description) {
+      alert('Title and description are required for AI generation.');
+      return;
+    }
+
+    setGenerating(true);
+    try {
+      const response = await fetch('/api/admin/content/case-study', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: fields.title,
+          description: fields.description,
+          role: fields.role,
+          context: fields.context,
+          technologies: fields.technologies ? String(fields.technologies).split(',') : [],
+          metrics: [] // Could be parsed from fields if needed
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success && data.draft) {
+        onFieldChange('longDescription', data.draft);
+      } else {
+        alert('Generation failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Generation error:', error);
+      alert('Failed to connect to AI service.');
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -285,13 +325,37 @@ function EditorDialog({
 
           {'longDescription' in fields ? (
             <FieldRow label="Long Description">
-              <Textarea value={String(fields.longDescription)} onChange={(event) => onFieldChange('longDescription', event.target.value)} />
+              {editor.type.toString() === 'Project' && (
+                <div className="mb-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-7 text-[10px] gap-1.5"
+                    onClick={handleGenerateCaseStudy}
+                    disabled={generating}
+                  >
+                    {generating ? (
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                    ) : (
+                      <Sparkles className="h-3 w-3" />
+                    )}
+                    Magic Draft (AI)
+                  </Button>
+                </div>
+              )}
+              <Textarea 
+                value={String(fields.longDescription)} 
+                onChange={(event) => onFieldChange('longDescription', event.target.value)} 
+                className="min-h-[200px]"
+              />
             </FieldRow>
           ) : null}
 
           {'content' in fields ? (
             <FieldRow label="Content">
-              <Textarea className="min-h-56" value={String(fields.content)} onChange={(event) => onFieldChange('content', event.target.value)} />
+              <Suspense fallback={<div className="h-64 flex items-center justify-center border rounded animate-pulse"><Loader2 className="animate-spin" /></div>}>
+                <MarkdownEditor value={String(fields.content)} onChange={(value) => onFieldChange('content', value)} />
+              </Suspense>
             </FieldRow>
           ) : null}
 

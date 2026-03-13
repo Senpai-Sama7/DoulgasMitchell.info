@@ -1,6 +1,6 @@
 // File type configurations
 export const ALLOWED_MIME_TYPES = {
-  image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif', 'image/svg+xml'],
+  image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], // Removed svg due to XSS risk
   video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
   audio: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/x-m4a', 'audio/aac'],
   document: [
@@ -43,20 +43,23 @@ export interface UploadResult {
   duration?: number;
   url?: string;
   thumbnailUrl?: string;
+  colorPalette?: string[];
   error?: string;
 }
 
 // Validate file type
 export function validateFileType(mimeType: string): FileValidationResult {
   const allAllowed = Object.values(ALLOWED_MIME_TYPES).flat();
-  
-  if (allAllowed.includes(mimeType) || mimeType.startsWith('text/')) {
+
+  // Strict check: if it's not in ALLOWED_MIME_TYPES, reject it.
+  // We removed the permissive `mimeType.startsWith('text/')` check.
+  if (allAllowed.includes(mimeType)) {
     return { valid: true };
   }
-  
+
   return {
     valid: false,
-    error: `File type ${mimeType} is not allowed. Allowed types: images, videos, audio, documents, code, etc.`,
+    error: `File type ${mimeType} is not allowed. Supported types: images, videos, audio, and documents (PDF, Office, Markdown, etc.).`,
   };
 }
 

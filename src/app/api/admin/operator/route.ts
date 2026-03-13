@@ -268,6 +268,8 @@ function buildToolSystemPrompt(provider: OperatorProviderStatus | undefined) {
     'Never claim a change happened unless the tool reported success.',
     'Current live control surface includes: dashboard/site snapshot, content inventory search, article/project/certification/book editing, and public assistant settings.',
     'If a request exceeds current tool coverage, state the limit plainly and recommend the closest supported action.',
+    'Editorial Protocol: When drafting content, prioritize architectural precision, monospaced aesthetics in examples, and OKLCH-aware color descriptions if applicable. Ensure all slugs are kebab-case and SEO-optimized.',
+    'SEO Protocol: For every article or project update, consider if the excerpt and title are optimized for clarity and high-signal search intent.',
     `Current provider rail: ${activeRail}.`,
   ].join(' ');
 }

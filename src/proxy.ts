@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 
 // Helper to get secret for Edge runtime
 function getJwtSecret() {
@@ -23,58 +24,106 @@ const publicAdminRoutes = [
   '/api/admin/setup'
 ];
 
+/**
+ * Combined Proxy/Middleware for Douglas Mitchell Platform
+ * Implements:
+ * 1. Global Rate Limiting (DoS Mitigation)
+ * 2. Trusted Origin Validation (CSRF/CORS Protection)
+ * 3. Admin Authentication & Route Protection
+ */
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const clientIp = getClientIp(request);
 
-  // Only protect /admin and /api/admin routes
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
-    
-    // Check if it's a public route
-    const isPublicRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
-    if (isPublicRoute) {
-      return NextResponse.next();
-    }
+  // 1. Skip middleware for static assets and internal Next.js paths
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.includes('.')
+  ) {
+    return NextResponse.next();
+  }
 
-    // Check for the admin session token
-    const token = request.cookies.get('admin-session')?.value;
+  // 2. Global Rate Limiting (100 requests per minute per IP)
+  const limit = await rateLimit(clientIp, {
+    limit: 100,
+    windowMs: 60 * 1000,
+    prefix: 'global-proxy',
+  });
 
-    if (!token) {
-      // Redirect to login for pages, return 401 for APIs
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (!limit.allowed) {
+    return new NextResponse(
+      JSON.stringify({ error: 'Too many requests. Please slow down.' }),
+      { 
+        status: 429, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Retry-After': Math.ceil((limit.resetAt - Date.now()) / 1000).toString()
+        } 
       }
-      return NextResponse.redirect(new URL('/admin/login', request.url));
-    }
+    );
+  }
 
-    // Verify the JWT token
-    try {
-      await jwtVerify(token, getJwtSecret(), {
-        issuer: JWT_ISSUER,
-        audience: JWT_AUDIENCE,
-      });
-      return NextResponse.next();
-    } catch (error) {
-      console.error('Middleware token verification failed:', error);
-      // Invalid token
-      if (pathname.startsWith('/api/')) {
-        return NextResponse.json({ error: 'Unauthorized - Invalid Token' }, { status: 401 });
-      }
-      
-      // Redirect to login and clear cookie
-      const response = NextResponse.redirect(new URL('/admin/login', request.url));
-      response.cookies.delete('admin-session');
-      return response;
+  // 3. API-specific security: Trusted Origin Validation
+  if (pathname.startsWith('/api/')) {
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return new NextResponse(
+        JSON.stringify({ error: originCheck.reason }),
+        { status: 403, headers: { 'Content-Type': 'application/json' } }
+      );
     }
   }
 
-  // Allow all other routes
-  return NextResponse.next();
+  // 4. Admin Authentication Protection
+  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+    // Check if it's a public route
+    const isPublicRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
+    if (!isPublicRoute) {
+      // Check for the admin session token
+      const token = request.cookies.get('admin-session')?.value;
+
+      if (!token) {
+        // Redirect to login for pages, return 401 for APIs
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+        return NextResponse.redirect(new URL('/admin/login', request.url));
+      }
+
+      // Verify the JWT token
+      try {
+        await jwtVerify(token, getJwtSecret(), {
+          issuer: JWT_ISSUER,
+          audience: JWT_AUDIENCE,
+        });
+      } catch (error) {
+        console.error('Middleware token verification failed:', error);
+        // Invalid token
+        if (pathname.startsWith('/api/')) {
+          return NextResponse.json({ error: 'Unauthorized - Invalid Token' }, { status: 401 });
+        }
+        
+        // Redirect to login and clear cookie
+        const response = NextResponse.redirect(new URL('/admin/login', request.url));
+        response.cookies.delete('admin-session');
+        return response;
+      }
+    }
+  }
+
+  // 5. Continue with request and append rate limit headers
+  const response = NextResponse.next();
+  
+  response.headers.set('X-RateLimit-Limit', '100');
+  response.headers.set('X-RateLimit-Remaining', limit.remaining.toString());
+  response.headers.set('X-RateLimit-Reset', limit.resetAt.toString());
+
+  return response;
 }
 
 export const config = {
   matcher: [
-    // Apply middleware to all admin and api/admin routes
-    '/admin/:path*',
-    '/api/admin/:path*'
+    // Apply middleware to all routes except static assets
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 };

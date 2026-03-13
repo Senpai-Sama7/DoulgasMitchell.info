@@ -40,7 +40,7 @@ describe('File Upload', () => {
     });
 
     it('should reject files over limit', () => {
-      const result = validateFileSize(100 * 1024 * 1024); // 100MB
+      const result = validateFileSize(100 * 1024 * 1024 + 1); // Over 100MB
       expect(result.valid).toBe(false);
       expect(result.error).toContain('exceeds maximum');
     });

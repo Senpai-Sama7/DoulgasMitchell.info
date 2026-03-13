@@ -1,5 +1,5 @@
 # Douglas Mitchell - Robots.txt
-# Allow all major search and AI crawlers
+# Allow all search and AI crawlers
 
 User-agent: Googlebot
 Allow: /

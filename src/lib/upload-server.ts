@@ -96,6 +96,46 @@ export async function saveFile(buffer: Buffer, filename: string, category: strin
   return `/uploads/${category}/${filename}`;
 }
 
+export async function extractColorPalette(buffer: Buffer): Promise<string[]> {
+  try {
+    const { data, info } = await sharp(buffer)
+      .resize(100, 100, { fit: 'cover' })
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+
+    const pixelCount = info.width * info.height;
+    const colors: Record<string, number> = {};
+
+    for (let i = 0; i < data.length; i += info.channels) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Quantize to reduce noise
+      const qr = Math.round(r / 16) * 16;
+      const qg = Math.round(g / 16) * 16;
+      const qb = Math.round(b / 16) * 16;
+      
+      const key = `${qr},${qg},${qb}`;
+      colors[key] = (colors[key] || 0) + 1;
+    }
+
+    // Sort by frequency and convert to HEX/OKLCH
+    const sorted = Object.entries(colors)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([key]) => {
+        const [r, g, b] = key.split(',').map(Number);
+        return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+      });
+
+    return sorted;
+  } catch (error) {
+    console.error('Color extraction failed:', error);
+    return [];
+  }
+}
+
 export async function processFileUpload(
   file: File,
   options: {
@@ -128,6 +168,7 @@ export async function processFileUpload(
     let height: number | undefined;
     let duration: number | undefined;
     let thumbnailUrl: string | undefined;
+    let colorPalette: string[] = [];
 
     if (category === 'image') {
       const dimensions = await getImageDimensions(buffer);
@@ -135,6 +176,8 @@ export async function processFileUpload(
         width = dimensions.width;
         height = dimensions.height;
       }
+
+      colorPalette = await extractColorPalette(buffer);
 
       if (optimizeImages) {
         buffer = await optimizeImage(buffer, file.type);
@@ -163,6 +206,7 @@ export async function processFileUpload(
       duration,
       url,
       thumbnailUrl,
+      colorPalette,
     };
   } catch (error) {
     console.error('File upload error:', error);
@@ -177,8 +221,20 @@ export async function processFileUpload(
 }
 
 function resolveStoragePath(url: string) {
-  if (!url.startsWith('/uploads/')) return null;
-  return join(UPLOAD_DIR, url.replace('/uploads/', ''));
+  if (!url || typeof url !== 'string' || !url.startsWith('/uploads/')) {
+    return null;
+  }
+
+  // Sanitize path by removing leading slashes and any traversal segments
+  const relativePart = url.replace('/uploads/', '').replace(/\.\.\//g, '');
+  const resolved = join(UPLOAD_DIR, relativePart);
+
+  // Ultimate safety: ensure the resolved path still starts with UPLOAD_DIR
+  if (!resolved.startsWith(UPLOAD_DIR)) {
+    return null;
+  }
+
+  return resolved;
 }
 
 export async function deleteStoredAsset(url?: string | null) {

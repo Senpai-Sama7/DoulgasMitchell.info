@@ -81,4 +81,21 @@ describe('public assistant', () => {
     expect(reply.refusal).toBe(true);
     expect(reply.answer).toMatch(/only answer public questions/i);
   });
+
+  it('correctly scores an entry using proximity boost', async () => {
+    // Testing specific project title tokens to trigger the proximity boost
+    const reply = await answerPublicQuestion('Tell me about the systems architecture toolkit.');
+
+    expect(reply.refusal).toBe(false);
+    expect(reply.answer).toMatch(/Systems Architecture Toolkit/);
+    expect(reply.citations[0]?.label).toBe('Systems Architecture Toolkit');
+  });
+
+  it('provides a detailed response for an exact match', async () => {
+    const reply = await answerPublicQuestion('Systems Architecture Toolkit');
+
+    expect(reply.refusal).toBe(false);
+    expect(reply.answer).toMatch(/Systems Architecture Toolkit is a System Design project/i);
+    expect(reply.citations[0]?.label).toBe('Systems Architecture Toolkit');
+  });
 });

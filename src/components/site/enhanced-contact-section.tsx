@@ -30,6 +30,7 @@ export function EnhancedContactSection() {
     message: '',
     website: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [focusedField, setFocusedField] = useState<string | null>(null);
@@ -49,6 +50,18 @@ export function EnhancedContactSection() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    const newErrors: Record<string, string> = {};
+    if (!formState.name.trim()) newErrors.name = 'Name is required';
+    if (!formState.email.trim() || !/^\S+@\S+\.\S+$/.test(formState.email)) newErrors.email = 'Valid email is required';
+    if (!formState.message.trim()) newErrors.message = 'Message is required';
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    setErrors({});
     setIsSubmitting(true);
 
     try {
@@ -228,35 +241,49 @@ export function EnhancedContactSection() {
               <div className="p-6 border border-border rounded-b-lg bg-background space-y-4">
                 {/* Name Field */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
+                  <label htmlFor="contact-name" className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
                     name*
                   </label>
                   <Input
+                    id="contact-name"
                     value={formState.name}
-                    onChange={(e) => setFormState({ ...formState, name: e.target.value })}
+                    onChange={(e) => {
+                      setFormState({ ...formState, name: e.target.value });
+                      if (errors.name) setErrors({ ...errors, name: '' });
+                    }}
                     onFocus={() => setFocusedField('name')}
                     onBlur={() => setFocusedField(null)}
                     required
-                    className={`font-mono ${focusedField === 'name' ? 'border-primary' : ''}`}
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? "name-error" : undefined}
+                    className={`font-mono ${focusedField === 'name' ? 'border-primary' : ''} ${errors.name ? 'border-red-500' : ''}`}
                     placeholder="your_name"
                   />
+                  {errors.name && <span id="name-error" className="text-xs text-red-500 mt-1 block px-1">{errors.name}</span>}
                 </div>
 
                 {/* Email Field */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
+                  <label htmlFor="contact-email" className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
                     email*
                   </label>
                   <Input
+                    id="contact-email"
                     type="email"
                     value={formState.email}
-                    onChange={(e) => setFormState({ ...formState, email: e.target.value })}
+                    onChange={(e) => {
+                      setFormState({ ...formState, email: e.target.value });
+                      if (errors.email) setErrors({ ...errors, email: '' });
+                    }}
                     onFocus={() => setFocusedField('email')}
                     onBlur={() => setFocusedField(null)}
                     required
-                    className={`font-mono ${focusedField === 'email' ? 'border-primary' : ''}`}
+                    aria-invalid={!!errors.email}
+                    aria-describedby={errors.email ? "email-error" : undefined}
+                    className={`font-mono ${focusedField === 'email' ? 'border-primary' : ''} ${errors.email ? 'border-red-500' : ''}`}
                     placeholder="your@email.com"
                   />
+                  {errors.email && <span id="email-error" className="text-xs text-red-500 mt-1 block px-1">{errors.email}</span>}
                 </div>
 
                 {/* Subject Field */}
@@ -276,19 +303,26 @@ export function EnhancedContactSection() {
 
                 {/* Message Field */}
                 <div className="relative">
-                  <label className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
+                  <label htmlFor="contact-message" className="absolute -top-2 left-3 px-1 bg-background text-xs font-mono text-muted-foreground">
                     message*
                   </label>
                   <Textarea
+                    id="contact-message"
                     value={formState.message}
-                    onChange={(e) => setFormState({ ...formState, message: e.target.value })}
+                    onChange={(e) => {
+                      setFormState({ ...formState, message: e.target.value });
+                      if (errors.message) setErrors({ ...errors, message: '' });
+                    }}
                     onFocus={() => setFocusedField('message')}
                     onBlur={() => setFocusedField(null)}
                     required
+                    aria-invalid={!!errors.message}
+                    aria-describedby={errors.message ? "message-error" : undefined}
                     rows={5}
-                    className={`font-mono resize-none ${focusedField === 'message' ? 'border-primary' : ''}`}
+                    className={`font-mono resize-none ${focusedField === 'message' ? 'border-primary' : ''} ${errors.message ? 'border-red-500' : ''}`}
                     placeholder="Hello Douglas, I'd like to discuss..."
                   />
+                  {errors.message && <span id="message-error" className="text-xs text-red-500 mt-1 block px-1">{errors.message}</span>}
                 </div>
 
                 <input

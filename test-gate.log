@@ -1,0 +1,27 @@
+$ prisma generate && vitest run
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 174ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+
+
+ RUN  v3.2.4 /home/donovan/Projects/DoulgasMitchell.info
+
+ ✓ src/__tests__/upload.test.ts (20 tests) 10ms
+ ✓ src/__tests__/site-content.test.ts (3 tests) 4ms
+ ✓ src/__tests__/public-assistant.test.ts (6 tests) 16ms
+ ✓ src/__tests__/forms.test.ts (4 tests) 9ms
+ ✓ src/__tests__/request.test.ts (5 tests) 12ms
+ ✓ src/__tests__/auth.test.ts (8 tests) 1313ms
+   ✓ Authentication > Password hashing > should verify a correct password  529ms
+   ✓ Authentication > Password hashing > should reject an incorrect password  510ms
+
+ Test Files  6 passed (6)
+      Tests  46 passed (46)
+   Start at  14:20:33
+   Duration  2.00s (transform 312ms, setup 0ms, collect 818ms, tests 1.36s, environment 1ms, prepare 645ms)
+

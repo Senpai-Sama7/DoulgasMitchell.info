@@ -11,6 +11,22 @@ datasource db {
 }
 
 // Core Content Models
+model Note {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  category  String?  @default("Raw")
+  tags      String?  // JSON-like string or comma-separated
+  isDraft   Boolean  @default(true)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+}
+
 model Article {
   id          String   @id @default(cuid())
   slug        String   @unique
@@ -209,6 +225,7 @@ model Media {
   duration      Int?     // for videos/audio (seconds)
   url           String
   thumbnailUrl  String?
+  colorPalette  String?  // JSON array of colors
   alt           String?  // accessibility text
   caption       String?
   description   String?

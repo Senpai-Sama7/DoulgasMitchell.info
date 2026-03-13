@@ -1,6 +1,6 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { BrainCircuit, Loader2, Shield, Sparkles } from 'lucide-react';
 import {
   Conversation,
@@ -35,18 +35,46 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistantSettings }) {
-  const [messages, setMessages] = useState<PublicAssistantMessage[]>([
-    {
-      id: 'public-assistant-welcome',
-      role: 'assistant',
-      text: settings.welcomeMessage,
-    },
-  ]);
+  const [messages, setMessages] = useState<PublicAssistantMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isThinking, setIsThinking] = useState(false);
+  const [thinkingStep, setThinkingStep] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [remaining, setRemaining] = useState<number | null>(null);
   const [suggestions, setSuggestions] = useState<string[]>(DEFAULT_SUGGESTIONS);
+
+  // Initialize and load chat history
+  useEffect(() => {
+    const saved = localStorage.getItem('public_assistant_history');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          return;
+        }
+      } catch (e) {
+        console.error('Failed to parse chat history', e);
+      }
+    }
+    
+    // Default welcome message if no history
+    setMessages([
+      {
+        id: 'public-assistant-welcome',
+        role: 'assistant',
+        text: settings.welcomeMessage,
+      },
+    ]);
+  }, [settings.welcomeMessage]);
+
+  // Persist history on change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('public_assistant_history', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   async function submitQuestion(question: string) {
     const trimmed = question.trim();
@@ -65,6 +93,12 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
     setInput('');
     setError(null);
     setIsLoading(true);
+    setIsThinking(true);
+    setThinkingStep(0);
+
+    const thinkingInterval = setInterval(() => {
+      setThinkingStep((prev) => (prev + 1) % 3);
+    }, 1200);
 
     try {
       const response = await fetch('/api/public-assistant', {
@@ -77,6 +111,11 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
       if (!response.ok || !payload.success) {
         throw new Error(payload.error || 'Public assistant failed to answer.');
       }
+
+      // Artificial delay to show "thinking" steps for a better AI experience
+      await new Promise((resolve) => setTimeout(resolve, 1800));
+      clearInterval(thinkingInterval);
+      setIsThinking(false);
 
       setMessages((current) => [
         ...current,
@@ -112,6 +151,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
       ]);
     } finally {
       setIsLoading(false);
+      setIsThinking(false);
     }
   }
 
@@ -125,11 +165,11 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
   }
 
   return (
-    <section className="relative overflow-hidden py-24">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.08),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)]" />
+    <section className="relative overflow-hidden py-24 w-full max-w-[100vw]">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.08),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] max-w-full" />
       <div className="editorial-container relative">
-        <div className="grid gap-8 xl:grid-cols-[0.8fr_1.2fr]">
-          <div className="space-y-6">
+        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="space-y-6 min-w-0">
             <div className="space-y-4">
               <Badge variant="outline" className="gap-2 rounded-full px-4 py-1 font-mono text-[11px] uppercase tracking-[0.22em]">
                 <Sparkles className="h-3.5 w-3.5" />
@@ -143,19 +183,19 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="gap-1.5">
+            <div className="space-y-3 max-w-full overflow-hidden">
+              <div className="flex flex-wrap gap-2 max-w-full">
+                <Badge variant="secondary" className="gap-1.5 shrink-0">
                   <Shield className="h-3.5 w-3.5" />
                   Portfolio-only
                 </Badge>
-                <Badge variant="secondary" className="gap-1.5">
+                <Badge variant="secondary" className="gap-1.5 shrink-0">
                   <BrainCircuit className="h-3.5 w-3.5" />
                   Deterministic answers
                 </Badge>
-                <Badge variant="outline">{settings.maxQuestionsPerIp} questions / IP / day</Badge>
+                <Badge variant="outline" className="shrink-0">{settings.maxQuestionsPerIp} questions / IP / day</Badge>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-muted-foreground break-words">
                 Ask about projects, articles, the book, certifications, or operating principles. Sensitive topics and private contact details are refused automatically.
               </p>
               {remaining !== null ? (
@@ -178,15 +218,15 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
             </Suggestions>
           </div>
 
-          <div className="rounded-[32px] border border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur overflow-hidden">
-            <Conversation className="h-[28rem] md:h-[34rem] rounded-[32px]">
-              <ConversationContent className="gap-5 p-6">
+          <div className="rounded-[32px] border border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur overflow-hidden w-full max-w-full mx-auto">
+            <Conversation className="h-[28rem] md:h-[34rem] rounded-[32px] w-full">
+              <ConversationContent className="gap-5 p-4 md:p-6 w-full">
                 {messages.map((message) => (
-                  <Message key={message.id} from={message.role === 'assistant' ? 'assistant' : 'user'}>
+                  <Message key={message.id} from={message.role === 'assistant' ? 'assistant' : 'user'} className="w-full">
                     <MessageContent
-                      className={message.role === 'assistant' ? 'rounded-2xl border border-border/70 bg-background/60 px-4 py-4' : undefined}
+                      className={message.role === 'assistant' ? 'rounded-2xl border border-border/70 bg-background/60 px-4 py-4 max-w-[90%] md:max-w-[85%]' : 'max-w-[90%] md:max-w-[85%] ml-auto'}
                     >
-                      <MessageResponse>{message.text}</MessageResponse>
+                      <MessageResponse className="break-words overflow-hidden">{message.text}</MessageResponse>
                       {message.role === 'assistant' && message.citations?.length ? (
                         <div className="mt-4 flex flex-wrap gap-2">
                           {message.citations.map((citation) =>
@@ -213,10 +253,32 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
                   </Message>
                 ))}
 
-                {isLoading ? (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                {isThinking ? (
+                  <div className="flex flex-col gap-2 p-4 rounded-2xl border border-border/70 bg-background/40 max-w-[85%] animate-in fade-in slide-in-from-bottom-2 duration-300">
+                    <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-primary">
+                      <BrainCircuit className="h-3.5 w-3.5 animate-pulse" />
+                      {thinkingStep === 0 && "Analyzing query parameters..."}
+                      {thinkingStep === 1 && "Scanning public knowledge archive..."}
+                      {thinkingStep === 2 && "Synthesizing deterministic response..."}
+                    </div>
+                    <div className="flex gap-1">
+                      <div className="h-1 w-8 rounded-full bg-primary/20 overflow-hidden">
+                        <div className="h-full bg-primary animate-progress" />
+                      </div>
+                      <div className="h-1 w-8 rounded-full bg-muted overflow-hidden">
+                        {thinkingStep >= 1 && <div className="h-full bg-primary animate-progress" />}
+                      </div>
+                      <div className="h-1 w-8 rounded-full bg-muted overflow-hidden">
+                        {thinkingStep >= 2 && <div className="h-full bg-primary animate-progress" />}
+                      </div>
+                    </div>
+                  </div>
+                ) : null}
+
+                {isLoading && !isThinking ? (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground ml-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Searching the public archive...
+                    Finalizing response...
                   </div>
                 ) : null}
               </ConversationContent>
@@ -236,10 +298,32 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
                   <p className="text-xs text-muted-foreground">
                     Public, non-sensitive questions only.
                   </p>
-                  <Button type="submit" disabled={isLoading || !input.trim()}>
-                    {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                    Ask
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Clear chat history?')) {
+                          const welcome = {
+                            id: 'public-assistant-welcome',
+                            role: 'assistant' as const,
+                            text: settings.welcomeMessage,
+                          };
+                          setMessages([welcome]);
+                          localStorage.removeItem('public_assistant_history');
+                        }
+                      }}
+                      className="h-9 px-3 text-xs text-muted-foreground hover:text-foreground"
+                      disabled={isLoading || messages.length <= 1}
+                    >
+                      Clear
+                    </Button>
+                    <Button type="submit" disabled={isLoading || !input.trim()}>
+                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      Ask
+                    </Button>
+                  </div>
                 </div>
                 {error ? <p className="text-xs text-destructive">{error}</p> : null}
               </form>

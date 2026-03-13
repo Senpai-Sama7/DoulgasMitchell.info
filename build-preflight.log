@@ -1,0 +1,78 @@
+$ prisma generate && NODE_ENV=production next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+Environment variables loaded from .env
+Prisma schema loaded from prisma/schema.prisma
+
+✔ Generated Prisma Client (v6.19.2) to ./node_modules/@prisma/client in 160ms
+
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+
+Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local, .env
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 18.2s
+  Running TypeScript ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/41) ...
+  Generating static pages using 11 workers (10/41) 
+  Generating static pages using 11 workers (20/41) 
+  Generating static pages using 11 workers (30/41) 
+✓ Generating static pages using 11 workers (41/41) in 1519.2ms
+  Finalizing page optimization ...
+
+Route (app)                                                 Revalidate  Expire
+┌ ○ /                                                               1h      1y
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/analytics
+├ ƒ /admin/content
+├ ○ /admin/login
+├ ƒ /admin/media
+├ ƒ /admin/operator
+├ ƒ /admin/security
+├ ƒ /api
+├ ƒ /api/admin/ai
+├ ƒ /api/admin/ai/optimize
+├ ƒ /api/admin/analytics
+├ ƒ /api/admin/auth
+├ ƒ /api/admin/auth/passkey/generate-options
+├ ƒ /api/admin/auth/passkey/register/generate-options
+├ ƒ /api/admin/auth/passkey/register/verify
+├ ƒ /api/admin/auth/passkey/verify
+├ ƒ /api/admin/check
+├ ƒ /api/admin/content
+├ ƒ /api/admin/content/reorder
+├ ƒ /api/admin/logout
+├ ƒ /api/admin/media/ai-alt
+├ ƒ /api/admin/notes
+├ ƒ /api/admin/notifications
+├ ƒ /api/admin/operator
+├ ƒ /api/admin/setup
+├ ƒ /api/admin/webauthn/register/options
+├ ƒ /api/admin/webauthn/register/verify
+├ ƒ /api/analytics/page-view
+├ ƒ /api/contact
+├ ƒ /api/newsletter
+├ ƒ /api/public-assistant
+├ ƒ /api/seed
+├ ƒ /api/upload
+├ ○ /notes
+├ ○ /robots.txt
+├ ƒ /search
+├ ○ /sitemap.xml
+├ ● /work/[slug]
+│ ├ /work/ai-workflow-automation
+│ ├ /work/confident-mind-platform
+│ └ /work/systems-architecture-toolkit
+└ ● /writing/[slug]
+  └ /writing/rizz-prompting-attractor-based-style-steering
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+

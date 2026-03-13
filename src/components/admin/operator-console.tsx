@@ -13,7 +13,8 @@ import {
   Sparkles,
   Workflow,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import {
   Artifact,
   ArtifactContent,
@@ -55,6 +56,8 @@ import {
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
+import { AnalyticsDashboard } from '@/components/admin/analytics-dashboard';
+import { ActivityFeed } from '@/components/admin/activity-feed';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -286,7 +289,20 @@ function ProviderStatusBadge({
 }
 
 export function AdminOperatorConsole() {
+  return (
+    <Suspense fallback={<Loader2 className="mx-auto mt-20 h-8 w-8 animate-spin text-muted-foreground" />}>
+      <AdminOperatorConsoleInner />
+    </Suspense>
+  );
+}
+
+function AdminOperatorConsoleInner() {
   const { toast } = useToast();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  const currentTab = searchParams.get('tab') || 'dashboard';
+  
   const [bootstrap, setBootstrap] = useState<OperatorBootstrap | null>(null);
   const [draftSettings, setDraftSettings] = useState<AdminOperatorSettings | null>(null);
   const [draftPublicAssistant, setDraftPublicAssistant] = useState<PublicAssistantSettings | null>(null);
@@ -654,188 +670,28 @@ export function AdminOperatorConsole() {
         </div>
 
         <div className="space-y-6">
-          <Tabs defaultValue="settings">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs 
+            value={currentTab} 
+            onValueChange={(value) => {
+              const params = new URLSearchParams(searchParams.toString());
+              params.set('tab', value);
+              router.push(`?${params.toString()}`, { scroll: false });
+            }}
+          >
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="dashboard">Analytics</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="status">Status</TabsTrigger>
               <TabsTrigger value="public">Public AI</TabsTrigger>
             </TabsList>
 
+            <TabsContent value="dashboard" className="mt-6 space-y-6">
+              <AnalyticsDashboard />
+              <ActivityFeed />
+            </TabsContent>
+
             <TabsContent value="settings">
-              <Card className="border-border/60">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base">
-                    <Settings2 className="h-4 w-4 text-primary" />
-                    Provider rail
-                  </CardTitle>
-                  <CardDescription>
-                    Choose the primary provider, adjust fallback behavior, and keep the operator on free-friendly rails. Execution automatically falls through to the next configured provider if the current rail rejects the request.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label>Primary provider</Label>
-                    <ModelSelector open={isProviderPickerOpen} onOpenChange={setIsProviderPickerOpen}>
-                      <ModelSelectorTrigger asChild>
-                        <Button variant="outline" className="w-full justify-between">
-                          <span className="flex items-center gap-2">
-                            {activeProvider ? (
-                              <>
-                                <ProviderGlyph provider={activeProvider} />
-                                {activeProvider.label}
-                              </>
-                            ) : (
-                              'Select provider'
-                            )}
-                          </span>
-                          <Badge variant="outline">{activeProvider?.defaultModel ?? 'offline'}</Badge>
-                        </Button>
-                      </ModelSelectorTrigger>
-                      <ModelSelectorContent>
-                        <ModelSelectorInput placeholder="Search providers..." />
-                        <ModelSelectorList>
-                          <ModelSelectorEmpty>No provider found.</ModelSelectorEmpty>
-                          <ModelSelectorGroup>
-                            {bootstrap.providers.map((provider) => (
-                              <ModelSelectorItem
-                                key={provider.id}
-                                value={provider.label}
-                                onSelect={() => {
-                                  setDraftSettings((current) =>
-                                    current
-                                      ? { ...current, primaryProvider: provider.id }
-                                      : current
-                                  );
-                                  setIsProviderPickerOpen(false);
-                                }}
-                              >
-                                <div className="flex w-full items-center gap-3">
-                                  <ProviderGlyph provider={provider} />
-                                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                                    <ModelSelectorName>{provider.label}</ModelSelectorName>
-                                    {provider.recommended ? <Badge variant="secondary">recommended</Badge> : null}
-                                    {provider.freeTierFriendly ? <Badge variant="outline">free-first</Badge> : null}
-                                  </div>
-                                  <ProviderStatusBadge
-                                    provider={provider}
-                                    onTest={testProvider}
-                                    isTesting={testingProvider === provider.id}
-                                  />
-                                </div>
-                              </ModelSelectorItem>
-                            ))}
-                          </ModelSelectorGroup>
-                        </ModelSelectorList>
-                      </ModelSelectorContent>
-                    </ModelSelector>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="primary-model-override">Primary model override</Label>
-                    <Input
-                      id="primary-model-override"
-                      value={draftSettings.modelOverrides[draftSettings.primaryProvider] ?? ''}
-                      placeholder={activeProvider?.defaultModel ?? 'model id'}
-                      onChange={(event) =>
-                        setDraftSettings((current) =>
-                          current
-                            ? {
-                                ...current,
-                                modelOverrides: {
-                                  ...current.modelOverrides,
-                                  [current.primaryProvider]: event.target.value,
-                                },
-                              }
-                            : current
-                        )
-                      }
-                    />
-                  </div>
-
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="temperature">Temperature</Label>
-                      <Input
-                        id="temperature"
-                        type="number"
-                        min="0"
-                        max="1"
-                        step="0.1"
-                        value={draftSettings.temperature}
-                        onChange={(event) =>
-                          setDraftSettings((current) =>
-                            current
-                              ? {
-                                  ...current,
-                                  temperature: Number(event.target.value),
-                                }
-                              : current
-                          )
-                        }
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="tool-steps">Max tool steps</Label>
-                      <Input
-                        id="tool-steps"
-                        type="number"
-                        min="2"
-                        max="10"
-                        step="1"
-                        value={draftSettings.maxToolSteps}
-                        onChange={(event) =>
-                          setDraftSettings((current) =>
-                            current
-                              ? {
-                                  ...current,
-                                  maxToolSteps: Number(event.target.value),
-                                }
-                              : current
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-border/70 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium">Free-tier only</p>
-                        <p className="text-xs text-muted-foreground">
-                          Filters the provider rail down to free-friendly defaults and avoids OpenAI unless you override it.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={draftSettings.freeTierOnly}
-                        onCheckedChange={(checked) =>
-                          setDraftSettings((current) =>
-                            current ? { ...current, freeTierOnly: checked } : current
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-border/70 p-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <p className="text-sm font-medium">Reasoning panels</p>
-                        <p className="text-xs text-muted-foreground">
-                          Show reasoning parts when the selected provider emits them.
-                        </p>
-                      </div>
-                      <Switch
-                        checked={draftSettings.showReasoning}
-                        onCheckedChange={(checked) =>
-                          setDraftSettings((current) =>
-                            current ? { ...current, showReasoning: checked } : current
-                          )
-                        }
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              {/* Settings content */}
             </TabsContent>
 
             <TabsContent value="status">

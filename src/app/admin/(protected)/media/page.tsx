@@ -51,6 +51,8 @@ interface Media {
   height?: number;
   url: string;
   thumbnailUrl?: string;
+  colorPalette?: string | null;
+  folder?: string | null;
   createdAt: string;
   _count: {
     articleUsages: number;
@@ -77,6 +79,8 @@ export default function MediaLibraryPage() {
   const [featureAvailable, setFeatureAvailable] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [folders, setFolders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -87,6 +91,9 @@ export default function MediaLibraryPage() {
       const params = new URLSearchParams();
       if (selectedCategory !== 'all') {
         params.append('category', selectedCategory);
+      }
+      if (selectedFolder) {
+        params.append('folder', selectedFolder);
       }
       if (searchQuery) {
         params.append('search', searchQuery);
@@ -104,11 +111,24 @@ export default function MediaLibraryPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, selectedFolder, searchQuery]);
+
+  const fetchFolders = useCallback(async () => {
+    try {
+      const response = await fetch('/api/upload?folders=true');
+      const data = await response.json();
+      if (data.success) {
+        setFolders(data.folders);
+      }
+    } catch (error) {
+      console.error('Failed to fetch folders:', error);
+    }
+  }, []);
 
   useEffect(() => {
     fetchMedia();
-  }, [fetchMedia]);
+    fetchFolders();
+  }, [fetchMedia, fetchFolders]);
 
   const toggleSelection = (id: string) => {
     setSelectedItems((prev) => {
@@ -139,7 +159,7 @@ export default function MediaLibraryPage() {
       const response = await fetch('/api/upload', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedItems) }),
+        body: JSON.stringify({ ids: Array.from(selectedItems), action: 'delete' }),
       });
 
       const data = await response.json();
@@ -147,9 +167,36 @@ export default function MediaLibraryPage() {
       if (data.success) {
         setMedia((prev) => prev.filter((m) => !selectedItems.has(m.id)));
         setSelectedItems(new Set());
+        fetchFolders();
       }
     } catch (error) {
       console.error('Delete failed:', error);
+    }
+  };
+
+  const moveSelected = async (folder: string | null) => {
+    if (selectedItems.size === 0) return;
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          ids: Array.from(selectedItems), 
+          action: 'move',
+          folder: folder
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        fetchMedia();
+        fetchFolders();
+        setSelectedItems(new Set());
+      }
+    } catch (error) {
+      console.error('Move failed:', error);
     }
   };
 
@@ -205,8 +252,11 @@ export default function MediaLibraryPage() {
               <MediaUploader
                 onUploadComplete={() => {
                   fetchMedia();
+                  fetchFolders();
                   setUploaderOpen(false);
                 }}
+                defaultFolder={selectedFolder}
+                availableFolders={folders}
               />
             ) : (
               <div className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
@@ -226,23 +276,56 @@ export default function MediaLibraryPage() {
       )}
 
       {/* Filters & Search */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search files..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9"
-          />
+      <div className="flex flex-col lg:flex-row gap-4">
+        <div className="flex-1 space-y-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search files..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant={selectedFolder === null ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setSelectedFolder(null)}
+            >
+              All Folders
+            </Button>
+            {folders.map((folder) => (
+              <Button
+                key={folder}
+                variant={selectedFolder === folder ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setSelectedFolder(folder)}
+              >
+                {folder}
+              </Button>
+            ))}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                const name = prompt('New folder name:');
+                if (name) setFolders(prev => Array.from(new Set([...prev, name])));
+              }}
+            >
+              + New Folder
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
+        
+        <div className="flex gap-2 self-start">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
             <TabsList>
               {categories.map((cat) => (
                 <TabsTrigger key={cat.value} value={cat.value}>
                   <cat.icon className="h-4 w-4 mr-2" />
-                  {cat.label}
+                  <span className="hidden sm:inline">{cat.label}</span>
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -255,23 +338,47 @@ export default function MediaLibraryPage() {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center gap-4 p-4 bg-primary/5 rounded-lg"
+          className="flex flex-wrap items-center gap-4 p-4 bg-primary/5 rounded-lg border border-primary/20"
         >
           <span className="text-sm font-medium">
             {selectedItems.size} selected
           </span>
-          <Button variant="ghost" size="sm" onClick={clearSelection}>
-            <X className="h-4 w-4 mr-2" />
-            Clear
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={deleteSelected}
-          >
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          
+          <div className="flex flex-wrap gap-2">
+            <Button variant="ghost" size="sm" onClick={clearSelection}>
+              <X className="h-4 w-4 mr-2" />
+              Clear
+            </Button>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Move to
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem onClick={() => moveSelected(null)}>
+                  Root Folder
+                </DropdownMenuItem>
+                {folders.map(f => (
+                  <DropdownMenuItem key={f} onClick={() => moveSelected(f)}>
+                    {f}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={deleteSelected}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </div>
         </motion.div>
       )}
 
@@ -390,14 +497,27 @@ export default function MediaLibraryPage() {
                       <p className="font-medium truncate text-sm">
                         {item.originalName}
                       </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(item.size)}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                          {formatFileSize(item.size)}
+                        </p>
                         {item.width && item.height && (
-                          <span className="ml-2">
-                            • {item.width}×{item.height}
-                          </span>
+                          <span className="text-[10px] text-muted-foreground/60">• {item.width}×{item.height}</span>
                         )}
-                      </p>
+                      </div>
+                      
+                      {item.colorPalette && (
+                        <div className="flex gap-1 mt-2">
+                          {JSON.parse(item.colorPalette).map((color: string, i: number) => (
+                            <div 
+                              key={i} 
+                              className="w-3 h-3 rounded-full border border-black/5" 
+                              style={{ backgroundColor: color }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -424,17 +544,31 @@ export default function MediaLibraryPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{item.originalName}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {formatFileSize(item.size)}
-                      {' • '}
-                      {new Date(item.createdAt).toLocaleDateString()}
-                      {item._count.articleUsages > 0 && (
-                        <span className="ml-2 text-blue-500">
-                          Used in {item._count.articleUsages} article
-                          {item._count.articleUsages > 1 ? 's' : ''}
-                        </span>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm text-muted-foreground">
+                        {formatFileSize(item.size)}
+                        {' • '}
+                        {new Date(item.createdAt).toLocaleDateString()}
+                        {item._count.articleUsages > 0 && (
+                          <span className="ml-2 text-blue-500">
+                            Used in {item._count.articleUsages} article
+                            {item._count.articleUsages > 1 ? 's' : ''}
+                          </span>
+                        )}
+                      </p>
+                      {item.colorPalette && (
+                        <div className="flex gap-1">
+                          {JSON.parse(item.colorPalette).map((color: string, i: number) => (
+                            <div 
+                              key={i} 
+                              className="w-2.5 h-2.5 rounded-full border border-black/5" 
+                              style={{ backgroundColor: color }}
+                              title={color}
+                            />
+                          ))}
+                        </div>
                       )}
-                    </p>
+                    </div>
                   </div>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

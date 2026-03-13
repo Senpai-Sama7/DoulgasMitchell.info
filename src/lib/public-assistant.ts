@@ -240,30 +240,64 @@ function wantsCollectionAnswer(question: string, kind: KnowledgeKind) {
   return matcher ? matcher.test(question) : false;
 }
 
-function scoreEntry(queryTokens: string[], requestedKinds: Set<KnowledgeKind>, entry: KnowledgeEntry) {
+function scoreEntry(queryTokens: string[], requestedKinds: Set<KnowledgeKind>, entry: KnowledgeEntry, rawQuery: string) {
   let score = 0;
   const normalizedTitle = normalizeText(entry.title);
   const normalizedSummary = normalizeText(entry.summary);
   const normalizedDetail = normalizeText(entry.detail);
+  const normalizedQuery = normalizeText(rawQuery);
 
+  // 1. Kind Relevance (Strong Signal)
   if (requestedKinds.size > 0) {
     if (requestedKinds.has(entry.kind)) {
-      score += 10;
+      score += 12;
     } else {
-      score -= 2;
+      score -= 3; // Penalty for mismatching the requested kind
     }
   }
 
+  // 2. Exact Phrase Match (Highest Precision)
+  if (normalizedQuery.length > 3) {
+    if (normalizedTitle.includes(normalizedQuery)) score += 20;
+    else if (normalizedSummary.includes(normalizedQuery)) score += 10;
+    else if (normalizedDetail.includes(normalizedQuery)) score += 5;
+  }
+
+  // 3. Individual Token Matching
   for (const token of queryTokens) {
-    if (normalizedTitle.includes(token)) score += 5;
-    if (entry.keywords.some((keyword) => normalizeText(keyword).includes(token))) score += 3;
+    // Title match (High Weight)
+    if (normalizedTitle.includes(token)) score += 8;
+    
+    // Keyword match (Medium-High Weight)
+    if (entry.keywords.some((keyword) => normalizeText(keyword) === token)) {
+      score += 6;
+    } else if (entry.keywords.some((keyword) => normalizeText(keyword).includes(token))) {
+      score += 3;
+    }
+    
+    // Summary/Detail matches (Lower Weight)
     if (normalizedSummary.includes(token)) score += 2;
     if (normalizedDetail.includes(token)) score += 1;
   }
 
-  if (queryTokens.length > 0 && normalizedTitle.includes(queryTokens.join(' '))) {
-    score += 8;
+  // 4. Proximity Boost (Boost if multiple tokens appear close together in title/summary)
+  if (queryTokens.length > 1) {
+    const allText = `${normalizedTitle} ${normalizedSummary}`.split(' ');
+    let matchesFound = 0;
+    for (const token of queryTokens) {
+      if (allText.includes(token)) matchesFound++;
+    }
+    if (matchesFound === queryTokens.length) {
+      score += 15; // All query tokens found in title/summary
+    } else if (matchesFound > 1) {
+      score += matchesFound * 2;
+    }
   }
+
+  // 5. Kind-specific Boosts
+  if (entry.kind === 'profile' && queryTokens.includes('who')) score += 5;
+  if (entry.kind === 'contact' && (queryTokens.includes('hire') || queryTokens.includes('email'))) score += 5;
+  if (entry.kind === 'book' && (queryTokens.includes('book') || queryTokens.includes('read'))) score += 5;
 
   return score;
 }
@@ -370,7 +404,7 @@ export async function answerPublicQuestion(
   const rankedResults = knowledge
     .map((entry) => ({
       entry,
-      score: scoreEntry(queryTokens, requestedKinds, entry),
+      score: scoreEntry(queryTokens, requestedKinds, entry, trimmedQuestion),
     }))
     .filter((item) => item.score > 0)
     .sort((left, right) => right.score - left.score);

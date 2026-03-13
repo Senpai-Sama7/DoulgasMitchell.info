@@ -1,0 +1,2172 @@
+[
+  {
+    "route": "/",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Command\n⌘\nK",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-5",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-6",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-7",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-9",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "01\nVIEW MY WORK",
+        "href": "#work",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "02\nLearn More",
+        "href": "#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LEARN MORE",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "AI Automation",
+        "href": null,
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Web Development",
+        "href": null,
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System Design",
+        "href": null,
+        "id": "gen-21",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-22",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/ai-workflow-automation",
+        "id": "gen-23",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-24",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/confident-mind-platform",
+        "id": "gen-25",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-26",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/systems-architecture-toolkit",
+        "id": "gen-27",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "READ CASE STUDY",
+        "href": "/work/ai-workflow-automation",
+        "id": "gen-28",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-29",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "View All Projects on GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-30",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "id": "gen-31",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Research",
+        "href": null,
+        "id": "gen-32",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Rizz Prompting: Attractor-Based Style Steering in ",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "id": "gen-33",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Read",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "id": "gen-34",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "SUBSCRIBE",
+        "href": null,
+        "id": "gen-35",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GOOGLE\nGoogle AI Professional Certificate\n\nApplied",
+        "href": "https://www.credly.com/users/douglas-mitchell.887417ae/badges",
+        "id": "gen-36",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "ANTHROPIC\nAnthropic AI Safety\n\nCredential focused ",
+        "href": "https://verify.skilljar.com/c/kcmc2byhr4ay",
+        "id": "gen-37",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What kind of work does Douglas Mitchell do?",
+        "href": null,
+        "id": "gen-38",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What are the standout projects on this site?",
+        "href": null,
+        "id": "gen-39",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Tell me about The Confident Mind.",
+        "href": null,
+        "id": "gen-40",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What certifications are featured here?",
+        "href": null,
+        "id": "gen-41",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-42",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Ask",
+        "href": null,
+        "id": "gen-43",
+        "isVisible": true,
+        "isDisabled": true
+      },
+      {
+        "tag": "A",
+        "text": "email\nUse the secure contact form",
+        "href": "#contact",
+        "id": "gen-44",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "github\n@Senpai-Sama7",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-45",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "linkedin\ndouglas-mitchell-the-architect",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-46",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "SEND MESSAGE\nCTRL+ENTER",
+        "href": null,
+        "id": "gen-47",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-48",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-49",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-50",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-51",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-52",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-53",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-54",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-55",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-56",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full___desktop.png"
+    ]
+  },
+  {
+    "route": "/",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-3",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-4",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-5",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-6",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-7",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-9",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "01\nVIEW MY WORK",
+        "href": "#work",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "02\nLearn More",
+        "href": "#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LEARN MORE",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "AI Automation",
+        "href": null,
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Web Development",
+        "href": null,
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "System Design",
+        "href": null,
+        "id": "gen-21",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-22",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/ai-workflow-automation",
+        "id": "gen-23",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-24",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/confident-mind-platform",
+        "id": "gen-25",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-26",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Case study",
+        "href": "/work/systems-architecture-toolkit",
+        "id": "gen-27",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "READ CASE STUDY",
+        "href": "/work/ai-workflow-automation",
+        "id": "gen-28",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-29",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "View All Projects on GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-30",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "All",
+        "href": null,
+        "id": "gen-31",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Research",
+        "href": null,
+        "id": "gen-32",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Rizz Prompting: Attractor-Based Style Steering in ",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "id": "gen-33",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Read",
+        "href": "/writing/rizz-prompting-attractor-based-style-steering",
+        "id": "gen-34",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "SUBSCRIBE",
+        "href": null,
+        "id": "gen-35",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GOOGLE\nGoogle AI Professional Certificate\n\nApplied",
+        "href": "https://www.credly.com/users/douglas-mitchell.887417ae/badges",
+        "id": "gen-36",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "ANTHROPIC\nAnthropic AI Safety\n\nCredential focused ",
+        "href": "https://verify.skilljar.com/c/kcmc2byhr4ay",
+        "id": "gen-37",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What kind of work does Douglas Mitchell do?",
+        "href": null,
+        "id": "gen-38",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What are the standout projects on this site?",
+        "href": null,
+        "id": "gen-39",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Tell me about The Confident Mind.",
+        "href": null,
+        "id": "gen-40",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "What certifications are featured here?",
+        "href": null,
+        "id": "gen-41",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Ask",
+        "href": null,
+        "id": "gen-42",
+        "isVisible": true,
+        "isDisabled": true
+      },
+      {
+        "tag": "A",
+        "text": "email\nUse the secure contact form",
+        "href": "#contact",
+        "id": "gen-43",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "github\n@Senpai-Sama7",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-44",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "linkedin\ndouglas-mitchell-the-architect",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-45",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "SEND MESSAGE\nCTRL+ENTER",
+        "href": null,
+        "id": "gen-46",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-47",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-48",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-49",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-50",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-51",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-52",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-53",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-54",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-55",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full___mobile.png"
+    ]
+  },
+  {
+    "route": "/work",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-5",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-6",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-7",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "id": "gen-9",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__work_desktop.png"
+    ]
+  },
+  {
+    "route": "/work",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-2",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-3",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-4",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-5",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-6",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-7",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "id": "gen-9",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__work_mobile.png"
+    ]
+  },
+  {
+    "route": "/writing",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-5",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-6",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-7",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LET'S CONNECT",
+        "href": "#contact",
+        "id": "gen-9",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__writing_desktop.png"
+    ]
+  },
+  {
+    "route": "/writing",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "//\nDouglas Mitchell",
+        "href": "/",
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-2",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-3",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-4",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "/#book",
+        "id": "gen-5",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-6",
+        "isVisible": false,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-7",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-8",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "",
+        "href": "#contact",
+        "id": "gen-9",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "RETURN HOME",
+        "href": "/",
+        "id": "gen-10",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Search content",
+        "href": "/search",
+        "id": "gen-11",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "About",
+        "href": "/#about",
+        "id": "gen-12",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Work",
+        "href": "/#work",
+        "id": "gen-13",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Writing",
+        "href": "/#writing",
+        "id": "gen-14",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Contact",
+        "href": "/#contact",
+        "id": "gen-15",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "GitHub",
+        "href": "https://github.com/Senpai-Sama7",
+        "id": "gen-16",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "LinkedIn",
+        "href": "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
+        "id": "gen-17",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Book",
+        "href": "https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9",
+        "id": "gen-18",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "Email",
+        "href": "#contact",
+        "id": "gen-19",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "A",
+        "text": "intent.",
+        "href": "/admin",
+        "id": "gen-20",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__writing_mobile.png"
+    ]
+  },
+  {
+    "route": "/admin",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__admin_desktop.png"
+    ]
+  },
+  {
+    "route": "/admin",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "screenshots": [
+      "docs/audit/full__admin_mobile.png"
+    ]
+  },
+  {
+    "route": "/admin/content",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_content_desktop.png"
+    ]
+  },
+  {
+    "route": "/admin/content",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_content_mobile.png"
+    ]
+  },
+  {
+    "route": "/admin/ai",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_ai_desktop.png"
+    ]
+  },
+  {
+    "route": "/admin/ai",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_ai_mobile.png"
+    ]
+  },
+  {
+    "route": "/admin/analytics",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_analytics_desktop.png"
+    ]
+  },
+  {
+    "route": "/admin/analytics",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_analytics_mobile.png"
+    ]
+  },
+  {
+    "route": "/admin/settings",
+    "viewport": "desktop",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_settings_desktop.png"
+    ]
+  },
+  {
+    "route": "/admin/settings",
+    "viewport": "mobile",
+    "elements": [
+      {
+        "tag": "A",
+        "text": "Skip to main content",
+        "href": "#main-content",
+        "id": "gen-0",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "",
+        "href": null,
+        "id": "gen-1",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Forgot password?",
+        "href": null,
+        "id": "gen-2",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Sign In",
+        "href": null,
+        "id": "gen-3",
+        "isVisible": true,
+        "isDisabled": false
+      },
+      {
+        "tag": "BUTTON",
+        "text": "Biometric Sign In",
+        "href": null,
+        "id": "gen-4",
+        "isVisible": true,
+        "isDisabled": false
+      }
+    ],
+    "errors": [],
+    "screenshots": [
+      "docs/audit/full__admin_settings_mobile.png"
+    ]
+  }
+]
