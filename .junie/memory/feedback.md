@@ -78,3 +78,19 @@
     "NEW INSTRUCTION": "WHEN contact email is displayed or used THEN use DouglasMitchell@ReliantAI.org exactly."
 }
 
+[2026-03-13 16:14] - Updated by Junie
+{
+    "TYPE": "negative",
+    "CATEGORY": "Broken links & site-wide QA",
+    "EXPECTATION": "The 'AI Workflow Automation' work page and the '#work' anchor should resolve correctly, and every page across the site must be verified as real, working, and fully functional.",
+    "NEW INSTRUCTION": "WHEN reporting site health or UI audit THEN live-check all routes and anchors and list any 4xx/5xx or missing targets with proof.\nWHEN any provided URL 404s or anchor is absent THEN fix the route or link and show passing curl/HTTP proof after deployment."
+}
+
+[2026-03-13 16:17] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Broken links & site-wide QA",
+    "EXPECTATION": "User expects the cited links to resolve correctly and a full site-wide verification that every page and anchor is real, working, and fully functional with live proof.",
+    "NEW INSTRUCTION": "WHEN auditing site links THEN live-check all routes and anchors and include curl/HTTP proofs."
+}
+
