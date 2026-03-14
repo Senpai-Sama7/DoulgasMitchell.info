@@ -174,90 +174,90 @@ export function EnhancedHeroSection() {
               </div>
             </div>
 
-            <aside className="space-y-5 rounded-[2rem] border border-border/70 bg-background/78 p-5 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-xl">
-              <div>
-                <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
-                  Engagement brief
+            <div className="flex flex-col gap-6">
+              <aside className="space-y-5 rounded-[2rem] border border-border/70 bg-background/78 p-5 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-xl">
+                <div>
+                  <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
+                    Engagement brief
+                  </div>
+                  <h2 className="mt-3 text-2xl font-semibold text-foreground">Choose your best starting point.</h2>
                 </div>
-                <h2 className="mt-3 text-2xl font-semibold text-foreground">Choose your best starting point.</h2>
-              </div>
 
-              <div className="grid gap-2" role="list" aria-label="Role filters">
-                {roleSignals.map((role, index) => {
-                  const isActive = activeRole === index;
-                  return (
-                    <button
-                      key={role.title}
-                      type="button"
-                      aria-pressed={isActive}
-                      onClick={() => setActiveRole(index)}
-                      className={
-                        isActive
-                          ? 'rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-left transition-colors'
-                          : 'rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/20 hover:bg-muted/55'
-                      }
+                <div className="grid gap-2" role="list" aria-label="Role filters">
+                  {roleSignals.map((role, index) => {
+                    const isActive = activeRole === index;
+                    return (
+                      <button
+                        key={role.title}
+                        type="button"
+                        aria-pressed={isActive}
+                        onClick={() => setActiveRole(index)}
+                        className={
+                          isActive
+                            ? 'rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-left transition-colors'
+                            : 'rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/20 hover:bg-muted/55'
+                        }
+                      >
+                        <div className="text-sm font-medium text-foreground">{role.title}</div>
+                        <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{role.description}</div>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="rounded-2xl border border-border/70 bg-muted/25 p-4">
+                  <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-primary">Best fit right now</div>
+                  <p className="mt-3 text-sm leading-7 text-muted-foreground">{selectedRole.detail}</p>
+                </div>
+
+                <div className="space-y-2">
+                  {quickRoutes.map((route) => (
+                    <a
+                      key={route.href}
+                      href={route.href}
+                      className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/40"
                     >
-                      <div className="text-sm font-medium text-foreground">{role.title}</div>
-                      <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{role.description}</div>
-                    </button>
-                  );
-                })}
-              </div>
+                      <div>
+                        <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">{route.kicker}</div>
+                        <div className="mt-1 text-sm font-medium text-foreground">{route.label}</div>
+                        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{route.detail}</p>
+                      </div>
+                      <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
+                    </a>
+                  ))}
+                </div>
+              </aside>
+            </div>
+          </div>
 
-              <div className="rounded-2xl border border-border/70 bg-muted/25 p-4">
-                <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-primary">Best fit right now</div>
-                <p className="mt-3 text-sm leading-7 text-muted-foreground">{selectedRole.detail}</p>
+          <div className="rounded-[2rem] border border-border/70 bg-[#020617]/80 p-5 shadow-[0_32px_80px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
+            <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
+              <span>Signal field</span>
+              <span className="text-foreground/60">Live energy</span>
+            </div>
+            <div className="relative mt-5 h-[160px] sm:h-[200px] lg:h-[180px] overflow-hidden rounded-[1.6rem] border border-border/40 bg-[#030712]/50 p-2">
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.45),transparent_38%)] mix-blend-screen" />
+              <div className="relative h-full w-full">
+                <HeroEnergyPlot />
+                <div className="pointer-events-none absolute inset-0 rounded-[1.6rem] border border-dashed border-foreground/10" />
               </div>
-
-              <div className="space-y-2">
-                {quickRoutes.map((route) => (
-                  <a
-                    key={route.href}
-                    href={route.href}
-                    className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/40"
-                  >
-                    <div>
-                      <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">{route.kicker}</div>
-                      <div className="mt-1 text-sm font-medium text-foreground">{route.label}</div>
-                      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{route.detail}</p>
-                    </div>
-                    <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground" />
-                  </a>
-                ))}
-              </div>
-            </aside>
+            </div>
+            <p className="mt-4 text-[11px] uppercase tracking-[0.42em] text-muted-foreground/60">
+              Operational choreography · 87% experience saturation
+            </p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="space-y-6">
-              <div className="grid gap-4 md:grid-cols-3">
-                {heroMetrics.map((metric) => (
-                  <div key={metric.label} className="rounded-[1.6rem] border border-border/70 bg-background/68 p-5 backdrop-blur">
-                    <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground">
-                      {metric.label}
-                    </div>
-                    <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{metric.value}</div>
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{metric.detail}</p>
+            <div className="grid gap-4 md:grid-cols-3">
+              {heroMetrics.map((metric) => (
+                <div key={metric.label} className="rounded-[1.6rem] border border-border/70 bg-background/68 p-5 backdrop-blur">
+                  <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground">
+                    {metric.label}
                   </div>
-                ))}
-              </div>
-
-              <div className="rounded-[2rem] border border-border/70 bg-[#020617]/80 p-5 shadow-[0_32px_80px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
-                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
-                  <span>Signal field</span>
-                  <span className="text-foreground/60">Live energy</span>
+                  <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{metric.value}</div>
+                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{metric.detail}</p>
                 </div>
-                <div className="relative mt-5 h-[280px] overflow-hidden rounded-[1.6rem] border border-border/40 bg-[#030712]/50 p-2">
-                  <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.45),transparent_38%)] mix-blend-screen" />
-                  <div className="relative h-full w-full">
-                    <HeroEnergyPlot />
-                    <div className="pointer-events-none absolute inset-0 rounded-[1.6rem] border border-dashed border-foreground/10" />
-                  </div>
-                </div>
-                <p className="mt-4 text-[11px] uppercase tracking-[0.42em] text-muted-foreground/60">
-                  Operational choreography · 87% experience saturation
-                </p>
-              </div>
+              ))}
             </div>
 
             <div className="rounded-[1.6rem] border border-border/70 bg-muted/30 p-5">

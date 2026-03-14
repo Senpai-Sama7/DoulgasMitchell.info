@@ -134,3 +134,11 @@
     "NEW INSTRUCTION": "WHEN admin operator table on narrow viewports THEN enable horizontal scroll and prevent column squish."
 }
 
+[2026-03-14 00:24] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Hero visualizer placement",
+    "EXPECTATION": "The visualizer should sit above the Proof of Work, Operating Focus, and Credential Signals, with a sleek, minimalist, luxurious look that fills the space.",
+    "NEW INSTRUCTION": "WHEN arranging hero metrics and visualizer THEN place visualizer directly above those three metrics.\nWHEN styling the visualizer THEN use minimalist elegant design that fills available space."
+}
+
