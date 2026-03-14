@@ -116,11 +116,14 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
           >
             <div className="flex min-h-[1em] gap-1">{renderAsciiText(typedFirst)}</div>
             <div className="mt-2 flex min-h-[1em] gap-1 text-foreground/60">{renderAsciiText(typedLast)}</div>
-            <motion.span
-              animate={{ opacity: [1, 0] }}
-              transition={{ duration: 0.5, repeat: Infinity }}
-              className="inline-block w-[0.5em] h-[1em] bg-primary align-middle mt-4"
-            />
+            <div className="flex flex-col items-center mt-4">
+              <span className="font-mono text-[10px] uppercase tracking-[0.4em] text-muted-foreground/40 mb-2">DM</span>
+              <motion.span
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+                className="inline-block w-[0.5em] h-[1.2em] bg-primary"
+              />
+            </div>
           </motion.div>
         )}
 

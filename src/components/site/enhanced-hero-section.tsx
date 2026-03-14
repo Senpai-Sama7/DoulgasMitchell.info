@@ -62,8 +62,8 @@ export function EnhancedHeroSection() {
   });
 
   const y = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
-  const opacity = useTransform(scrollYProgress, [0.7, 1], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0.7, 1], [1, 0.98]);
+  const opacity = useTransform(scrollYProgress, [0.6, 0.9], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0.6, 0.9], [1, 0.98]);
   const mediaOpacity = useTransform(scrollYProgress, [0, 1], [0.22, 0.08]);
 
   useEffect(() => {
@@ -81,7 +81,7 @@ export function EnhancedHeroSection() {
   const selectedRole = roleSignals[activeRole];
 
   return (
-    <section ref={containerRef} className="relative overflow-hidden pt-24 md:pt-28 lg:pt-36">
+    <section ref={containerRef} className="relative overflow-hidden pt-12 md:pt-16 lg:pt-20">
       <div className="absolute inset-0 z-[1] opacity-[0.03] dark:opacity-[0.06]" aria-hidden="true">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
