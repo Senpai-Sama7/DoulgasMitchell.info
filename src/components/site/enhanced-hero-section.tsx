@@ -5,6 +5,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion
 import { ArrowDown, ArrowRight, ChevronRight, MapPin, Sparkles } from 'lucide-react';
 import { heroMetrics, siteProfile, socialLinks } from '@/lib/site-content';
 import { ParticleTitle } from '@/components/effects/particle-title';
+import { HeroEnergyPlot } from '@/components/effects/hero-energy-plot';
 
 const roleSignals = [
   {
@@ -257,6 +258,23 @@ export function EnhancedHeroSection() {
                 ))}
               </div>
             </div>
+          </div>
+
+          <div className="mt-10 rounded-[2.5rem] border border-border/70 bg-[#020617]/80 p-6 shadow-[0_40px_90px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
+            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
+              <span>Signal field</span>
+              <span className="text-foreground/50">Live energy</span>
+            </div>
+            <div className="relative mt-5 h-[260px] overflow-hidden rounded-[1.6rem] border border-border/50 bg-[#030712]/70 p-2">
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.35),transparent_42%)] mix-blend-screen" />
+              <div className="relative h-full w-full">
+                <HeroEnergyPlot />
+                <div className="pointer-events-none absolute inset-0 rounded-[1.6rem] border border-dashed border-foreground/10" />
+              </div>
+            </div>
+            <p className="mt-4 text-xs uppercase tracking-[0.42em] text-muted-foreground/60">
+              Operational choreography · 87% experience saturation
+            </p>
           </div>
         </div>
       </motion.div>
