@@ -61,10 +61,10 @@ export function EnhancedHeroSection() {
     offset: ['start start', 'end start'],
   });
 
-  const y = useTransform(scrollYProgress, [0, 1], ['0%', '15%']);
-  const opacity = useTransform(scrollYProgress, [0.5, 1], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0.5, 1], [1, 0.97]);
-  const mediaOpacity = useTransform(scrollYProgress, [0, 1], [0.18, 0.06]);
+  const y = useTransform(scrollYProgress, [0, 1], ['0%', '12%']);
+  const opacity = useTransform(scrollYProgress, [0.7, 1], [1, 0]);
+  const scale = useTransform(scrollYProgress, [0.7, 1], [1, 0.98]);
+  const mediaOpacity = useTransform(scrollYProgress, [0, 1], [0.22, 0.08]);
 
   useEffect(() => {
     if (prefersReducedMotion) {
@@ -229,16 +229,35 @@ export function EnhancedHeroSection() {
           </div>
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div className="grid gap-4 md:grid-cols-3">
-              {heroMetrics.map((metric) => (
-                <div key={metric.label} className="rounded-[1.6rem] border border-border/70 bg-background/68 p-5 backdrop-blur">
-                  <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground">
-                    {metric.label}
+            <div className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-3">
+                {heroMetrics.map((metric) => (
+                  <div key={metric.label} className="rounded-[1.6rem] border border-border/70 bg-background/68 p-5 backdrop-blur">
+                    <div className="text-[11px] font-mono uppercase tracking-[0.24em] text-muted-foreground">
+                      {metric.label}
+                    </div>
+                    <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{metric.value}</div>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{metric.detail}</p>
                   </div>
-                  <div className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{metric.value}</div>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{metric.detail}</p>
+                ))}
+              </div>
+
+              <div className="rounded-[2rem] border border-border/70 bg-[#020617]/80 p-5 shadow-[0_32px_80px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
+                <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
+                  <span>Signal field</span>
+                  <span className="text-foreground/60">Live energy</span>
                 </div>
-              ))}
+                <div className="relative mt-5 h-[280px] overflow-hidden rounded-[1.6rem] border border-border/40 bg-[#030712]/50 p-2">
+                  <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.45),transparent_38%)] mix-blend-screen" />
+                  <div className="relative h-full w-full">
+                    <HeroEnergyPlot />
+                    <div className="pointer-events-none absolute inset-0 rounded-[1.6rem] border border-dashed border-foreground/10" />
+                  </div>
+                </div>
+                <p className="mt-4 text-[11px] uppercase tracking-[0.42em] text-muted-foreground/60">
+                  Operational choreography · 87% experience saturation
+                </p>
+              </div>
             </div>
 
             <div className="rounded-[1.6rem] border border-border/70 bg-muted/30 p-5">
@@ -258,23 +277,6 @@ export function EnhancedHeroSection() {
                 ))}
               </div>
             </div>
-          </div>
-
-          <div className="mt-10 rounded-[2.5rem] border border-border/70 bg-[#020617]/80 p-6 shadow-[0_40px_90px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
-            <div className="flex items-center justify-between text-[11px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
-              <span>Signal field</span>
-              <span className="text-foreground/50">Live energy</span>
-            </div>
-            <div className="relative mt-5 h-[260px] overflow-hidden rounded-[1.6rem] border border-border/50 bg-[#030712]/70 p-2">
-              <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(59,130,246,0.35),transparent_42%)] mix-blend-screen" />
-              <div className="relative h-full w-full">
-                <HeroEnergyPlot />
-                <div className="pointer-events-none absolute inset-0 rounded-[1.6rem] border border-dashed border-foreground/10" />
-              </div>
-            </div>
-            <p className="mt-4 text-xs uppercase tracking-[0.42em] text-muted-foreground/60">
-              Operational choreography · 87% experience saturation
-            </p>
           </div>
         </div>
       </motion.div>
