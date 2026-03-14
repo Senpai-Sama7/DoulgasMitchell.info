@@ -114,8 +114,8 @@ export function AnalyticsDashboard() {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+    <div className="space-y-6 @container">
+      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @2xl:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.label} className="bg-muted/30 border-none shadow-none">
             <CardHeader className="pb-2">
@@ -131,8 +131,8 @@ export function AnalyticsDashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 bg-card/50 backdrop-blur-sm border-muted-foreground/10">
+      <div className="grid grid-cols-1 gap-6 @xl:grid-cols-3">
+        <Card className="@xl:col-span-2 bg-card/50 backdrop-blur-sm border-muted-foreground/10">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>

@@ -118,3 +118,19 @@
     "NEW INSTRUCTION": "WHEN a section uses scroll-driven fade THEN keep opacity 1 until ≥85% scroll, then ease-out to 0 by 100%."
 }
 
+[2026-03-13 22:43] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Admin table responsiveness",
+    "EXPECTATION": "The right side of the admin portal's operator table should be responsive/adaptive and not appear squished on smaller or constrained viewports.",
+    "NEW INSTRUCTION": "WHEN admin operator table on narrow viewports THEN enable horizontal scroll and prevent column squish."
+}
+
+[2026-03-13 22:47] - Updated by Junie
+{
+    "TYPE": "correction",
+    "CATEGORY": "Admin table responsiveness",
+    "EXPECTATION": "The admin portal's operator table should remain readable on narrow/constrained viewports without columns being squished, using horizontal scroll if necessary.",
+    "NEW INSTRUCTION": "WHEN admin operator table on narrow viewports THEN enable horizontal scroll and prevent column squish."
+}
+

@@ -52,6 +52,7 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  PromptInputActionAddAttachments,
 } from '@/components/ai-elements/prompt-input';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
@@ -541,7 +542,7 @@ function AdminOperatorConsoleInner() {
         </div>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_360px]">
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_400px]">
         <div className="space-y-6">
           <Card className="border-border/60">
             <CardHeader className="pb-4">
@@ -642,22 +643,23 @@ function AdminOperatorConsoleInner() {
                 <ConversationScrollButton />
               </Conversation>
 
-              <div className="border-t border-border/60 bg-muted/20 px-4 py-4">
+              <div className="border-t border-border/60 bg-muted/20 px-4 py-4 min-h-[140px] flex flex-col justify-end">
                 <PromptInputProvider>
                   <PromptInput
                     onSubmit={({ text }) => submitPrompt(text)}
-                    className="rounded-2xl border border-border bg-background/80 p-2"
+                    className="rounded-2xl border border-border bg-background/80 p-2 flex-grow flex flex-col justify-end"
                   >
                     <PromptInputBody>
                       <PromptInputTextarea
                         placeholder="Tell Operator what to inspect, change, or optimize..."
                         disabled={!activeProvider || status === 'submitted' || status === 'streaming'}
-                        className="border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+                        className="border-0 bg-transparent text-sm shadow-none focus-visible:ring-0 resize-y min-h-[60px]"
                       />
                     </PromptInputBody>
                     <PromptInputFooter>
                       <PromptInputTools>
-                        <span className="px-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                        <PromptInputActionAddAttachments />
+                        <span className="px-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hidden sm:inline-block">
                           {activeProvider
                             ? `Primary ${activeProvider.label} + fallback`
                             : 'No provider ready'}
@@ -680,8 +682,9 @@ function AdminOperatorConsoleInner() {
               params.set('tab', value);
               router.push(`?${params.toString()}`, { scroll: false });
             }}
+            className="@container"
           >
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="flex w-full flex-wrap sm:grid sm:grid-cols-4 h-auto">
               <TabsTrigger value="dashboard">Analytics</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="status">Status</TabsTrigger>
