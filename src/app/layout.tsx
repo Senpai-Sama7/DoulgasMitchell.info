@@ -5,31 +5,43 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+// Critical path fonts — preloaded, display:swap prevents FOIT
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+  display: "swap",
 });
 
+// Decorative/UI accent fonts — NOT on the critical path.
+// preload:false prevents render-blocking <link rel=preload> in <head>.
+// display:swap still prevents FOIT when they do load.
 const orbitron = Orbitron({
   variable: "--font-orbitron",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800", "900"],
+  weight: ["400", "500", "700", "800"],
+  display: "swap",
+  preload: false,
 });
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
+  display: "swap",
+  preload: false,
 });
 
 const shareTechMono = Share_Tech_Mono({
   variable: "--font-share-tech-mono",
   subsets: ["latin"],
   weight: ["400"],
+  display: "swap",
+  preload: false,
 });
 
 export const viewport: Viewport = {
@@ -102,6 +114,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const showRuntimeAnalytics = process.env.NODE_ENV === 'production';
+
+  // Inline theme bootstrap — runs before first paint to prevent flash
   const themeBootstrapScript = `
     try {
       const storedTheme = window.localStorage.getItem('theme');
@@ -138,7 +152,7 @@ export default function RootLayout({
           "@type": "Person",
           "name": "Douglas Mitchell"
         },
-        "description": "Operations Analyst, AI Practitioner, and Author of The Confident Mind. Building systems at the intersection of technology and human potential.",
+        "description": "Operations Analyst, AI Practitioner, and Author of The Confident Mind.",
         "sameAs": [
           "https://www.linkedin.com/in/douglas-mitchell-the-architect/",
           "https://github.com/Senpai-Sama7"
@@ -172,23 +186,24 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Inline theme bootstrap prevents FOUC — must be synchronous */}
         <script dangerouslySetInnerHTML={{ __html: themeBootstrapScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
+        className={`${
+          geistSans.variable
+        } ${geistMono.variable} ${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
-        {/* Skip Link for Accessibility */}
+        {/* Skip link for keyboard/screen reader navigation */}
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        
-        {/* Noise Overlay for ASCII Texture */}
-        <div className="noise-overlay" aria-hidden="true" />
-        
-        {/* Main Content */}
+
+        {/* Noise texture via CSS — removes one DOM node vs dedicated div.
+            Applied as body::before in globals.css instead. */}
+
         {children}
-        
-        {/* Toast Notifications */}
+
         <Toaster />
         {showRuntimeAnalytics && <Analytics />}
         {showRuntimeAnalytics && <SpeedInsights />}

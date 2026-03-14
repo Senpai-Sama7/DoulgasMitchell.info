@@ -1,10 +1,27 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
-import { CommandKTrigger, CommandPalette, SplashOverlay } from '@/components/effects';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { useTheme } from '@/lib/theme';
+import { AnimatePresence } from 'framer-motion';
+
+// Heavy effect components — defer until after first paint.
+// SplashOverlay contains a 1.46MB video reference and was the primary
+// driver of the 4,100ms LCP element render delay.
+const SplashOverlay = dynamic(
+  () => import('@/components/effects/splash-overlay').then((m) => m.SplashOverlay),
+  { ssr: false }
+);
+const CommandPalette = dynamic(
+  () => import('@/components/effects/command-palette').then((m) => m.CommandPalette),
+  { ssr: false }
+);
+const CommandKTrigger = dynamic(
+  () => import('@/components/effects/command-palette').then((m) => m.CommandKTrigger),
+  { ssr: false }
+);
 
 const SPLASH_SEEN_KEY = 'dm-splash-seen';
 
@@ -34,7 +51,6 @@ export function HomePageExperience() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  // Force scroll to hash if present
   useEffect(() => {
     if (!showSplash && window.location.hash) {
       const id = window.location.hash.substring(1);
@@ -109,6 +125,7 @@ export function HomePageExperience() {
         }}
       />
 
+      {/* Command palette and trigger — deferred, not needed for first paint */}
       <CommandPalette
         isOpen={isCommandOpen}
         onClose={() => setIsCommandOpen(false)}

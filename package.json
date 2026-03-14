@@ -2,6 +2,13 @@
   "name": "nextjs_tailwind_shadcn_ts",
   "version": "0.2.0",
   "private": true,
+  "browserslist": [
+    "> 0.5%",
+    "last 2 versions",
+    "not dead",
+    "not IE 11",
+    "not op_mini all"
+  ],
   "scripts": {
     "dev": "next dev --webpack -p 3000 2>&1 | tee dev.log",
     "build": "prisma generate && NODE_ENV=production next build --webpack && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
@@ -91,7 +98,6 @@
     "lucide-react": "^0.577.0",
     "markdown-it": "^14.1.1",
     "media-chrome": "^4.18.0",
-    "motion": "^12.36.0",
     "nanoid": "^5.1.6",
     "next": "^16.1.1",
     "next-auth": "^4.24.11",
