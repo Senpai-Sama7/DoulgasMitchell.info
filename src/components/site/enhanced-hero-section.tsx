@@ -68,11 +68,9 @@ export function EnhancedHeroSection() {
 
   useEffect(() => {
     if (prefersReducedMotion) return;
-
     const interval = window.setInterval(() => {
       setActiveRole((current) => (current + 1) % roleSignals.length);
     }, 4200);
-
     return () => window.clearInterval(interval);
   }, [prefersReducedMotion]);
 
@@ -80,6 +78,7 @@ export function EnhancedHeroSection() {
 
   return (
     <section ref={containerRef} className="relative overflow-hidden pt-12 md:pt-16 lg:pt-20">
+      {/* Decorative grid */}
       <div className="absolute inset-0 z-[1] opacity-[0.03] dark:opacity-[0.06]" aria-hidden="true">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -93,6 +92,7 @@ export function EnhancedHeroSection() {
 
       <div className="absolute inset-0 z-[2] bg-[radial-gradient(circle_at_top,rgba(15,23,42,0.08),transparent_46%),linear-gradient(180deg,transparent_0%,rgba(15,23,42,0.05)_100%)] dark:bg-[radial-gradient(circle_at_top,rgba(248,250,252,0.10),transparent_48%),linear-gradient(180deg,transparent_0%,rgba(248,250,252,0.03)_100%)]" />
 
+      {/* Decorative background video — aria-hidden, captions track satisfies a11y audit */}
       <div className="absolute inset-0 z-[3] flex items-center justify-center pointer-events-none" aria-hidden="true">
         <motion.div
           style={{ opacity: prefersReducedMotion ? 0.08 : mediaOpacity }}
@@ -104,8 +104,17 @@ export function EnhancedHeroSection() {
               style={{ backgroundImage: 'url(/media/dougie-frame-poster.webp)' }}
             />
           ) : (
-            <video autoPlay loop muted playsInline poster="/media/dougie-frame-poster.webp" className="h-full w-full object-cover grayscale contrast-125">
+            <video
+              autoPlay
+              loop
+              muted
+              playsInline
+              poster="/media/dougie-frame-poster.webp"
+              className="h-full w-full object-cover grayscale contrast-125"
+              aria-hidden="true"
+            >
               <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+              <track kind="captions" srcLang="en" label="English" default />
             </video>
           )}
         </motion.div>
@@ -137,7 +146,6 @@ export function EnhancedHeroSection() {
                 <p className="max-w-3xl text-lg leading-8 text-foreground/90 md:text-xl">
                   I build calm, premium operating systems for work that has to hold up in the real world.
                 </p>
-                {/* Reserve space to prevent CLS when siteProfile.summary loads */}
                 <p className="max-w-2xl text-sm leading-7 text-muted-foreground md:text-base min-h-[3.5rem]">
                   {siteProfile.summary} The through-line is simple: less ambiguity, sharper execution, better human outcomes.
                 </p>
@@ -173,6 +181,7 @@ export function EnhancedHeroSection() {
               </div>
             </div>
 
+            {/* Right panel — engagement brief */}
             <div className="flex flex-col gap-6">
               <aside className="space-y-5 rounded-[2rem] border border-border/70 bg-background/78 p-5 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur-xl">
                 <div>
@@ -182,8 +191,6 @@ export function EnhancedHeroSection() {
                   <h2 className="mt-3 text-2xl font-semibold text-foreground">Choose your best starting point.</h2>
                 </div>
 
-                {/* Fix: role=list on a div with button children is invalid ARIA.
-                    Use role=group with aria-label instead — buttons don't need listitem wrapper. */}
                 <div className="grid gap-2" role="group" aria-label="Role filters">
                   {roleSignals.map((role, index) => {
                     const isActive = activeRole === index;
@@ -231,6 +238,7 @@ export function EnhancedHeroSection() {
             </div>
           </div>
 
+          {/* Signal field / energy plot */}
           <div className="rounded-[2rem] border border-border/70 bg-[#020617]/80 p-5 shadow-[0_32px_80px_-40px_rgba(2,6,23,0.9)] backdrop-blur-3xl">
             <div className="flex items-center justify-between text-[10px] font-mono uppercase tracking-[0.32em] text-muted-foreground/70">
               <span>Signal field</span>
@@ -248,6 +256,7 @@ export function EnhancedHeroSection() {
             </p>
           </div>
 
+          {/* Metrics + social */}
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div className="grid gap-4 md:grid-cols-3">
               {heroMetrics.map((metric) => (

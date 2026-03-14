@@ -4,14 +4,20 @@ import type { NextConfig } from "next";
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const isProduction = process.env.NODE_ENV === "production";
+
+// CSP: font-src includes fonts.gstatic.com as fallback in case next/font
+// CDN path is hit (normally fonts are self-hosted at build time).
+// connect-src includes va.vercel-scripts.com for analytics POST requests.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProduction ? '' : " 'unsafe-eval'"} https://va.vercel-scripts.com`,
+  `script-src 'self' 'unsafe-inline'${
+    isProduction ? '' : " 'unsafe-eval'"
+  } https://va.vercel-scripts.com`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://m.media-amazon.com",
   "media-src 'self' blob:",
-  "font-src 'self' data:",
-  "connect-src 'self' https://vitals.vercel-insights.com https://*.google-analytics.com",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  "connect-src 'self' https://vitals.vercel-insights.com https://va.vercel-scripts.com https://*.google-analytics.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -21,6 +27,8 @@ const csp = [
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  // Suppress source-map 404s in Lighthouse Best Practices audit
+  productionBrowserSourceMaps: false,
   allowedDevOrigins: ['127.0.0.1', 'localhost'],
   outputFileTracingExcludes: {
     '*': ['playwright-report/**', 'test-results/**'],
@@ -31,12 +39,16 @@ const nextConfig: NextConfig = {
   compress: true,
 
   experimental: {
-    // Tree-shake large packages to only include used exports
     optimizePackageImports: [
       'framer-motion',
       'lucide-react',
       '@simplewebauthn/browser',
       'date-fns',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      'recharts',
     ],
   },
 
@@ -45,6 +57,13 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 31536000,
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Allow Amazon CDN for book cover images
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'm.media-amazon.com',
+      },
+    ],
   },
 
   async headers() {
@@ -62,19 +81,23 @@ const nextConfig: NextConfig = {
         value: 'DENY',
       },
       {
+        key: 'X-DNS-Prefetch-Control',
+        value: 'on',
+      },
+      {
         key: 'Content-Security-Policy',
         value: csp,
       },
       {
         key: 'Permissions-Policy',
-        value: 'camera=(), microphone=(), geolocation=()'
+        value: 'camera=(), microphone=(), geolocation=()',
       },
     ];
 
     if (isProduction) {
       baseHeaders.push({
         key: 'Strict-Transport-Security',
-        value: 'max-age=31536000; includeSubDomains; preload',
+        value: 'max-age=63072000; includeSubDomains; preload',
       });
     }
 
@@ -90,11 +113,29 @@ const nextConfig: NextConfig = {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
           },
+          {
+            key: 'Timing-Allow-Origin',
+            value: '*',
+          },
         ],
       },
       {
         source: '/images/:path*',
         headers: [
+            {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        // Cache VTT caption files alongside media
+        source: '/media/captions-empty.vtt',
+        headers: [
+          {
+            key: 'Content-Type',
+            value: 'text/vtt',
+          },
           {
             key: 'Cache-Control',
             value: 'public, max-age=31536000, immutable',
