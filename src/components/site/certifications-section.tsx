@@ -14,7 +14,6 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
   return (
     <section id="certifications" className="section-spacing">
       <div className="editorial-container">
-        {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -34,7 +33,6 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
           </p>
         </motion.div>
 
-        {/* Certifications Grid */}
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {items.map((cert, index) => (
             <motion.a
@@ -72,11 +70,15 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
 
                   {cert.imageUrl && (
                     <div className="mt-4 relative aspect-[4/3] rounded-md overflow-hidden border border-border/50 group-hover:border-primary/20 transition-colors bg-muted/20">
-                      <img 
-                        src={cert.imageUrl} 
+                      {/* Explicit width/height prevent CLS — aspect-ratio container handles visual sizing */}
+                      <img
+                        src={cert.imageUrl}
                         alt={`${cert.title} certificate`}
+                        width={400}
+                        height={300}
                         className="w-full h-full object-contain p-1 group-hover:scale-[1.02] transition-transform duration-500"
                         loading="lazy"
+                        decoding="async"
                       />
                     </div>
                   )}

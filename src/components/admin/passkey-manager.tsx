@@ -46,24 +46,25 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
 
     try {
       // 1. Get registration options from server
-      const optionsRes = await fetch('/api/admin/auth/passkey/register/generate-options', {
+      const optionsRes = await fetch('/api/admin/webauthn/register/options', {
         method: 'POST',
       });
 
-      if (!optionsRes.ok) throw new Error('Failed to get registration options');
+      if (!optionsRes.ok) {
+        const err = await optionsRes.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to get registration options');
+      }
       const options = await optionsRes.json();
 
-      // 2. Start WebAuthn registration
+      // 2. Start WebAuthn registration in browser
       const regResp = await startRegistration({ optionsJSON: options });
 
-      // 3. Verify registration on server
-      const verifyRes = await fetch('/api/admin/auth/passkey/register/verify', {
+      // 3. Verify registration on server — send the registration response directly
+      //    plus deviceName as a top-level field for the server to persist
+      const verifyRes = await fetch(`/api/admin/webauthn/register/verify?name=${encodeURIComponent(deviceName)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          response: regResp,
-          deviceName,
-        }),
+        body: JSON.stringify(regResp),
       });
 
       if (verifyRes.ok) {
@@ -71,10 +72,9 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
           title: 'Passkey registered!',
           description: 'You can now use this device to sign in securely.',
         });
-        // Refresh list
         window.location.reload();
       } else {
-        const error = await verifyRes.json();
+        const error = await verifyRes.json().catch(() => ({ error: 'Verification failed' }));
         throw new Error(error.error || 'Verification failed');
       }
     } catch (error: any) {
@@ -113,6 +113,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                   placeholder="e.g. MacBook Pro Touch ID"
                   value={deviceName}
                   onChange={(e) => setDeviceName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
                 />
               </div>
               <Button onClick={handleRegister} disabled={isRegistering} className="shrink-0">
@@ -149,7 +150,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                           <div>
                             <p className="font-medium text-sm">{pk.deviceName || 'Unnamed Device'}</p>
                             <p className="text-xs text-muted-foreground">
-                              Added: {pk.createdAt} • Last used: {pk.lastUsedAt}
+                              Added: {pk.createdAt} · Last used: {pk.lastUsedAt}
                             </p>
                           </div>
                         </div>
@@ -157,7 +158,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                           variant="ghost"
                           size="icon"
                           className="text-muted-foreground hover:text-destructive"
-                          aria-label={`Passkey removal is not available yet for ${pk.deviceName || 'this device'}`}
+                          aria-label={`Remove passkey for ${pk.deviceName || 'this device'}`}
                           title="Passkey removal is not available from this interface yet."
                           disabled
                         >

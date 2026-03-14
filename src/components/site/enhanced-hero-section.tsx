@@ -67,9 +67,7 @@ export function EnhancedHeroSection() {
   const mediaOpacity = useTransform(scrollYProgress, [0, 1], [0.22, 0.08]);
 
   useEffect(() => {
-    if (prefersReducedMotion) {
-      return;
-    }
+    if (prefersReducedMotion) return;
 
     const interval = window.setInterval(() => {
       setActiveRole((current) => (current + 1) % roleSignals.length);
@@ -139,7 +137,8 @@ export function EnhancedHeroSection() {
                 <p className="max-w-3xl text-lg leading-8 text-foreground/90 md:text-xl">
                   I build calm, premium operating systems for work that has to hold up in the real world.
                 </p>
-                <p className="max-w-2xl text-sm leading-7 text-muted-foreground md:text-base">
+                {/* Reserve space to prevent CLS when siteProfile.summary loads */}
+                <p className="max-w-2xl text-sm leading-7 text-muted-foreground md:text-base min-h-[3.5rem]">
                   {siteProfile.summary} The through-line is simple: less ambiguity, sharper execution, better human outcomes.
                 </p>
               </div>
@@ -183,7 +182,9 @@ export function EnhancedHeroSection() {
                   <h2 className="mt-3 text-2xl font-semibold text-foreground">Choose your best starting point.</h2>
                 </div>
 
-                <div className="grid gap-2" role="list" aria-label="Role filters">
+                {/* Fix: role=list on a div with button children is invalid ARIA.
+                    Use role=group with aria-label instead — buttons don't need listitem wrapper. */}
+                <div className="grid gap-2" role="group" aria-label="Role filters">
                   {roleSignals.map((role, index) => {
                     const isActive = activeRole === index;
                     return (
@@ -194,8 +195,8 @@ export function EnhancedHeroSection() {
                         onClick={() => setActiveRole(index)}
                         className={
                           isActive
-                            ? 'rounded-2xl border border-primary/30 bg-primary/10 px-4 py-3 text-left transition-colors'
-                            : 'rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-left transition-colors hover:border-primary/20 hover:bg-muted/55'
+                            ? 'rounded-2xl px-4 py-3 text-left ring-2 ring-primary/40 bg-primary/10 border border-transparent outline-none transition-shadow'
+                            : 'rounded-2xl border border-border/70 bg-muted/30 px-4 py-3 text-left transition-shadow hover:ring-1 hover:ring-primary/20 hover:bg-muted/55 outline-none'
                         }
                       >
                         <div className="text-sm font-medium text-foreground">{role.title}</div>
@@ -215,7 +216,7 @@ export function EnhancedHeroSection() {
                     <a
                       key={route.href}
                       href={route.href}
-                      className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 transition-colors hover:border-primary/30 hover:bg-muted/40"
+                      className="flex items-start justify-between gap-4 rounded-2xl border border-border/70 bg-background/65 px-4 py-3 transition-shadow hover:ring-1 hover:ring-primary/30 hover:bg-muted/40"
                     >
                       <div>
                         <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">{route.kicker}</div>
@@ -269,7 +270,7 @@ export function EnhancedHeroSection() {
                     href={link.href}
                     target={link.href.startsWith('http') ? '_blank' : undefined}
                     rel={link.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                    className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm transition-colors hover:border-primary/30 hover:text-primary"
+                    className="flex items-center justify-between rounded-2xl border border-border/70 bg-background/75 px-4 py-3 text-sm transition-shadow hover:ring-1 hover:ring-primary/30 hover:text-primary"
                   >
                     <span>{link.label}</span>
                     <ChevronRight className="h-4 w-4" />

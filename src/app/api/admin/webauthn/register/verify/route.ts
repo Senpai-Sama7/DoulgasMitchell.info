@@ -25,6 +25,7 @@ export async function POST(req: Request) {
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Registration response is required' }, { status: 400 });
     }
+
     const cookieStore = await cookies();
     const expectedChallenge = cookieStore.get('passkey_challenge')?.value;
 
@@ -39,14 +40,19 @@ export async function POST(req: Request) {
 
     const { credential, credentialDeviceType } = verification.registrationInfo;
 
+    // Accept optional device name from query string (sent by client)
+    const url = new URL(req.url);
+    const deviceName = url.searchParams.get('name')?.trim() || null;
+
     await db.passkeyCredential.create({
       data: {
         credentialId: credential.id,
         publicKey: Buffer.from(credential.publicKey),
         counter: credential.counter,
         deviceType: credentialDeviceType,
+        deviceName,
         userId: session.userId,
-      }
+      },
     });
 
     cookieStore.delete('passkey_challenge');
