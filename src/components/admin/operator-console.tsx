@@ -14,7 +14,7 @@ import {
   Workflow,
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Artifact,
   ArtifactContent,
@@ -292,12 +292,9 @@ function ProviderStatusBadge({
   );
 }
 
+// Exported as a plain client component — Suspense is owned by the page (Server Component)
 export function AdminOperatorConsole() {
-  return (
-    <Suspense fallback={<Loader2 className="mx-auto mt-20 h-8 w-8 animate-spin text-muted-foreground" />}>
-      <AdminOperatorConsoleInner />
-    </Suspense>
-  );
+  return <AdminOperatorConsoleInner />;
 }
 
 function AdminOperatorConsoleInner() {
@@ -674,15 +671,15 @@ function AdminOperatorConsoleInner() {
           </Card>
         </div>
 
-        <div className="space-y-6">
-          <Tabs 
-            value={currentTab} 
+        {/* @container on the right rail so AnalyticsDashboard container-query classes resolve */}
+        <div className="space-y-6 @container">
+          <Tabs
+            value={currentTab}
             onValueChange={(value) => {
               const params = new URLSearchParams(searchParams.toString());
               params.set('tab', value);
               router.push(`?${params.toString()}`, { scroll: false });
             }}
-            className="@container"
           >
             <TabsList className="flex w-full flex-wrap sm:grid sm:grid-cols-4 h-auto">
               <TabsTrigger value="dashboard">Analytics</TabsTrigger>
@@ -746,10 +743,10 @@ function AdminOperatorConsoleInner() {
                           <p className="text-xs text-muted-foreground">{provider.description}</p>
                         </div>
                         <ProviderStatusBadge
-                                    provider={provider}
-                                    onTest={testProvider}
-                                    isTesting={testingProvider === provider.id}
-                                  />
+                          provider={provider}
+                          onTest={testProvider}
+                          isTesting={testingProvider === provider.id}
+                        />
                       </div>
                     ))}
                   </div>
