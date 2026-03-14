@@ -41,27 +41,23 @@ export function SplashOverlay() {
   const [signalIndex, setSignalIndex] = useState(0);
   const [showCta, setShowCta] = useState(false);
 
-  // Skip to done
   const dismiss = useCallback(() => {
     setPhase('exit');
     setTimeout(() => setPhase('done'), 900);
   }, []);
 
-  // Boot sequence
   useEffect(() => {
     if (phase !== 'boot') return;
     const t = setTimeout(() => setPhase('active'), BOOT_SEQUENCE_MS);
     return () => clearTimeout(t);
   }, [phase]);
 
-  // Auto-skip
   useEffect(() => {
     if (phase !== 'active') return;
     const t = setTimeout(dismiss, AUTO_SKIP_MS);
     return () => clearTimeout(t);
   }, [phase, dismiss]);
 
-  // CTA reveal
   useEffect(() => {
     if (phase !== 'active') {
       setShowCta(false);
@@ -71,7 +67,6 @@ export function SplashOverlay() {
     return () => clearTimeout(t);
   }, [phase]);
 
-  // ASCII grid animation
   useEffect(() => {
     if (phase === 'done' || phase === 'exit') return;
     const t = setInterval(() => {
@@ -90,7 +85,6 @@ export function SplashOverlay() {
     return () => clearInterval(t);
   }, [phase]);
 
-  // Cycle descriptors
   useEffect(() => {
     if (phase !== 'active') return;
     const t = setInterval(
@@ -100,7 +94,6 @@ export function SplashOverlay() {
     return () => clearInterval(t);
   }, [phase]);
 
-  // Cycle signals
   useEffect(() => {
     if (phase !== 'active') return;
     const t = setInterval(
@@ -126,7 +119,7 @@ export function SplashOverlay() {
       aria-modal="true"
       aria-label="Loading Douglas Mitchell — editorial systems operator"
     >
-      {/* Background video — decorative, aria-hidden, has captions track for a11y audit */}
+      {/* Background video — decorative, aria-hidden */}
       <video
         autoPlay
         loop
@@ -135,20 +128,17 @@ export function SplashOverlay() {
         poster="/media/dougie-frame-poster.webp"
         className="absolute inset-0 h-full w-full object-cover opacity-[0.07] mix-blend-luminosity"
         aria-hidden="true"
-        fetchPriority="high"
       >
         <source src="/media/dougie-loop-v2.mp4" type="video/mp4" />
         <track kind="captions" srcLang="en" label="English" default />
       </video>
 
-      {/* Panel */}
       <motion.div
         initial={{ opacity: 0, scale: 0.97, y: 14 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={PANEL_TRANSITION}
         className="relative z-10 w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-border/60 bg-background/88 shadow-[0_40px_120px_-60px_rgba(2,6,23,0.85)] backdrop-blur-3xl mx-4"
       >
-        {/* Top status bar */}
         <div className="flex items-center justify-between border-b border-border/40 px-7 py-3">
           <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
             <span>DM — EDITORIAL OS</span>
@@ -171,9 +161,7 @@ export function SplashOverlay() {
           </div>
         </div>
 
-        {/* Main grid */}
         <div className="grid grid-cols-[1fr_auto] divide-x divide-border/40">
-          {/* Left content */}
           <div className="space-y-8 p-8 sm:p-10">
             {phase === 'boot' ? (
               <div className="space-y-5">
@@ -223,7 +211,6 @@ export function SplashOverlay() {
             )}
           </div>
 
-          {/* Right ASCII grid */}
           <div
             className="hidden p-6 sm:flex sm:flex-col sm:gap-px"
             aria-hidden="true"
@@ -243,7 +230,6 @@ export function SplashOverlay() {
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="flex items-center justify-between border-t border-border/40 px-7 py-3">
           <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-muted-foreground/50">
             FLOW{' '}
