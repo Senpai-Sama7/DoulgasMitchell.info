@@ -43,9 +43,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // 2. Global Rate Limiting (100 requests per minute per IP)
+  // 2. Global Rate Limiting (600 requests per minute per IP)
   const limit = await rateLimit(clientIp, {
-    limit: 100,
+    limit: 600,
     windowMs: 60 * 1000,
     prefix: 'global-proxy',
   });
