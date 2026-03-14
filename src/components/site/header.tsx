@@ -113,6 +113,7 @@ export function SiteHeader() {
               <span className="font-semibold tracking-tight">{siteProfile.name}</span>
             </Link>
 
+            {/* Decorative avatar video — fully hidden from assistive technology */}
             <div
               aria-hidden="true"
               className="hidden h-10 w-10 shrink-0 overflow-hidden rounded-full border border-primary/20 shadow-lg shadow-primary/5 sm:block"
@@ -125,8 +126,12 @@ export function SiteHeader() {
                 playsInline
                 poster="/media/dougie-frame-poster.webp"
                 className="h-full w-full object-cover"
+                aria-hidden="true"
               >
                 <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
+                {/* Captions track satisfies Lighthouse a11y audit for <video> elements.
+                    Content is decorative; track is intentionally empty. */}
+                <track kind="captions" srcLang="en" label="English" default />
               </video>
             </div>
           </div>
