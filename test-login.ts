@@ -1,5 +1,5 @@
-import { findAdminUserByEmail } from './src/lib/admin-compat.ts';
-import { verifyPassword } from './src/lib/auth.ts';
+import { findAdminUserByEmail } from './src/lib/admin-compat';
+import { verifyPassword } from './src/lib/auth';
 
 async function test() {
   console.log('Testing fallback login...');

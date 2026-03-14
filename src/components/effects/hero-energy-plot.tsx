@@ -98,7 +98,7 @@ export function HeroEnergyPlot() {
       context.clearRect(0, 0, rect.width, rect.height);
 
       const gradient = context.createLinearGradient(0, 0, rect.width, rect.height);
-      gradientStops.forEach(([offset, color]) => context.addColorStop(parseFloat(offset) / 100, color));
+      gradientStops.forEach(([offset, color]) => gradient.addColorStop(parseFloat(offset) / 100, color));
       context.fillStyle = gradient;
       context.fillRect(0, 0, rect.width, rect.height);
 

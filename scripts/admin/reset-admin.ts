@@ -13,11 +13,10 @@ async function resetAdmin() {
     update: { passwordHash, role: 'admin' },
     create: {
       email,
-      name: 'System Admin',
-      passwordHash,
-      role: 'admin',
-    }
-  });
+    passwordHash,
+    role: 'admin',
+  }
+});
 
   console.log(`✅ Admin user reset for ${admin.email}`);
   await prisma.$disconnect();
