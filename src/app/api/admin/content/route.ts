@@ -151,17 +151,20 @@ export async function DELETE(request: Request) {
 
   try {
     const { searchParams } = new URL(request.url);
-    const type = searchParams.get('type') as any;
+    const typeParam = searchParams.get('type');
     const id = searchParams.get('id');
 
-    if (!type || !id) return ApiHandler.error('Type and ID are required.', 400);
+    if (!typeParam || !id) return ApiHandler.error('Type and ID are required.', 400);
 
-    const success = await deleteContentEditorItem(type, id);
+    const parsedType = contentTypeSchema.safeParse(typeParam);
+    if (!parsedType.success) return ApiHandler.error('Invalid content type.', 400);
+
+    const success = await deleteContentEditorItem(parsedType.data, id);
 
     if (success) {
       await logActivity({
         action: 'delete',
-        resource: type,
+        resource: parsedType.data,
         resourceId: id,
         userId: session.userId,
       });

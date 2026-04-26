@@ -12,16 +12,19 @@ import {
 import { hasTable } from './db-introspection';
 
 function getJwtSecret() {
-  const secret = env.JWT_SECRET || (env.NODE_ENV === 'production' ? undefined : 'development-only-secret-change-before-production');
+  const secret = env.JWT_SECRET;
 
   if (!secret) {
-    throw new Error('JWT_SECRET must be configured in production');
+    throw new Error(
+      'JWT_SECRET must be set in environment variables. ' +
+      'Generate one with: node -e "console.log(require("crypto").randomBytes(32).toString("hex"))"'
+    );
   }
 
   return new TextEncoder().encode(secret);
 }
 
-const SESSION_DURATION = 60 * 60 * 24 * 7; // 7 days
+const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7; // 7 days
 const JWT_ISSUER = 'douglasmitchell.info';
 const JWT_AUDIENCE = 'admin-portal';
 
@@ -83,13 +86,13 @@ export async function createSession(
     email,
     name,
     role: 'admin',
-    expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
+    expiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000),
   });
 
   await createAdminSessionRecord({
     token,
     userId,
-    expiresAt: new Date(Date.now() + SESSION_DURATION * 1000),
+    expiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000),
     ipAddress: options?.ipAddress,
     userAgent: options?.userAgent,
   });
@@ -110,13 +113,12 @@ export async function getSession(): Promise<Session | null> {
   const persistedSession = await findAdminSessionByToken(token);
 
   if (!persistedSession) {
-    // Fallback: trust the JWT token if DB is unreachable
     if (!(await hasTable('Session'))) {
-      if (new Date() > new Date(session.expiresAt)) {
-        await deleteSession(token);
-        return null;
-      }
-      return session;
+      // DB unreachable — force re-authentication rather than trusting JWT alone.
+      // Without DB verification we cannot confirm the session hasn't been revoked
+      // or that the role hasn't changed.
+      await deleteSession(token);
+      return null;
     }
     
     await deleteSession(token);
@@ -163,7 +165,7 @@ export async function setSessionCookie(token: string): Promise<void> {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
     sameSite: 'strict',
-    maxAge: SESSION_DURATION,
+    maxAge: SESSION_DURATION_SECONDS,
     path: '/',
   });
 }
@@ -185,6 +187,6 @@ export function clearRateLimit(identifier: string): void {
 }
 
 // Generate secure random token
-export function generateSecureToken(length: number = 32): string {
-  return randomBytes(length).toString('hex').slice(0, length);
+export function generateSecureToken(byteLength: number = 32): string {
+  return randomBytes(byteLength).toString('hex');
 }

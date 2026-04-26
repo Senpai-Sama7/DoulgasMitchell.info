@@ -40,7 +40,7 @@ describe('Authentication', () => {
       const token = generateSecureToken(32);
       
       expect(token).toBeDefined();
-      expect(token.length).toBe(32);
+      expect(token.length).toBe(64);
       expect(/^[A-Za-z0-9]+$/.test(token)).toBe(true);
     });
 

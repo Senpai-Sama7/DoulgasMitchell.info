@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
 import { env } from '@/lib/env';
 import { countAdminUsers, createAdminUser } from '@/lib/admin-compat';
@@ -71,11 +72,18 @@ export async function POST(request: Request) {
       );
     }
 
-    if (env.NODE_ENV === 'production' && requestedPassword !== env.ADMIN_PASSWORD) {
-      return NextResponse.json(
-        { error: 'Provided bootstrap secret is invalid.' },
-        { status: 403 }
-      );
+    if (env.NODE_ENV === 'production') {
+      const expected = env.ADMIN_PASSWORD ?? '';
+      if (
+        typeof requestedPassword !== 'string' ||
+        requestedPassword.length !== expected.length ||
+        !crypto.timingSafeEqual(Buffer.from(requestedPassword), Buffer.from(expected))
+      ) {
+        return NextResponse.json(
+          { error: 'Provided bootstrap secret is invalid.' },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if admin already exists

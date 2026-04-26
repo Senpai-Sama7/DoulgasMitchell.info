@@ -430,6 +430,22 @@ export async function POST(request: NextRequest) {
       return ApiHandler.error('Messages are required.');
     }
 
+    const MAX_MESSAGES = 100;
+    const MAX_MESSAGE_LENGTH = 50_000;
+
+    if (messages.length > MAX_MESSAGES) {
+      return ApiHandler.error(`Too many messages. Maximum ${MAX_MESSAGES} allowed.`, 400);
+    }
+
+    for (const msg of messages) {
+      const content = typeof (msg as unknown as Record<string, unknown>).content === 'string'
+        ? (msg as unknown as Record<string, unknown>).content as string
+        : JSON.stringify((msg as unknown as Record<string, unknown>).content);
+      if (content.length > MAX_MESSAGE_LENGTH) {
+        return ApiHandler.error(`Message too long. Maximum ${MAX_MESSAGE_LENGTH} characters per message.`, 400);
+      }
+    }
+
     const settings = await getAdminOperatorSettings();
     const selection = await selectOperationalProvider(settings);
     const activeProvider = selection.provider;

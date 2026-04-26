@@ -64,18 +64,26 @@ export function ParticleTitle({ firstName, lastName }: ParticleTitleProps) {
   const seededValue = (key: string) =>
     hashValue(`${seedSource}:${key}`) / 0xffffffff;
 
-  const particles = useMemo(
-    () =>
-      Array.from({ length: 120 }).map((_, i) => ({
-        id: i,
-        initialX: seededValue(`particle:${i}:x`) * 800 - 400,
-        initialY: seededValue(`particle:${i}:y`) * 400 - 200,
-        size: seededValue(`particle:${i}:size`) * 4 + 1,
-        delay: seededValue(`particle:${i}:delay`) * 0.5,
-      })),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [seedSource]
-  );
+  const particles = useMemo(() => {
+    const hv = (input: string): number => {
+      let h = 2166136261;
+      for (let i = 0; i < input.length; i++) {
+        h ^= input.charCodeAt(i);
+        h = Math.imul(h, 16777619);
+      }
+      return h >>> 0;
+    };
+    const sv = (key: string): number =>
+      hv(`${seedSource}:${key}`) / 0xffffffff;
+
+    return Array.from({ length: 120 }).map((_, i) => ({
+      id: i,
+      initialX: sv(`particle:${i}:x`) * 800 - 400,
+      initialY: sv(`particle:${i}:y`) * 400 - 200,
+      size: sv(`particle:${i}:size`) * 4 + 1,
+      delay: sv(`particle:${i}:delay`) * 0.5,
+    }));
+  }, [seedSource]);
 
   const getAsciiBlock = (char: string, index: number) => {
     if (char === ' ') return ' ';

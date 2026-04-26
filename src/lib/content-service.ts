@@ -271,6 +271,11 @@ async function withFallback<T>(query: () => Promise<T>, fallback: T) {
   }
 }
 
+// NOTE: React's cache() only deduplicates calls within a single server render (request).
+// Each new request re-executes the full query chain including hasTables discovery.
+// For persistent cross-request caching, consider unstable_cache from Next.js or
+// an application-level cache with TTL for table availability data.
+
 export const getLandingPageData = cache(async () => {
   const canUseContentTables = await hasTables(['Article', 'Project', 'Certification', 'Book']);
 

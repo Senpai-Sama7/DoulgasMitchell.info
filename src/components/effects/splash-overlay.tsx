@@ -30,7 +30,12 @@ function buildGrid(): string[][] {
   );
 }
 
-export function SplashOverlay() {
+export interface SplashOverlayProps {
+  minDisplayTime?: number;
+  onComplete?: () => void;
+}
+
+export function SplashOverlay({ minDisplayTime, onComplete }: SplashOverlayProps) {
   const prefersReducedMotion = useReducedMotion();
   const [phase, setPhase] = useState<'boot' | 'active' | 'exit' | 'done'>(
     prefersReducedMotion ? 'done' : 'boot'
@@ -39,7 +44,10 @@ export function SplashOverlay() {
   const [tick, setTick] = useState(0);
   const [descriptorIndex, setDescriptorIndex] = useState(0);
   const [signalIndex, setSignalIndex] = useState(0);
-  const [showCta, setShowCta] = useState(false);
+  const [ctaReady, setCtaReady] = useState(false);
+
+  const bootDuration = minDisplayTime ?? BOOT_SEQUENCE_MS;
+  const showCta = phase === 'active' && ctaReady;
 
   const dismiss = useCallback(() => {
     setPhase('exit');
@@ -48,9 +56,15 @@ export function SplashOverlay() {
 
   useEffect(() => {
     if (phase !== 'boot') return;
-    const t = setTimeout(() => setPhase('active'), BOOT_SEQUENCE_MS);
+    const t = setTimeout(() => setPhase('active'), bootDuration);
     return () => clearTimeout(t);
   }, [phase]);
+
+  useEffect(() => {
+    if (phase === 'done') {
+      onComplete?.();
+    }
+  }, [phase, onComplete]);
 
   useEffect(() => {
     if (phase !== 'active') return;
@@ -59,11 +73,8 @@ export function SplashOverlay() {
   }, [phase, dismiss]);
 
   useEffect(() => {
-    if (phase !== 'active') {
-      setShowCta(false);
-      return;
-    }
-    const t = setTimeout(() => setShowCta(true), 1600);
+    if (phase !== 'active') return;
+    const t = setTimeout(() => setCtaReady(true), 1600);
     return () => clearTimeout(t);
   }, [phase]);
 

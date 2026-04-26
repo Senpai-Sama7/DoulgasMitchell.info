@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import bcrypt from 'bcryptjs';
 import { checkRateLimit, clearRateLimit, createSession, getSession, setSessionCookie, verifyPassword } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import {
@@ -60,6 +61,8 @@ export async function POST(request: NextRequest) {
     const user = await findAdminUserByEmail(email);
 
     if (!user) {
+      // Hash a dummy password to prevent timing-based user enumeration
+      await bcrypt.hash('invalid-password-dummy', 12);
       return ApiHandler.unauthorized('Invalid credentials');
     }
 

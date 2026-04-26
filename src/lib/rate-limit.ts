@@ -18,12 +18,13 @@ export interface RateLimitResult {
 }
 
 const rateLimitStore = new Map<string, RateLimitState>();
+let cleanupCounter = 0;
+const CLEANUP_INTERVAL = 100;
 
 function createStoreKey(identifier: string, prefix = 'global') {
   return `${prefix}:${identifier}`;
 }
 
-// Simple garbage collection to prevent memory leaks from sustained DoS
 function cleanupStore() {
   const now = Date.now();
   for (const [key, state] of rateLimitStore.entries()) {
@@ -34,7 +35,11 @@ function cleanupStore() {
 }
 
 function rateLimitInMemory(identifier: string, options: RateLimitOptions): RateLimitResult {
-  cleanupStore(); // Clear expired entries to prevent memory exhaustion
+  cleanupCounter++;
+  if (cleanupCounter >= CLEANUP_INTERVAL) {
+    cleanupStore();
+    cleanupCounter = 0;
+  }
   
   const now = Date.now();
   const storeKey = createStoreKey(identifier, options.prefix);

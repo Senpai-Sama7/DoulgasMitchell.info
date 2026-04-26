@@ -54,6 +54,7 @@ export async function POST(request: Request) {
 
   const session = await getSession();
   if (!session) return ApiHandler.error('Unauthorized', 401);
+  if (session.role !== 'admin') return ApiHandler.error('Forbidden', 403);
 
   try {
     const body = await request.json();
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
       action: 'CREATE',
       resource: 'Note',
       resourceId: note.id,
+      userId: session.userId,
       details: { title: note.title }
     });
 
@@ -84,6 +86,7 @@ export async function PATCH(request: Request) {
 
   const session = await getSession();
   if (!session) return ApiHandler.error('Unauthorized', 401);
+  if (session.role !== 'admin') return ApiHandler.error('Forbidden', 403);
 
   try {
     const { searchParams } = new URL(request.url);
@@ -102,6 +105,7 @@ export async function PATCH(request: Request) {
       action: 'UPDATE',
       resource: 'Note',
       resourceId: note.id,
+      userId: session.userId,
       details: { title: note.title }
     });
 
@@ -119,6 +123,7 @@ export async function DELETE(request: Request) {
 
   const session = await getSession();
   if (!session) return ApiHandler.error('Unauthorized', 401);
+  if (session.role !== 'admin') return ApiHandler.error('Forbidden', 403);
 
   try {
     const { searchParams } = new URL(request.url);
@@ -130,7 +135,8 @@ export async function DELETE(request: Request) {
     await logActivity({
       action: 'DELETE',
       resource: 'Note',
-      resourceId: id
+      resourceId: id,
+      userId: session.userId,
     });
 
     return ApiHandler.success({ deleted: true });
