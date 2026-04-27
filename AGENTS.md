@@ -1,6 +1,6 @@
 # AGENTS.md - douglasmitchell.info
 
-Primary context for AI agents. Last updated: 2026-04-26
+Primary context for AI agents. Last updated: 2026-04-27
 
 ## Stack
 - Next.js 16.1 (App Router), React 19, TypeScript 5.9
@@ -60,4 +60,4 @@ Primary context for AI agents. Last updated: 2026-04-26
 | OCP | Adding features requires modifying existing code | Use interfaces/strategy |
 | LSP | Subclass throws unexpected exceptions | Composition over inheritance |
 | ISP | Class implements methods it doesn't need | Split interface |
-| DIP | `new` keyword for dependencies | Constructor injection |
+| DIP | `new` keyword for dependencies | Constructor injection

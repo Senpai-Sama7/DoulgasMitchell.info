@@ -8,6 +8,9 @@ import { SiteFooter, SiteHeader } from '@/components/site';
 import { getArticleBySlug } from '@/lib/content-service';
 import { featuredArticles } from '@/lib/site-content';
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 interface ArticlePageProps {
   params: Promise<{
     slug: string;

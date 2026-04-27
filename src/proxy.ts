@@ -33,101 +33,102 @@ const publicAdminRoutes = [
  * 3. Admin Authentication & Route Protection
  */
 export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-  const clientIp = getClientIp(request);
+  try {
+    const { pathname } = request.nextUrl;
+    const clientIp = getClientIp(request);
 
-  // 1. Skip middleware for static assets and internal Next.js paths
-  if (
-    pathname.startsWith('/_next') ||
-    pathname.includes('.')
-  ) {
-    return NextResponse.next();
-  }
+    // 1. Skip middleware for static assets and internal Next.js paths
+    if (
+      pathname.startsWith('/_next') ||
+      pathname.includes('.')
+    ) {
+      return NextResponse.next();
+    }
 
-  // Security headers applied to all proxy error responses
-  const securityHeaders = {
-    'Content-Type': 'application/json',
-    'X-Content-Type-Options': 'nosniff',
-    'X-Frame-Options': 'DENY',
-    'Referrer-Policy': 'strict-origin-when-cross-origin',
-  };
+    // Security headers applied to all proxy error responses
+    const securityHeaders = {
+      'Content-Type': 'application/json',
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+    };
 
-  // 2. Global Rate Limiting (600 requests per minute per IP)
-  const limit = await rateLimit(clientIp, {
-    limit: 600,
-    windowMs: 60 * 1000,
-    prefix: 'global-proxy',
-  });
+    // 2. Rate Limiting
+    const { allowed, remaining, resetAt } = await rateLimit(clientIp, {
+      limit: 600,
+      windowMs: 60 * 1000,
+      prefix: 'global',
+    });
 
-  if (!limit.allowed) {
-    return new NextResponse(
-      JSON.stringify({ error: 'Too many requests. Please slow down.' }),
-      { 
-        status: 429, 
-        headers: { 
-          ...securityHeaders,
-          'Retry-After': Math.ceil((limit.resetAt - Date.now()) / 1000).toString()
-        } 
-      }
-    );
-  }
-
-  // 3. API-specific security: Trusted Origin Validation
-  if (pathname.startsWith('/api/')) {
-    const originCheck = validateTrustedOrigin(request);
-    if (!originCheck.allowed) {
+    if (!allowed) {
       return new NextResponse(
-        JSON.stringify({ error: originCheck.reason }),
-        { status: 403, headers: securityHeaders }
+        JSON.stringify({ error: 'Rate limit exceeded' }),
+        { status: 429, headers: { ...securityHeaders, 'Retry-After': resetAt.toString() } }
       );
     }
-  }
 
-  // 4. Admin Authentication Protection
-  if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
-    // Check if it's a public route
-    const isPublicRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
-    if (!isPublicRoute) {
-      // Check for the admin session token
-      const token = request.cookies.get('admin-session')?.value;
-
-      if (!token) {
-        // Redirect to login for pages, return 401 for APIs
-        if (pathname.startsWith('/api/')) {
-          return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: securityHeaders });
-        }
-        return NextResponse.redirect(new URL('/admin/login', request.url));
-      }
-
-      // Verify the JWT token
-      try {
-        await jwtVerify(token, getJwtSecret(), {
-          issuer: JWT_ISSUER,
-          audience: JWT_AUDIENCE,
-        });
-      } catch (error) {
-        logger.error('Middleware token verification failed:', error);
-        // Invalid token
-        if (pathname.startsWith('/api/')) {
-          return new NextResponse(JSON.stringify({ error: 'Unauthorized - Invalid Token' }), { status: 401, headers: securityHeaders });
-        }
-        
-        // Redirect to login and clear cookie
-        const response = NextResponse.redirect(new URL('/admin/login', request.url));
-        response.cookies.delete('admin-session');
-        return response;
+    // 3. Trusted Origin Validation
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      if (pathname.startsWith('/api/')) {
+        return new NextResponse(
+          JSON.stringify({ error: originCheck.reason }),
+          { status: 403, headers: securityHeaders }
+        );
       }
     }
+
+    // 4. Admin Authentication Protection
+    if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+      // Check if it's a public route
+      const isPublicRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
+      if (!isPublicRoute) {
+        // Check for the admin session token
+        const token = request.cookies.get('admin-session')?.value;
+
+        if (!token) {
+          // Redirect to login for pages, return 401 for APIs
+          if (pathname.startsWith('/api/')) {
+            return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: securityHeaders });
+          }
+          return NextResponse.redirect(new URL('/admin/login', request.url));
+        }
+
+        // Verify the JWT token
+        try {
+          await jwtVerify(token, getJwtSecret(), {
+            issuer: JWT_ISSUER,
+            audience: JWT_AUDIENCE,
+          });
+        } catch (error) {
+          logger.error('Middleware token verification failed:', error);
+          // Invalid token
+          if (pathname.startsWith('/api/')) {
+            return new NextResponse(JSON.stringify({ error: 'Unauthorized - Invalid Token' }), { status: 401, headers: securityHeaders });
+          }
+          
+          // Redirect to login and clear cookie
+          const response = NextResponse.redirect(new URL('/admin/login', request.url));
+          response.cookies.delete('admin-session');
+          return response;
+        }
+      }
+    }
+
+    // 5. Continue with request and append rate limit headers
+    const response = NextResponse.next();
+    
+    response.headers.set('X-RateLimit-Limit', '600');
+    response.headers.set('X-RateLimit-Remaining', remaining.toString());
+    response.headers.set('X-RateLimit-Reset', resetAt.toString());
+
+    return response;
+  } catch (error) {
+    logger.error('Middleware unexpected error:', error);
+    return new NextResponse(
+      JSON.stringify({ error: 'Internal server error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
+    );
   }
-
-  // 5. Continue with request and append rate limit headers
-  const response = NextResponse.next();
-  
-  response.headers.set('X-RateLimit-Limit', '600');
-  response.headers.set('X-RateLimit-Remaining', limit.remaining.toString());
-  response.headers.set('X-RateLimit-Reset', limit.resetAt.toString());
-
-  return response;
 }
 
 export const config = {

@@ -49,7 +49,7 @@ export async function setPasskeyChallengeCookie(
   }), {
     httpOnly: true,
     secure: env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    sameSite: 'strict',
     maxAge: PASSKEY_CHALLENGE_TTL_SECONDS,
     path: '/',
   });
