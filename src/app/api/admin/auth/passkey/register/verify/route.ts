@@ -33,6 +33,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Registration response is required' }, { status: 400 });
     }
 
+    const registrationResponse = response as Record<string, unknown>;
+    if (
+      typeof registrationResponse.attestationObject !== 'string' ||
+      typeof registrationResponse.clientDataJSON !== 'string'
+    ) {
+      return NextResponse.json({ error: 'Invalid registration response structure' }, { status: 400 });
+    }
+
     const user = await findAdminUserById(session.userId);
 
     if (!user) {

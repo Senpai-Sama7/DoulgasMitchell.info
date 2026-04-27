@@ -8,11 +8,19 @@ function shouldLog(level: LogLevel): boolean {
   return LOG_LEVELS[level] >= LOG_LEVELS[CURRENT_LEVEL];
 }
 
+function serializeMeta(meta: unknown): string {
+  if (meta === undefined || meta === null) return '';
+  if (meta instanceof Error) return ` ${meta.stack || meta.message}`;
+  try {
+    return ` ${JSON.stringify(meta)}`;
+  } catch {
+    return ' [unserializable metadata]';
+  }
+}
+
 function formatMessage(level: LogLevel, message: string, meta?: unknown): string {
   const timestamp = new Date().toISOString();
-  const metaStr = meta !== undefined
-    ? ` ${meta instanceof Error ? meta.stack || meta.message : JSON.stringify(meta)}`
-    : '';
+  const metaStr = serializeMeta(meta);
   return `[${timestamp}] [${level.toUpperCase()}] ${message}${metaStr}`;
 }
 

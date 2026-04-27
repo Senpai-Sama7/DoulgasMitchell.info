@@ -23,13 +23,8 @@ export async function GET(request: NextRequest) {
       return ApiHandler.error('Rate limit exceeded.', 429);
     }
 
-    const session = await getSession();
-    if (!session) {
-      return ApiHandler.unauthorized();
-    }
-
     const count = await countAdminUsers();
-    return ApiHandler.success({ adminCount: count });
+    return ApiHandler.success({ isInitialized: count > 0 });
   } catch {
     return ApiHandler.internalServerError('Failed to check admin status');
   }

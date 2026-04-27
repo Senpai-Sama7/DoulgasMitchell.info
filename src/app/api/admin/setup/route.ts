@@ -51,7 +51,15 @@ export async function POST(request: Request) {
       );
     }
 
-    const requestedPassword = parsed.data.password.trim();
+    const requestedPassword = parsed.data.password;
+
+    if (requestedPassword.trim().length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters (leading/trailing whitespace is ignored).' },
+        { status: 400 }
+      );
+    }
+
     const adminEmail = parsed.data.email
       ? parsed.data.email.trim().toLowerCase()
       : env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
@@ -84,10 +92,11 @@ export async function POST(request: Request) {
 
     if (env.NODE_ENV === 'production') {
       const expected = env.ADMIN_PASSWORD ?? '';
+      const trimmed = requestedPassword.trim();
       if (
-        typeof requestedPassword !== 'string' ||
-        requestedPassword.length !== expected.length ||
-        !crypto.timingSafeEqual(Buffer.from(requestedPassword), Buffer.from(expected))
+        typeof trimmed !== 'string' ||
+        trimmed.length !== expected.length ||
+        !crypto.timingSafeEqual(Buffer.from(trimmed), Buffer.from(expected))
       ) {
         return NextResponse.json(
           { error: 'Provided bootstrap secret is invalid.' },

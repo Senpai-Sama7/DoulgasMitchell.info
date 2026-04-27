@@ -33,9 +33,12 @@ export default function AdminLoginPage() {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const response = await fetch('/api/admin/check');
-        if (!response.ok) {
-          return;
+const response = await fetch('/api/admin/check');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setHasAdminAccount(data.data.isInitialized);
+          }
         }
 
         const data = await response.json();
