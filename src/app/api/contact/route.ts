@@ -3,6 +3,7 @@ import { logActivity } from '@/lib/activity';
 import { contactSubmissionSchema } from '@/lib/forms';
 import { createContactSubmissionRecord } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -85,7 +86,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Contact submission error:', error);
+    logger.error('Contact submission error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

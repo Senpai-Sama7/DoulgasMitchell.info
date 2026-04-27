@@ -3,6 +3,7 @@ import { getRegistrationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { findAdminUserById } from '@/lib/admin-compat';
+import { logger } from '@/lib/logger';
 import { validateTrustedOrigin } from '@/lib/request';
 
 export async function POST(request: NextRequest) {
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(options);
   } catch (error) {
-    console.error('Passkey register options error:', error);
+    logger.error('Passkey register options error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

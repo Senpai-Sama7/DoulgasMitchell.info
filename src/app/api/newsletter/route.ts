@@ -3,6 +3,7 @@ import { logActivity } from '@/lib/activity';
 import { newsletterSubscriptionSchema } from '@/lib/forms';
 import { upsertNewsletterSubscriber } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
+import { logger } from '@/lib/logger';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -70,7 +71,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.error('Newsletter subscription error:', error);
+    logger.error('Newsletter subscription error:', error);
     return NextResponse.json(
       { error: 'Unable to subscribe right now.' },
       { status: 500 }

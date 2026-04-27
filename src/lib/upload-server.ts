@@ -3,6 +3,7 @@ import { mkdir, unlink, writeFile } from 'fs/promises';
 import { extname, join } from 'path';
 import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
+import { logger } from '@/lib/logger';
 import { env } from '@/lib/env';
 import {
   type UploadResult,
@@ -52,7 +53,7 @@ export async function createThumbnail(
 
     return `/uploads/thumbnails/${thumbnailFilename}`;
   } catch (error) {
-    console.error('Thumbnail creation failed:', error);
+    logger.error('Thumbnail creation failed:', error);
     return null;
   }
 }
@@ -131,7 +132,7 @@ export async function extractColorPalette(buffer: Buffer): Promise<string[]> {
 
     return sorted;
   } catch (error) {
-    console.error('Color extraction failed:', error);
+    logger.error('Color extraction failed:', error);
     return [];
   }
 }
@@ -209,7 +210,7 @@ export async function processFileUpload(
       colorPalette,
     };
   } catch (error) {
-    console.error('File upload error:', error);
+    logger.error('File upload error:', error);
     return {
       success: false,
       error: 'Failed to process file upload',

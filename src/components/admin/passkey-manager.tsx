@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Passkey {
@@ -78,7 +79,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
         throw new Error(error.error || 'Verification failed');
       }
     } catch (error: any) {
-      console.error(error);
+      logger.error(error);
       toast({
         title: 'Registration failed',
         description: error.message || 'Make sure your device supports biometrics.',

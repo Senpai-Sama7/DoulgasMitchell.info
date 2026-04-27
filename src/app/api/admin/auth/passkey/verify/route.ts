@@ -10,6 +10,7 @@ import {
   validateTrustedOrigin,
 } from '@/lib/request';
 import { logActivity } from '@/lib/activity';
+import { logger } from '@/lib/logger';
 import { rateLimit } from '@/lib/rate-limit';
 import {
   findAdminUserByEmail,
@@ -79,7 +80,7 @@ export async function POST(request: NextRequest) {
       await updateAdminLastLogin(user.id);
 
       // Create session
-      const token = await createSession(user.id, user.email, user.name || 'Admin', {
+      const token = await createSession(user.id, user.email, user.name || 'Admin', user.role || 'admin', {
         ipAddress: clientIp,
         userAgent: getUserAgent(request),
       });
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
     }
 
-    console.error('Passkey verify error:', error);
+    logger.error('Passkey verify error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

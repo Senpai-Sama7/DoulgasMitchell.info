@@ -12,6 +12,7 @@ import { rateLimit } from '@/lib/rate-limit';
 import { formatFileSize, getFileCategory } from '@/lib/upload';
 import { deleteStoredAsset, processFileUpload } from '@/lib/upload-server';
 import { hasTable } from '@/lib/db-introspection';
+import { logger } from '@/lib/logger';
 
 // POST /api/upload - Upload files
 export async function POST(request: NextRequest) {
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.error('Upload error:', error);
     return NextResponse.json(
       { error: 'Failed to process upload' },
       { status: 500 }
@@ -234,7 +235,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error('Media list error:', error);
+    logger.error('Media list error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch media' },
       { status: 500 }
@@ -340,7 +341,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    console.error('Media delete error:', error);
+    logger.error('Media delete error:', error);
     return NextResponse.json(
       { error: 'Failed to delete media' },
       { status: 500 }

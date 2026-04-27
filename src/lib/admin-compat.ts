@@ -319,6 +319,9 @@ export async function updateAdminLastLogin(userId: string) {
 export async function createAdminSessionRecord(input: {
   token: string;
   userId: string;
+  email?: string;
+  name?: string;
+  role?: 'admin' | 'editor';
   expiresAt: Date;
   ipAddress?: string;
   userAgent?: string;
@@ -332,6 +335,21 @@ export async function createAdminSessionRecord(input: {
   const userIdColumn = columns.has('userId') ? 'userId' : 'adminUserId';
   const insertColumns = ['id', 'token', userIdColumn, 'expiresAt'];
   const values: unknown[] = [randomUUID(), input.token, input.userId, input.expiresAt];
+
+  if (columns.has('email') && input.email) {
+    insertColumns.push('email');
+    values.push(input.email);
+  }
+
+  if (columns.has('name') && input.name) {
+    insertColumns.push('name');
+    values.push(input.name);
+  }
+
+  if (columns.has('role') && input.role) {
+    insertColumns.push('role');
+    values.push(input.role);
+  }
 
   if (columns.has('ipAddress')) {
     insertColumns.push('ipAddress');

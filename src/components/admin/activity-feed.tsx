@@ -15,6 +15,7 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Notification } from '@/lib/notifications';
+import { logger } from '@/lib/logger';
 
 interface ActivityFeedProps {
   initialNotifications?: Notification[];
@@ -34,7 +35,7 @@ export function ActivityFeed({ initialNotifications = [], className }: ActivityF
           setNotifications(data.notifications || []);
         }
       } catch (error) {
-        console.error('Failed to fetch notifications:', error);
+        logger.error('Failed to fetch notifications:', error);
       } finally {
         setLoading(false);
       }

@@ -1,5 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import {
   buildBeliefState,
   buildCausalExperimentRecommendations,
@@ -152,7 +153,7 @@ export async function logPageView(input: PageViewInput) {
       ...values
     );
   } catch (error) {
-    console.error('Failed to log page view:', error);
+    logger.error('Failed to log page view:', error);
   }
 }
 
@@ -334,7 +335,7 @@ export async function getAnalyticsSummary(days = 30): Promise<AnalyticsSummary |
       experiments,
     };
   } catch (error) {
-    console.error('Failed to retrieve analytics:', error);
+    logger.error('Failed to retrieve analytics:', error);
     return null;
   }
 }

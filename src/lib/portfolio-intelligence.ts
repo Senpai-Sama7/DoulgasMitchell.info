@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logger } from '@/lib/logger';
 import { resolveAdminAiModel, getAdminAiSettings } from '@/lib/admin-ai';
 
 interface CaseStudyInput {
@@ -47,7 +48,7 @@ export async function generateCaseStudy(input: CaseStudyInput) {
     const result = await model.generateContent(prompt);
     return result.response.text();
   } catch (error) {
-    console.error('Case study generation failed:', error);
+    logger.error('Case study generation failed:', error);
     return null;
   }
 }

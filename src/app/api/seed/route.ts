@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { validateTrustedOrigin } from '@/lib/request';
 import { featuredArticles } from '@/lib/site-content';
 
@@ -163,7 +164,7 @@ export async function POST(request: Request) {
       message: 'Database seeded successfully',
     });
   } catch (error) {
-    console.error('Seed error:', error);
+    logger.error('Seed error:', error);
     return NextResponse.json({
       success: false,
       message: 'Seeding completed (some items may already exist)',

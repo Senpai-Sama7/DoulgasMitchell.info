@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { ApiHandler } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 import { validateTrustedOrigin, readJsonBody } from '@/lib/request';
 import { generateCaseStudy } from '@/lib/portfolio-intelligence';
 
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     return ApiHandler.success({ draft });
   } catch (error) {
-    console.error('Case study generation API error:', error);
+    logger.error('Case study generation API error:', error);
     return ApiHandler.internalServerError('Failed to process case study generation', error);
   }
 }

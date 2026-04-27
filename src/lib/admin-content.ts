@@ -2,6 +2,7 @@ import 'server-only';
 
 import { z } from 'zod';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { hasTable } from '@/lib/db-introspection';
 
 export const contentTypeSchema = z.enum(['article', 'project', 'certification', 'book']);
@@ -471,7 +472,7 @@ export async function deleteContentEditorItem(type: ContentType, id: string): Pr
     }
     return true;
   } catch (error) {
-    console.error(`Failed to delete ${type} ${id}:`, error);
+    logger.error(`Failed to delete ${type} ${id}:`, error);
     return false;
   }
 }

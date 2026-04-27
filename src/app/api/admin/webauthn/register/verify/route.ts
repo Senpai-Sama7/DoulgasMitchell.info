@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { verifyRegistration } from '@/lib/webauthn';
 import {
   isInvalidJsonBodyError,
@@ -62,7 +63,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
     }
 
-    console.error('Registration Verify Error:', error);
+    logger.error('Registration Verify Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 import { getSession } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ApiHandler } from '@/lib/api-response';
 import {
@@ -162,7 +163,7 @@ export async function POST(req: Request) {
       return ApiHandler.error('Request body must be valid JSON.', 400);
     }
 
-    console.error('AI Route Error:', error);
+    logger.error('AI Route Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown AI provider failure.';
     if (/API key not valid|API_KEY_INVALID/i.test(message)) {
       return ApiHandler.error('Gemini API key is invalid. Update `GEMINI_API_KEY` or `GOOGLE_GEMINI_API_KEY` in the environment.', 502);

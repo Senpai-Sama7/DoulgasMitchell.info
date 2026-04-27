@@ -26,6 +26,7 @@ const csp = [
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  poweredByHeader: false,
   reactStrictMode: true,
   // Suppress source-map 404s in Lighthouse Best Practices audit
   productionBrowserSourceMaps: false,
@@ -90,7 +91,19 @@ const nextConfig: NextConfig = {
       },
       {
         key: 'Permissions-Policy',
-        value: 'camera=(), microphone=(), geolocation=()',
+        value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+      },
+      {
+        key: 'Cross-Origin-Opener-Policy',
+        value: 'same-origin',
+      },
+      {
+        key: 'Cross-Origin-Embedder-Policy',
+        value: 'require-corp',
+      },
+      {
+        key: 'X-Permitted-Cross-Domain-Policies',
+        value: 'none',
       },
     ];
 

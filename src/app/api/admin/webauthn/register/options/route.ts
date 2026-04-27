@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { getRegistrationOptions } from '@/lib/webauthn';
 import { validateTrustedOrigin } from '@/lib/request';
 
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(options);
   } catch (error: any) {
-    console.error('Registration Options Error:', error);
+    logger.error('Registration Options Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

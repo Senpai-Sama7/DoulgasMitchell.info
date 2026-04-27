@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { logger } from '@/lib/logger';
 import { getAdminAiSettings, resolveAdminAiModel } from '@/lib/admin-ai';
 
 export interface ContentOptimizationResult {
@@ -128,7 +129,7 @@ Rules:
     const cleaned = text.replace(/```json|```/g, '').trim();
     return normalizeOptimizationResult(JSON.parse(cleaned));
   } catch (error) {
-    console.error('Content optimization failed:', error);
+    logger.error('Content optimization failed:', error);
     return null;
   }
 }

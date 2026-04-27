@@ -2,6 +2,7 @@
 
 import { useControllableState } from "@radix-ui/react-use-controllable-state";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
 import {
   Command,
   CommandEmpty,
@@ -73,7 +74,7 @@ export const useAudioDevices = () => {
           : "Failed to get audio devices";
 
       setError(message);
-      console.error("Error getting audio devices:", message);
+      logger.error("Error getting audio devices:", message);
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,7 @@ export const useAudioDevices = () => {
           : "Failed to get audio devices";
 
       setError(message);
-      console.error("Error getting audio devices:", message);
+      logger.error("Error getting audio devices:", message);
     } finally {
       setLoading(false);
     }

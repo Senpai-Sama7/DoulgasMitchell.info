@@ -1,19 +1,36 @@
-import { NextResponse } from 'next/server';
+import { NextResponse, type NextRequest } from 'next/server';
+import { ApiHandler } from '@/lib/api-response';
+import { getSession } from '@/lib/auth';
+import { rateLimit } from '@/lib/rate-limit';
+import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 import { countAdminUsers } from '@/lib/admin-compat';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const count = await countAdminUsers();
-    return NextResponse.json({ 
-      success: true, 
-      adminCount: count,
-      dbConnected: true
+    const originCheck = validateTrustedOrigin(request);
+    if (!originCheck.allowed) {
+      return ApiHandler.forbidden(originCheck.reason);
+    }
+
+    const clientIp = getClientIp(request);
+    const limit = await rateLimit(clientIp, {
+      limit: 10,
+      windowMs: 60 * 1000,
+      prefix: 'admin-check',
     });
-  } catch (error) {
-    return NextResponse.json({ 
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-      dbConnected: false
-    }, { status: 500 });
+
+    if (!limit.allowed) {
+      return ApiHandler.error('Rate limit exceeded.', 429);
+    }
+
+    const session = await getSession();
+    if (!session) {
+      return ApiHandler.unauthorized();
+    }
+
+    const count = await countAdminUsers();
+    return ApiHandler.success({ adminCount: count });
+  } catch {
+    return ApiHandler.internalServerError('Failed to check admin status');
   }
 }
