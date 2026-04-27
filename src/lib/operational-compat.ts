@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from 'crypto';
 import { db } from '@/lib/db';
 import { getTableColumns, hasTable, quoteIdentifier } from '@/lib/db-introspection';
 import { sqlCount, sqlBool } from '@/lib/sql-helpers';

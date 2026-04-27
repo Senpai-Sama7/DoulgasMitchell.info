@@ -1,19 +1,9 @@
 import { db } from '@/lib/db';
+import { isSqlite, quoteTableName, quoteIdentifier, qualifiedColumn } from '@/lib/sql-helpers';
+
+export { quoteIdentifier, qualifiedColumn };
 
 const tableColumnsCache = new Map<string, Promise<Set<string>>>();
-
-function quoteTableName(tableName: string) {
-  return `"${tableName.replace(/"/g, '""')}"`;
-}
-
-function isSqlite(): boolean {
-  const url = process.env.DATABASE_URL ?? '';
-  return (
-    url.startsWith('file:') ||
-    url.startsWith('sqlite:') ||
-    url.endsWith('.db')
-  );
-}
 
 // All Prisma schema model names that can be introspected
 const ALLOWED_TABLES = new Set([
@@ -65,12 +55,4 @@ export async function hasTable(tableName: string) {
 export async function hasColumns(tableName: string, columns: string[]) {
   const available = await getTableColumns(tableName);
   return columns.every((column) => available.has(column));
-}
-
-export function quoteIdentifier(identifier: string) {
-  return `"${identifier.replace(/"/g, '""')}"`;
-}
-
-export function qualifiedColumn(tableName: string, columnName: string) {
-  return `${quoteTableName(tableName)}.${quoteIdentifier(columnName)}`;
 }
