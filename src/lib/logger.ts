@@ -1,16 +1,27 @@
 import { randomUUID } from 'crypto';
 
 // ---------------------------------------------------------------------------
-// Correlation IDs — use AsyncLocalStorage in Node.js, Map fallback in Edge
+// Correlation IDs — use AsyncLocalStorage in Node.js, Map fallback in Edge.
+// Edge runtime does not support `require()` or `async_hooks`, so we guard
+// with the runtime check before attempting to load the module.
 // ---------------------------------------------------------------------------
 let AsyncLocalStorage: typeof import('async_hooks').AsyncLocalStorage | null = null;
-try {
-  // Dynamic import for Edge compatibility
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const ah = require('async_hooks');
-  AsyncLocalStorage = ah.AsyncLocalStorage;
-} catch {
-  // Edge runtime — no AsyncLocalStorage
+
+// `EdgeRuntime` is defined by Vercel when running in Edge middleware.
+// Access via globalThis to avoid TypeScript errors — skip require() entirely
+// in that environment because `async_hooks` is not available.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const g = globalThis as any;
+const isEdgeRuntime = typeof g.EdgeRuntime !== 'undefined';
+
+if (!isEdgeRuntime) {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const ah = require('async_hooks');
+    AsyncLocalStorage = ah.AsyncLocalStorage;
+  } catch {
+    // async_hooks not available (should not happen in Node.js)
+  }
 }
 
 const correlationStorage = AsyncLocalStorage ? new AsyncLocalStorage<Map<string, string>>() : null;
