@@ -1,26 +1,8 @@
 import { NextResponse } from 'next/server';
+import { getMetricsSnapshot, startTime } from '@/lib/metrics';
 
 export const dynamic = 'force-dynamic';
 
-// ---------------------------------------------------------------------------
-// In-memory metric counters — single-instance only.
-// For distributed production, wire these to Redis / Prometheus.
-// ---------------------------------------------------------------------------
-const startTime = Date.now();
-
-let totalRequests = 0;
-let errorRequests = 0;
-let rateLimitHits = 0;
-let aiRequests = 0;
-
-export function incrementRequests() { totalRequests++; }
-export function incrementErrors() { errorRequests++; }
-export function incrementRateLimitHits() { rateLimitHits++; }
-export function incrementAiRequests() { aiRequests++; }
-
-// ---------------------------------------------------------------------------
-// Response shape
-// ---------------------------------------------------------------------------
 interface MetricSample {
   name: string;
   value: number;
@@ -38,9 +20,10 @@ export async function GET() {
   const uptimeSeconds = Math.floor((now - startTime) / 1000);
   const memUsage = process.memoryUsage();
   const cpuUsage = process.cpuUsage();
+  const counters = await getMetricsSnapshot();
 
-  const requestsPerSecond = uptimeSeconds > 0 ? totalRequests / uptimeSeconds : 0;
-  const errorRate = totalRequests > 0 ? errorRequests / totalRequests : 0;
+  const requestsPerSecond = uptimeSeconds > 0 ? counters.requests / uptimeSeconds : 0;
+  const errorRate = counters.requests > 0 ? counters.errors / counters.requests : 0;
 
   const metrics: MetricSample[] = [
     { name: 'process_uptime_seconds', value: uptimeSeconds, timestamp: new Date().toISOString() },
@@ -49,12 +32,12 @@ export async function GET() {
     { name: 'process_memory_external_bytes', value: memUsage?.external ?? 0, timestamp: new Date().toISOString() },
     { name: 'process_cpu_user_microseconds', value: cpuUsage?.user ?? 0, timestamp: new Date().toISOString() },
     { name: 'process_cpu_system_microseconds', value: cpuUsage?.system ?? 0, timestamp: new Date().toISOString() },
-    { name: 'http_requests_total', value: totalRequests, timestamp: new Date().toISOString() },
-    { name: 'http_errors_total', value: errorRequests, timestamp: new Date().toISOString() },
+    { name: 'http_requests_total', value: counters.requests, timestamp: new Date().toISOString() },
+    { name: 'http_errors_total', value: counters.errors, timestamp: new Date().toISOString() },
     { name: 'http_requests_per_second', value: requestsPerSecond, timestamp: new Date().toISOString() },
     { name: 'http_error_rate', value: errorRate, timestamp: new Date().toISOString() },
-    { name: 'rate_limit_hits_total', value: rateLimitHits, timestamp: new Date().toISOString() },
-    { name: 'ai_requests_total', value: aiRequests, timestamp: new Date().toISOString() },
+    { name: 'rate_limit_hits_total', value: counters.rateLimits, timestamp: new Date().toISOString() },
+    { name: 'ai_requests_total', value: counters.aiRequests, timestamp: new Date().toISOString() },
   ];
 
   const response: MetricsResponse = {
