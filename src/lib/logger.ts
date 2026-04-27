@@ -1,38 +1,47 @@
 import { randomUUID } from 'crypto';
 
 // ---------------------------------------------------------------------------
-// Correlation IDs — use AsyncLocalStorage in Node.js, Map fallback in Edge
+// Correlation IDs — simple in-request context.
+// In Node.js this uses AsyncLocalStorage for transparent propagation.
+// In Edge runtime (Vercel) AsyncLocalStorage is unavailable so callers must
+// use withCorrelation() explicitly — but the logger still works without it.
 // ---------------------------------------------------------------------------
-let AsyncLocalStorage: typeof import('async_hooks').AsyncLocalStorage | null = null;
-try {
-  // Dynamic import for Edge compatibility
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const ah = require('async_hooks');
-  AsyncLocalStorage = ah.AsyncLocalStorage;
-} catch {
-  // Edge runtime — no AsyncLocalStorage
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let AsyncLocalStorage: any = null;
 
-const correlationStorage = AsyncLocalStorage ? new AsyncLocalStorage<Map<string, string>>() : null;
+// Lazy init — only called from Node.js code paths (API routes, etc).
+// Edge middleware never calls this, so the import never executes.
+function getAsyncLocalStorage() {
+  if (AsyncLocalStorage !== null) return AsyncLocalStorage;
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const ah = require('async_hooks');
+    AsyncLocalStorage = new ah.AsyncLocalStorage();
+  } catch {
+    AsyncLocalStorage = undefined; // permanently unavailable
+  }
+  return AsyncLocalStorage;
+}
 
 export function withCorrelation<T>(fn: () => T, overrides?: Record<string, string>): T {
   const ctx = new Map<string, string>(Object.entries(overrides ?? {}));
   if (!ctx.has('correlationId')) {
     ctx.set('correlationId', randomUUID());
   }
-  if (correlationStorage) {
-    return correlationStorage.run(ctx, fn);
+  const store = getAsyncLocalStorage();
+  if (store) {
+    return store.run(ctx, fn);
   }
-  // Edge fallback: just run the function
   return fn();
 }
 
 export function getCorrelationId(): string | undefined {
-  return correlationStorage?.getStore()?.get('correlationId');
+  const store = getAsyncLocalStorage();
+  return store?.getStore()?.get('correlationId');
 }
 
 export function setCorrelationValue(key: string, value: string): void {
-  correlationStorage?.getStore()?.set(key, value);
+  getAsyncLocalStorage()?.getStore()?.set(key, value);
 }
 
 // ---------------------------------------------------------------------------
