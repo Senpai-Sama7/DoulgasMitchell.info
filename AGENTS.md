@@ -52,3 +52,12 @@ Primary context for AI agents. Last updated: 2026-04-26
 - Dev DB: `file:./dev.db` (SQLite) — PostgreSQL raw SQL in `admin-compat.ts`/`operational-compat.ts` will break on SQLite
 - When DB is unavailable, `getSession()` returns `null` (forces re-auth) — never trusts JWT alone
 - Contact form (`contact-section.tsx`) submits to `/api/contact` — do NOT revert to setTimeout mock
+
+## SOLID Quick Reference
+| Principle | Smell | Fix |
+|-----------|-------|-----|
+| SRP | Class has multiple `and` in description | Split into focused classes |
+| OCP | Adding features requires modifying existing code | Use interfaces/strategy |
+| LSP | Subclass throws unexpected exceptions | Composition over inheritance |
+| ISP | Class implements methods it doesn't need | Split interface |
+| DIP | `new` keyword for dependencies | Constructor injection |
