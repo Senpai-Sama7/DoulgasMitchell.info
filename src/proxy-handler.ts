@@ -33,6 +33,14 @@ const publicAdminRoutes = [
  * 3. Admin Authentication & Route Protection
  */
 export async function proxy(request: NextRequest) {
+  // Security headers — defined at function scope so both success and error
+  // responses include them consistently.
+  const securityHeaders = {
+    'Content-Type': 'application/json',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+  };
+
   try {
     const { pathname } = request.nextUrl;
     const clientIp = getClientIp(request);
@@ -44,13 +52,6 @@ export async function proxy(request: NextRequest) {
     ) {
       return NextResponse.next();
     }
-
-    // Security headers applied to all proxy error responses
-    const securityHeaders = {
-      'Content-Type': 'application/json',
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-    };
 
     // 2. Rate Limiting
     const { allowed, remaining, resetAt } = await rateLimit(clientIp, {
@@ -126,7 +127,7 @@ export async function proxy(request: NextRequest) {
     logger.error('Middleware unexpected error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'Internal server error' }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: securityHeaders }
     );
   }
 }
