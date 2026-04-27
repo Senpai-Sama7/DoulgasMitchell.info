@@ -15,7 +15,7 @@ echo ""
 echo "🔍 Checking environment variables..."
 
 if [ -z "$JWT_SECRET" ]; then
-  echo "⚠️  JWT_SECRET not set. Generate one with: npm run security:generate-secret"
+  echo "⚠️  JWT_SECRET not set. Generate one with: bun run secret:generate"
 fi
 
 if [ -z "$ADMIN_PASSWORD" ]; then
@@ -28,19 +28,23 @@ fi
 
 # Run security audit
 echo ""
-echo "🔒 Running security audit..."
-npm audit --audit-level=moderate || echo "⚠️  Security vulnerabilities found"
+echo "🔒 Running dependency audit..."
+bun audit 2>/dev/null || npm audit --audit-level=moderate || echo "⚠️  Security vulnerabilities found"
 
 # Test database connection
 echo ""
 echo "🗄️  Testing database connection..."
-npm run health:check 2>/dev/null && echo "✅ Database connected" || echo "⚠️  Database connection failed"
+if bun run admin:check > /dev/null 2>&1; then
+  echo "✅ Database connected"
+else
+  echo "⚠️  Database connection failed (ensure DATABASE_URL is set)"
+fi
 
 # Set up cron job for backups
 echo ""
 echo "⏰ Setting up automated backups..."
 echo "Add this to your crontab (crontab -e):"
-echo "0 2 * * * cd $(pwd) && npm run backup >> logs/backup.log 2>&1"
+echo "0 2 * * * cd \"$(pwd)\" && bun run backup >> logs/backup.log 2>&1"
 
 echo ""
 echo "✅ Setup complete!"
@@ -49,4 +53,4 @@ echo "Next steps:"
 echo "1. Set up monitoring at https://uptimerobot.com"
 echo "2. Configure GitHub secrets for CI/CD"
 echo "3. Set up cron job for daily backups"
-echo "4. Review SECURITY_AUDIT.md for remaining tasks"
+echo "4. Review .env.example for required variables"

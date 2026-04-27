@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "next dev --webpack -p 3000 2>&1 | tee dev.log",
-    "build": "prisma generate && NODE_ENV=production next build --webpack && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",
+    "build": "prisma generate && NODE_ENV=production next build && bun scripts/postbuild-standalone.mjs",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -20,10 +20,12 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:reset": "prisma migrate reset",
-    "admin:check": "bun scripts/admin/check-admin.js",
-    "admin:reset": "bun scripts/admin/reset-admin.js",
-    "admin:test-login": "bun scripts/admin/test-login.js",
-    "content:provision": "bun scripts/admin/provision-content.ts"
+    "admin:check": "bun scripts/admin/check-admin.ts",
+    "admin:reset": "bun scripts/admin/reset-admin.ts",
+    "admin:test-login": "bun scripts/admin/test-login.ts",
+    "admin:provision": "bun scripts/admin/provision-content.ts",
+    "secret:generate": "bun scripts/generate-secret.mjs",
+    "backup": "bun scripts/backup.mjs"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.64",

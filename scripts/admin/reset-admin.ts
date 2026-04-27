@@ -3,9 +3,14 @@ import bcrypt from 'bcryptjs';
 const prisma = new PrismaClient();
 
 async function resetAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'admin@example.com';
-  const password = process.env.ADMIN_PASSWORD || 'newpassword123';
-  
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.error('ADMIN_EMAIL and ADMIN_PASSWORD environment variables are required');
+    process.exit(1);
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
 
   const admin = await prisma.adminUser.upsert({
@@ -13,13 +18,18 @@ async function resetAdmin() {
     update: { passwordHash, role: 'admin' },
     create: {
       email,
-    passwordHash,
-    role: 'admin',
-  }
-});
+      name: email.split('@')[0],
+      passwordHash,
+      role: 'admin',
+    },
+  });
 
   console.log(`✅ Admin user reset for ${admin.email}`);
   await prisma.$disconnect();
 }
 
-resetAdmin().catch(console.error);
+resetAdmin()
+  .catch((err) => {
+    console.error('❌ Admin reset failed:', err);
+    process.exit(1);
+  });
