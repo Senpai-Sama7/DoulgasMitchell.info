@@ -62,7 +62,7 @@ export async function proxy(request: NextRequest) {
     if (!allowed) {
       return new NextResponse(
         JSON.stringify({ error: 'Rate limit exceeded' }),
-        { status: 429, headers: { ...securityHeaders, 'Retry-After': resetAt.toString() } }
+        { status: 429, headers: { ...securityHeaders, 'Retry-After': Math.ceil(Math.max(0, resetAt - Date.now()) / 1000).toString() } }
       );
     }
 

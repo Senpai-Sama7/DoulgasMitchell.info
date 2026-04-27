@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { env } from '@/lib/env';
+import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,17 +20,18 @@ export async function GET() {
 
   checks.environment = { status: 'ok' };
 
-  checks.database = { status: 'ok', message: 'PostgreSQL required for production' };
+  try {
+    await db.$queryRaw`SELECT 1`;
+    checks.database = { status: 'ok', message: 'Database reachable' };
+  } catch {
+    checks.database = { status: 'error', message: 'Database unreachable' };
+    overallStatus = 'unhealthy';
+  }
 
   if (process.env.UPSTASH_REDIS_URL) {
     checks.redis = { status: 'ok', message: 'Redis configured' };
   } else {
     checks.redis = { status: 'warn', message: 'Redis not configured - using in-memory rate limit' };
-    if (overallStatus === 'healthy') overallStatus = 'degraded';
-  }
-
-  if (process.env.DATABASE_URL?.startsWith('file:')) {
-    checks.database = { status: 'warn', message: 'Using SQLite fallback' };
     if (overallStatus === 'healthy') overallStatus = 'degraded';
   }
 
@@ -41,7 +43,7 @@ export async function GET() {
     checks,
   };
 
-  const statusCode = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 200 : 503;
+  const statusCode = overallStatus === 'unhealthy' ? 503 : 200;
 
   return NextResponse.json(health, { status: statusCode });
 }

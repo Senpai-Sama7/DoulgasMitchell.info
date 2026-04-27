@@ -5,7 +5,10 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 if (!process.env.DATABASE_URL) {
-  throw new Error('DATABASE_URL environment variable is required');
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('DATABASE_URL environment variable is required in production');
+  }
+  process.env.DATABASE_URL = 'file:./dev.db';
 }
 
 export const db =
