@@ -1,0 +1,406 @@
+// Douglas Mitchell Editorial Platform - Content Model
+// Single source of truth for all content
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core Content Models
+model Note {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  title     String
+  content   String
+  category  String?  @default("Raw")
+  tags      String?  // JSON-like string or comma-separated
+  isDraft   Boolean  @default(true)
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([category])
+}
+
+model Article {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  title       String
+  subtitle    String?
+  excerpt     String
+  content     String   // Markdown content
+  coverImage  String?
+  category    String   // essay, technical, insight, case-study
+  tags        String   // JSON array of tags
+  featured    Boolean  @default(false)
+  published   Boolean  @default(false)
+  publishedAt DateTime?
+  readingTime Int      @default(5)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  blocks      ArticleBlock[]
+  media       ArticleMedia[]
+  comments    Comment[]
+  reactions   Reaction[]
+  
+  @@index([slug])
+  @@index([category])
+  @@index([published, featured, order])
+}
+
+model ArticleBlock {
+  id        String  @id @default(cuid())
+  articleId String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  blockType String  // text, quote, code, image, divider, ascii-art, evidence-grid
+  content   String  // JSON content specific to block type
+  order     Int
+  createdAt DateTime @default(now())
+  
+  @@index([articleId, order])
+}
+
+model Project {
+  id            String   @id @default(cuid())
+  slug          String   @unique
+  title         String
+  subtitle      String?
+  description   String
+  longDescription String?
+  coverImage    String?
+  githubUrl     String?
+  liveUrl       String?
+  techStack     String   // JSON array of technologies
+  category      String   // ai-automation, web-development, system-design, open-source
+  featured      Boolean  @default(false)
+  status        String   @default("completed") // completed, in-progress, archived
+  order         Int      @default(0)
+  startDate     DateTime?
+  endDate       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  media         ProjectMedia[]
+  comments      Comment[]
+  reactions     Reaction[]
+  
+  @@index([slug])
+  @@index([category])
+  @@index([featured, order])
+  @@index([status])
+}
+
+model Certification {
+  id          String   @id @default(cuid())
+  title       String
+  issuer      String
+  issuerLogo  String?
+  credentialUrl String?
+  issueDate   DateTime
+  expiryDate  DateTime?
+  credentialId String?
+  description String?
+  skills      String   // JSON array of skills
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  
+  @@index([featured, order])
+}
+
+model Book {
+  id            String   @id @default(cuid())
+  title         String
+  subtitle      String?
+  description   String
+  coverImage    String?
+  amazonUrl     String?
+  publisher     String?
+  publishDate   DateTime?
+  isbn          String?
+  pages         Int?
+  featured      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SiteConfig {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   // JSON value
+  updatedAt   DateTime @updatedAt
+}
+
+model ContactSubmission {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String?
+  message   String
+  source    String?  // Where the submission came from
+  status    String   @default("new") // new, read, responded, archived
+  createdAt DateTime @default(now())
+  
+  @@index([status, createdAt])
+}
+
+// ============================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  passwordHash String?
+  role         String   @default("admin") // admin, editor
+  avatar       String?
+  bio          String?
+  lastLoginAt  DateTime?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  sessions     Session[]
+  passkeys     PasskeyCredential[]
+  activityLogs ActivityLog[]
+  
+  @@index([email])
+  @@index([isActive])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasskeyCredential {
+  id          String   @id @default(cuid())
+  credentialId String  @unique
+  userId      String
+  user        AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  publicKey   Bytes
+  counter     Int      @default(0)
+  deviceType  String?  // platform, cross-platform
+  deviceName  String?  // e.g., "MacBook Pro Touch ID"
+  lastUsedAt  DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([credentialId])
+}
+
+// ============================================
+// MEDIA MANAGEMENT
+// ============================================
+
+model Media {
+  id            String   @id @default(cuid())
+  filename      String   @unique
+  originalName  String
+  mimeType      String
+  category      String   // image, video, audio, document
+  size          Int
+  width         Int?     // for images/videos
+  height        Int?     // for images/videos
+  duration      Int?     // for videos/audio (seconds)
+  url           String
+  thumbnailUrl  String?
+  colorPalette  String?  // JSON array of colors
+  alt           String?  // accessibility text
+  caption       String?
+  description   String?
+  tags          String?  // JSON array
+  folder        String   @default("uncategorized")
+  uploadedById  String?
+  isPublic      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  articleUsages ArticleMedia[]
+  projectUsages ProjectMedia[]
+  
+  @@index([category])
+  @@index([folder])
+  @@index([mimeType])
+  @@index([createdAt])
+}
+
+// Many-to-many: Articles <-> Media
+model ArticleMedia {
+  id        String   @id @default(cuid())
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  
+  @@unique([articleId, mediaId])
+  @@index([articleId])
+  @@index([mediaId])
+}
+
+// Many-to-many: Projects <-> Media
+model ProjectMedia {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  
+  @@unique([projectId, mediaId])
+  @@index([projectId])
+  @@index([mediaId])
+}
+
+// ============================================
+// SOCIAL FEATURES
+// ============================================
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String
+  authorName  String
+  authorEmail String
+  authorUrl   String?
+  articleId   String?
+  article     Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  parentId    String?
+  parent      Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies     Comment[] @relation("CommentReplies")
+  isApproved  Boolean   @default(false)
+  isSpam      Boolean   @default(false)
+  likes       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  @@index([articleId])
+  @@index([projectId])
+  @@index([isApproved, isSpam])
+  @@index([createdAt])
+}
+
+model Reaction {
+  id        String   @id @default(cuid())
+  type      String   // like, love, applaud, insightful
+  articleId String?
+  article   Article? @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sessionId String   // anonymous tracking
+  createdAt DateTime @default(now())
+  
+  @@unique([articleId, projectId, sessionId, type])
+  @@index([articleId])
+  @@index([projectId])
+}
+
+model Newsletter {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  isActive  Boolean  @default(true)
+  confirmedAt DateTime?
+  createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([isActive])
+}
+
+// ============================================
+// ANALYTICS & LOGGING
+// ============================================
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  action     String   // create, update, delete, login, logout, publish, etc.
+  resource   String   // article, project, media, user, etc.
+  resourceId String?
+  details    String?  // JSON string with additional data
+  userId     String?
+  user       AdminUser? @relation(fields: [userId], references: [id])
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  
+  @@index([action])
+  @@index([resource])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PageView {
+  id          String   @id @default(cuid())
+  path        String
+  referrer    String?
+  userAgent   String?
+  ipAddress   String?
+  country     String?
+  city        String?
+  sessionId   String
+  duration    Int?     // seconds spent on page
+  createdAt   DateTime @default(now())
+  
+  @@index([path])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
+// ============================================
+// LAYOUT & THEMING
+// ============================================
+
+model LayoutBlock {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  type        String   // hero, about, work, contact, custom
+  isActive    Boolean  @default(true)
+  order       Int      @default(0)
+  settings    String   // JSON configuration
+  content     String   // JSON content blocks
+  styles      String?  // Custom CSS
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([type])
+  @@index([isActive, order])
+}
+
+model Setting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   // JSON value
+  type        String   @default("string") // string, number, boolean, json
+  category    String   @default("general") // general, seo, social, analytics
+  isPublic    Boolean  @default(false) // expose to frontend?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([key])
+  @@index([category])
+}

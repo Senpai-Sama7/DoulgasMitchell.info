@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
-import { isIP } from 'node:net';
+import { createHash } from 'crypto';
+import { isIP } from 'net';
 import type { NextRequest } from 'next/server';
 import { env } from '@/lib/env';
 

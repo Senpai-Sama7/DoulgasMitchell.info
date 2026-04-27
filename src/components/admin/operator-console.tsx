@@ -52,8 +52,17 @@ import {
   PromptInputSubmit,
   PromptInputTextarea,
   PromptInputTools,
+  PromptInputActionMenu,
+  PromptInputActionMenuTrigger,
+  PromptInputActionMenuContent,
   PromptInputActionAddAttachments,
 } from '@/components/ai-elements/prompt-input';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from '@/components/ui/dropdown-menu';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
@@ -655,7 +664,12 @@ function AdminOperatorConsoleInner() {
                     </PromptInputBody>
                     <PromptInputFooter>
                       <PromptInputTools>
-                        <PromptInputActionAddAttachments />
+                        <PromptInputActionMenu>
+                          <PromptInputActionMenuTrigger />
+                          <PromptInputActionMenuContent>
+                            <PromptInputActionAddAttachments />
+                          </PromptInputActionMenuContent>
+                        </PromptInputActionMenu>
                         <span className="px-2 text-[11px] uppercase tracking-[0.22em] text-muted-foreground hidden sm:inline-block">
                           {activeProvider
                             ? `Primary ${activeProvider.label} + fallback`

@@ -22,7 +22,7 @@ const reorderSchema = z.object({
 export async function PATCH(request: Request) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session || session.role !== 'admin') {
     return ApiHandler.unauthorized();
   }
 

@@ -31,7 +31,7 @@ const postSchema = z.object({
 export async function GET(request: Request) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session || session.role !== 'admin') {
     return ApiHandler.unauthorized();
   }
 
@@ -68,7 +68,7 @@ export async function GET(request: Request) {
 export async function PATCH(request: Request) {
   const session = await getSession();
 
-  if (!session) {
+  if (!session || session.role !== 'admin') {
     return ApiHandler.unauthorized();
   }
 
@@ -113,7 +113,7 @@ export async function PATCH(request: Request) {
 
 export async function POST(request: Request) {
   const session = await getSession();
-  if (!session) return ApiHandler.unauthorized();
+  if (!session || session.role !== 'admin') return ApiHandler.unauthorized();
 
   const originCheck = validateTrustedOrigin(request);
   if (!originCheck.allowed) return ApiHandler.forbidden(originCheck.reason);
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   const session = await getSession();
-  if (!session) return ApiHandler.unauthorized();
+  if (!session || session.role !== 'admin') return ApiHandler.unauthorized();
 
   const originCheck = validateTrustedOrigin(request);
   if (!originCheck.allowed) return ApiHandler.forbidden(originCheck.reason);

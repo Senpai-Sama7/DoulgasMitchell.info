@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { db } from '@/lib/db';
 import { getTableColumns, hasColumns, hasTable, qualifiedColumn, quoteIdentifier } from '@/lib/db-introspection';
+import { sqlNow, sqlNull, sqlBool, sqlCount } from '@/lib/sql-helpers';
 
 export interface AdminUserRecord {
   id: string;
@@ -124,7 +125,7 @@ export async function countAdminUsers() {
   }
 
   const rows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-    'SELECT COUNT(*)::bigint AS count FROM "AdminUser"'
+    `SELECT ${sqlCount()} FROM "AdminUser"`
   );
 
   return Number(rows[0]?.count ?? 0);
@@ -133,14 +134,19 @@ export async function countAdminUsers() {
 import bcrypt from 'bcryptjs';
 import { env } from '@/lib/env';
 
+let cachedFallbackPasswordHash: string | null = null;
+
 export async function findAdminUserByEmail(email: string) {
   if (!(await hasTable('AdminUser'))) {
     if (env.ADMIN_PASSWORD && email.toLowerCase() === (env.ADMIN_EMAIL?.toLowerCase() || 'douglasmitchell@reliantai.org').toLowerCase()) {
+      if (!cachedFallbackPasswordHash) {
+        cachedFallbackPasswordHash = await bcrypt.hash(env.ADMIN_PASSWORD, 12);
+      }
       return {
         id: 'fallback-admin',
         email: env.ADMIN_EMAIL || 'DouglasMitchell@ReliantAI.org',
         name: 'Douglas Mitchell (Fallback)',
-        passwordHash: await bcrypt.hash(env.ADMIN_PASSWORD, 10),
+        passwordHash: cachedFallbackPasswordHash,
         role: 'admin',
         isActive: true,
         username: null,
@@ -157,13 +163,13 @@ export async function findAdminUserByEmail(email: string) {
       : `${qualifiedColumn('AdminUser', 'email')} AS name`;
   const usernameSelect = columns.has('username')
     ? `${qualifiedColumn('AdminUser', 'username')} AS username`
-    : 'NULL::text AS username';
+    : `${sqlNull('username')}`;
   const roleSelect = columns.has('role')
     ? `${qualifiedColumn('AdminUser', 'role')} AS role`
-    : `'admin'::text AS role`;
+    : `'admin' AS role`;
   const isActiveSelect = columns.has('isActive')
     ? `${qualifiedColumn('AdminUser', 'isActive')} AS "isActive"`
-    : 'TRUE AS "isActive"';
+    : `${sqlBool(true)} AS "isActive"`;
 
   const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
     `SELECT ${qualifiedColumn('AdminUser', 'id')} AS id,
@@ -212,13 +218,13 @@ export async function findAdminUserById(id: string) {
       : `${qualifiedColumn('AdminUser', 'email')} AS name`;
   const usernameSelect = columns.has('username')
     ? `${qualifiedColumn('AdminUser', 'username')} AS username`
-    : 'NULL::text AS username';
+    : `${sqlNull('username')}`;
   const roleSelect = columns.has('role')
     ? `${qualifiedColumn('AdminUser', 'role')} AS role`
-    : `'admin'::text AS role`;
+    : `'admin' AS role`;
   const isActiveSelect = columns.has('isActive')
     ? `${qualifiedColumn('AdminUser', 'isActive')} AS "isActive"`
-    : 'TRUE AS "isActive"';
+    : `${sqlBool(true)} AS "isActive"`;
 
   const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
     `SELECT ${qualifiedColumn('AdminUser', 'id')} AS id,
@@ -390,19 +396,19 @@ export async function findAdminSessionByToken(token: string) {
       : `${qualifiedColumn('AdminUser', 'email')} AS name`;
   const roleSelect = adminColumns.has('role')
     ? `${qualifiedColumn('AdminUser', 'role')} AS role`
-    : `'admin'::text AS role`;
+    : `'admin' AS role`;
   const isActiveSelect = adminColumns.has('isActive')
     ? `${qualifiedColumn('AdminUser', 'isActive')} AS "isActive"`
-    : 'TRUE AS "isActive"';
+    : `${sqlBool(true)} AS "isActive"`;
   const userAgentSelect = sessionColumns.has('userAgent')
     ? `${qualifiedColumn('Session', 'userAgent')} AS "userAgent"`
-    : 'NULL::text AS "userAgent"';
+    : `${sqlNull('userAgent')}`;
   const ipAddressSelect = sessionColumns.has('ipAddress')
     ? `${qualifiedColumn('Session', 'ipAddress')} AS "ipAddress"`
-    : 'NULL::text AS "ipAddress"';
+    : `${sqlNull('ipAddress')}`;
   const createdAtSelect = sessionColumns.has('createdAt')
     ? `${qualifiedColumn('Session', 'createdAt')} AS "createdAt"`
-    : 'NULL::timestamp AS "createdAt"';
+    : `${sqlNull('createdAt')}`;
 
   const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
     `SELECT ${qualifiedColumn('Session', 'id')} AS id,
@@ -476,22 +482,24 @@ export async function getAdminSecuritySummary() {
     : `${qualifiedColumn('Session', 'expiresAt')} AS "createdAt"`;
   const ipAddressSelect = sessionColumns.has('ipAddress')
     ? `${qualifiedColumn('Session', 'ipAddress')} AS "ipAddress"`
-    : 'NULL::text AS "ipAddress"';
+    : `${sqlNull('ipAddress')}`;
   const userAgentSelect = sessionColumns.has('userAgent')
     ? `${qualifiedColumn('Session', 'userAgent')} AS "userAgent"`
-    : 'NULL::text AS "userAgent"';
+    : `${sqlNull('userAgent')}`;
+
+  const now = sqlNow();
 
   const [activeSessionsRows, passkeysRows, adminUsersRows, recentSessionRows] = await Promise.all([
     db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      `SELECT COUNT(*)::bigint AS count
+      `SELECT ${sqlCount()}
        FROM "Session"
-       WHERE ${quoteIdentifier('expiresAt')} > NOW()`
+       WHERE ${quoteIdentifier('expiresAt')} > ${now}`
     ),
     db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      `SELECT COUNT(*)::bigint AS count FROM "PasskeyCredential"`
+      `SELECT ${sqlCount()} FROM "PasskeyCredential"`
     ),
     db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      `SELECT COUNT(*)::bigint AS count FROM "AdminUser" ${activeAdminsWhere}`
+      `SELECT ${sqlCount()} FROM "AdminUser" ${activeAdminsWhere}`
     ),
     db.$queryRawUnsafe<Array<Record<string, unknown>>>(
       `SELECT ${qualifiedColumn('Session', 'id')} AS id,
@@ -503,7 +511,7 @@ export async function getAdminSecuritySummary() {
        FROM "Session"
        INNER JOIN "AdminUser"
          ON ${qualifiedColumn('Session', sessionUserIdColumn)} = ${qualifiedColumn('AdminUser', 'id')}
-       WHERE ${qualifiedColumn('Session', 'expiresAt')} > NOW()
+       WHERE ${qualifiedColumn('Session', 'expiresAt')} > ${now}
        ORDER BY ${createdAtSelect.split(' AS ')[0]} DESC
        LIMIT 6`
     ),
@@ -534,13 +542,13 @@ export async function getAdminPasskeysForUser(userId: string) {
   const credentialIdColumn = columns.has('credentialId') ? 'credentialId' : 'credentialID';
   const deviceNameSelect = columns.has('deviceName')
     ? `${qualifiedColumn('PasskeyCredential', 'deviceName')} AS "deviceName"`
-    : 'NULL::text AS "deviceName"';
+    : `${sqlNull('deviceName')}`;
   const lastUsedAtSelect = columns.has('lastUsedAt')
     ? `${qualifiedColumn('PasskeyCredential', 'lastUsedAt')} AS "lastUsedAt"`
-    : 'NULL::timestamp AS "lastUsedAt"';
+    : `${sqlNull('lastUsedAt')}`;
   const transportsSelect = columns.has('transports')
     ? `${qualifiedColumn('PasskeyCredential', 'transports')} AS transports`
-    : 'NULL::text AS transports';
+    : `${sqlNull('transports')}`;
 
   const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
     `SELECT ${qualifiedColumn('PasskeyCredential', 'id')} AS id,
