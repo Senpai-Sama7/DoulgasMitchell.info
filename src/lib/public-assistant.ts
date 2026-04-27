@@ -97,6 +97,28 @@ const SENSITIVE_PATTERNS = [
   /\bpolitics|religion|medical|health\b/i,
 ];
 
+const PROMPT_INJECTION_PATTERNS = [
+  /ignore (all )?(previous|prior|above) (instructions?|rules?|constraints?)/i,
+  /disregard (your )?(previous|prior|above) (instructions?|rules?|system)/i,
+  /forget (everything|all) (you|your) (were|have been) (told|taught|learned)/i,
+  /new (instructions?|rules?|system prompt)/i,
+  /override (your )?(safety|security|guidelines)/i,
+  /you (are|will now act as|are now) (a|an) (different|new)/i,
+  /roleplay (as|that you are)/i,
+  /pretend (you are|to be)/i,
+  /act as if you (are|have no)/i,
+  /disable (your |the )?(safety|filter|restrictions)/i,
+  /system.*:.*$/m,
+  /assistant.*:/i,
+  /\[SYSTEM\]/i,
+  /\{\{.*\}\}/,
+  /<\|.*\|>/,
+];
+
+function containsPromptInjection(input: string): boolean {
+  return PROMPT_INJECTION_PATTERNS.some(pattern => pattern.test(input));
+}
+
 const STOPWORDS = new Set([
   'a',
   'an',
@@ -545,13 +567,13 @@ export async function answerPublicQuestion(
       0.4,
       thresholds,
       {
-        missingInformation: ['Ask a question about Douglas Mitchell’s public work or published writing.'],
+        missingInformation: ['Ask a question about Douglas Mitchell\'s public work or published writing.'],
         rationale: 'The query is empty, so the assistant cannot ground an answer in public evidence.',
       }
     );
 
     return {
-      answer: 'Ask about Douglas Mitchell’s public work, writing, certifications, projects, or book.',
+      answer: 'Ask about Douglas Mitchell\'s public work, writing, certifications, projects, or book.',
       citations: [],
       suggestions: DEFAULT_SUGGESTIONS,
       refusal: false,
@@ -570,11 +592,19 @@ export async function answerPublicQuestion(
     };
   }
 
-  if (isSensitiveQuestion(trimmedQuestion)) {
+  if (containsPromptInjection(trimmedQuestion)) {
+    return buildRefusalReply(
+      'I cannot process requests that attempt to modify my instructions or role.',
+      'prompt-injection-refusal',
+      ['Ask a genuine question about Douglas Mitchell\'s public work.']
+    );
+  }
+
+if (isSensitiveQuestion(trimmedQuestion)) {
     return buildRefusalReply(
       'I only answer public, non-sensitive questions. For outreach, use the secure contact form on the site.',
       'sensitive-refusal',
-      ['Keep the question inside Douglas Mitchell’s public portfolio and published work surface.']
+      ['Keep the question inside Douglas Mitchell\u2019s public portfolio and published work surface.']
     );
   }
 

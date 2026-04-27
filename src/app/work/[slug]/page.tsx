@@ -8,6 +8,9 @@ import { SiteFooter, SiteHeader } from '@/components/site';
 import { getProjectBySlug } from '@/lib/content-service';
 import { featuredProjects } from '@/lib/site-content';
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 interface ProjectPageProps {
   params: Promise<{
     slug: string;
