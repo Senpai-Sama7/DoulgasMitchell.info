@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
-import { logger } from '@/lib/logger';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 
@@ -101,7 +100,7 @@ export async function proxy(request: NextRequest) {
             audience: JWT_AUDIENCE,
           });
         } catch (error) {
-          logger.error('Middleware token verification failed:', error);
+          console.error('Middleware token verification failed:', error);
           // Invalid token
           if (pathname.startsWith('/api/')) {
             return new NextResponse(JSON.stringify({ error: 'Unauthorized - Invalid Token' }), { status: 401, headers: securityHeaders });
@@ -124,7 +123,7 @@ export async function proxy(request: NextRequest) {
 
     return response;
   } catch (error) {
-    logger.error('Middleware unexpected error:', error);
+    console.error('Middleware unexpected error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: securityHeaders }
