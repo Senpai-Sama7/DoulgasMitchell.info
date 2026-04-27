@@ -6,6 +6,7 @@ import { AnalyticsChart } from '@/components/admin/analytics-chart';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { formatPercent, type ForecastPoint } from '@/lib/decision-intelligence';
+import { logger } from '@/lib/logger';
 
 interface AnalyticsData {
   totalViews: number;
@@ -63,7 +64,7 @@ export function AnalyticsDashboard() {
           setData(result.data);
         }
       } catch (error) {
-        console.error('Failed to fetch analytics:', error);
+        logger.error('Failed to fetch analytics:', error);
       } finally {
         setLoading(false);
       }

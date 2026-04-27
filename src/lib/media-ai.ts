@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { resolveAdminAiModel, getAdminAiSettings } from '@/lib/admin-ai';
 import { db } from '@/lib/db';
+import { logger } from '@/lib/logger';
 import { logActivity } from '@/lib/activity';
 
 export async function generateAltText(mediaId: string) {
@@ -45,7 +46,7 @@ export async function generateAltText(mediaId: string) {
 
     return altText;
   } catch (error) {
-    console.error('Alt text generation failed:', error);
+    logger.error('Alt text generation failed:', error);
     return null;
   }
 }

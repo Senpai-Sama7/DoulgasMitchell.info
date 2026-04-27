@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { formatFileSize, getFileCategory, isPreviewable } from '@/lib/upload';
+import { logger } from '@/lib/logger';
 
 interface UploadFile {
   id: string;
@@ -152,7 +153,7 @@ export function MediaUploader({
         onUploadComplete?.(files);
       }
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('Upload error:', error);
       setFiles((prev) =>
         prev.map((file) =>
           file.status === 'pending'

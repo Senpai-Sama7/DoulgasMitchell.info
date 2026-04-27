@@ -76,6 +76,7 @@ export async function createSession(
   userId: string,
   email: string,
   name: string,
+  role: Session['role'] = 'admin',
   options?: {
     ipAddress?: string;
     userAgent?: string;
@@ -85,13 +86,16 @@ export async function createSession(
     userId,
     email,
     name,
-    role: 'admin',
+    role,
     expiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000),
   });
 
   await createAdminSessionRecord({
     token,
     userId,
+    email,
+    name,
+    role,
     expiresAt: new Date(Date.now() + SESSION_DURATION_SECONDS * 1000),
     ipAddress: options?.ipAddress,
     userAgent: options?.userAgent,

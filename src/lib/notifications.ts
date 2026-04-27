@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { logger } from './logger';
 import { logActivity } from '@/lib/activity';
 
 export interface Notification {
@@ -9,7 +10,7 @@ export interface Notification {
   timestamp: Date;
   read: boolean;
   link?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 /**
@@ -65,7 +66,7 @@ export const NotificationService = {
       return logs.map(log => {
         const details = typeof log.details === 'string' 
           ? JSON.parse(log.details) 
-          : (log.details as any || {});
+          : (log.details as unknown as Record<string, unknown>) || {};
         
         return {
           id: log.resourceId || log.id,
@@ -79,7 +80,7 @@ export const NotificationService = {
         };
       });
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      logger.error('Failed to fetch notifications:', error);
       return [];
     }
   }

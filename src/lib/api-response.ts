@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { logger } from './logger';
 
 export type ApiErrorResponse = {
   success: false;
@@ -63,7 +64,7 @@ export class ApiHandler {
    * Standardized 500 Internal Server Error response.
    */
   static internalServerError(error = 'Internal server error', details?: unknown) {
-    console.error(`[API Error] ${error}:`, details);
+    logger.error(`API Error: ${error}`, details);
     return this.error(error, 500);
   }
 }

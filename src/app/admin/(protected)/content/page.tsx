@@ -55,6 +55,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 const MarkdownEditor = lazy(() => import('@/components/admin/markdown-editor'));
 
@@ -392,7 +393,7 @@ function EditorDialog({
         });
       }
     } catch (error) {
-      console.error('Generation error:', error);
+      logger.error('Generation error:', error);
       setGenerationMessage('Failed to connect to the AI drafting service.');
       toast({
         title: 'Draft generation failed',

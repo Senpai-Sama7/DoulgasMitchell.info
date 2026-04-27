@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
 import { env } from '@/lib/env';
+import { logger } from '@/lib/logger';
 import { countAdminUsers, createAdminUser } from '@/lib/admin-compat';
 import { rateLimit } from '@/lib/rate-limit';
 import {
@@ -11,6 +13,12 @@ import {
   readJsonBody,
   validateTrustedOrigin,
 } from '@/lib/request';
+
+const adminSetupSchema = z.object({
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email().optional(),
+  name: z.string().min(1).max(100).optional(),
+});
 
 export async function POST(request: Request) {
   try {
@@ -33,19 +41,29 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await readJsonBody<Record<string, unknown>>(request);
-    const requestedPassword =
-      typeof body.password === 'string' && body.password.trim().length >= 8
-        ? body.password.trim()
-        : '';
-    const adminEmail =
-      typeof body.email === 'string' && body.email.trim()
-        ? body.email.trim().toLowerCase()
-        : env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
-    const adminName =
-      typeof body.name === 'string' && body.name.trim()
-        ? body.name.trim()
-        : 'Douglas Mitchell';
+    const rawBody = await readJsonBody<Record<string, unknown>>(request);
+    const parsed = adminSetupSchema.safeParse(rawBody);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid input.', details: parsed.error.flatten().fieldErrors },
+        { status: 400 }
+      );
+    }
+
+    const requestedPassword = parsed.data.password;
+
+    if (requestedPassword.trim().length < 8) {
+      return NextResponse.json(
+        { error: 'Password must be at least 8 characters (leading/trailing whitespace is ignored).' },
+        { status: 400 }
+      );
+    }
+
+    const adminEmail = parsed.data.email
+      ? parsed.data.email.trim().toLowerCase()
+      : env.ADMIN_EMAIL || DEFAULT_ADMIN_EMAIL;
+    const adminName = parsed.data.name?.trim() || 'Douglas Mitchell';
     
     const bootstrapAllowed = env.NODE_ENV !== 'production' || env.ALLOW_PUBLIC_ADMIN_SETUP === 'true';
 
@@ -74,10 +92,11 @@ export async function POST(request: Request) {
 
     if (env.NODE_ENV === 'production') {
       const expected = env.ADMIN_PASSWORD ?? '';
+      const trimmed = requestedPassword.trim();
       if (
-        typeof requestedPassword !== 'string' ||
-        requestedPassword.length !== expected.length ||
-        !crypto.timingSafeEqual(Buffer.from(requestedPassword), Buffer.from(expected))
+        typeof trimmed !== 'string' ||
+        trimmed.length !== expected.length ||
+        !crypto.timingSafeEqual(Buffer.from(trimmed), Buffer.from(expected))
       ) {
         return NextResponse.json(
           { error: 'Provided bootstrap secret is invalid.' },
@@ -116,7 +135,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.error('Admin setup error:', error);
+    logger.error('Admin setup error:', error);
     return NextResponse.json(
       {
         error: 'Failed to create admin user',

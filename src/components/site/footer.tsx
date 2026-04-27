@@ -1,5 +1,3 @@
-'use client';
-
 import { Github, Linkedin, Mail, BookOpen } from 'lucide-react';
 import { siteProfile } from '@/lib/site-content';
 import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';

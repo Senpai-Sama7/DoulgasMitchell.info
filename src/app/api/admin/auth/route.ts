@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
     await updateAdminLastLogin(user.id);
 
     // Create session
-    const token = await createSession(user.id, user.email, user.name || 'Admin', {
+    const token = await createSession(user.id, user.email, user.name || 'Admin', user.role || 'admin', {
       ipAddress: clientIp,
       userAgent: getUserAgent(request),
     });

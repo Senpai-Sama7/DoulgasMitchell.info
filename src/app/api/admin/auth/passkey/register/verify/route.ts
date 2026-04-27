@@ -4,6 +4,7 @@ import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import { createPasskeyRecord, findAdminUserById } from '@/lib/admin-compat';
+import { logger } from '@/lib/logger';
 import {
   isInvalidJsonBodyError,
   readJsonBody,
@@ -30,6 +31,14 @@ export async function POST(request: NextRequest) {
 
     if (!response || typeof response !== 'object') {
       return NextResponse.json({ error: 'Registration response is required' }, { status: 400 });
+    }
+
+    const registrationResponse = response as Record<string, unknown>;
+    if (
+      typeof registrationResponse.attestationObject !== 'string' ||
+      typeof registrationResponse.clientDataJSON !== 'string'
+    ) {
+      return NextResponse.json({ error: 'Invalid registration response structure' }, { status: 400 });
     }
 
     const user = await findAdminUserById(session.userId);
@@ -78,7 +87,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
     }
 
-    console.error('Passkey register verify error:', error);
+    logger.error('Passkey register verify error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

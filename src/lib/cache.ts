@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis';
 import { env, features } from './env';
+import { logger } from './logger';
 
 // Redis client singleton
 let redisClient: Redis | null = null;
@@ -30,7 +31,7 @@ export async function getCache<T>(key: string): Promise<T | null> {
     const value = await redis.get<T>(key);
     return value;
   } catch (error) {
-    console.error('Cache get error:', error);
+    logger.error('Cache get error:', error);
     return null;
   }
 }
@@ -54,7 +55,7 @@ export async function setCache<T>(
       await redis.set(tagKey, tags, { ex: ttl });
     }
   } catch (error) {
-    console.error('Cache set error:', error);
+    logger.error('Cache set error:', error);
   }
 }
 
@@ -66,7 +67,7 @@ export async function deleteCache(key: string): Promise<void> {
     await redis.del(key);
     await redis.del(`tags:${key}`);
   } catch (error) {
-    console.error('Cache delete error:', error);
+    logger.error('Cache delete error:', error);
   }
 }
 
@@ -92,7 +93,7 @@ export async function invalidateByTag(tag: string): Promise<void> {
       }
     } while (cursor !== '0');
   } catch (error) {
-    console.error('Cache invalidation error:', error);
+    logger.error('Cache invalidation error:', error);
   }
 }
 

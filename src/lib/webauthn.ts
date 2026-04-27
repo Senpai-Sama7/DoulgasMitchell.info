@@ -1,3 +1,4 @@
+import type { AuthenticatorTransport, RegistrationResponseJSON, AuthenticationResponseJSON } from '@simplewebauthn/server';
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -38,11 +39,11 @@ export async function getRegistrationOptions(user: { id: string; email: string; 
  * Verify the registration response from the client
  */
 export async function verifyRegistration(
-  body: any,
+  body: unknown,
   expectedChallenge: string
 ) {
   return verifyRegistrationResponse({
-    response: body,
+    response: body as RegistrationResponseJSON,
     expectedChallenge,
     expectedOrigin: origin,
     expectedRPID: rpID,
@@ -52,7 +53,7 @@ export async function verifyRegistration(
 /**
  * Generate authentication options for an existing passkey
  */
-export async function getAuthenticationOptions(allowCredentials?: { id: string; transports?: any[] }[]) {
+export async function getAuthenticationOptions(allowCredentials?: { id: string; transports?: AuthenticatorTransport[] }[]) {
   return generateAuthenticationOptions({
     rpID,
     allowCredentials: allowCredentials?.map(cred => ({
@@ -67,7 +68,7 @@ export async function getAuthenticationOptions(allowCredentials?: { id: string; 
  * Verify the authentication response from the client
  */
 export async function verifyAuthentication(
-  body: any,
+  body: unknown,
   expectedChallenge: string,
   credential: {
     id: string;
@@ -76,7 +77,7 @@ export async function verifyAuthentication(
   }
 ) {
   return verifyAuthenticationResponse({
-    response: body,
+    response: body as AuthenticationResponseJSON,
     expectedChallenge,
     expectedOrigin: origin,
     expectedRPID: rpID,

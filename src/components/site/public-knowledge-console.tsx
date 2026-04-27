@@ -12,6 +12,7 @@ import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { logger } from '@/lib/logger';
 
 type PublicAssistantSettings = {
   enabled: boolean;
@@ -74,7 +75,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
           return;
         }
       } catch (e) {
-        console.error('Failed to parse chat history', e);
+        logger.error('Failed to parse chat history', e);
       }
     }
     

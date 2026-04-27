@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { ApiHandler } from '@/lib/api-response';
 import { getSession } from '@/lib/auth';
+import { logger } from '@/lib/logger';
 import { validateTrustedOrigin } from '@/lib/request';
 import { NotificationService } from '@/lib/notifications';
 
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Failed to fetch notifications:', error);
+    logger.error('Failed to fetch notifications:', error);
     return ApiHandler.error('Internal server error', 500);
   }
 }

@@ -204,6 +204,12 @@ export default function RootLayout({
 
         {children}
 
+        {/* PWA Service Worker registration */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{})})}`,
+          }}
+        />
         <Toaster />
         {showRuntimeAnalytics && <Analytics />}
         {showRuntimeAnalytics && <SpeedInsights />}

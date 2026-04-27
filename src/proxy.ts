@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { logger } from '@/lib/logger';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 
@@ -18,7 +19,6 @@ const JWT_AUDIENCE = 'admin-portal';
 // Routes that don't require authentication under /admin
 const publicAdminRoutes = [
   '/admin/login',
-  '/api/admin/check',
   '/api/admin/auth',
   '/api/admin/webauthn',
   '/api/admin/setup'
@@ -43,6 +43,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Security headers applied to all proxy error responses
+  const securityHeaders = {
+    'Content-Type': 'application/json',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+  };
+
   // 2. Global Rate Limiting (600 requests per minute per IP)
   const limit = await rateLimit(clientIp, {
     limit: 600,
@@ -56,7 +64,7 @@ export async function proxy(request: NextRequest) {
       { 
         status: 429, 
         headers: { 
-          'Content-Type': 'application/json',
+          ...securityHeaders,
           'Retry-After': Math.ceil((limit.resetAt - Date.now()) / 1000).toString()
         } 
       }
@@ -69,7 +77,7 @@ export async function proxy(request: NextRequest) {
     if (!originCheck.allowed) {
       return new NextResponse(
         JSON.stringify({ error: originCheck.reason }),
-        { status: 403, headers: { 'Content-Type': 'application/json' } }
+        { status: 403, headers: securityHeaders }
       );
     }
   }
@@ -85,7 +93,7 @@ export async function proxy(request: NextRequest) {
       if (!token) {
         // Redirect to login for pages, return 401 for APIs
         if (pathname.startsWith('/api/')) {
-          return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+          return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: securityHeaders });
         }
         return NextResponse.redirect(new URL('/admin/login', request.url));
       }
@@ -97,10 +105,10 @@ export async function proxy(request: NextRequest) {
           audience: JWT_AUDIENCE,
         });
       } catch (error) {
-        console.error('Middleware token verification failed:', error);
+        logger.error('Middleware token verification failed:', error);
         // Invalid token
         if (pathname.startsWith('/api/')) {
-          return NextResponse.json({ error: 'Unauthorized - Invalid Token' }, { status: 401 });
+          return new NextResponse(JSON.stringify({ error: 'Unauthorized - Invalid Token' }), { status: 401, headers: securityHeaders });
         }
         
         // Redirect to login and clear cookie
@@ -114,7 +122,7 @@ export async function proxy(request: NextRequest) {
   // 5. Continue with request and append rate limit headers
   const response = NextResponse.next();
   
-  response.headers.set('X-RateLimit-Limit', '100');
+  response.headers.set('X-RateLimit-Limit', '600');
   response.headers.set('X-RateLimit-Remaining', limit.remaining.toString());
   response.headers.set('X-RateLimit-Reset', limit.resetAt.toString());
 

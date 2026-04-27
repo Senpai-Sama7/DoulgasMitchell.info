@@ -1,7 +1,9 @@
+import type { AuthenticatorTransport } from '@simplewebauthn/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { findAdminUserByEmail, getAdminPasskeysForUser } from '@/lib/admin-compat';
+import { logger } from '@/lib/logger';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
 
     const options = await getAuthenticationOptions(passkeys.map((passkey) => ({
       id: passkey.credentialId,
-      transports: passkey.transports,
+      transports: passkey.transports as AuthenticatorTransport[],
     })));
 
     await setPasskeyChallengeCookie('auth', email, options.challenge);
@@ -60,7 +62,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
     }
 
-    console.error('Passkey options error:', error);
+    logger.error('Passkey options error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

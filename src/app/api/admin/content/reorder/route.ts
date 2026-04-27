@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { ApiHandler } from '@/lib/api-response';
+import { logger } from '@/lib/logger';
 import { logActivity } from '@/lib/activity';
 import {
   isInvalidJsonBodyError,
@@ -73,7 +74,7 @@ export async function PATCH(request: Request) {
       return ApiHandler.error('Request body must be valid JSON.', 400);
     }
 
-    console.error('Reorder error:', error);
+    logger.error('Reorder error:', error);
     return ApiHandler.internalServerError('Failed to update content order', error);
   }
 }

@@ -39,6 +39,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MediaUploader } from '@/components/admin/media-uploader';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/upload';
+import { logger } from '@/lib/logger';
 
 interface Media {
   id: string;
@@ -107,7 +108,7 @@ export default function MediaLibraryPage() {
         setFeatureAvailable(data.featureAvailable !== false);
       }
     } catch (error) {
-      console.error('Failed to fetch media:', error);
+      logger.error('Failed to fetch media:', error);
     } finally {
       setLoading(false);
     }
@@ -121,7 +122,7 @@ export default function MediaLibraryPage() {
         setFolders(data.folders);
       }
     } catch (error) {
-      console.error('Failed to fetch folders:', error);
+      logger.error('Failed to fetch folders:', error);
     }
   }, []);
 
@@ -170,7 +171,7 @@ export default function MediaLibraryPage() {
         fetchFolders();
       }
     } catch (error) {
-      console.error('Delete failed:', error);
+      logger.error('Delete failed:', error);
     }
   };
 
@@ -196,7 +197,7 @@ export default function MediaLibraryPage() {
         setSelectedItems(new Set());
       }
     } catch (error) {
-      console.error('Move failed:', error);
+      logger.error('Move failed:', error);
     }
   };
 
