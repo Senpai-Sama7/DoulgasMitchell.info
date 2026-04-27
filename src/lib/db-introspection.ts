@@ -6,13 +6,26 @@ function quoteTableName(tableName: string) {
   return `"${tableName.replace(/"/g, '""')}"`;
 }
 
-export async function getTableColumns(tableName: string) {
-  // Strict allowlist for tables that can be introspected
-  const ALLOWED_TABLES = new Set([
-    'ActivityLog', 'Media', 'Article', 'Project', 'Book', 'Certification',
-    'AdminUser', 'AdminSession', 'AdminPasskey', 'NewsletterSubscriber', 'ContactMessage'
-  ]);
+function isSqlite(): boolean {
+  const url = process.env.DATABASE_URL ?? '';
+  return (
+    url.startsWith('file:') ||
+    url.startsWith('sqlite:') ||
+    url.endsWith('.db')
+  );
+}
 
+// All Prisma schema model names that can be introspected
+const ALLOWED_TABLES = new Set([
+  'ActivityLog', 'AdminUser', 'Article', 'ArticleBlock', 'ArticleMedia',
+  'Book', 'Certification', 'Comment', 'ContactSubmission', 'LayoutBlock',
+  'Media', 'Newsletter', 'Note', 'PageView', 'PasskeyCredential',
+  'Project', 'ProjectMedia', 'Reaction', 'Session', 'Setting', 'SiteConfig',
+  // Legacy table names used by compat layer
+  'AdminSession', 'AdminPasskey', 'NewsletterSubscriber', 'ContactMessage',
+]);
+
+export async function getTableColumns(tableName: string) {
   if (!ALLOWED_TABLES.has(tableName)) {
     return new Set<string>();
   }
@@ -22,20 +35,27 @@ export async function getTableColumns(tableName: string) {
     return cached;
   }
 
-  const lookup = db
-    .$queryRawUnsafe<Array<{ column_name: string }>>(
-      `SELECT column_name
-       FROM information_schema.columns
-       WHERE table_schema = current_schema()
-         AND table_name = $1
-       ORDER BY ordinal_position`,
-      tableName
-    )
-    .then((rows) => new Set(rows.map((row) => row.column_name)))
-    .catch(() => new Set<string>());
+  const query = isSqlite()
+    ? db
+        .$queryRawUnsafe<Array<{ name: string }>>(
+          `PRAGMA table_info(${quoteTableName(tableName)})`
+        )
+        .then((rows) => new Set(rows.map((row) => row.name)))
+        .catch(() => new Set<string>())
+    : db
+        .$queryRawUnsafe<Array<{ column_name: string }>>(
+          `SELECT column_name
+           FROM information_schema.columns
+           WHERE table_schema = current_schema()
+             AND table_name = $1
+           ORDER BY ordinal_position`,
+          tableName
+        )
+        .then((rows) => new Set(rows.map((row) => row.column_name)))
+        .catch(() => new Set<string>());
 
-  tableColumnsCache.set(tableName, lookup);
-  return lookup;
+  tableColumnsCache.set(tableName, query);
+  return query;
 }
 
 export async function hasTable(tableName: string) {

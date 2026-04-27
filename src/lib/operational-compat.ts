@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { db } from '@/lib/db';
 import { getTableColumns, hasTable, quoteIdentifier } from '@/lib/db-introspection';
+import { sqlCount, sqlBool } from '@/lib/sql-helpers';
 
 export async function createContactSubmissionRecord(input: {
   name: string;
@@ -92,7 +93,7 @@ export async function createContactSubmissionRecord(input: {
 export async function countContactSubmissions() {
   if (await hasTable('ContactSubmission')) {
     const rows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      'SELECT COUNT(*)::bigint AS count FROM "ContactSubmission"'
+      `SELECT ${sqlCount()} FROM "ContactSubmission"`
     );
     const count = Number(rows[0]?.count ?? 0);
 
@@ -101,7 +102,7 @@ export async function countContactSubmissions() {
     }
 
     const legacyRows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      'SELECT COUNT(*)::bigint AS count FROM "ContactMessage"'
+      `SELECT ${sqlCount()} FROM "ContactMessage"`
     );
 
     return Number(legacyRows[0]?.count ?? 0);
@@ -109,7 +110,7 @@ export async function countContactSubmissions() {
 
   if (await hasTable('ContactMessage')) {
     const rows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-      'SELECT COUNT(*)::bigint AS count FROM "ContactMessage"'
+      `SELECT ${sqlCount()} FROM "ContactMessage"`
     );
 
     return Number(rows[0]?.count ?? 0);
@@ -194,8 +195,8 @@ export async function countNewsletterSubscribers() {
 
   const columns = await getTableColumns('Newsletter');
   const query = columns.has('isActive')
-    ? 'SELECT COUNT(*)::bigint AS count FROM "Newsletter" WHERE "isActive" = TRUE'
-    : 'SELECT COUNT(*)::bigint AS count FROM "Newsletter"';
+    ? `SELECT ${sqlCount()} FROM "Newsletter" WHERE "isActive" = ${sqlBool(true)}`
+    : `SELECT ${sqlCount()} FROM "Newsletter"`;
   const rows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(query);
 
   return Number(rows[0]?.count ?? 0);
@@ -207,7 +208,7 @@ export async function countMediaRecords() {
   }
 
   const rows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
-    'SELECT COUNT(*)::bigint AS count FROM "Media"'
+    `SELECT ${sqlCount()} FROM "Media"`
   );
 
   return Number(rows[0]?.count ?? 0);

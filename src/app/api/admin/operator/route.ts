@@ -719,7 +719,7 @@ export async function POST(request: NextRequest) {
           execute: async (input) => {
             return {
               ...input,
-              proprosalId: crypto.randomUUID(),
+              proposalId: crypto.randomUUID(),
               timestamp: new Date().toISOString(),
             };
           },
