@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Menu, Moon, Sun, X } from 'lucide-react';
+import { Mail, Menu, Moon, Sparkles, Sun, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { siteProfile } from '@/lib/site-content';
@@ -179,6 +179,15 @@ export function SiteHeader() {
               {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
             </Button>
 
+            <Link
+              href="/chat"
+              className="flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/40 hover:text-foreground"
+              aria-label="Ask the AI assistant"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Chat</span>
+            </Link>
+
             <a
               href="/#contact"
               className="cta-button min-w-[2.75rem] justify-center text-sm p-2 sm:px-6 sm:py-3"
@@ -248,6 +257,21 @@ export function SiteHeader() {
                       </li>
                     );
                   })}
+                  <li>
+                    <Link
+                      href="/chat"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-between rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-primary/30 hover:bg-muted/40"
+                    >
+                      <span className="flex items-center gap-2">
+                        <Sparkles className="h-3.5 w-3.5" />
+                        AI Chat
+                      </span>
+                      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
+                        assistant
+                      </span>
+                    </Link>
+                  </li>
                 </ul>
               </div>
             </motion.div>

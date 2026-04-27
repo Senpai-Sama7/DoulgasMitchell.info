@@ -1,0 +1,8 @@
+#!/bin/sh
+echo "→ Running type check..."
+bun run typecheck || { echo "✗ Type check failed"; exit 1; }
+
+echo "→ Running ESLint..."
+bun run lint || { echo "✗ ESLint failed"; exit 1; }
+
+echo "✓ Pre-commit checks passed"

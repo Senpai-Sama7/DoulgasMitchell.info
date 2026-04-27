@@ -46,3 +46,10 @@ session-*.md
 local-*
 .claude
 .z-ai-config
+
+# local DB
+prisma/dev.db
+
+# project artifacts
+.entire/
+dev.db
