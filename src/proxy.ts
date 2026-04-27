@@ -21,7 +21,8 @@ const publicAdminRoutes = [
   '/admin/login',
   '/api/admin/auth',
   '/api/admin/webauthn',
-  '/api/admin/setup'
+  '/api/admin/setup',
+  '/api/admin/check',
 ];
 
 /**
