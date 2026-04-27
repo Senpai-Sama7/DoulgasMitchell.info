@@ -18,4 +18,8 @@ async function checkAdmin() {
   await prisma.$disconnect();
 }
 
-checkAdmin().catch(console.error);
+checkAdmin()
+  .catch((err) => {
+    console.error('❌ Admin check failed:', err);
+    process.exit(1);
+  });

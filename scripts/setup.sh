@@ -29,18 +29,22 @@ fi
 # Run security audit
 echo ""
 echo "🔒 Running dependency audit..."
-bun audit --audit-level=moderate || echo "⚠️  Security vulnerabilities found"
+bun audit 2>/dev/null || npm audit --audit-level=moderate || echo "⚠️  Security vulnerabilities found"
 
 # Test database connection
 echo ""
 echo "🗄️  Testing database connection..."
-bun run admin:check 2>/dev/null && echo "✅ Database connected" || echo "⚠️  Database connection failed (ensure DATABASE_URL is set)"
+if bun run admin:check > /dev/null 2>&1; then
+  echo "✅ Database connected"
+else
+  echo "⚠️  Database connection failed (ensure DATABASE_URL is set)"
+fi
 
 # Set up cron job for backups
 echo ""
 echo "⏰ Setting up automated backups..."
 echo "Add this to your crontab (crontab -e):"
-echo "0 2 * * * cd $(pwd) && bun run backup >> logs/backup.log 2>&1"
+echo "0 2 * * * cd \"$(pwd)\" && bun run backup >> logs/backup.log 2>&1"
 
 echo ""
 echo "✅ Setup complete!"

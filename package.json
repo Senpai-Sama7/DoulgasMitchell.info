@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "dev": "next dev --webpack -p 3000 2>&1 | tee dev.log",
-    "build": "prisma generate && NODE_ENV=production next build --webpack && bun scripts/postbuild-standalone.mjs",
+    "build": "prisma generate && NODE_ENV=production next build && bun scripts/postbuild-standalone.mjs",
     "start": "NODE_ENV=production bun .next/standalone/server.js 2>&1 | tee server.log",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",

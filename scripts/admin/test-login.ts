@@ -31,4 +31,8 @@ async function testLogin() {
   await prisma.$disconnect();
 }
 
-testLogin().catch(console.error);
+testLogin()
+  .catch((err) => {
+    console.error('❌ Login test failed:', err);
+    process.exit(1);
+  });

@@ -28,4 +28,8 @@ async function resetAdmin() {
   await prisma.$disconnect();
 }
 
-resetAdmin().catch(console.error);
+resetAdmin()
+  .catch((err) => {
+    console.error('❌ Admin reset failed:', err);
+    process.exit(1);
+  });
