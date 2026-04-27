@@ -3,7 +3,7 @@
  * PostgreSQL (production) and SQLite (development).
  */
 
-function isSqlite(): boolean {
+export function isSqlite(): boolean {
   const url = process.env.DATABASE_URL ?? '';
   return (
     url.startsWith('file:') ||
