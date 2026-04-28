@@ -128,9 +128,14 @@ function isValidIP(ip: string): boolean {
       return v >= 0 && v <= 255;
     });
   }
-  // IPv6: eight groups of 1-4 hex digits
-  const ipv6 = /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i.test(ip);
-  return ipv6;
+  // IPv6: supports full, compressed, and loopback formats
+  // Matches: 2001:db8::1, ::1, 2001:0db8:85a3:0000:0000:8a2e:0370:7334, ::ffff:192.168.1.1
+  const ipv6Full = /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i.test(ip);
+  const ipv6Compressed = /^([0-9a-f]{1,4}:){1,7}:$|^:([0-9a-f]{1,4}:){1,7}$/i.test(ip);
+  const ipv6Mixed = /^:?(:ffff:)?(\d{1,3}\.){3}\d{1,3}$/i.test(ip);
+  const ipv6Loopback = /^::1$/i.test(ip);
+  const ipv6Any = /^::$/i.test(ip);
+  return ipv6Full || ipv6Compressed || ipv6Mixed || ipv6Loopback || ipv6Any;
 }
 
 async function buildAnonymousFingerprint(request: RequestLike): Promise<string> {

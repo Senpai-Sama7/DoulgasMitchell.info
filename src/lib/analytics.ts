@@ -125,7 +125,7 @@ export async function logPageView(input: PageViewInput) {
 
     const id = crypto.randomUUID();
     const sessionId = await getAnonymousFingerprint(input.request);
-    const ipAddress = getClientIp(input.request);
+    const ipAddress = await getClientIp(input.request);
     const userAgent = getUserAgent(input.request);
 
     const insertColumns = ['id', 'path', 'sessionId', 'createdAt'];
