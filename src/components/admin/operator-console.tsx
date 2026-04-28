@@ -8,7 +8,6 @@ import {
   Loader2,
   RefreshCw,
   Save,
-  Settings2,
   ShieldCheck,
   Sparkles,
   Workflow,
@@ -34,17 +33,6 @@ import {
   MessageResponse,
 } from '@/components/ai-elements/message';
 import {
-  ModelSelector,
-  ModelSelectorContent,
-  ModelSelectorEmpty,
-  ModelSelectorGroup,
-  ModelSelectorInput,
-  ModelSelectorItem,
-  ModelSelectorList,
-  ModelSelectorName,
-  ModelSelectorTrigger,
-} from '@/components/ai-elements/model-selector';
-import {
   PromptInput,
   PromptInputBody,
   PromptInputFooter,
@@ -57,12 +45,6 @@ import {
   PromptInputActionMenuContent,
   PromptInputActionAddAttachments,
 } from '@/components/ai-elements/prompt-input';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
 import { Reasoning, ReasoningContent, ReasoningTrigger } from '@/components/ai-elements/reasoning';
 import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
 import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from '@/components/ai-elements/tool';
@@ -318,7 +300,6 @@ function AdminOperatorConsoleInner() {
   const [draftPublicAssistant, setDraftPublicAssistant] = useState<PublicAssistantSettings | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
-  const [isProviderPickerOpen, setIsProviderPickerOpen] = useState(false);
   const [testingProvider, setTestingProvider] = useState<OperatorProviderId | null>(null);
 
   async function testProvider(providerId: OperatorProviderId) {
@@ -343,7 +324,7 @@ function AdminOperatorConsoleInner() {
           variant: 'destructive',
         });
       }
-    } catch (err) {
+    } catch {
       toast({
         title: 'Validation failed',
         description: 'An unexpected error occurred during API key testing.',

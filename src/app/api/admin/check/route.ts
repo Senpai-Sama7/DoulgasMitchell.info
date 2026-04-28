@@ -1,6 +1,5 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { ApiHandler } from '@/lib/api-response';
-import { getSession } from '@/lib/auth';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 import { countAdminUsers } from '@/lib/admin-compat';

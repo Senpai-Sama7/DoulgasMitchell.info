@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Search,
-  Filter,
   Grid3X3,
   List,
   Trash2,
@@ -141,10 +140,6 @@ export default function MediaLibraryPage() {
       }
       return next;
     });
-  };
-
-  const selectAll = () => {
-    setSelectedItems(new Set(media.map((m) => m.id)));
   };
 
   const clearSelection = () => {

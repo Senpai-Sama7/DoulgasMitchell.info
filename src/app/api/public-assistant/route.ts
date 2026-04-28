@@ -19,7 +19,6 @@ import {
   recordFailure,
   recordSuccess,
 } from '@/lib/metrics';
-import { logger } from '@/lib/logger';
 
 const publicAssistantSchema = z.object({
   question: z.string().trim().min(1).max(500),

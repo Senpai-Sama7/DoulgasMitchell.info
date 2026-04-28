@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useMemo } from 'react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 
 interface AsciiParticlesProps {

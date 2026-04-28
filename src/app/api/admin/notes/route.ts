@@ -42,7 +42,7 @@ export async function GET(request: Request) {
     });
     
     return ApiHandler.success({ notes: notes as any });
-  } catch (error) {
+  } catch {
     return ApiHandler.error('Failed to fetch notes', 500);
   }
 }
@@ -140,7 +140,7 @@ export async function DELETE(request: Request) {
     });
 
     return ApiHandler.success({ deleted: true });
-  } catch (error) {
+  } catch {
     return ApiHandler.error('Failed to delete note', 500);
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse, type NextRequest } from 'next/server';
+import { type NextRequest } from 'next/server';
 import { ApiHandler } from '@/lib/api-response';
 import { getSession } from '@/lib/auth';
 import { logger } from '@/lib/logger';

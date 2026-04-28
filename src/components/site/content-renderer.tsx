@@ -3,9 +3,8 @@
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import { FileIcon, Play, Music, FileText, Download, ExternalLink } from 'lucide-react';
+import { Music, FileText, Download, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState } from 'react';
 
 interface ContentRendererProps {
   content: string;
@@ -17,7 +16,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
     <div className={cn('reading-content prose dark:prose-invert max-w-none', className)}>
       <ReactMarkdown
         components={{
-          code({ node, inline, className, children, ...props }: any) {
+          code({ inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
               <div className="relative group my-6 overflow-hidden rounded-xl border border-border bg-muted/50">
@@ -42,7 +41,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
               </code>
             );
           },
-          img({ node, src, alt, ...props }: any) {
+          img({ src, alt, ...props }: any) {
             // Check if it's a video based on extension
             const isVideo = src?.match(/\.(mp4|webm|ogg)$/i);
             const isAudio = src?.match(/\.(mp3|wav|ogg|m4a|aac)$/i);
@@ -136,7 +135,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
           td({ children }: any) {
             return <td className="border-t border-border px-4 py-3">{children}</td>;
           },
-          a({ node, href, children, ...props }: any) {
+          a({ href, children, ...props }: any) {
             const isExternal = href?.startsWith('http');
             const isFile = href?.match(/\.(pdf|docx|xlsx|pptx|txt|mp4|webm|mp3|wav|json|tsx|jsx)$/i);
 

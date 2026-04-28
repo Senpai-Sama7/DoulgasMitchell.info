@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { env } from '@/lib/env';
 import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +11,7 @@ interface HealthStatus {
   checks: Record<string, { status: 'ok' | 'warn' | 'error'; message?: string }>;
 }
 
-let startTime = Date.now();
+const startTime = Date.now();
 
 export async function GET() {
   const checks: HealthStatus['checks'] = {};

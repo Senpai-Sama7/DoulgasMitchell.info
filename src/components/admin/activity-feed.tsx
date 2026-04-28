@@ -9,7 +9,6 @@ import {
   AlertTriangle, 
   AlertCircle, 
   Clock, 
-  X,
   ExternalLink
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';

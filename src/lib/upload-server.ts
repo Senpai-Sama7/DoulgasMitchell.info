@@ -104,7 +104,6 @@ export async function extractColorPalette(buffer: Buffer): Promise<string[]> {
       .raw()
       .toBuffer({ resolveWithObject: true });
 
-    const pixelCount = info.width * info.height;
     const colors: Record<string, number> = {};
 
     for (let i = 0; i < data.length; i += info.channels) {

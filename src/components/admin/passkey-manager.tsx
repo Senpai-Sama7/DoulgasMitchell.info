@@ -24,7 +24,7 @@ interface PasskeyManagerProps {
 }
 
 export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
-  const [passkeys, setPasskeys] = useState<Passkey[]>(initialPasskeys.map(p => ({
+  const [passkeys] = useState<Passkey[]>(initialPasskeys.map(p => ({
     ...p,
     createdAt: new Date(p.createdAt).toLocaleDateString(),
     lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt).toLocaleDateString() : 'Never',

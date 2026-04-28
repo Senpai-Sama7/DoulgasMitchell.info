@@ -109,7 +109,7 @@ export function EnhancedAboutSection() {
                 playsInline
                 poster="/media/dougie-frame-poster.webp"
                 className="w-full h-full object-cover"
-                // @ts-ignore
+                // @ts-expect-error — fetchPriority not in video element types
                 fetchPriority="high"
               >
                 <source src="/media/dougie-loop-v2.mp4" type="video/mp4" />

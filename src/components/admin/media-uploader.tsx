@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -11,7 +11,6 @@ import {
   FileAudio,
   FileText,
   CheckCircle,
-  AlertCircle,
   Loader2,
   FolderOpen,
 } from 'lucide-react';
