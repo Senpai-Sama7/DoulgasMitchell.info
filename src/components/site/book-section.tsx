@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ExternalLink, BookOpen, Quote } from 'lucide-react';
 
 const bookData = {
@@ -17,8 +17,6 @@ const bookData = {
 };
 
 export function BookSection() {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <section id="book" className="section-spacing bg-muted/30">
       <div className="editorial-container">

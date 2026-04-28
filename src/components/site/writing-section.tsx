@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ArrowRight, Clock, Tag } from 'lucide-react';
 
 const articles = [
@@ -39,8 +39,6 @@ const articles = [
 ];
 
 export function WritingSection() {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <section id="writing" className="section-spacing">
       <div className="editorial-container">

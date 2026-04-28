@@ -82,10 +82,10 @@ export function HomePageShell({
         <EnhancedHeroSection />
 
         <div className="editorial-container">
-          <div className="flex items-center justify-center gap-4 py-8">
-            <span className="font-mono text-xl text-muted-foreground/20">{'═'.repeat(20)}</span>
-            <span className="font-mono text-muted-foreground/30">◈</span>
-            <span className="font-mono text-xl text-muted-foreground/20">{'═'.repeat(20)}</span>
+          <div className="flex items-center justify-center gap-4 py-4">
+            <div className="h-px flex-1 max-w-[120px] bg-border/50" />
+            <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground/30 uppercase">◈</span>
+            <div className="h-px flex-1 max-w-[120px] bg-border/50" />
           </div>
         </div>
 

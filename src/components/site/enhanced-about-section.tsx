@@ -1,8 +1,8 @@
 'use client';
 
 import { useRef, useState, useEffect } from 'react';
-import { motion, useScroll, useTransform, useReducedMotion, AnimatePresence } from 'framer-motion';
-import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, Terminal, Cpu, Database, Network, ArrowRight, Sparkles } from 'lucide-react';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, ArrowRight, Sparkles } from 'lucide-react';
 import { aboutRoles, expertiseByCategory, operatingPrinciples, bookShowcase } from '@/lib/site-content';
 
 const roles = [

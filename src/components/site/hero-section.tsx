@@ -3,7 +3,6 @@
 import { motion, useReducedMotion, type Variants, useScroll, useTransform } from 'framer-motion';
 import { ArrowDown, Sparkles } from 'lucide-react';
 import { useRef } from 'react';
-import { Button } from '@/components/ui/button';
 import { siteProfile } from '@/lib/site-content';
 
 const containerVariants: Variants = {

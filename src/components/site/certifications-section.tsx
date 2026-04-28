@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Award, ExternalLink } from 'lucide-react';
 import type { CertificationShowcase } from '@/lib/site-content';
 
@@ -9,8 +9,6 @@ interface CertificationsSectionProps {
 }
 
 export function CertificationsSection({ items }: CertificationsSectionProps) {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <section id="certifications" className="section-spacing">
       <div className="editorial-container">

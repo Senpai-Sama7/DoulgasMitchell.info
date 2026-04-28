@@ -87,9 +87,10 @@ const DEFAULT_SUGGESTIONS = [
 ];
 
 const GREETING_PATTERNS = [
-  /^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy)\s*$/i,
-  /^(hi|hello|hey)\s*(douglas|dougie|there|ya|you)\s*$/i,
-  /^(how\s*are\s*(you|u)|how\s*is\s*it\s*going)\s*\??$/i,
+  /^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy)[\s!.,]*$/i,
+  /^(hi|hello|hey)[\s!.,]*(douglas|dougie|there|ya|you)[\s!.,]*$/i,
+  /^(how\s*are\s*(you|u)|how\s*is\s*it\s*going|what'?s?\s*up)[\s!.,?]*$/i,
+  /^(yo|sup|hiya|what'?s?\s*good|cheers)[\s!.,]*$/i,
 ];
 
 function isGreeting(question: string): boolean {
