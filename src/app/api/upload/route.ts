@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const uploadLimit = await rateLimit(`${session.userId}:${getClientIp(request)}`, {
+    const uploadLimit = await rateLimit(`${session.userId}:${await getClientIp(request)}`, {
       limit: 20,
       windowMs: 15 * 60 * 1000,
       prefix: 'upload',

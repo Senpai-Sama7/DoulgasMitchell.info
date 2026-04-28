@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { path, sessionId, referrer } = parsed.data;
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(clientIp, {
       limit: 120,
       windowMs: 15 * 60 * 1000,

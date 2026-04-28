@@ -1,5 +1,3 @@
-import { createHash } from 'crypto';
-import { isIP } from 'net';
 import type { NextRequest } from 'next/server';
 import { env } from '@/lib/env';
 
@@ -64,7 +62,9 @@ function getOriginCandidate(request: RequestLike) {
     return origin;
   }
 
-  return normalizeOrigin(request.headers.get('referer'));
+  // NOTE: Referer fallback removed. Browsers send Origin for cross-site requests.
+  // Relying solely on Origin header provides stronger CSRF protection.
+  return null;
 }
 
 export function validateTrustedOrigin(request: RequestLike): TrustedOriginResult {
@@ -109,17 +109,42 @@ export function validateTrustedOrigin(request: RequestLike): TrustedOriginResult
   };
 }
 
-function buildAnonymousFingerprint(request: RequestLike) {
+// Web Crypto SHA-256 — works in both Edge and Node.js runtimes.
+async function sha256Hex(input: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(input);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Pure-JS IP validation — replaces Node.js `net.isIP()` for Edge compatibility.
+function isValidIP(ip: string): boolean {
+  // IPv4: four octets 0-255
+  const ipv4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(ip);
+  if (ipv4) {
+    return ipv4.slice(1).every((n) => {
+      const v = parseInt(n, 10);
+      return v >= 0 && v <= 255;
+    });
+  }
+  // IPv6: eight groups of 1-4 hex digits
+  const ipv6 = /^([0-9a-f]{1,4}:){7}[0-9a-f]{1,4}$/i.test(ip);
+  return ipv6;
+}
+
+async function buildAnonymousFingerprint(request: RequestLike): Promise<string> {
   const seed = [
     request.headers.get('user-agent') || 'unknown',
     request.headers.get('accept-language') || 'unknown',
     request.headers.get('host') || normalizeOrigin(request.url) || 'unknown',
   ].join('|');
 
-  return `anonymous:${createHash('sha256').update(seed).digest('hex').slice(0, 16)}`;
+  const hash = await sha256Hex(seed);
+  return `anonymous:${hash.slice(0, 16)}`;
 }
 
-export function getClientIp(request: RequestLike) {
+export async function getClientIp(request: RequestLike): Promise<string> {
   const candidates = [
     request.headers.get('x-vercel-forwarded-for'),
     request.headers.get('cf-connecting-ip'),
@@ -133,7 +158,7 @@ export function getClientIp(request: RequestLike) {
     }
 
     const normalized = candidate.split(',')[0]?.trim();
-    if (normalized && isIP(normalized)) {
+    if (normalized && isValidIP(normalized)) {
       return normalized;
     }
   }
@@ -141,12 +166,12 @@ export function getClientIp(request: RequestLike) {
   return buildAnonymousFingerprint(request);
 }
 
-export function getUserAgent(request: RequestLike) {
-  return request.headers.get('user-agent') || 'unknown';
+export async function getAnonymousFingerprint(request: RequestLike) {
+  return buildAnonymousFingerprint(request);
 }
 
-export function getAnonymousFingerprint(request: RequestLike) {
-  return buildAnonymousFingerprint(request);
+export function getUserAgent(request: RequestLike) {
+  return request.headers.get('user-agent') || 'unknown';
 }
 
 export async function readJsonBody<T = unknown>(request: RequestLike) {

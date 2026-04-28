@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(clientIp, {
       limit: 8,
       windowMs: 60 * 60 * 1000,

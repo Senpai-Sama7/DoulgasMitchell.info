@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email and response are required' }, { status: 400 });
     }
 
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(`${clientIp}:${String(email).toLowerCase()}`, {
       limit: 10,
       windowMs: 15 * 60 * 1000,

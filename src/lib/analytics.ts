@@ -124,7 +124,7 @@ export async function logPageView(input: PageViewInput) {
     }
 
     const id = crypto.randomUUID();
-    const sessionId = getAnonymousFingerprint(input.request);
+    const sessionId = await getAnonymousFingerprint(input.request);
     const ipAddress = getClientIp(input.request);
     const userAgent = getUserAgent(input.request);
 

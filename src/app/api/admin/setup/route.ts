@@ -27,7 +27,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: originCheck.reason }, { status: 403 });
     }
 
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(clientIp, {
       limit: 5,
       windowMs: 60 * 60 * 1000,

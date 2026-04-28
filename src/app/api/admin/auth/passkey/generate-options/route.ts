@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Email is required' }, { status: 400 });
     }
 
-    const limit = await rateLimit(`${getClientIp(request)}:${String(email).toLowerCase()}`, {
+    const limit = await rateLimit(`${await getClientIp(request)}:${String(email).toLowerCase()}`, {
       limit: 10,
       windowMs: 15 * 60 * 1000,
       prefix: 'passkey-auth-options',

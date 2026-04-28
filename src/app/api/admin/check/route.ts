@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       return ApiHandler.forbidden(originCheck.reason);
     }
 
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(clientIp, {
       limit: 10,
       windowMs: 60 * 1000,

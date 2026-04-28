@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Rate limiting
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     if (!(await checkRateLimit(clientIp))) {
       return ApiHandler.error('Too many login attempts. Please try again later.', 429);
     }
