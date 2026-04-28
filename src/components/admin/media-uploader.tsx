@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -124,9 +125,8 @@ export function MediaUploader({
         // Update file statuses
         setFiles((prev) =>
           prev.map((file) => {
-            const result = data.results.find(
-              (r: any) => r.success && r.media.originalName === file.file.name
-            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  API response type
+            const result = data.results.find((r: any) => r.success && r.media?.originalName === file.file.name);
             if (result) {
               return {
                 ...file,
@@ -135,9 +135,8 @@ export function MediaUploader({
                 result: result.media,
               };
             }
-            const failed = data.results.find(
-              (r: any) => !r.success && r.originalName === file.file.name
-            );
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  API response type
+            const failed = data.results.find((r: any) => !r.success && r.originalName === file.file.name);
             if (failed) {
               return {
                 ...file,
@@ -267,10 +266,13 @@ export function MediaUploader({
                 {/* Preview / Icon */}
                 <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                   {file.preview ? (
-                    <img
+                    <Image
                       src={file.preview}
                       alt={file.file.name}
                       className="w-full h-full object-cover"
+                      width={64}
+                      height={64}
+                      unoptimized
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">

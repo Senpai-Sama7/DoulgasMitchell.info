@@ -20,6 +20,7 @@ interface Passkey {
 }
 
 interface PasskeyManagerProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- passkey data from server component
   initialPasskeys: any[];
 }
 
@@ -60,7 +61,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
       // 2. Start WebAuthn registration in browser
       const regResp = await startRegistration({ optionsJSON: options });
 
-      // 3. Verify registration on server — send the registration response directly
+      // 3. Verify registration on server  --  send the registration response directly
       //    plus deviceName as a top-level field for the server to persist
       const verifyRes = await fetch(`/api/admin/webauthn/register/verify?name=${encodeURIComponent(deviceName)}`, {
         method: 'POST',
@@ -78,11 +79,11 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
         const error = await verifyRes.json().catch(() => ({ error: 'Verification failed' }));
         throw new Error(error.error || 'Verification failed');
       }
-    } catch (error: any) {
-      logger.error(error);
+    } catch (error: unknown) {
+      logger.error(error instanceof Error ? error.message : String(error));
       toast({
         title: 'Registration failed',
-        description: error.message || 'Make sure your device supports biometrics.',
+        description: error instanceof Error ? error.message : 'Make sure your device supports biometrics.',
         variant: 'destructive',
       });
     } finally {

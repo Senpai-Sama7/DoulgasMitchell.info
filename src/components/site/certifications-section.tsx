@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Award, ExternalLink } from 'lucide-react';
 import type { CertificationShowcase } from '@/lib/site-content';
@@ -69,14 +70,14 @@ export function CertificationsSection({ items }: CertificationsSectionProps) {
                   {cert.imageUrl && (
                     <div className="mt-4 relative aspect-[4/3] rounded-md overflow-hidden border border-border/50 group-hover:border-primary/20 transition-colors bg-muted/20">
                       {/* Explicit width/height prevent CLS — aspect-ratio container handles visual sizing */}
-                      <img
+                      <Image
                         src={cert.imageUrl}
                         alt={`${cert.title} certificate`}
                         width={400}
                         height={300}
                         className="w-full h-full object-contain p-1 group-hover:scale-[1.02] transition-transform duration-500"
                         loading="lazy"
-                        decoding="async"
+                        unoptimized
                       />
                     </div>
                   )}

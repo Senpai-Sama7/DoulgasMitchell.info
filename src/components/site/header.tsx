@@ -188,14 +188,14 @@ export function SiteHeader() {
               <span className="hidden sm:inline">Chat</span>
             </Link>
 
-            <a
+            <Link
               href="/#contact"
               className="cta-button min-w-[2.75rem] justify-center text-sm p-2 sm:px-6 sm:py-3"
               aria-label="Jump to contact section"
             >
               <Mail className="h-4 w-4 sm:hidden" />
               <span className="hidden sm:inline">Let's Connect</span>
-            </a>
+            </Link>
           </div>
         </div>
       </nav>

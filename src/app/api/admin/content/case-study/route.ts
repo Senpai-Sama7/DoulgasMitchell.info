@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await readJsonBody(request);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  dynamic request body
     const { title, description, metrics, technologies, role, context } = body as any;
 
     if (!title || !description) {

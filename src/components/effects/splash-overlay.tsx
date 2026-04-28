@@ -58,7 +58,7 @@ export function SplashOverlay({ minDisplayTime, onComplete }: SplashOverlayProps
     if (phase !== 'boot') return;
     const t = setTimeout(() => setPhase('active'), bootDuration);
     return () => clearTimeout(t);
-  }, [phase]);
+  }, [phase, bootDuration]);
 
   useEffect(() => {
     if (phase === 'done') {

@@ -493,10 +493,10 @@ export function getOperatorProviderStatuses(): OperatorProviderStatus[] {
       provider.id === 'google'
         ? env.GOOGLE_GEMINI_API_KEY || env.GEMINI_API_KEY
         : process.env[provider.apiKeyEnv];
-    const effectiveBaseURL =
+    const effectiveBaseURL: string | null =
       provider.baseUrlEnv && process.env[provider.baseUrlEnv]
-        ? process.env[provider.baseUrlEnv]!
-        : provider.baseURL ?? null;
+        ? (process.env[provider.baseUrlEnv] ?? null)
+        : (provider.baseURL ?? null);
 
     return {
       ...provider,

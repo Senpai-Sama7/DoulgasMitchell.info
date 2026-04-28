@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
@@ -16,6 +17,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
     <div className={cn('reading-content prose dark:prose-invert max-w-none', className)}>
       <ReactMarkdown
         components={{
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           code({ inline, className, children, ...props }: any) {
             const match = /language-(\w+)/.exec(className || '');
             return !inline && match ? (
@@ -41,6 +43,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
               </code>
             );
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           img({ src, alt, ...props }: any) {
             // Check if it's a video based on extension
             const isVideo = src?.match(/\.(mp4|webm|ogg)$/i);
@@ -101,11 +104,14 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
 
             return (
               <div className="my-8">
-                <img 
+                <Image 
                   src={src} 
                   alt={alt} 
                   className="w-full rounded-2xl border border-border shadow-lg"
+                  width={800}
+                  height={450}
                   loading="lazy"
+                  unoptimized
                   {...props} 
                 />
                 {alt && <p className="mt-3 text-center text-sm text-muted-foreground italic">{alt}</p>}
@@ -113,6 +119,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
             );
           },
           // Custom block for interactive artifacts placeholder
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           blockquote({ children }: any) {
             return (
               <blockquote className="border-l-4 border-primary/30 pl-6 my-8 italic text-lg text-muted-foreground">
@@ -120,6 +127,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
               </blockquote>
             );
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           table({ children }: any) {
             return (
               <div className="my-8 overflow-x-auto rounded-xl border border-border">
@@ -129,12 +137,15 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
               </div>
             );
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           th({ children }: any) {
             return <th className="bg-muted/50 px-4 py-3 font-mono text-xs uppercase tracking-wider">{children}</th>;
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           td({ children }: any) {
             return <td className="border-t border-border px-4 py-3">{children}</td>;
           },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           a({ href, children, ...props }: any) {
             const isExternal = href?.startsWith('http');
             const isFile = href?.match(/\.(pdf|docx|xlsx|pptx|txt|mp4|webm|mp3|wav|json|tsx|jsx)$/i);

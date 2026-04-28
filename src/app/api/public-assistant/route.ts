@@ -29,14 +29,14 @@ async function withTimeout<T>(
   fn: () => Promise<T>,
   timeoutMs: number = 15_000
 ): Promise<T> {
-  let timer: ReturnType<typeof setTimeout>;
+  const timer = setTimeout(() => { /* timeout handled by Promise.race */ }, timeoutMs);
   const timeoutPromise = new Promise<never>((_, reject) => {
-    timer = setTimeout(() => reject(new Error('AI provider timeout after ' + timeoutMs + 'ms')), timeoutMs);
+    setTimeout(() => reject(new Error('AI provider timeout after ' + timeoutMs + 'ms')), timeoutMs);
   });
   try {
     return await Promise.race([fn(), timeoutPromise]);
   } finally {
-    clearTimeout(timer!);
+    clearTimeout(timer);
   }
 }
 

@@ -58,7 +58,7 @@ export async function POST(req: Request) {
 
     cookieStore.delete('passkey_challenge');
     return NextResponse.json({ success: true });
-  } catch (error: any) {
+  } catch (error: unknown) {
     if (isInvalidJsonBodyError(error)) {
       return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
     }

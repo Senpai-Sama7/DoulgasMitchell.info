@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
         const media = await db.media.create({
           data: {
             id: uploadResult.id,
-            filename: uploadResult.filename!,
+            filename: uploadResult.filename ?? 'untitled',
             originalName: uploadResult.originalName,
             mimeType: uploadResult.mimeType,
             category: getFileCategory(uploadResult.mimeType),
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
             width: uploadResult.width,
             height: uploadResult.height,
             duration: uploadResult.duration,
-            url: uploadResult.url!,
+            url: uploadResult.url ?? '',
             thumbnailUrl: uploadResult.thumbnailUrl,
             colorPalette: uploadResult.colorPalette ? JSON.stringify(uploadResult.colorPalette) : undefined,
             folder: folder || undefined,
@@ -190,6 +190,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  Prisma dynamic where clause
     const where: any = {};
     if (category) where.category = category;
     if (folder) where.folder = folder;

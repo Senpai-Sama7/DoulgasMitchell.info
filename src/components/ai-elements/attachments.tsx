@@ -6,6 +6,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import type { FileUIPart, SourceDocumentUIPart } from "ai";
 import {
@@ -91,20 +92,22 @@ const renderAttachmentImage = (
   isGrid: boolean
 ) =>
   isGrid ? (
-    <img
+    <Image
       alt={filename || "Image"}
       className="size-full object-cover"
       height={96}
       src={url}
       width={96}
+      unoptimized
     />
   ) : (
-    <img
+    <Image
       alt={filename || "Image"}
       className="size-full rounded object-cover"
       height={20}
       src={url}
       width={20}
+      unoptimized
     />
   );
 

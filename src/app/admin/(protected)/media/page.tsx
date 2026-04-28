@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
@@ -447,11 +448,14 @@ export default function MediaLibraryPage() {
                   <CardContent className="p-0">
                     <div className="aspect-square relative overflow-hidden rounded-t-lg bg-muted">
                       {item.category === 'image' ? (
-                        <img
+                        <Image
                           src={item.thumbnailUrl || item.url}
                           alt={item.originalName}
                           className="w-full h-full object-cover"
+                          width={400}
+                          height={400}
                           loading="lazy"
+                          unoptimized
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -529,10 +533,13 @@ export default function MediaLibraryPage() {
                 >
                   <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
                     {item.category === 'image' ? (
-                      <img
+                      <Image
                         src={item.thumbnailUrl || item.url}
                         alt={item.originalName}
                         className="w-full h-full object-cover rounded"
+                        width={48}
+                        height={48}
+                        unoptimized
                       />
                     ) : (
                       getFileIcon(item.category)

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
 import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, ArrowRight, Sparkles } from 'lucide-react';
@@ -184,10 +185,12 @@ export function EnhancedAboutSection() {
             className="flex justify-center"
           >
             <div className="relative w-full aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl border border-border group">
-              <img 
+              <Image 
                 src="/images/the-confident-mind.jpg" 
                 alt="The Confident Mind Book Cover"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                width={400}
+                height={600}
                 loading="lazy"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />

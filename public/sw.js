@@ -138,7 +138,7 @@ async function cacheFirst(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     // Return offline fallback for images
     if (request.destination === 'image') {
       return new Response(
@@ -159,7 +159,7 @@ async function networkFirst(request) {
       cache.put(request, networkResponse.clone());
     }
     return networkResponse;
-  } catch (error) {
+  } catch {
     const cachedResponse = await caches.match(request);
     if (cachedResponse) {
       return cachedResponse;

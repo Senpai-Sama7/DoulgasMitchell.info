@@ -227,6 +227,7 @@ export function AdminAIAgent() {
 
   useEffect(() => {
     void loadConfiguration();
+    // eslint-disable-next-line react-hooks/exhaustive-deps  --  intentionally mount-only
   }, []);
 
   async function saveConfiguration(showToast = true) {

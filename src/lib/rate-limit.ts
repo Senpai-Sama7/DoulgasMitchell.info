@@ -79,16 +79,18 @@ function rateLimitInMemory(identifier: string, options: RateLimitOptions): RateL
 async function rateLimitInRedis(identifier: string, options: RateLimitOptions): Promise<RateLimitResult> {
   const now = Date.now();
   const storeKey = createStoreKey(identifier, options.prefix);
+  const r = redis;
+  if (!r) throw new Error('Redis not available');
 
-  const count = await redis!.incr(storeKey);
+  const count = await r.incr(storeKey);
 
   if (count === 1) {
-    await redis!.pexpire(storeKey, options.windowMs);
+    await r.pexpire(storeKey, options.windowMs);
   }
 
-  let ttl = await redis!.pttl(storeKey);
+  let ttl = await r.pttl(storeKey);
   if (ttl < 0) {
-    await redis!.pexpire(storeKey, options.windowMs);
+    await r.pexpire(storeKey, options.windowMs);
     ttl = options.windowMs;
   }
 

@@ -198,6 +198,7 @@ function ProviderGlyph({
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any  --  AI SDK tool parts have dynamic shapes
 function OperatorToolPart({ part }: { part: any }) {
   const isDynamic = part.type === 'dynamic-tool';
   const toolName = isDynamic ? part.toolName : part.type.replace('tool-', '');
@@ -283,7 +284,7 @@ function ProviderStatusBadge({
   );
 }
 
-// Exported as a plain client component — Suspense is owned by the page (Server Component)
+// Exported as a plain client component  --  Suspense is owned by the page (Server Component)
 export function AdminOperatorConsole() {
   return <AdminOperatorConsoleInner />;
 }
@@ -405,6 +406,7 @@ function AdminOperatorConsoleInner() {
 
   useEffect(() => {
     void loadOperatorControl();
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally mount-only
   }, []);
 
   useEffect(() => {

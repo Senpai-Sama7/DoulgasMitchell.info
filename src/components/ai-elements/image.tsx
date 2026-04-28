@@ -12,6 +12,7 @@ export const Image = ({
   mediaType,
   ...props
 }: ImageProps) => (
+  // eslint-disable-next-line @next/next/no-img-element  --  base64 data URIs don't work with next/image
   <img
     {...props}
     alt={props.alt}
