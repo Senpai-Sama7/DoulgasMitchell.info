@@ -81,10 +81,26 @@ type KnowledgeKind = KnowledgeEntry['kind'];
 
 const DEFAULT_SUGGESTIONS = [
   'What kind of work does Douglas Mitchell do?',
-  'What are Douglas Mitchell’s main projects?',
+  "What are Douglas Mitchell's main projects?",
   'Tell me about The Confident Mind.',
   'What certifications does Douglas Mitchell have?',
 ];
+
+const GREETING_PATTERNS = [
+  /^(hi|hello|hey|greetings|good\s*(morning|afternoon|evening)|howdy)\s*$/i,
+  /^(hi|hello|hey)\s*(douglas|dougie|there|ya|you)\s*$/i,
+  /^(how\s*are\s*(you|u)|how\s*is\s*it\s*going)\s*\??$/i,
+];
+
+function isGreeting(question: string): boolean {
+  return GREETING_PATTERNS.some((p) => p.test(question));
+}
+
+const GREETING_REPLY = [
+  "Hi — I'm Douglas Mitchell's public knowledge assistant.",
+  "I can tell you about his background, projects, certifications, book, and operating principles.",
+  'What would you like to know?',
+].join(' ');
 
 const SENSITIVE_PATTERNS = [
   /\b(address|home address|street)\b/i,
@@ -632,11 +648,38 @@ if (isSensitiveQuestion(trimmedQuestion)) {
   if (options.strictTopicMode ?? true) {
     const topScore = rankedResults[0]?.score ?? 0;
     if (rankedEntries.length === 0 || topScore < 6) {
+      // Handle greetings gracefully instead of refusing
+      if (isGreeting(trimmedQuestion)) {
+        const decision = buildDecisionRecommendation(
+          0.7,
+          thresholds,
+          { rationale: 'Greeting acknowledged with helpful redirect to available topics.' }
+        );
+        return {
+          answer: GREETING_REPLY,
+          citations: [],
+          suggestions: DEFAULT_SUGGESTIONS,
+          refusal: false,
+          route: 'greeting',
+          confidence: 0.7,
+          confidenceLabel: 'high',
+          decision,
+          uncertainty: {
+            epistemic: 0.1,
+            aleatoric: 0.05,
+            semanticEntropy: 0,
+            calibrationStatus: 'not-evaluated',
+            drivers: ['Greeting matched — no retrieval needed.'],
+            missingInformation: [],
+          },
+        };
+      }
+
       return buildRefusalReply(
-        'I only answer public questions about Douglas Mitchell’s published work, writing, projects, certifications, book, and operating philosophy.',
+        "I only answer public questions about Douglas Mitchell's published work, writing, projects, certifications, book, and operating philosophy.",
         'strict-topic-refusal',
         [
-          'Ask about a named public project, article, certification, the book, or Douglas Mitchell’s operating principles.',
+          'Ask about a named public project, article, certification, the book, or Douglas Mitchell\u2019s operating principles.',
         ]
       );
     }
