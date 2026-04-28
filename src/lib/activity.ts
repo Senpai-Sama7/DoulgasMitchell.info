@@ -45,7 +45,7 @@ export async function logActivity(input: LogActivityInput) {
 
     if (input.request && columns.has('ipAddress') && ALLOWED_ACTIVITY_COLUMNS.has('ipAddress')) {
       insertColumns.push('ipAddress');
-      values.push(getClientIp(input.request));
+      values.push(await getClientIp(input.request));
     }
 
     if (input.request && columns.has('userAgent') && ALLOWED_ACTIVITY_COLUMNS.has('userAgent')) {
