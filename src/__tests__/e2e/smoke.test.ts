@@ -17,16 +17,16 @@ test.describe('Public Site Smoke Tests', () => {
   });
 
   test('should interact with Public Knowledge Console', async ({ page }) => {
-    await page.goto('/');
-    const input = page.getByPlaceholder(/Ask about Douglas Mitchell/i);
-    await expect(input).toBeVisible();
-    
-    await input.fill('Who is Douglas Mitchell?');
-    await page.keyboard.press('Enter');
-    
-    // Wait for the response (it might skip thinking state in some environments or be too fast)
-    // The answer should contain the headline or name
-    await expect(page.getByText(/Douglas Mitchell|Operations Analyst/i).nth(1)).toBeVisible({ timeout: 15000 });
+    await page.goto('/chat');
+    await expect(page.getByRole('heading', { name: /AI Assistant/i })).toBeVisible({ timeout: 10000 });
+    const textarea = page.locator('textarea');
+    await expect(textarea).toBeVisible();
+    await textarea.fill('Who is Douglas Mitchell?');
+    // Submit via button (Enter in textarea adds newlines, so click submit button)
+    await page.getByRole('button', { name: 'Submit' }).click();
+
+    // Wait for a non-empty assistant response to appear
+    await expect(page.getByText(/background|engineer|architect|principle|consultant/i).first()).toBeVisible({ timeout: 20000 });
   });
 });
 

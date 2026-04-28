@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
       return ApiHandler.error('A valid question is required.', 400, payload.error.flatten());
     }
 
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
     const limit = await rateLimit(clientIp, {
       limit: settings.maxQuestionsPerIp,
       windowMs: 24 * 60 * 60 * 1000,
