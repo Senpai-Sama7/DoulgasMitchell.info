@@ -13,7 +13,7 @@ describe('request helpers', () => {
     expect(validateTrustedOrigin(request).allowed).toBe(true);
   });
 
-  it('accepts referer fallback for same-site requests', () => {
+  it('rejects requests with only referer header (fallback removed for security)', () => {
     const request = new Request('http://127.0.0.1:3000/api/contact', {
       headers: {
         referer: 'http://127.0.0.1:3000/contact',
@@ -21,7 +21,8 @@ describe('request helpers', () => {
       method: 'POST',
     });
 
-    expect(validateTrustedOrigin(request).allowed).toBe(true);
+    // Referer fallback was intentionally removed — only Origin header is trusted
+    expect(validateTrustedOrigin(request).allowed).toBe(false);
   });
 
   it('rejects cross-site requests', () => {
@@ -38,17 +39,17 @@ describe('request helpers', () => {
     expect(result.reason).toMatch(/cross-site/i);
   });
 
-  it('prefers valid forwarded IP headers', () => {
+  it('prefers valid forwarded IP headers', async () => {
     const request = new Request('http://127.0.0.1:3000/api/contact', {
       headers: {
         'x-forwarded-for': '203.0.113.10, 10.0.0.5',
       },
     });
 
-    expect(getClientIp(request)).toBe('203.0.113.10');
+    expect(await getClientIp(request)).toBe('203.0.113.10');
   });
 
-  it('falls back to an anonymous fingerprint when no valid IP is present', () => {
+  it('falls back to an anonymous fingerprint when no valid IP is present', async () => {
     const request = new Request('http://127.0.0.1:3000/api/contact', {
       headers: {
         'x-forwarded-for': 'not-an-ip',
@@ -56,6 +57,6 @@ describe('request helpers', () => {
       },
     });
 
-    expect(getClientIp(request)).toMatch(/^anonymous:/);
+    expect(await getClientIp(request)).toMatch(/^anonymous:/);
   });
 });

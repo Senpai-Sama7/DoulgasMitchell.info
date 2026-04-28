@@ -109,7 +109,10 @@ export async function rateLimit(identifier: string, options: RateLimitOptions): 
 
   try {
     return await rateLimitInRedis(identifier, options);
-  } catch {
+  } catch (error) {
+    // Log Redis failures for operational visibility — in-memory fallback is not
+    // shared across instances, so degraded rate limiting may go unnoticed.
+    console.error('[rate-limit] Redis error, falling back to in-memory:', error instanceof Error ? error.message : error);
     return rateLimitInMemory(identifier, options);
   }
 }

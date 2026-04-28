@@ -30,10 +30,10 @@
 - [x] S1: Wrap middleware in try/catch (FIXED: proxy.ts wrapped in try/catch, removed duplicate code)
 - [x] N-S1: Security headers (VERIFIED: next.config.ts has ALL security headers - CSP, HSTS, X-Frame-Options, etc.)
 - [x] N-S2: Audit + harden all cookies (VERIFIED: auth.ts has httpOnly: true, secure: prod, sameSite: strict)
-- [x] S6: Fix origin validation (VERIFIED: request.ts uses allowed, not valid)
-- [x] N-S3: Implement CSRF tokens (VERIFIED: validateTrustedOrigin() sufficient)
+- [x] S6: Fix origin validation (FIXED: Referer fallback removed from getOriginCandidate())
+- [x] N-S3: Implement CSRF tokens (VERIFIED: validateTrustedOrigin() sufficient per Next.js)
 - [x] S2: Graceful JWT_SECRET handling (VERIFIED: throws if missing)
-- [x] S7: Log Redis failures (audit only, already uses logger.error)
+- [x] S7: Log Redis failures (FIXED: rate-limit.ts now logs Redis errors with console.error)
 
 ---
 
@@ -511,11 +511,11 @@ Epic 1: Infrastructure & Security (28h)
 
 | File | Purpose | Status |
 |------|---------|--------|
-| `fixes.md` | Original 33-issue audit | Reference |
-| `FIXES_EVALUATION.md` | Issue verification | Reference |
-| `GAPS_AUDIT.md` | 14 gap categories | Reference |
-| `GAPS_FIX_PLAN.md` | Gap execution plan | Reference |
-| `FIX_PLAN.md` | Original 6-phase plan | Superseded by this doc |
+| `docs/planning/fixes.md` | Original 33-issue audit | Archived reference |
+| `docs/planning/FIXES_EVALUATION.md` | Issue verification | Archived reference |
+| `docs/planning/GAPS_AUDIT.md` | 14 gap categories | Archived reference |
+| `docs/planning/GAPS_FIX_PLAN.md` | Gap execution plan | Archived reference |
+| `docs/planning/FIX_PLAN.md` | Original 6-phase plan | Archived reference |
 | **`MASTER_PLAN.md`** | **This document** | **Active master** |
 
-**All other documents are now REFERENCE only.** This is the single source of truth.
+**All other documents are now REFERENCE only (archived to `docs/planning/`).** This is the single source of truth.
