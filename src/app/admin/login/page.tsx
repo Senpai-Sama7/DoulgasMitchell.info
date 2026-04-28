@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail, ArrowRight, Shield, Fingerprint } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -212,7 +212,7 @@ export default function AdminLoginPage() {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 

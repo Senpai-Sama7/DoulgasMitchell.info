@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import {
   Award,
@@ -657,6 +657,7 @@ export default function ContentManagementPage() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content.editable, activeTab]);
 
   const filteredContent = useMemo(() => {
@@ -714,13 +715,13 @@ export default function ContentManagementPage() {
     }
   };
 
-  const openCreateEditor = () => {
+  const openCreateEditor = useCallback(() => {
     setEditor({
       type: activeTab,
       fields: { ...DEFAULT_FIELDS[activeTab] }
     });
     setEditorOpen(true);
-  };
+  }, [activeTab]);
 
   const handleFieldChange = (key: string, value: string | boolean) => {
     setEditor((current) => {
