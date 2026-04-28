@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
 
   try {
     const { pathname } = request.nextUrl;
-    const clientIp = getClientIp(request);
+    const clientIp = await getClientIp(request);
 
     // 1. Skip middleware for static assets and internal Next.js paths
     if (
