@@ -29,7 +29,8 @@
     "admin:test-login": "bun scripts/admin/test-login.ts",
     "admin:provision": "bun scripts/admin/provision-content.ts",
     "secret:generate": "bun scripts/generate-secret.mjs",
-    "backup": "bun scripts/backup.mjs"
+    "backup": "bun scripts/backup.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.64",
