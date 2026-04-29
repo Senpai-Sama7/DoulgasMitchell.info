@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { logger } from '@/lib/logger';
 import { Code, Brain, BookOpen, Award, Zap, Target, Users, Rocket, ArrowRight, Sparkles } from 'lucide-react';
 import { aboutRoles, expertiseByCategory, operatingPrinciples, bookShowcase } from '@/lib/site-content';
 
@@ -33,7 +34,7 @@ export function EnhancedAboutSection() {
       videoRef.current.setAttribute('muted', '');
       videoRef.current.setAttribute('playsinline', '');
       videoRef.current.play().catch(err => {
-        console.warn("Video autoplay failed:", err);
+        logger.warn("Video autoplay failed:", err);
       });
     }
   }, []);

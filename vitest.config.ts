@@ -6,6 +6,9 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     exclude: ['**/node_modules/**', '**/dist/**', '**/src/__tests__/e2e/**'],
+    env: {
+      JWT_SECRET: 'test-secret-32-chars-minimum-length!!',
+    },
   },
   resolve: {
     alias: {

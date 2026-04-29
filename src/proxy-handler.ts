@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp, validateTrustedOrigin } from '@/lib/request';
+import { logger } from '@/lib/logger';
 
 // Helper to get secret for Edge runtime
 function getJwtSecret() {
@@ -100,7 +101,7 @@ export async function proxy(request: NextRequest) {
             audience: JWT_AUDIENCE,
           });
         } catch (error) {
-          console.error('Middleware token verification failed:', error);
+          logger.error('Middleware token verification failed:', error);
           // Invalid token
           if (pathname.startsWith('/api/')) {
             return new NextResponse(JSON.stringify({ error: 'Unauthorized - Invalid Token' }), { status: 401, headers: securityHeaders });
@@ -123,7 +124,7 @@ export async function proxy(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Middleware unexpected error:', error);
+    logger.error('Middleware unexpected error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'Internal server error' }),
       { status: 500, headers: securityHeaders }
