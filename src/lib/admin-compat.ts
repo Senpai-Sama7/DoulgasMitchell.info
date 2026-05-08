@@ -138,13 +138,13 @@ let cachedFallbackPasswordHash: string | null = null;
 
 export async function findAdminUserByEmail(email: string) {
   if (!(await hasTable('AdminUser'))) {
-    if (env.ADMIN_PASSWORD && email.toLowerCase() === (env.ADMIN_EMAIL?.toLowerCase() || 'douglasmitchell@reliantai.org').toLowerCase()) {
+    if (env.ADMIN_PASSWORD && email.toLowerCase() === (env.ADMIN_EMAIL?.toLowerCase() || 'admin@douglasmitchell.info').toLowerCase()) {
       if (!cachedFallbackPasswordHash) {
         cachedFallbackPasswordHash = await bcrypt.hash(env.ADMIN_PASSWORD, 12);
       }
       return {
         id: 'fallback-admin',
-        email: env.ADMIN_EMAIL || 'DouglasMitchell@ReliantAI.org',
+        email: env.ADMIN_EMAIL || 'admin@douglasmitchell.info',
         name: 'Douglas Mitchell (Fallback)',
         passwordHash: cachedFallbackPasswordHash,
         role: 'admin',
