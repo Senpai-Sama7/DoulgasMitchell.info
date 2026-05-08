@@ -1,9 +1,22 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { getSession } from '@/lib/auth';
 import { ApiHandler } from '@/lib/api-response';
 import { logger } from '@/lib/logger';
 import { validateTrustedOrigin, readJsonBody } from '@/lib/request';
 import { generateCaseStudy } from '@/lib/portfolio-intelligence';
+
+const caseStudySchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  metrics: z.array(z.object({
+    label: z.string().trim().min(1),
+    value: z.string().trim().min(1),
+  })).optional(),
+  technologies: z.array(z.string().trim().min(1)).optional(),
+  role: z.string().trim().optional(),
+  context: z.string().trim().optional(),
+});
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
@@ -17,13 +30,13 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await readJsonBody(request);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  dynamic request body
-    const { title, description, metrics, technologies, role, context } = body as any;
-
-    if (!title || !description) {
-      return ApiHandler.error('Title and description are required for case study generation.', 400);
+    const raw = await readJsonBody(request);
+    const parsed = caseStudySchema.safeParse(raw);
+    if (!parsed.success) {
+      return ApiHandler.error('Invalid case study input.', 400, parsed.error.flatten());
     }
+
+    const { title, description, metrics, technologies, role, context } = parsed.data;
 
     const draft = await generateCaseStudy({
       title,

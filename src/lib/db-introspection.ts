@@ -6,7 +6,7 @@ export { quoteIdentifier, qualifiedColumn };
 const tableColumnsCache = new Map<string, Promise<Set<string>>>();
 
 // All Prisma schema model names that can be introspected
-const ALLOWED_TABLES = new Set([
+const ALLOWED_TABLES = new Set<string>([
   'ActivityLog', 'AdminUser', 'Article', 'ArticleBlock', 'ArticleMedia',
   'Book', 'Certification', 'Comment', 'ContactSubmission', 'LayoutBlock',
   'Media', 'Newsletter', 'Note', 'PageView', 'PasskeyCredential',
@@ -14,6 +14,13 @@ const ALLOWED_TABLES = new Set([
   // Legacy table names used by compat layer
   'AdminSession', 'AdminPasskey', 'NewsletterSubscriber', 'ContactMessage',
 ]);
+
+export type TABLE_NAME =
+  | 'ActivityLog' | 'AdminUser' | 'Article' | 'ArticleBlock' | 'ArticleMedia'
+  | 'Book' | 'Certification' | 'Comment' | 'ContactSubmission' | 'LayoutBlock'
+  | 'Media' | 'Newsletter' | 'Note' | 'PageView' | 'PasskeyCredential'
+  | 'Project' | 'ProjectMedia' | 'Reaction' | 'Session' | 'Setting' | 'SiteConfig'
+  | 'AdminSession' | 'AdminPasskey' | 'NewsletterSubscriber' | 'ContactMessage';
 
 export async function getTableColumns(tableName: string) {
   if (!ALLOWED_TABLES.has(tableName)) {

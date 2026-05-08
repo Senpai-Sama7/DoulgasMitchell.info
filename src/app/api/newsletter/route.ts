@@ -4,6 +4,7 @@ import { newsletterSubscriptionSchema } from '@/lib/forms';
 import { upsertNewsletterSubscriber } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { sanitizeName, sanitizeEmail } from '@/lib/sanitize';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -45,8 +46,8 @@ export async function POST(request: NextRequest) {
     const { email, name, source } = parsed.data;
 
     const subscriber = await upsertNewsletterSubscriber({
-      email,
-      name: name || undefined,
+      email: sanitizeEmail(email),
+      name: name ? sanitizeName(name) : undefined,
     });
 
     await logActivity({
