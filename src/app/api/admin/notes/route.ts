@@ -4,6 +4,39 @@ import { logActivity } from '@/lib/activity';
 import { getSession } from '@/lib/auth';
 import { validateTrustedOrigin } from '@/lib/request';
 import { z } from 'zod';
+import type { Note } from '@prisma/client';
+
+interface SerializedNote {
+  id: string;
+  slug: string;
+  title: string;
+  content: string;
+  category: string | null;
+  tags: string | null;
+  isDraft: boolean;
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+function serializeNote(note: Note): SerializedNote {
+  return {
+    id: note.id,
+    slug: note.slug,
+    title: note.title,
+    content: note.content,
+    category: note.category,
+    tags: note.tags,
+    isDraft: note.isDraft,
+    isPublic: note.isPublic,
+    createdAt: note.createdAt.toISOString(),
+    updatedAt: note.updatedAt.toISOString(),
+  };
+}
+
+function serializeNotesArray(notes: Note[]): SerializedNote[] {
+  return notes.map(serializeNote);
+}
 
 const noteSchema = z.object({
   title: z.string().min(1),
@@ -25,14 +58,12 @@ export async function GET(request: Request) {
     if (id) {
       const note = await db.note.findUnique({ where: { id } });
       if (!note) return ApiHandler.error('Note not found', 404);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  Prisma type serialization needs runtime flexibility
-      return ApiHandler.success({ note: note as any });
+      return ApiHandler.success({ note: serializeNote(note) });
     }
     if (slug) {
       const note = await db.note.findUnique({ where: { slug } });
       if (!note) return ApiHandler.error('Note not found', 404);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  Prisma type serialization needs runtime flexibility
-      return ApiHandler.success({ note: note as any });
+      return ApiHandler.success({ note: serializeNote(note) });
     }
 
     const session = await getSession();
@@ -43,8 +74,7 @@ export async function GET(request: Request) {
       orderBy: { updatedAt: 'desc' }
     });
     
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  Prisma type serialization needs runtime flexibility
-    return ApiHandler.success({ notes: notes as any });
+    return ApiHandler.success({ notes: serializeNotesArray(notes) });
   } catch {
     return ApiHandler.error('Failed to fetch notes', 500);
   }
@@ -75,11 +105,9 @@ export async function POST(request: Request) {
       details: { title: note.title }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma type serialization
-    return ApiHandler.success({ note: note as any }, undefined, 201);
+    return ApiHandler.success({ note: serializeNote(note) }, undefined, 201);
   } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod error shape
-    if (error instanceof z.ZodError) return ApiHandler.error((error as any).errors[0].message, 400);
+    if (error instanceof z.ZodError) return ApiHandler.error(error.issues[0].message, 400);
     return ApiHandler.error('Failed to create note', 500);
   }
 }
@@ -114,11 +142,9 @@ export async function PATCH(request: Request) {
       details: { title: note.title }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma type serialization
-    return ApiHandler.success({ note: note as any });
+    return ApiHandler.success({ note: serializeNote(note) });
   } catch (error) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Zod error shape
-    if (error instanceof z.ZodError) return ApiHandler.error((error as any).errors[0].message, 400);
+    if (error instanceof z.ZodError) return ApiHandler.error(error.issues[0].message, 400);
     return ApiHandler.error('Failed to update note', 500);
   }
 }
