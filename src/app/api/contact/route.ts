@@ -4,6 +4,8 @@ import { contactSubmissionSchema } from '@/lib/forms';
 import { createContactSubmissionRecord } from '@/lib/operational-compat';
 import { rateLimit } from '@/lib/rate-limit';
 import { logger } from '@/lib/logger';
+import { sendEmail } from '@/lib/email';
+import { env } from '@/lib/env';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -67,6 +69,25 @@ export async function POST(request: NextRequest) {
           subject: subject || null,
         },
       });
+
+      // Notify admin via email (fire-and-forget — don't block response on SMTP)
+      const adminEmail = env.ADMIN_EMAIL;
+      if (adminEmail) {
+        void sendEmail({
+          to: adminEmail,
+          subject: subject ? `New contact: ${subject}` : 'New contact form submission',
+          text: `Name: ${name}\nEmail: ${email}\nSubject: ${subject || 'N/A'}\nMessage:\n${message}`,
+          html: `<p><strong>Name:</strong> ${name}</p>
+<p><strong>Email:</strong> ${email}</p>
+<p><strong>Subject:</strong> ${subject || 'N/A'}</p>
+<p><strong>Message:</strong></p>
+<p>${message.replace(/\n/g, '<br/>')}</p>`,
+        }).then((result) => {
+          if (!result.success) {
+            logger.warn('Admin email notification failed:', result.error);
+          }
+        });
+      }
     } catch {
       return NextResponse.json(
         { error: 'Unable to submit your message right now. Please email directly.' },
