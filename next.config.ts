@@ -28,7 +28,6 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
-  // Suppress source-map 404s in Lighthouse Best Practices audit
   productionBrowserSourceMaps: false,
   allowedDevOrigins: ['127.0.0.1', 'localhost'],
   outputFileTracingExcludes: {

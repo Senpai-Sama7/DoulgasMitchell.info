@@ -9,16 +9,22 @@ import { randomUUID } from 'crypto';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 let AsyncLocalStorage: any = null;
 
-// Lazy init — only called from Node.js code paths (API routes, etc).
-// Edge middleware never calls this, so the import never executes.
 function getAsyncLocalStorage() {
   if (AsyncLocalStorage !== null) return AsyncLocalStorage;
   try {
+    if (typeof require === 'undefined') {
+      AsyncLocalStorage = undefined;
+      return undefined;
+    }
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const ah = require('async_hooks');
-    AsyncLocalStorage = new ah.AsyncLocalStorage();
+    if (ah && ah.AsyncLocalStorage) {
+      AsyncLocalStorage = new ah.AsyncLocalStorage();
+    } else {
+      AsyncLocalStorage = undefined;
+    }
   } catch {
-    AsyncLocalStorage = undefined; // permanently unavailable
+    AsyncLocalStorage = undefined;
   }
   return AsyncLocalStorage;
 }
