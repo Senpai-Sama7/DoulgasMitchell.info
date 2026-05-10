@@ -38,6 +38,8 @@ jobs:
         run: bun run test:e2e
         env:
           NODE_ENV: production
+          JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-secret-32-chars-minimum-length' }}
+          DATABASE_URL: file:./dev.db
 
       - name: Upload test results
         if: always()
