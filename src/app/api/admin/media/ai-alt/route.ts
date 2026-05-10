@@ -18,7 +18,12 @@ export async function POST(request: Request) {
     if (!mediaId) return ApiHandler.error('Media ID is required', 400);
 
     const alt = await generateAltText(mediaId);
-    if (!alt) return ApiHandler.error('Alt text generation failed', 500);
+    if (!alt) {
+      return ApiHandler.error(
+        'AI alt text generation requires a Gemini API key. Add GOOGLE_GEMINI_API_KEY or GEMINI_API_KEY to your .env file.',
+        503
+      );
+    }
 
     return ApiHandler.success({ alt });
   } catch (error) {

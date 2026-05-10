@@ -8,12 +8,6 @@ import { useTheme } from '@/lib/theme';
 import { AnimatePresence } from 'framer-motion';
 
 // Heavy effect components — defer until after first paint.
-// SplashOverlay contains a 1.46MB video reference and was the primary
-// driver of the 4,100ms LCP element render delay.
-const SplashOverlay = dynamic(
-  () => import('@/components/effects/splash-overlay').then((m) => m.SplashOverlay),
-  { ssr: false }
-);
 const CommandPalette = dynamic(
   () => import('@/components/effects/command-palette').then((m) => m.CommandPalette),
   { ssr: false }
@@ -23,36 +17,15 @@ const CommandKTrigger = dynamic(
   { ssr: false }
 );
 
-const SPLASH_SEEN_KEY = 'dm-splash-seen';
-
 export function HomePageExperience() {
   const { scrollYProgress } = useScroll();
   const prefersReducedMotion = useReducedMotion();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const [showSplash, setShowSplash] = useState(false);
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-        setShowSplash(false);
-        return;
-      }
-
-      try {
-        const hasHash = window.location.hash && window.location.hash.length > 1;
-        setShowSplash(!hasHash && window.sessionStorage.getItem(SPLASH_SEEN_KEY) !== '1');
-      } catch {
-        setShowSplash(false);
-      }
-    }, 0);
-
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    if (!showSplash && window.location.hash) {
+    if (window.location.hash) {
       const id = window.location.hash.substring(1);
       const timer = setTimeout(() => {
         const el = document.getElementById(id);
@@ -62,13 +35,7 @@ export function HomePageExperience() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [showSplash, prefersReducedMotion]);
-
-  useEffect(() => {
-    if (!showSplash) {
-      document.body.style.overflow = 'auto';
-    }
-  }, [showSplash]);
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -88,7 +55,6 @@ export function HomePageExperience() {
         window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
         return;
       }
-
       const element = document.querySelector(href);
       if (element instanceof HTMLElement) {
         element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
@@ -101,22 +67,6 @@ export function HomePageExperience() {
     <>
       <PageViewTracker />
 
-      <AnimatePresence>
-        {showSplash && (
-          <SplashOverlay
-            minDisplayTime={2400}
-            onComplete={() => {
-              setShowSplash(false);
-              try {
-                window.sessionStorage.setItem(SPLASH_SEEN_KEY, '1');
-              } catch {
-                // Ignore session storage write failures.
-              }
-            }}
-          />
-        )}
-      </AnimatePresence>
-
       <motion.div
         className="scroll-progress"
         style={{
@@ -125,16 +75,21 @@ export function HomePageExperience() {
         }}
       />
 
-      {/* Command palette and trigger — deferred, not needed for first paint */}
-      <CommandPalette
-        isOpen={isCommandOpen}
-        onClose={() => setIsCommandOpen(false)}
-        onNavigate={handleNavigate}
-        isDark={isDark}
-        onToggleTheme={toggle}
+      <CommandKTrigger
+        onClick={() => setIsCommandOpen(true)}
       />
 
-      <CommandKTrigger onClick={() => setIsCommandOpen(true)} />
+      <AnimatePresence>
+        {isCommandOpen && (
+          <CommandPalette
+            isOpen={isCommandOpen}
+            isDark={isDark}
+            onToggleTheme={toggle}
+            onClose={() => setIsCommandOpen(false)}
+            onNavigate={handleNavigate}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 }

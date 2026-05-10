@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!draft) {
-      return ApiHandler.error('Failed to generate case study draft.', 500);
+      return ApiHandler.error(
+        'Case study generation requires a Gemini API key. Add GOOGLE_GEMINI_API_KEY or GEMINI_API_KEY to your .env file.',
+        503
+      );
     }
 
     return ApiHandler.success({ draft });

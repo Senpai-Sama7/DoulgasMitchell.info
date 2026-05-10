@@ -18,7 +18,12 @@ export async function POST(request: Request) {
     if (!content) return ApiHandler.error('Content is required', 400);
 
     const result = await analyzeContent(content, type || 'Article');
-    if (!result) return ApiHandler.error('Optimization failed', 500);
+    if (!result) {
+      return ApiHandler.error(
+        'Content optimization requires a Gemini API key. Add GOOGLE_GEMINI_API_KEY to your .env file.',
+        503
+      );
+    }
 
     return ApiHandler.success({ data: result });
   } catch (error) {
