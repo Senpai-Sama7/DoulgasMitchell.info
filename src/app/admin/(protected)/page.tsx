@@ -14,11 +14,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { getAdminDashboardData } from '@/lib/content-service';
+import { SetupGuide } from '@/components/admin/setup-guide';
 
-export const revalidate = 60; // Refresh dashboard data every 60 seconds
+export const revalidate = 60;
 
 export default async function AdminDashboard() {
   const { stats, recentActivity } = await getAdminDashboardData();
+  const needsSeed = stats.articles === 0 && stats.projects === 0;
 
   const statCards = [
     {
@@ -110,6 +112,11 @@ export default async function AdminDashboard() {
           </Card>
         ))}
       </div>
+
+      {/* Setup guide — shown when no content exists */}
+      {(needsSeed || !process.env.GOOGLE_GEMINI_API_KEY) && (
+        <SetupGuide needsSeed={needsSeed} />
+      )}
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">

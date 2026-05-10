@@ -53,3 +53,4 @@ prisma/dev.db
 # project artifacts
 .entire/
 dev.db
+public/uploads/
