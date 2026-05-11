@@ -1,256 +1,268 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion';
 
-const DESCRIPTORS = [
-  'Operations strategy, delivered with precision.',
-  'Applied intelligence, integrated with intent.',
-  'Analysis, AI practice, and authorship in one frame.',
-];
+const LINES = ['DM', 'OPERATIONS ANALYST', 'AI PRACTITIONER', 'AUTHOR', 'SYSTEMS STRATEGIST'];
+const AUTO_DISMISS_MS = 8000;
+const PARTICLE_COUNT = 120;
+const CANVAS_DPR = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1;
 
-const SIGNALS = ['ASCII GRID', 'FIELD STACK', 'MOTION INDEX'];
-const STATUS_CODES = ['PRIME', 'LOCK', 'FLOW'];
-const ASCII_RAMP = ' .:-=+*#%@';
-const VEIL_TRANSITION = { duration: 0.9, ease: [0.22, 1, 0.36, 1] as const };
-const PANEL_TRANSITION = { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const };
-const GRID_COLS = 22;
-const GRID_ROWS = 14;
-const ASCII_FRAME_MS = 80;
-const BOOT_SEQUENCE_MS = 2200;
-const AUTO_SKIP_MS = 9000;
-
-function randChar(): string {
-  return ASCII_RAMP[Math.floor(Math.random() * ASCII_RAMP.length)];
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+  hue: number;
 }
 
-function buildGrid(): string[][] {
-  return Array.from({ length: GRID_ROWS }, () =>
-    Array.from({ length: GRID_COLS }, randChar)
-  );
-}
-
-export interface SplashOverlayProps {
-  minDisplayTime?: number;
-  onComplete?: () => void;
-}
-
-export function SplashOverlay({ minDisplayTime, onComplete }: SplashOverlayProps) {
+export function SplashOverlay({ onComplete }: { onComplete?: () => void }) {
   const prefersReducedMotion = useReducedMotion();
-  const [phase, setPhase] = useState<'boot' | 'active' | 'exit' | 'done'>(
-    prefersReducedMotion ? 'done' : 'boot'
+  const [phase, setPhase] = useState<'enter' | 'active' | 'exit' | 'done'>(
+    prefersReducedMotion ? 'done' : 'enter'
   );
-  const [grid, setGrid] = useState<string[][]>(buildGrid);
-  const [tick, setTick] = useState(0);
-  const [descriptorIndex, setDescriptorIndex] = useState(0);
-  const [signalIndex, setSignalIndex] = useState(0);
-  const [ctaReady, setCtaReady] = useState(false);
-
-  const bootDuration = minDisplayTime ?? BOOT_SEQUENCE_MS;
-  const showCta = phase === 'active' && ctaReady;
+  const [visibleLine, setVisibleLine] = useState(0);
+  const [dismissReady, setDismissReady] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
+  const rafRef = useRef<number>(0);
+  const dimsRef = useRef({ w: 0, h: 0 });
 
   const dismiss = useCallback(() => {
     setPhase('exit');
-    setTimeout(() => setPhase('done'), 900);
-  }, []);
-
-  useEffect(() => {
-    if (phase !== 'boot') return;
-    const t = setTimeout(() => setPhase('active'), bootDuration);
-    return () => clearTimeout(t);
-  }, [phase, bootDuration]);
-
-  useEffect(() => {
-    if (phase === 'done') {
+    setTimeout(() => {
+      setPhase('done');
       onComplete?.();
-    }
-  }, [phase, onComplete]);
+    }, 700);
+  }, [onComplete]);
 
+  // Phase transitions
+  useEffect(() => {
+    if (phase !== 'enter') return;
+    const t = setTimeout(() => setPhase('active'), 500);
+    return () => clearTimeout(t);
+  }, [phase]);
+
+  // Auto-dismiss
   useEffect(() => {
     if (phase !== 'active') return;
-    const t = setTimeout(dismiss, AUTO_SKIP_MS);
+    const t = setTimeout(dismiss, AUTO_DISMISS_MS);
     return () => clearTimeout(t);
   }, [phase, dismiss]);
 
+  // Enable skip button after a small delay
   useEffect(() => {
     if (phase !== 'active') return;
-    const t = setTimeout(() => setCtaReady(true), 1600);
+    const t = setTimeout(() => setDismissReady(true), 1200);
     return () => clearTimeout(t);
   }, [phase]);
 
+  // Staggered line reveal
+  useEffect(() => {
+    if (phase !== 'active') return;
+    const interval = setInterval(() => {
+      setVisibleLine((prev) => {
+        if (prev >= LINES.length) {
+          clearInterval(interval);
+          return prev;
+        }
+        return prev + 1;
+      });
+    }, 400);
+    return () => clearInterval(interval);
+  }, [phase]);
+
+  // Click to dismiss
+  useEffect(() => {
+    if (!dismissReady) return;
+    const handler = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('button')) dismiss();
+    };
+    window.addEventListener('click', handler);
+    return () => window.removeEventListener('click', handler);
+  }, [dismissReady, dismiss]);
+
+  // Keyboard dismiss
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' || e.key === 'Enter' || e.key === ' ') dismiss();
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [dismiss]);
+
+  // Canvas particle field
   useEffect(() => {
     if (phase === 'done' || phase === 'exit') return;
-    const t = setInterval(() => {
-      setGrid((prev) => {
-        const next = prev.map((row) => [...row]);
-        const mutations = Math.floor(GRID_COLS * GRID_ROWS * 0.18);
-        for (let i = 0; i < mutations; i++) {
-          const r = Math.floor(Math.random() * GRID_ROWS);
-          const c = Math.floor(Math.random() * GRID_COLS);
-          next[r][c] = randChar();
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const resize = () => {
+      const dpr = CANVAS_DPR;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      canvas.style.width = `${window.innerWidth}px`;
+      canvas.style.height = `${window.innerHeight}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      dimsRef.current = { w: window.innerWidth, h: window.innerHeight };
+    };
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Init particles
+    const { w, h } = dimsRef.current;
+    particlesRef.current = Array.from({ length: PARTICLE_COUNT }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      vx: (Math.random() - 0.5) * 0.6,
+      vy: (Math.random() - 0.5) * 0.6,
+      life: Math.random() * 200,
+      maxLife: 180 + Math.random() * 120,
+      size: 0.6 + Math.random() * 1.8,
+      hue: 210 + Math.random() * 30,
+    }));
+
+    let frame = 0;
+    const animate = () => {
+      frame++;
+      const { w: cw, h: ch } = dimsRef.current;
+      ctx.clearRect(0, 0, cw, ch);
+
+      for (const p of particlesRef.current) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life++;
+
+        // Wrap around
+        if (p.x < -20) p.x = cw + 20;
+        if (p.x > cw + 20) p.x = -20;
+        if (p.y < -20) p.y = ch + 20;
+        if (p.y > ch + 20) p.y = -20;
+
+        // Recycle dead particles
+        if (p.life > p.maxLife) {
+          p.x = Math.random() * cw;
+          p.y = Math.random() * ch;
+          p.vx = (Math.random() - 0.5) * 0.6;
+          p.vy = (Math.random() - 0.5) * 0.6;
+          p.life = 0;
+          p.maxLife = 180 + Math.random() * 120;
+          p.hue = 210 + Math.random() * 30;
         }
-        return next;
-      });
-      setTick((n) => n + 1);
-    }, ASCII_FRAME_MS);
-    return () => clearInterval(t);
-  }, [phase]);
 
-  useEffect(() => {
-    if (phase !== 'active') return;
-    const t = setInterval(
-      () => setDescriptorIndex((i) => (i + 1) % DESCRIPTORS.length),
-      2800
-    );
-    return () => clearInterval(t);
-  }, [phase]);
+        const alpha = Math.sin((p.life / p.maxLife) * Math.PI) * 0.35;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(${p.hue}, 60%, 65%, ${alpha})`;
+        ctx.fill();
 
-  useEffect(() => {
-    if (phase !== 'active') return;
-    const t = setInterval(
-      () => setSignalIndex((i) => (i + 1) % SIGNALS.length),
-      1100
-    );
-    return () => clearInterval(t);
+        // Occasional brighter pulses
+        if (frame % 3 === 0) {
+          const pulseAlpha = alpha * 0.15;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue}, 80%, 75%, ${pulseAlpha})`;
+          ctx.fill();
+        }
+      }
+
+      rafRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      window.removeEventListener('resize', resize);
+    };
   }, [phase]);
 
   if (phase === 'done') return null;
 
-  const statusCode = STATUS_CODES[signalIndex % STATUS_CODES.length];
-  const signal = SIGNALS[signalIndex];
-
   return (
     <motion.div
-      key="splash"
-      initial={{ opacity: 1 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: phase === 'exit' ? 0 : 1 }}
-      transition={VEIL_TRANSITION}
-      className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden bg-background"
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#05080f]"
       role="dialog"
       aria-modal="true"
-      aria-label="Loading Douglas Mitchell — editorial systems operator"
+      aria-label="Loading Douglas Mitchell portfolio"
     >
-      {/* Background video — decorative, aria-hidden */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
-        poster="/media/dougie-frame-poster.webp"
-        className="absolute inset-0 h-full w-full object-cover opacity-[0.07] mix-blend-luminosity"
+      {/* Particle canvas layer */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0"
         aria-hidden="true"
-      >
-        <source src="/media/dougie-loop-v2.mp4" type="video/mp4" />
-        <track kind="captions" srcLang="en" label="English" default />
-      </video>
+      />
 
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97, y: 14 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        transition={PANEL_TRANSITION}
-        className="relative z-10 w-full max-w-[1380px] overflow-hidden rounded-[34px] border border-border/60 bg-background/88 shadow-[0_40px_120px_-60px_rgba(2,6,23,0.85)] backdrop-blur-3xl mx-4"
-      >
-        <div className="flex items-center justify-between border-b border-border/40 px-7 py-3">
-          <div className="flex items-center gap-6 font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/70">
-            <span>DM — EDITORIAL OS</span>
-            <span aria-live="polite">{signal}</span>
+      {/* Radial vignette */}
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_50%,transparent_0%,rgba(5,8,15,0.7)_90%)]" />
+
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center gap-10 px-6 text-center">
+        {/* Progress bar */}
+        {phase === 'enter' && (
+          <div className="h-[1px] w-48 overflow-hidden rounded-full bg-white/[0.06]">
+            <motion.div
+              className="h-full bg-gradient-to-r from-white/0 via-white/50 to-white/0"
+              initial={{ width: '0%' }}
+              animate={{ width: '100%' }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+            />
           </div>
-          <div className="flex items-center gap-3">
-            <span
-              className="font-mono text-[10px] uppercase tracking-[0.3em] text-primary"
-              aria-live="polite"
-            >
-              {statusCode}
-            </span>
-            <button
-              onClick={dismiss}
-              className="font-mono text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 transition-colors hover:text-foreground"
-              aria-label="Skip intro and enter the site"
-            >
-              skip
-            </button>
-          </div>
+        )}
+
+        {/* Main label */}
+        <div className="space-y-5">
+          {phase === 'enter' ? (
+            <p className="font-mono text-[11px] uppercase tracking-[0.35em] text-white/20">
+              Initializing
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {LINES.map((line, i) => (
+                <AnimatePresence key={line}>
+                  {i < visibleLine && (
+                    <motion.p
+                      initial={{ opacity: 0, y: 6, filter: 'blur(4px)' }}
+                      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+                      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                      className={i === 0
+                        ? 'text-4xl font-semibold tracking-tight text-white sm:text-5xl'
+                        : 'font-mono text-[11px] uppercase tracking-[0.3em] text-white/35'
+                      }
+                    >
+                      {i === 0 ? 'Douglas Mitchell' : line}
+                    </motion.p>
+                  )}
+                </AnimatePresence>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="grid grid-cols-[1fr_auto] divide-x divide-border/40">
-          <div className="space-y-8 p-8 sm:p-10">
-            {phase === 'boot' ? (
-              <div className="space-y-5">
-                <div className="h-2 w-full overflow-hidden rounded-full bg-muted/40">
-                  <motion.div
-                    className="h-full bg-primary/60"
-                    initial={{ width: '0%' }}
-                    animate={{ width: '100%' }}
-                    transition={{ duration: BOOT_SEQUENCE_MS / 1000 - 0.2, ease: 'linear' }}
-                  />
-                </div>
-                <p className="font-mono text-[11px] uppercase tracking-[0.3em] text-muted-foreground/70">
-                  Initialising field systems&hellip;
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <p className="font-mono text-[10px] uppercase tracking-[0.35em] text-muted-foreground/60">
-                  PROMPTING. AUTONOMY. AND SYSTEMS THINKING STUDIO IN ONE CLEAR SURFACE.
-                </p>
-                <h1 className="text-5xl font-semibold leading-[1.08] tracking-tight sm:text-6xl lg:text-7xl">
-                  Douglas<br />Mitchell
-                </h1>
-                <motion.p
-                  key={descriptorIndex}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.4 }}
-                  className="max-w-sm text-sm leading-relaxed text-muted-foreground"
-                >
-                  {DESCRIPTORS[descriptorIndex]}
-                </motion.p>
-                {showCta && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.35 }}
-                    onClick={dismiss}
-                    className="inline-flex items-center gap-3 rounded-2xl border border-border/70 bg-background px-5 py-3 text-sm font-medium transition-all hover:bg-muted/40"
-                  >
-                    Enter the archive
-                    <span className="font-mono text-xs text-primary">→</span>
-                  </motion.button>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div
-            className="hidden p-6 sm:flex sm:flex-col sm:gap-px"
-            aria-hidden="true"
+        {/* Skip hint */}
+        {dismissReady && (
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            onClick={dismiss}
+            className="font-mono text-[10px] uppercase tracking-[0.35em] text-white/20 transition-colors hover:text-white/50"
           >
-            {grid.map((row, ri) => (
-              <div key={ri} className="flex gap-px">
-                {row.map((ch, ci) => (
-                  <span
-                    key={ci}
-                    className="font-mono text-[9px] leading-none text-muted-foreground/30"
-                  >
-                    {ch}
-                  </span>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between border-t border-border/40 px-7 py-3">
-          <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-muted-foreground/50">
-            FLOW{' '}
-            <span className="text-primary">100%</span>
-          </div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.32em] text-muted-foreground/50">
-            Live Raster... <span aria-hidden="true">{tick % 2 === 0 ? '▮' : '▯'}</span>
-          </div>
-        </div>
-      </motion.div>
+            Press any key to enter
+          </motion.button>
+        )}
+      </div>
     </motion.div>
   );
 }

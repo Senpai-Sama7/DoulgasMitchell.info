@@ -7,7 +7,11 @@ import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { useTheme } from '@/lib/theme';
 import { AnimatePresence } from 'framer-motion';
 
-// Heavy effect components — defer until after first paint.
+// Heavy effect components — deferred until after first paint.
+const SplashOverlay = dynamic(
+  () => import('@/components/effects/splash-overlay').then((m) => m.SplashOverlay),
+  { ssr: false }
+);
 const CommandPalette = dynamic(
   () => import('@/components/effects/command-palette').then((m) => m.CommandPalette),
   { ssr: false }
@@ -21,8 +25,24 @@ export function HomePageExperience() {
   const { scrollYProgress } = useScroll();
   const prefersReducedMotion = useReducedMotion();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
   const { isDark, toggle } = useTheme();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
+
+  // Show splash overlay on first visit per session
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const timer = setTimeout(() => {
+      try {
+        const hasHash = !!window.location.hash;
+        const seen = window.sessionStorage.getItem('dm-splash-seen');
+        setShowSplash(!hasHash && !seen);
+      } catch {
+        setShowSplash(false);
+      }
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [prefersReducedMotion]);
 
   useEffect(() => {
     if (window.location.hash) {
@@ -65,6 +85,17 @@ export function HomePageExperience() {
 
   return (
     <>
+      <AnimatePresence>
+        {showSplash && (
+          <SplashOverlay
+            onComplete={() => {
+              setShowSplash(false);
+              try { window.sessionStorage.setItem('dm-splash-seen', '1'); } catch { /* storage unavailable */ }
+            }}
+          />
+        )}
+      </AnimatePresence>
+
       <PageViewTracker />
 
       <motion.div
