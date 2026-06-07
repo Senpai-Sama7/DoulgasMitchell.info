@@ -11,7 +11,6 @@ import {
   Mail,
   MapPin,
   Send,
-  Terminal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,13 +23,6 @@ const contactIcons = {
   LinkedIn: Linkedin,
   Location: MapPin,
 } as const;
-
-const asciiDecoration = `
-┌─────────────────────────────────────┐
-│                                     │
-│    Ready to build something?       │
-│                                     │
-└─────────────────────────────────────┘`;
 
 const inquiryStarters = [
   {
@@ -129,9 +121,7 @@ export function EnhancedContactSection() {
 
   return (
     <section id="contact" className="section-spacing relative overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03]">
-        <pre className="whitespace-pre font-mono text-[10px] text-muted-foreground">{asciiDecoration}</pre>
-      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--brand-accent),transparent_92%),transparent_60%)]" />
 
       <div className="editorial-container relative z-10">
         <motion.div
@@ -141,16 +131,9 @@ export function EnhancedContactSection() {
           transition={{ duration: prefersReducedMotion ? 0 : 0.5 }}
           className="mb-16 text-center"
         >
-          <div className="mb-4 flex items-center justify-center gap-3">
-            <span className="font-mono text-xs text-muted-foreground">{'// 06'}</span>
-          </div>
+          <p className="immersive-kicker mb-6">Contact</p>
 
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-2">
-            <Terminal className="h-4 w-4 text-primary" />
-            <span className="font-mono text-sm">connect()</span>
-          </div>
-
-          <h2 className="editorial-title mb-4">Let's Build Something</h2>
+          <h2 className="editorial-title mb-4">Let&apos;s build something</h2>
           <p className="editorial-subtitle mx-auto max-w-2xl">
             Whether you have a project in mind, want to discuss AI automation, or just want to connect, I’m open to conversations with clear intent.
           </p>
@@ -183,12 +166,9 @@ export function EnhancedContactSection() {
             viewport={{ once: true }}
             transition={{ duration: prefersReducedMotion ? 0 : 0.5 }}
           >
-            <div className="mb-6 flex items-center gap-2 font-mono text-xs text-muted-foreground">
-              <span className="text-primary">$</span>
-              cat contact_info.json
-            </div>
+            <p className="immersive-kicker mb-6">Direct lines</p>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {contactMethods.map((method, index) => {
                 const Icon = contactIcons[method.label as keyof typeof contactIcons];
                 const content = (
@@ -216,7 +196,7 @@ export function EnhancedContactSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: prefersReducedMotion ? 0 : index * 0.1 }}
-                    className={`group flex items-center gap-4 rounded-2xl border border-border bg-background p-4 transition-all hover:border-primary/30 ${method.color}`}
+                    className={`glass-panel group flex items-center gap-4 p-4 transition-all hover:-translate-y-0.5 ${method.color}`}
                   >
                     {content}
                   </motion.a>
@@ -227,7 +207,7 @@ export function EnhancedContactSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: prefersReducedMotion ? 0 : index * 0.1 }}
-                    className="group flex items-center gap-4 rounded-2xl border border-border bg-background p-4"
+                    className="glass-panel group flex items-center gap-4 p-4"
                   >
                     {content}
                   </motion.div>

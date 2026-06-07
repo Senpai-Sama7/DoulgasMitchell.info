@@ -2,7 +2,16 @@
 export { SiteHeader } from './header';
 export { SiteFooter } from './footer';
 
-// Enhanced components
+// Immersive public components
+export { ImmersiveHeroSection } from './immersive-hero-section';
+export { ImmersiveAboutSection } from './immersive-about-section';
+export { ImmersiveWorkSection } from './immersive-work-section';
+export { ImmersiveBookSection } from './immersive-book-section';
+export { ImmersiveWritingSection } from './immersive-writing-section';
+export { ImmersiveContactSection } from './immersive-contact-section';
+export { ImmersiveCertificationsSection } from './immersive-certifications-section';
+
+// Enhanced components (legacy fallback)
 export { EnhancedHeroSection } from './enhanced-hero-section';
 export { EnhancedAboutSection } from './enhanced-about-section';
 export { EnhancedWorkSection } from './enhanced-work-section';

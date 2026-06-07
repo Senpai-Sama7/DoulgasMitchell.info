@@ -7,6 +7,7 @@ import { Mail, Menu, Moon, Sparkles, Sun, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { siteProfile } from '@/lib/site-content';
+import { mediaManifest } from '@/lib/media-manifest';
 import { useTheme } from '@/lib/theme';
 
 const navLinks = [
@@ -26,7 +27,7 @@ export function SiteHeader() {
 
   useEffect(() => {
     const syncHeaderState = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 24);
 
       const offset = 160;
       const currentSection = navLinks.reduce<string>((current, link) => {
@@ -94,49 +95,48 @@ export function SiteHeader() {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [isMobileMenuOpen]);
 
-  const activeLinkClass = 'text-foreground after:w-[calc(100%-2rem)]';
-
   return (
     <header
       className={cn(
-        'fixed inset-x-0 top-0 z-50 transition-all duration-300',
-        isScrolled ? 'border-b border-border bg-background/88 backdrop-blur-xl' : 'bg-transparent'
+        'fixed inset-x-0 top-0 z-50 transition-[background,border,box-shadow] duration-500',
+        isScrolled
+          ? 'border-b border-border/40 bg-background/55 shadow-[0_8px_32px_-12px_color-mix(in_oklch,var(--foreground),transparent_92%)] backdrop-blur-2xl backdrop-saturate-150'
+          : 'border-b border-transparent bg-gradient-to-b from-background/70 via-background/30 to-transparent'
       )}
     >
       <nav aria-label="Primary" className="editorial-container">
-        <div className="flex h-16 items-center justify-between gap-4 md:h-20">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="group flex items-center gap-2 rounded-full px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-              <span className="font-mono text-xs text-muted-foreground transition-colors group-hover:text-foreground">
-                {'//'}
-              </span>
-              <span className="font-semibold tracking-tight">{siteProfile.name}</span>
-            </Link>
-
-            {/* Decorative avatar video — fully hidden from assistive technology */}
-            <div
-              aria-hidden="true"
-              className="hidden h-10 w-10 shrink-0 overflow-hidden rounded-full border border-primary/20 shadow-lg shadow-primary/5 sm:block"
+        <div className="flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="group flex items-center gap-3 rounded-full px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <video
-                ref={videoRef}
-                autoPlay
-                loop
-                muted
-                playsInline
-                poster="/media/dougie-frame-poster.webp"
-                className="h-full w-full object-cover"
+              <div
                 aria-hidden="true"
+                className="hidden h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border/60 shadow-sm sm:block"
               >
-                <source src="/media/breathing-dm-loop.mp4" type="video/mp4" />
-                {/* Captions track satisfies Lighthouse a11y audit for <video> elements.
-                    Content is decorative; track is intentionally empty. */}
-                <track kind="captions" srcLang="en" label="English" default />
-              </video>
-            </div>
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster="/media/dougie-frame-poster.webp"
+                  className="h-full w-full object-cover"
+                  aria-hidden
+                  tabIndex={-1}
+                >
+                  <source src={mediaManifest.hero.videoLoop} type="video/mp4" />
+                  <source src={mediaManifest.hero.videoLoopAlt} type="video/mp4" />
+                </video>
+              </div>
+              <span className="font-display text-lg tracking-tight transition-opacity group-hover:opacity-80">
+                {siteProfile.name}
+              </span>
+            </Link>
           </div>
 
-          <ul className="hidden items-center gap-1 md:flex">
+          <ul className="hidden items-center gap-0.5 md:flex">
             {navLinks.map((link) => {
               const isActive = activeSection === link.sectionId;
               return (
@@ -144,7 +144,10 @@ export function SiteHeader() {
                   <a
                     href={link.href}
                     aria-current={isActive ? 'location' : undefined}
-                    className={cn('nav-link rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', isActive && activeLinkClass)}
+                    className={cn(
+                      'nav-link rounded-full px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isActive && 'text-foreground after:w-[calc(100%-2rem)]'
+                    )}
                   >
                     {link.label}
                   </a>
@@ -153,7 +156,7 @@ export function SiteHeader() {
             })}
           </ul>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -162,7 +165,11 @@ export function SiteHeader() {
               aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               aria-pressed={isDark}
             >
-              <motion.div initial={false} animate={{ rotate: isDark ? 180 : 0 }} transition={{ duration: 0.3 }}>
+              <motion.div
+                initial={false}
+                animate={{ rotate: isDark ? 180 : 0 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </motion.div>
             </Button>
@@ -181,20 +188,20 @@ export function SiteHeader() {
 
             <Link
               href="/chat"
-              className="flex items-center gap-1.5 rounded-full border border-border/60 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-primary/40 hover:bg-muted/40 hover:text-foreground"
+              className="hidden items-center gap-1.5 rounded-full border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground sm:flex"
               aria-label="Ask the AI assistant"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Chat</span>
+              <span>Chat</span>
             </Link>
 
             <Link
               href="/#contact"
-              className="cta-button min-w-[2.75rem] justify-center text-sm p-2 sm:px-6 sm:py-3"
+              className="immersive-button !px-4 !py-2.5 text-sm sm:!px-5"
               aria-label="Jump to contact section"
             >
               <Mail className="h-4 w-4 sm:hidden" />
-              <span className="hidden sm:inline">Let's Connect</span>
+              <span className="hidden sm:inline">Connect</span>
             </Link>
           </div>
         </div>
@@ -207,7 +214,7 @@ export function SiteHeader() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-background/72 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-40 bg-background/60 backdrop-blur-md md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-hidden="true"
             />
@@ -217,62 +224,46 @@ export function SiteHeader() {
               role="dialog"
               aria-modal="true"
               aria-label="Site navigation"
-              initial={{ opacity: 0, y: -12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.18 }}
-              className="absolute inset-x-0 top-full z-50 border-b border-border bg-background/96 shadow-2xl backdrop-blur-xl md:hidden"
+              initial={{ opacity: 0, y: -8, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.98 }}
+              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+              className="absolute inset-x-3 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-border/50 bg-background/90 shadow-2xl backdrop-blur-2xl md:hidden"
             >
-              <div className="editorial-container space-y-5 py-5">
-                <div className="rounded-2xl border border-border/70 bg-muted/35 p-4">
-                  <div className="text-[11px] font-mono uppercase tracking-[0.22em] text-muted-foreground">
-                    Navigate the archive
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Jump straight to case studies, essays, the book, or the contact form.
-                  </p>
-                </div>
-
-                <ul className="grid gap-2">
-                  {navLinks.map((link) => {
-                    const isActive = activeSection === link.sectionId;
-                    return (
-                      <li key={link.href}>
-                        <a
-                          href={link.href}
-                          onClick={() => setIsMobileMenuOpen(false)}
-                          aria-current={isActive ? 'location' : undefined}
-                          className={cn(
-                            'flex items-center justify-between rounded-2xl border px-4 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            isActive
-                              ? 'border-primary/40 bg-primary/10 text-foreground'
-                              : 'border-border/70 bg-background text-foreground hover:border-primary/30 hover:bg-muted/40'
-                          )}
-                        >
-                          <span>{link.label}</span>
-                          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                            {link.sectionId}
-                          </span>
-                        </a>
-                      </li>
-                    );
-                  })}
-                  <li>
-                    <Link
-                      href="/chat"
+              <div className="space-y-1 p-3">
+                {navLinks.map((link, index) => {
+                  const isActive = activeSection === link.sectionId;
+                  return (
+                    <motion.a
+                      key={link.href}
+                      href={link.href}
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-between rounded-2xl border border-border/70 bg-background px-4 py-3 text-sm text-foreground transition-colors hover:border-primary/30 hover:bg-muted/40"
+                      aria-current={isActive ? 'location' : undefined}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.04 }}
+                      className={cn(
+                        'flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors',
+                        isActive
+                          ? 'bg-foreground text-background'
+                          : 'text-foreground hover:bg-muted/50'
+                      )}
                     >
-                      <span className="flex items-center gap-2">
-                        <Sparkles className="h-3.5 w-3.5" />
-                        AI Chat
-                      </span>
-                      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
-                        assistant
-                      </span>
-                    </Link>
-                  </li>
-                </ul>
+                      <span>{link.label}</span>
+                      <span className="immersive-kicker !text-[0.6rem] opacity-60">{link.sectionId}</span>
+                    </motion.a>
+                  );
+                })}
+                <Link
+                  href="/chat"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+                >
+                  <span className="flex items-center gap-2">
+                    <Sparkles className="h-3.5 w-3.5" />
+                    AI Assistant
+                  </span>
+                </Link>
               </div>
             </motion.div>
           </>

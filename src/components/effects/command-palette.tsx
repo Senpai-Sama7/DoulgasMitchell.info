@@ -2,19 +2,20 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Search, 
-  Home, 
-  User, 
-  Briefcase, 
-  BookOpen, 
+import {
+  Search,
+  Home,
+  User,
+  Briefcase,
+  BookOpen,
   Mail,
   FileText,
   Award,
   Moon,
   Sun,
   Command,
-  CornerDownLeft
+  CornerDownLeft,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -22,7 +23,7 @@ interface CommandItem {
   id: string;
   label: string;
   shortcut?: string;
-  icon: React.ElementType;
+  icon: LucideIcon;
   action: () => void;
   category: string;
 }
@@ -120,6 +121,19 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -172,25 +186,26 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100]"
             onClick={onClose}
+            aria-hidden
           />
 
-          {/* Palette */}
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="command-palette-title"
             initial={{ opacity: 0, scale: 0.95, y: -20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -20 }}
             transition={{ duration: 0.15 }}
-            className="fixed left-1/2 top-[20%] -translate-x-1/2 z-[101] w-full max-w-lg"
+            className="fixed left-1/2 top-[20%] -translate-x-1/2 z-[101] w-full max-w-lg px-4"
           >
-            <div className="bg-background border border-border rounded-xl shadow-2xl overflow-hidden">
-              {/* ASCII Corner */}
-              <div className="absolute top-2 left-3 font-mono text-[10px] text-muted-foreground opacity-50">
-                ╭──────────────╮
-              </div>
+            <div className="glass-panel overflow-hidden rounded-xl shadow-2xl">
+              <p id="command-palette-title" className="sr-only">
+                Command palette
+              </p>
 
-              {/* Search Input */}
-              <div className="flex items-center gap-3 p-4 border-b border-border">
-                <Search className="h-5 w-5 text-muted-foreground" />
+              <div className="flex items-center gap-3 border-b border-border/60 p-4">
+                <Search className="h-5 w-5 text-muted-foreground" aria-hidden />
                 <input
                   ref={inputRef}
                   type="text"
@@ -200,6 +215,7 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
                     setSelectedIndex(0);
                   }}
                   placeholder="Search commands..."
+                  aria-label="Search commands"
                   className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground"
                 />
                 <kbd className="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-xs font-mono bg-muted rounded text-muted-foreground">
@@ -211,10 +227,12 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
               <div className="max-h-80 overflow-y-auto p-2">
                 {filteredCommands.length === 0 ? (
                   <div className="p-4 text-center text-muted-foreground">
-                    <p className="font-mono text-sm">No commands found</p>
+                    <p className="text-sm">No commands found</p>
                   </div>
                 ) : (
-                  filteredCommands.map((cmd, index) => (
+                  filteredCommands.map((cmd, index) => {
+                    const CommandIcon = cmd.icon;
+                    return (
                     <button
                       key={cmd.id}
                       onClick={cmd.action}
@@ -226,7 +244,7 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
                           : 'hover:bg-muted'
                       )}
                     >
-                      <cmd.icon className="h-4 w-4 flex-shrink-0" />
+                      <CommandIcon className="h-4 w-4 flex-shrink-0" />
                       <span className="flex-1">{cmd.label}</span>
                       {cmd.shortcut && (
                         <kbd className={cn(
@@ -242,7 +260,8 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
                         <CornerDownLeft className="h-3 w-3 opacity-50" />
                       )}
                     </button>
-                  ))
+                  );
+                  })
                 )}
               </div>
 

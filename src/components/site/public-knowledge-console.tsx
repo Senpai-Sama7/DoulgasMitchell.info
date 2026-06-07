@@ -175,6 +175,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
         },
       ]);
     } finally {
+      clearInterval(thinkingInterval);
       setIsLoading(false);
       setIsThinking(false);
     }
@@ -211,18 +212,17 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
   }
 
   return (
-    <section id="public-assistant" className="relative overflow-hidden py-24 w-full max-w-[100vw]">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(15,23,42,0.08),transparent_40%),radial-gradient(circle_at_bottom_right,rgba(59,130,246,0.08),transparent_35%)] max-w-full" />
+    <section id="public-assistant" className="section-spacing relative w-full max-w-[100vw] overflow-hidden">
       <div className="editorial-container relative">
         <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="space-y-6 min-w-0">
+          <div className="min-w-0 space-y-6">
             <div className="space-y-4">
-              <Badge variant="outline" className="gap-2 rounded-full px-4 py-1 font-mono text-[11px] uppercase tracking-[0.22em]">
+              <p className="immersive-kicker flex items-center gap-2">
                 <Sparkles className="h-3.5 w-3.5" />
-                Public Knowledge Console
-              </Badge>
+                Knowledge console
+              </p>
               <div>
-                <h2 className="editorial-title max-w-xl">Ask the public archive.</h2>
+                <h2 className="editorial-title max-w-xl">Ask the public archive</h2>
                 <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
                   {settings.welcomeMessage}
                 </p>
@@ -244,7 +244,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
               <p className="text-xs text-muted-foreground break-words">
                 Ask about projects, articles, the book, certifications, or operating principles. Sensitive topics and private contact details are refused automatically.
               </p>
-              <div className="rounded-2xl border border-border/70 bg-background/60 p-4 text-sm text-muted-foreground">
+              <div className="glass-panel p-4 text-sm text-muted-foreground">
                 The assistant only uses public site content. For better answers, include the topic you care about and the outcome you want.
               </div>
               {remaining !== null ? (
@@ -270,7 +270,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
             </Suggestions>
           </div>
 
-          <div className="rounded-[32px] border border-border/70 bg-card/80 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.45)] backdrop-blur overflow-hidden w-full max-w-full mx-auto">
+          <div className="glass-panel mx-auto w-full max-w-full overflow-hidden">
             <Conversation className="h-[28rem] md:h-[34rem] rounded-[32px] w-full">
               <ConversationContent className="gap-5 p-4 md:p-6 w-full">
                 {messages.map((message) => (

@@ -121,11 +121,7 @@ export function ContentRenderer({ content, className }: ContentRendererProps) {
           // Custom block for interactive artifacts placeholder
           // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           blockquote({ children }: any) {
-            return (
-              <blockquote className="border-l-4 border-primary/30 pl-6 my-8 italic text-lg text-muted-foreground">
-                {children}
-              </blockquote>
-            );
+            return <blockquote>{children}</blockquote>;
           },
           // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  ReactMarkdown passes markdown-specific props
           table({ children }: any) {

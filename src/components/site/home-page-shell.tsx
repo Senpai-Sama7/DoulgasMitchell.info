@@ -1,42 +1,54 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { EnhancedHeroSection } from '@/components/site/enhanced-hero-section';
+import { useCallback, useEffect, useState } from 'react';
+import { AnimatePresence } from 'framer-motion';
+import { useReducedMotion } from 'framer-motion';
+import { ImmersiveHeroSection } from '@/components/site/immersive-hero-section';
 import { SiteFooter } from '@/components/site/footer';
 import { SiteHeader } from '@/components/site/header';
-import { HomePageExperience } from '@/components/site/home-page-experience';
+import { PageViewTracker } from '@/components/site/page-view-tracker';
+import { useTheme } from '@/lib/theme';
 import type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowcase } from '@/lib/site-content';
 
-// Below-fold sections: lazily loaded to save ~264KB on initial parse.
-// ssr:true keeps SEO content in HTML; JS bundle for each is deferred.
-const EnhancedAboutSection = dynamic(
-  () => import('@/components/site/enhanced-about-section').then((m) => m.EnhancedAboutSection),
+const ImmersiveAboutSection = dynamic(
+  () => import('@/components/site/immersive-about-section').then((m) => m.ImmersiveAboutSection),
   { ssr: true }
 );
-const EnhancedWorkSection = dynamic(
-  () => import('@/components/site/enhanced-work-section').then((m) => m.EnhancedWorkSection),
+const ImmersiveWorkSection = dynamic(
+  () => import('@/components/site/immersive-work-section').then((m) => m.ImmersiveWorkSection),
   { ssr: true }
 );
-const EnhancedBookSection = dynamic(
-  () => import('@/components/site/enhanced-book-section').then((m) => m.EnhancedBookSection),
+const ImmersiveBookSection = dynamic(
+  () => import('@/components/site/immersive-book-section').then((m) => m.ImmersiveBookSection),
   { ssr: true }
 );
-const EnhancedWritingSection = dynamic(
-  () => import('@/components/site/enhanced-writing-section').then((m) => m.EnhancedWritingSection),
+const ImmersiveWritingSection = dynamic(
+  () => import('@/components/site/immersive-writing-section').then((m) => m.ImmersiveWritingSection),
   { ssr: true }
 );
-const CertificationsSection = dynamic(
-  () => import('@/components/site/certifications-section').then((m) => m.CertificationsSection),
+const ImmersiveCertificationsSection = dynamic(
+  () =>
+    import('@/components/site/immersive-certifications-section').then(
+      (m) => m.ImmersiveCertificationsSection
+    ),
   { ssr: true }
 );
-// ssr:false is valid here because this file is a Client Component.
 const PublicKnowledgeConsole = dynamic(
   () => import('@/components/site/public-knowledge-console').then((m) => m.PublicKnowledgeConsole),
   { ssr: false }
 );
-const EnhancedContactSection = dynamic(
-  () => import('@/components/site/enhanced-contact-section').then((m) => m.EnhancedContactSection),
+const ImmersiveContactSection = dynamic(
+  () => import('@/components/site/immersive-contact-section').then((m) => m.ImmersiveContactSection),
   { ssr: true }
+);
+const CommandPalette = dynamic(
+  () => import('@/components/effects/command-palette').then((m) => m.CommandPalette),
+  { ssr: false }
+);
+const CommandKTrigger = dynamic(
+  () => import('@/components/effects/command-palette').then((m) => m.CommandKTrigger),
+  { ssr: false }
 );
 
 interface PublicAssistantSettings {
@@ -65,9 +77,52 @@ export function HomePageShell({
   contentWarning,
   publicAssistant,
 }: HomePageShellProps) {
+  const prefersReducedMotion = useReducedMotion();
+  const { isDark, toggle } = useTheme();
+  const [isCommandOpen, setIsCommandOpen] = useState(false);
+
+  useEffect(() => {
+    if (window.location.hash) {
+      const id = window.location.hash.substring(1);
+      const timer = window.setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        }
+      }, 120);
+      return () => window.clearTimeout(timer);
+    }
+  }, [prefersReducedMotion]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'k' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setIsCommandOpen((previous) => !previous);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleNavigate = useCallback(
+    (href: string) => {
+      if (href === '#') {
+        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        return;
+      }
+      const element = document.querySelector(href);
+      if (element instanceof HTMLElement) {
+        element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+      }
+    },
+    [prefersReducedMotion]
+  );
+
   return (
     <>
-      <HomePageExperience />
+      <PageViewTracker />
       <SiteHeader />
 
       <main id="main-content" className="flex-1">
@@ -79,26 +134,31 @@ export function HomePageShell({
           </div>
         ) : null}
 
-        <EnhancedHeroSection />
-
-        <div className="editorial-container">
-          <div className="flex items-center justify-center gap-4 py-4">
-            <div className="h-px flex-1 max-w-[120px] bg-border/50" />
-            <span className="font-mono text-[10px] tracking-[0.3em] text-muted-foreground/30 uppercase">◈</span>
-            <div className="h-px flex-1 max-w-[120px] bg-border/50" />
-          </div>
-        </div>
-
-        <EnhancedAboutSection />
-        <EnhancedWorkSection projects={projects} />
-        <EnhancedBookSection />
-        <EnhancedWritingSection articles={articles} />
-        <CertificationsSection items={certifications} />
+        <ImmersiveHeroSection />
+        <ImmersiveAboutSection />
+        <ImmersiveWorkSection projects={projects} />
+        <ImmersiveBookSection />
+        <ImmersiveWritingSection articles={articles} />
+        <ImmersiveCertificationsSection items={certifications} />
         <PublicKnowledgeConsole settings={publicAssistant} />
-        <EnhancedContactSection />
+        <ImmersiveContactSection />
       </main>
 
       <SiteFooter />
+
+      <CommandKTrigger onClick={() => setIsCommandOpen(true)} />
+
+      <AnimatePresence>
+        {isCommandOpen ? (
+          <CommandPalette
+            isOpen={isCommandOpen}
+            isDark={isDark}
+            onToggleTheme={toggle}
+            onClose={() => setIsCommandOpen(false)}
+            onNavigate={handleNavigate}
+          />
+        ) : null}
+      </AnimatePresence>
     </>
   );
 }

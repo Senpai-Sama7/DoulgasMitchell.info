@@ -133,27 +133,28 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     <>
       <PageViewTracker />
       <SiteHeader />
-      <main id="main-content" className="flex-1 pt-24">
-        <section className="content-container pb-16">
-          <div className="rounded-3xl border border-border bg-muted/30 p-8 md:p-10">
-            <h1 className="editorial-title">Search</h1>
-            <p className="mt-3 max-w-2xl text-sm text-muted-foreground">
-              Find writing and project case studies by keyword, category, or stack.
+      <main id="main-content" className="flex-1 pt-24 md:pt-28">
+        <section className="editorial-container pb-16">
+          <div className="glass-panel p-8 md:p-10">
+            <p className="immersive-kicker mb-4">Search</p>
+            <h1 className="display-title">Find anything</h1>
+            <p className="mt-4 max-w-2xl text-muted-foreground">
+              Writing, case studies, stacks, and topics — ranked by relevance.
             </p>
 
-            <form action="/search" method="get" className="mt-6">
+            <form action="/search" method="get" className="mt-8">
               <label htmlFor="search-query" className="sr-only">
                 Search query
               </label>
-              <div className="flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-3">
-                <Search className="h-4 w-4 text-muted-foreground" />
+              <div className="flex items-center gap-3 rounded-full border border-border bg-background/80 px-5 py-3.5 shadow-sm">
+                <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <input
                   id="search-query"
                   type="search"
                   name="q"
                   defaultValue={query}
-                  placeholder="Search by title, topic, tag, or stack..."
-                  className="w-full bg-transparent text-sm outline-none"
+                  placeholder="Try automation, systems, or prompt engineering…"
+                  className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground/70"
                 />
               </div>
             </form>
@@ -186,7 +187,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
                 <Link
                   key={`${result.kind}:${result.href}`}
                   href={result.href}
-                  className="group rounded-2xl border border-border bg-background p-5 transition-colors hover:border-primary/40"
+                  className="group bento-card block p-6"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>

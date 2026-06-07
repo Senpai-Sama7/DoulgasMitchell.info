@@ -20,6 +20,8 @@ import {
   type PromptInputMessage,
 } from '@/components/ai-elements/prompt-input';
 import { Card } from '@/components/ui/card';
+import { SiteFooter, SiteHeader } from '@/components/site';
+import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { cn } from '@/lib/utils';
 import { Sparkles, Shield, Zap } from 'lucide-react';
 import { useCallback, useState } from 'react';
@@ -124,14 +126,16 @@ export default function ChatPage() {
   );
 
   return (
-    <div className="flex h-[calc(100vh-1px)] flex-col bg-background">
-      {/* Header */}
-      <header className="flex items-center gap-3 border-b px-4 py-3 sm:px-6">
+    <>
+      <PageViewTracker />
+      <SiteHeader />
+      <main id="main-content" className="flex min-h-[calc(100dvh-5rem)] flex-col bg-background pt-20">
+      <header className="glass-panel mx-4 mt-2 flex items-center gap-3 rounded-2xl border-0 px-4 py-3 sm:mx-6 sm:px-6">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
           <Sparkles className="h-4 w-4 text-primary-foreground" />
         </div>
         <div>
-          <h1 className="text-sm font-semibold">Douglas Mitchell — AI Assistant</h1>
+          <h1 className="font-display text-base font-medium">Knowledge console</h1>
           <p className="text-xs text-muted-foreground">
             Ask about experience, principles, certifications, or tech stack.
           </p>
@@ -254,6 +258,8 @@ export default function ChatPage() {
           </p>
         </div>
       </div>
-    </div>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

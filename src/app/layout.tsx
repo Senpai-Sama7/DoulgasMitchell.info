@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Orbitron, JetBrains_Mono, Share_Tech_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { ImmersiveRoot } from "@/components/immersive";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -21,10 +22,10 @@ const geistMono = Geist_Mono({
 // Decorative/UI accent fonts — NOT on the critical path.
 // preload:false prevents render-blocking <link rel=preload> in <head>.
 // display:swap still prevents FOIT when they do load.
-const orbitron = Orbitron({
-  variable: "--font-orbitron",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
   subsets: ["latin"],
-  weight: ["400", "500", "700", "800"],
+  weight: ["400"],
   display: "swap",
   preload: false,
 });
@@ -32,14 +33,6 @@ const orbitron = Orbitron({
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
   subsets: ["latin"],
-  display: "swap",
-  preload: false,
-});
-
-const shareTechMono = Share_Tech_Mono({
-  variable: "--font-share-tech-mono",
-  subsets: ["latin"],
-  weight: ["400"],
   display: "swap",
   preload: false,
 });
@@ -179,6 +172,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
       <head>
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="icon" href="/icons/favicon-32x32.png" sizes="32x32" type="image/png" />
         <link rel="icon" href="/icons/favicon-192x192.png" sizes="192x192" type="image/png" />
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
@@ -192,7 +186,7 @@ export default function RootLayout({
       <body
         className={`${
           geistSans.variable
-        } ${geistMono.variable} ${orbitron.variable} ${jetbrainsMono.variable} ${shareTechMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
+        } ${geistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
         {/* Skip link for keyboard/screen reader navigation */}
         <a href="#main-content" className="skip-link">
@@ -202,7 +196,7 @@ export default function RootLayout({
         {/* Noise texture via CSS — removes one DOM node vs dedicated div.
             Applied as body::before in globals.css instead. */}
 
-        {children}
+        <ImmersiveRoot>{children}</ImmersiveRoot>
 
         {/* PWA Service Worker registration */}
         <script

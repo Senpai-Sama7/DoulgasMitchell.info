@@ -47,8 +47,8 @@ button, a, input, select, textarea, summary {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   DOUGLAS MITCHELL - ARCHITECTURAL EDITORIAL DESIGN SYSTEM
-   ASCII-INFLECTED VISUAL LANGUAGE
+   DOUGLAS MITCHELL — IMMERSIVE LUXURY DESIGN SYSTEM
+   Hybrid Apple typography · Framer motion · signature WebGL accent
    ═══════════════════════════════════════════════════════════════════════════ */
 
 @theme inline {
@@ -57,6 +57,7 @@ button, a, input, select, textarea, summary {
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-instrument-serif);
   
   /* Sidebar colors */
   --color-sidebar-ring: var(--sidebar-ring);
@@ -92,6 +93,8 @@ button, a, input, select, textarea, summary {
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
   
   /* Radius */
   --radius-sm: calc(var(--radius) - 4px);
@@ -122,14 +125,15 @@ button, a, input, select, textarea, summary {
    ═══════════════════════════════════════════════════════════════════════════ */
 :root {
   /* Core Design Tokens */
-  --radius: 0.5rem;
-  --font-orbitron: var(--font-orbitron);
+  --radius: 0.75rem;
   --font-jetbrains-mono: var(--font-jetbrains-mono);
-  --font-share-tech-mono: var(--font-share-tech-mono);
-  
-  /* Architectural Light Theme */
-  --background: oklch(0.99 0.002 90);
-  --foreground: oklch(0.15 0.01 250);
+  --primary-rgb: 38, 38, 46;
+  --accent-rgb: 99, 102, 241;
+  --glow-accent: oklch(0.55 0.18 275);
+
+  /* Luxury light */
+  --background: oklch(0.985 0.004 85);
+  --foreground: oklch(0.18 0.012 265);
   
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.15 0.01 250);
@@ -137,8 +141,10 @@ button, a, input, select, textarea, summary {
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.15 0.01 250);
   
-  --primary: oklch(0.20 0.02 250);
-  --primary-foreground: oklch(0.98 0.005 90);
+  --primary: oklch(0.22 0.02 265);
+  --primary-foreground: oklch(0.98 0.004 85);
+  --brand-accent: oklch(0.52 0.2 275);
+  --brand-accent-foreground: oklch(0.99 0.002 85);
   
   --secondary: oklch(0.96 0.005 250);
   --secondary-foreground: oklch(0.20 0.02 250);
@@ -186,8 +192,14 @@ button, a, input, select, textarea, summary {
    DARK MODE - Cinematic Depth
    ═══════════════════════════════════════════════════════════════════════════ */
 .dark {
-  --background: oklch(0.12 0.01 250);
-  --foreground: oklch(0.95 0.005 90);
+  --primary-rgb: 235, 235, 245;
+  --accent-rgb: 129, 140, 248;
+  --glow-accent: oklch(0.72 0.16 275);
+
+  --background: oklch(0.11 0.014 265);
+  --foreground: oklch(0.96 0.006 85);
+  --brand-accent: oklch(0.68 0.18 275);
+  --brand-accent-foreground: oklch(0.12 0.014 265);
   
   --card: oklch(0.16 0.01 250);
   --card-foreground: oklch(0.95 0.005 90);
@@ -253,8 +265,34 @@ button, a, input, select, textarea, summary {
     position: relative;
     overflow-x: clip;
   }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 9998;
+    pointer-events: none;
+    opacity: 0.022;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  }
+
+  .dark body::before {
+    opacity: 0.035;
+  }
   
   /* Smooth scroll with reduced motion support */
+  html.lenis {
+    height: auto;
+  }
+
+  html.lenis body {
+    height: auto;
+  }
+
+  html.lenis {
+    scroll-behavior: auto;
+  }
+
   html {
     scroll-behavior: smooth;
     scroll-padding-top: clamp(4.5rem, 8vw, 6rem);
@@ -409,12 +447,107 @@ button, a, input, select, textarea, summary {
    EDITORIAL TYPOGRAPHY
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Editorial Title */
+/* Display & editorial typography */
+.font-display {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+}
+
+.display-title {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(3rem, 10.5vw, 7.25rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.035em;
+}
+
 .editorial-title {
-  font-size: clamp(1.75rem, 8vw, 3.5rem);
-  font-weight: 700;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(1.875rem, 6vw, 3.75rem);
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+.immersive-kicker {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+.glass-panel {
+  border: 1px solid color-mix(in oklch, var(--border), transparent 35%);
+  background: color-mix(in oklch, var(--card), transparent 12%);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-radius: calc(var(--radius) + 0.5rem);
+  box-shadow:
+    0 1px 0 color-mix(in oklch, var(--foreground), transparent 92%) inset,
+    0 24px 48px -24px color-mix(in oklch, var(--foreground), transparent 88%);
+}
+
+.bento-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: calc(var(--radius) + 0.25rem);
+  border: 1px solid color-mix(in oklch, var(--border), transparent 25%);
+  background: color-mix(in oklch, var(--card), var(--background) 40%);
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease,
+    box-shadow 0.45s ease;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .bento-card:hover {
+    transform: translateY(-4px) scale(1.01);
+    border-color: color-mix(in oklch, var(--brand-accent), transparent 55%);
+    box-shadow: 0 32px 64px -32px color-mix(in oklch, var(--brand-accent), transparent 75%);
+  }
+}
+
+.immersive-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  border-radius: 9999px;
+  background: var(--foreground);
+  color: var(--background);
+  border: 1px solid transparent;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.immersive-button:hover {
+  opacity: 0.92;
+  transform: scale(1.02);
+}
+
+.immersive-button-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid color-mix(in oklch, var(--border), transparent 20%);
+  backdrop-filter: blur(8px);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.immersive-button-ghost:hover {
+  border-color: var(--foreground);
+  background: color-mix(in oklch, var(--muted), transparent 50%);
 }
 
 /* Editorial Subtitle */
@@ -451,11 +584,33 @@ button, a, input, select, textarea, summary {
 }
 
 .reading-content blockquote {
-  border-left: 2px solid var(--ascii-border);
-  padding-left: 1.5rem;
-  margin: 1.5rem 0;
-  font-style: italic;
-  color: var(--muted-foreground);
+  position: relative;
+  margin: 2.5rem 0;
+  padding: 1.75rem 1.75rem 1.75rem 2rem;
+  border: 1px solid color-mix(in oklch, var(--border), transparent 20%);
+  border-radius: calc(var(--radius) + 0.5rem);
+  background: color-mix(in oklch, var(--card), transparent 8%);
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: 1.35rem;
+  font-style: normal;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: color-mix(in oklch, var(--foreground), transparent 12%);
+}
+
+.reading-content blockquote::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 1.25rem;
+  bottom: 1.25rem;
+  width: 3px;
+  border-radius: 9999px;
+  background: linear-gradient(
+    180deg,
+    var(--brand-accent),
+    color-mix(in oklch, var(--brand-accent), transparent 70%)
+  );
 }
 
 .reading-content code {
@@ -738,8 +893,8 @@ button, a, input, select, textarea, summary {
   top: 0;
   left: 0;
   height: 2px;
-  background: var(--primary);
-  z-index: 9999;
+  background: var(--brand-accent);
+  z-index: 45;
   transform-origin: left;
   transition: transform 0.1s ease-out;
 }
@@ -879,10 +1034,10 @@ button, a, input, select, textarea, summary {
 
 @keyframes textGlow {
   0%, 100% {
-    text-shadow: 0 0 20px rgba(0,212,255,0.5), 0 0 40px rgba(0,212,255,0.3);
+    text-shadow: 0 0 24px color-mix(in oklch, var(--glow-accent), transparent 55%);
   }
   50% {
-    text-shadow: 0 0 30px rgba(0,212,255,0.8), 0 0 60px rgba(0,212,255,0.5), 0 0 90px rgba(0,212,255,0.3);
+    text-shadow: 0 0 40px color-mix(in oklch, var(--glow-accent), transparent 25%);
   }
 }
 
