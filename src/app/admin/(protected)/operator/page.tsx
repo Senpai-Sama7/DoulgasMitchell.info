@@ -1,10 +1,12 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
 import { AdminOperatorConsole } from '@/components/admin/operator-console';
+import { requireAdminSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
-export default function AdminOperatorPage() {
+export default async function AdminOperatorPage() {
+  await requireAdminSession();
   return (
     <Suspense
       fallback={

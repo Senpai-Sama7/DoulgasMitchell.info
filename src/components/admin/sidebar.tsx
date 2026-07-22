@@ -18,6 +18,7 @@ import {
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { adminFetch, isAdminApiError } from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 
 interface AdminSidebarProps {
@@ -144,20 +145,20 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const handleLogout = async () => {
     try {
       setIsLoggingOut(true);
-      const response = await fetch('/api/admin/logout', { method: 'POST' });
-
-      if (!response.ok) {
-        throw new Error('Unable to sign out right now.');
-      }
-
+      await adminFetch('/api/admin/logout', { method: 'POST', skipAuthRedirect: true });
       window.location.href = '/admin/login';
     } catch (error) {
+      // A 401 means the session is already gone server-side — treat as signed out.
+      if (isAdminApiError(error) && error.status === 401) {
+        window.location.href = '/admin/login';
+        return;
+      }
+
       toast({
         title: 'Sign out failed',
         description: error instanceof Error ? error.message : 'Unable to sign out right now.',
         variant: 'destructive',
       });
-    } finally {
       setIsLoggingOut(false);
     }
   };

@@ -9,6 +9,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { DEFAULT_ADMIN_EMAIL } from '@/lib/admin-config';
+import {
+  SESSION_EXPIRED_REASON,
+  sanitizeAdminNextPath,
+} from '@/lib/admin-api-client';
 import { startAuthentication } from '@simplewebauthn/browser';
 
 export default function AdminLoginPage() {
@@ -19,6 +23,8 @@ export default function AdminLoginPage() {
   const [isPasskeyLoading, setIsPasskeyLoading] = useState(false);
   const [isSetupLoading, setIsSetupLoading] = useState(false);
   const [hasAdminAccount, setHasAdminAccount] = useState(true);
+  const [sessionNotice, setSessionNotice] = useState<string | null>(null);
+  const [nextPath, setNextPath] = useState('/admin');
   const { toast } = useToast();
   const asciiRows = useMemo(
     () =>
@@ -29,6 +35,16 @@ export default function AdminLoginPage() {
       ),
     []
   );
+
+  useEffect(() => {
+    // Read the query string directly instead of useSearchParams so this client
+    // page does not require a Suspense boundary during prerendering.
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('reason') === SESSION_EXPIRED_REASON) {
+      setSessionNotice('Your session expired. Sign in again to pick up where you left off.');
+    }
+    setNextPath(sanitizeAdminNextPath(params.get('next')));
+  }, []);
 
   useEffect(() => {
     const checkAdminStatus = async () => {
@@ -187,7 +203,7 @@ export default function AdminLoginPage() {
           title: 'Authenticated!',
           description: 'Redirecting to dashboard...',
         });
-        window.location.href = '/admin';
+        window.location.href = nextPath;
       } else {
         throw new Error(await readErrorMessage(verifyRes, 'Verification failed'));
       }
@@ -228,12 +244,11 @@ export default function AdminLoginPage() {
           title: 'Welcome back!',
           description: 'Redirecting to dashboard...',
         });
-        window.location.href = '/admin';
+        window.location.href = nextPath;
       } else {
-        const error = await response.json();
         toast({
           title: 'Authentication failed',
-          description: error.message || 'Invalid credentials',
+          description: await readErrorMessage(response, 'Invalid credentials'),
           variant: 'destructive',
         });
       }
@@ -278,6 +293,15 @@ export default function AdminLoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {sessionNotice && (
+              <div
+                role="status"
+                className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground"
+              >
+                {sessionNotice}
+              </div>
+            )}
+
             {!hasAdminAccount && (
               <div className="mb-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
                 <p className="text-sm text-amber-700 dark:text-amber-200">No admin account detected. Enter your email and a new password, then enable the admin portal.</p>

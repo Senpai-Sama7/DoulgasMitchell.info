@@ -2,20 +2,18 @@ import { KeyRound, ShieldCheck, Users } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { env } from '@/lib/env';
 import { getAdminSecurityData, getUserPasskeys } from '@/lib/content-service';
-import { getSession } from '@/lib/auth';
+import { requireAdminSession } from '@/lib/auth';
 import { PasskeyManager } from '@/components/admin/passkey-manager';
-import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminSecurityPage() {
-  const session = await getSession();
-  if (!session) {
-    redirect('/admin/login');
-  }
+  const session = await requireAdminSession();
 
-  const security = await getAdminSecurityData();
-  const userPasskeys = await getUserPasskeys(session.userId);
+  const [security, userPasskeys] = await Promise.all([
+    getAdminSecurityData(),
+    getUserPasskeys(session.userId),
+  ]);
 
   const checklist = [
     {

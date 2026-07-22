@@ -13,12 +13,14 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { requireAdminSession } from '@/lib/auth';
 import { getAdminDashboardData } from '@/lib/content-service';
 import { SetupGuide } from '@/components/admin/setup-guide';
 
-export const revalidate = 60;
+export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboard() {
+  await requireAdminSession();
   const { stats, recentActivity } = await getAdminDashboardData();
   const needsSeed = stats.articles === 0 && stats.projects === 0;
 

@@ -11,6 +11,7 @@ import {
 import { AnalyticsChart } from '@/components/admin/analytics-chart';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { requireAdminSession } from '@/lib/auth';
 import { formatPercent } from '@/lib/decision-intelligence';
 import { getAdminAnalyticsData } from '@/lib/content-service';
 import { runPublicAssistantBenchmark } from '@/lib/public-assistant-benchmark';
@@ -32,6 +33,7 @@ function decisionTone(action: string | undefined) {
 }
 
 export default async function AdminAnalyticsPage() {
+  await requireAdminSession();
   const [analytics, benchmark] = await Promise.all([
     getAdminAnalyticsData(),
     runPublicAssistantBenchmark(),
