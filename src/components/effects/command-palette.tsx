@@ -369,12 +369,15 @@ export function CommandPalette({
   );
 }
 
-// Command K trigger component
+// Command K trigger component. Anchored bottom-right on every breakpoint and
+// lifted above the iOS home indicator via env(safe-area-inset-bottom); the
+// footer meta bar reserves matching clearance so its links (Studio et al.)
+// are never underneath this FAB.
 export function CommandKTrigger({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="fixed bottom-6 left-6 sm:left-auto sm:right-6 z-50 flex items-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-full shadow-lg hover:bg-muted transition-colors group"
+      className="fixed right-4 bottom-[calc(1.25rem+env(safe-area-inset-bottom,0px))] sm:right-6 sm:bottom-[calc(1.5rem+env(safe-area-inset-bottom,0px))] z-50 flex min-h-11 min-w-11 items-center justify-center gap-2 px-3 py-2 bg-background/80 backdrop-blur-sm border border-border rounded-full shadow-lg hover:bg-muted transition-colors group"
       aria-label="Open command palette"
     >
       <Command className="h-4 w-4" />

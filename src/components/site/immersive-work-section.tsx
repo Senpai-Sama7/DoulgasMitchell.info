@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useReducedMotion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Magnetic, usePinnedScene } from '@/components/immersive';
-import { ScrollTrigger } from '@/lib/gsap';
+import { gsap, ScrollTrigger } from '@/lib/gsap';
 import { siteProfile, type ProjectShowcase } from '@/lib/site-content';
 
 interface ImmersiveWorkSectionProps {
@@ -86,6 +86,39 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
         timeline.fromTo(fills, { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'none' }, 0);
       }
 
+      // ── Approach beat — each case panel flies at the camera ────────────
+      // The rail carries panels in from the right while a per-panel scrub
+      // (containerAnimation rides the same linear timeline) pulls them from
+      // deep translateZ up to the picture plane: approach, then settle.
+      // The viewport supplies the perspective (see .proof-viewport pinned
+      // CSS); transform/opacity only.
+      const panels = gsap.utils.toArray<HTMLElement>(
+        '.proof-panel:not(.proof-panel-intro)',
+        root
+      );
+      panels.forEach((panel) => {
+        gsap.fromTo(
+          panel,
+          { z: -420, scale: 0.72, rotateX: 7, rotateY: -5, autoAlpha: 0.12 },
+          {
+            z: 0,
+            scale: 1,
+            rotateX: 0,
+            rotateY: 0,
+            autoAlpha: 1,
+            ease: 'none',
+            immediateRender: true,
+            scrollTrigger: {
+              trigger: panel,
+              containerAnimation: timeline,
+              start: 'left 96%',
+              end: 'left 46%',
+              scrub: true,
+            },
+          }
+        );
+      });
+
       // The layout flips from static stack to horizontal rail above —
       // re-measure the pin spacer once the new geometry has settled.
       requestAnimationFrame(() => ScrollTrigger.refresh());
@@ -95,6 +128,21 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
       dependencies: [projects.length],
       onStatic: (root) => {
         root.dataset.motion = 'static';
+        gsap.set(root.querySelectorAll('.proof-panel'), { clearProps: 'all' });
+      },
+      // Soft path (touch / low tier): no pin, no horizontal hijack — the
+      // vertical stack stays, but each panel rises out of depth (scale + y)
+      // as the section rides the viewport, echoing the pinned approach beat.
+      onSoft: ({ timeline, root }) => {
+        const panels = gsap.utils.toArray<HTMLElement>('.proof-panel', root);
+        panels.forEach((panel, index) => {
+          timeline.fromTo(
+            panel,
+            { autoAlpha: 0, y: 44, scale: 0.95 },
+            { autoAlpha: 1, y: 0, scale: 1, duration: 1.1, ease: 'power2.out' },
+            index * 0.75
+          );
+        });
       },
     }
   );

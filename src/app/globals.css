@@ -1479,6 +1479,11 @@ a:focus-visible .lux-underline {
   .hero-arrival [data-arrive] {
     opacity: 0;
   }
+
+  /* The film plate mask-reveals via the entrance timeline. */
+  .hero-arrival .hero-plate {
+    opacity: 0;
+  }
 }
 
 /* Arrival doctrine film — pinned title-card layer. Hidden at rest (opacity +
@@ -1542,6 +1547,163 @@ a:focus-visible .lux-underline {
   text-transform: uppercase;
   color: var(--foreground);
   will-change: transform;
+}
+
+/* ── Arrival film plate ───────────────────────────────────────────────────
+   Portrait product-film object inside the hero world: an ink frame with
+   letterbox bars carrying mono reel metadata, signal-teal hairlines riding
+   the letterbox lines, grain, and a slow-settling loop. On phones it becomes
+   the dominant full-bleed visual behind the copy, fading into the page
+   background where the headline sits. */
+.hero-plate {
+  position: absolute;
+  top: clamp(6rem, 13vh, 9rem);
+  right: clamp(1.5rem, 6vw, 6.5rem);
+  z-index: 1;
+  width: clamp(14rem, 21vw, 20rem);
+  will-change: transform, opacity, clip-path;
+}
+
+.hero-plate-frame {
+  position: relative;
+  aspect-ratio: 10 / 14.5;
+  overflow: hidden;
+  background: oklch(0.12 0.014 250);
+  border: 1px solid color-mix(in oklch, var(--foreground), transparent 80%);
+  box-shadow: 0 32px 90px -44px oklch(0.05 0.012 250 / 0.7);
+}
+
+.hero-plate-video {
+  position: absolute;
+  inset: 1.9rem 0;
+  width: 100%;
+  /* Replaced elements ignore the bottom inset with auto height — size the
+     letterbox window explicitly. */
+  height: calc(100% - 3.8rem);
+  object-fit: cover;
+  object-position: 50% 22%;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero-plate-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='heroPlateGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23heroPlateGrain)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+  mix-blend-mode: overlay;
+}
+
+.hero-plate-scrim {
+  position: absolute;
+  inset: 1.9rem 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    oklch(0.1 0.014 250 / 0.42),
+    transparent 32%,
+    transparent 60%,
+    oklch(0.1 0.014 250 / 0.5)
+  );
+}
+
+/* Teal hairlines riding the letterbox edges */
+.hero-plate-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--brand-accent), transparent 30%) 28%,
+    color-mix(in oklch, var(--brand-accent), transparent 30%) 72%,
+    transparent
+  );
+}
+
+.hero-plate-edge-top {
+  top: 1.9rem;
+}
+
+.hero-plate-edge-bottom {
+  bottom: 1.9rem;
+}
+
+/* Mono reel metadata inside the letterbox bars — fixed light-on-ink tones
+   because the bars stay ink in both themes. */
+.hero-plate-meta {
+  position: absolute;
+  inset-inline: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 1.9rem;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.52rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, oklch(0.95 0.006 236), transparent 34%);
+}
+
+.hero-plate-meta-top {
+  top: 0;
+}
+
+.hero-plate-meta-bottom {
+  bottom: 0;
+}
+
+/* Phones: the plate becomes the hero's dominant visual — full bleed behind
+   the copy, biased toward the face, dissolving into the page background
+   where the headline and CTAs live. */
+@media (max-width: 48rem) {
+  .hero-plate {
+    inset: 0;
+    top: 0;
+    right: 0;
+    width: auto;
+    z-index: 0;
+  }
+
+  .hero-plate-frame {
+    position: absolute;
+    inset: 0;
+    aspect-ratio: auto;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  .hero-plate-video {
+    inset: 0;
+    height: 100%;
+    object-position: 50% 24%;
+  }
+
+  .hero-plate-edge,
+  .hero-plate-meta {
+    display: none;
+  }
+
+  .hero-plate-grain {
+    opacity: 0.22;
+  }
+
+  .hero-plate-scrim {
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--background), transparent 30%) 0%,
+      color-mix(in oklch, var(--background), transparent 66%) 24%,
+      color-mix(in oklch, var(--background), transparent 80%) 44%,
+      color-mix(in oklch, var(--background), transparent 34%) 64%,
+      var(--background) 92%
+    );
+  }
 }
 
 /* SYSTEMS ATLAS
@@ -2753,6 +2915,10 @@ a:focus-visible .lux-underline {
   max-width: none;
   padding: 0;
   overflow: hidden;
+  /* The camera for the approach beat: panels scrub from deep translateZ up
+     to the picture plane as the rail carries them in. */
+  perspective: 1200px;
+  perspective-origin: 50% 50%;
 }
 
 .proof-stage[data-motion='pinned'] .proof-track {
@@ -2762,6 +2928,7 @@ a:focus-visible .lux-underline {
   gap: clamp(3rem, 7vw, 6.5rem);
   padding-inline: clamp(1.5rem, 6vw, 5.5rem);
   will-change: transform;
+  transform-style: preserve-3d;
 }
 
 .proof-stage[data-motion='pinned'] .proof-panel {
@@ -2772,6 +2939,8 @@ a:focus-visible .lux-underline {
   width: min(70vw, 46rem);
   padding: 0 0 0 clamp(1.75rem, 3vw, 2.75rem);
   border-left: 1px solid color-mix(in oklch, var(--border), transparent 20%);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .proof-stage[data-motion='pinned'] .proof-panel + .proof-panel {
@@ -5296,6 +5465,103 @@ a:focus-visible .lux-underline {
   font-size: 0.56rem;
   letter-spacing: 0.2em;
   color: color-mix(in oklch, var(--cinema-text), transparent 25%);
+  pointer-events: none;
+}
+
+/* ── Film play affordance ─────────────────────────────────────────────────
+   Full-surface play/pause toggle over a film plane. The visible badge — a
+   teal hairline ring around a small glyph plus a mono caption — only shows
+   while the film is paused (autoplay refused, user pause, or offscreen);
+   while playing the surface stays as an invisible tap-to-pause target. */
+.film-play {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.film-play:focus-visible {
+  outline: 2px solid var(--cinema-signal, var(--brand-accent));
+  outline-offset: -3px;
+}
+
+.film-play-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.85rem;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.film-play--playing .film-play-badge {
+  opacity: 0;
+  transform: scale(0.94);
+}
+
+.film-play-ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 3.9rem;
+  height: 3.9rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--cinema-signal, var(--brand-accent)), transparent 22%);
+  background: color-mix(in oklch, var(--cinema-ink, oklch(0.105 0.014 250)), transparent 38%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Breathing outer ring — transform/opacity only, killed under reduced motion */
+.film-play-ring::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in oklch, var(--cinema-signal, var(--brand-accent)), transparent 45%);
+  animation: film-play-breathe 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes film-play-breathe {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(1.45);
+  }
+}
+
+.film-play-glyph {
+  width: 0.8rem;
+  height: 0.95rem;
+  margin-left: 0.16rem;
+  clip-path: polygon(0% 0%, 100% 50%, 0% 100%);
+  background: var(--cinema-text, var(--foreground));
+}
+
+.film-play-label {
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.56rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--cinema-signal, var(--brand-accent)), transparent 8%);
+  text-shadow: 0 1px 12px color-mix(in oklch, var(--cinema-ink, oklch(0.105 0.014 250)), transparent 30%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-play-ring::after {
+    animation: none;
+  }
 }
 
 /* Kinetic overline — a pull-line in the static flow, a projected title over
@@ -5708,6 +5974,390 @@ a:focus-visible .lux-underline {
   .cinema-section *,
   .cinema-section *::before,
   .cinema-section *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   INTERLUDE — FLIGHT CORRIDOR
+   The camera move between Story (03) and Map (04): a CSS-3D corridor where
+   hairline rib frames stream past while identity planes — Operator, a
+   portrait plate, Practitioner, Author — fly out of fog at deep translateZ,
+   up to the camera, and past it. Base styles are the flowing editorial
+   composition (touch soft-scrub, reduced motion, low tier); everything
+   pinned-only lives under [data-motion='pinned']. Transform / opacity only.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.corridor-section {
+  --corridor-ink: oklch(0.105 0.014 250);
+  --corridor-text: oklch(0.95 0.006 236);
+  --corridor-muted: oklch(0.65 0.018 236);
+  --corridor-line: oklch(0.3 0.02 240);
+  --corridor-signal: oklch(0.74 0.09 193);
+  position: relative;
+  overflow: clip;
+  color: var(--corridor-text);
+  background: var(--corridor-ink);
+}
+
+.corridor-stage {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  isolation: isolate;
+  padding-block: clamp(5rem, 9vw, 8rem);
+}
+
+/* Depth fog — a vanishing point the planes emerge from */
+.corridor-fog {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 44% 36% at 50% 46%,
+      color-mix(in oklch, var(--corridor-signal), transparent 90%),
+      transparent 74%
+    ),
+    radial-gradient(
+      ellipse 120% 100% at 50% 50%,
+      transparent 40%,
+      color-mix(in oklch, var(--corridor-ink), transparent 25%) 100%
+    );
+}
+
+.corridor-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.corridor-label,
+.corridor-plane-kicker,
+.corridor-media-caption,
+.corridor-gate-link {
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.corridor-label {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--corridor-muted);
+}
+
+.corridor-label::before {
+  content: '';
+  width: 2.5rem;
+  height: 1px;
+  background: var(--corridor-signal);
+}
+
+.corridor-heading {
+  margin-top: clamp(1.25rem, 3vh, 2rem);
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(2.3rem, 5.5vw, 4.5rem);
+  font-weight: 400;
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}
+
+/* ── Flowing composition (base) — an editorial column of planes ─────────── */
+
+.corridor-space {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3.5rem, 8vh, 6rem);
+  margin-top: clamp(3rem, 7vh, 5rem);
+}
+
+.corridor-plane {
+  position: relative;
+  max-width: 46rem;
+  border-top: 1px solid var(--corridor-line);
+  padding-top: clamp(1.5rem, 3.5vh, 2.5rem);
+}
+
+.corridor-plane-kicker {
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  color: var(--corridor-signal);
+}
+
+.corridor-plane-title {
+  margin-top: 0.9rem;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(2.2rem, 6vw, 4.4rem);
+  font-weight: 400;
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.corridor-plane-note {
+  margin-top: 1rem;
+  max-width: 34rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--corridor-muted);
+}
+
+/* The portrait plate */
+.corridor-plane-media {
+  max-width: 22rem;
+  border-top: none;
+  padding-top: 0;
+}
+
+.corridor-media-frame {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklch, var(--corridor-signal), transparent 60%);
+}
+
+.corridor-media-img {
+  object-fit: cover;
+  object-position: 50% 18%;
+  will-change: transform;
+}
+
+.corridor-media-caption {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 0.7rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  color: var(--corridor-muted);
+}
+
+/* The gate into the Atlas */
+.corridor-gate {
+  position: relative;
+  max-width: 34rem;
+  border: 1px solid var(--corridor-line);
+  padding: clamp(1.5rem, 3.5vw, 2.5rem);
+}
+
+.corridor-gate-title {
+  margin-top: 0.9rem;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.6rem, 3.6vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  color: color-mix(in oklch, var(--corridor-text), var(--corridor-signal) 30%);
+}
+
+.corridor-gate-rule {
+  display: block;
+  margin-block: 1.2rem;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--corridor-signal), transparent 30%),
+    var(--corridor-line) 55%,
+    transparent
+  );
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.corridor-gate-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.6rem;
+  border: 1px solid color-mix(in oklch, var(--corridor-signal), transparent 45%);
+  padding-inline: 1.1rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--corridor-text);
+  transition:
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+
+.corridor-gate-link:hover,
+.corridor-gate-link:focus-visible {
+  border-color: var(--corridor-signal);
+  background: color-mix(in oklch, var(--corridor-signal), transparent 90%);
+}
+
+.corridor-gate-link:focus-visible {
+  outline: 2px solid var(--corridor-signal);
+  outline-offset: 3px;
+}
+
+/* Ribs + progress exist only inside the pinned corridor */
+.corridor-rib,
+.corridor-progress {
+  display: none;
+}
+
+.corridor-progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--corridor-signal);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* ── Pinned corridor — a true CSS-3D perspective world ──────────────────── */
+
+.corridor-stage[data-motion='pinned'] {
+  --corridor-gutter: max(clamp(1.25rem, 4vw, 3.5rem), calc((100% - 90rem) / 2 + 3.5rem));
+  height: 100svh;
+  padding-block: 0;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-shell {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-slate {
+  position: absolute;
+  top: clamp(5rem, 10vh, 7rem);
+  inset-inline: var(--corridor-gutter);
+  z-index: 6;
+  opacity: 0;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-heading {
+  font-size: clamp(1.9rem, 3.4vw, 3rem);
+}
+
+/* The camera: perspective lives on the world, the bank lives on the space */
+.corridor-stage[data-motion='pinned'] .corridor-world {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  perspective: 950px;
+  perspective-origin: 50% 46%;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-space {
+  position: absolute;
+  inset: 0;
+  display: block;
+  margin: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-rib {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(74vw, 62rem);
+  height: min(64svh, 33rem);
+  border: 1px solid color-mix(in oklch, var(--corridor-signal), transparent 62%);
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+/* Alternate ribs carry corner ticks instead of full frames for variety */
+.corridor-stage[data-motion='pinned'] .corridor-rib:nth-child(even) {
+  border-color: color-mix(in oklch, var(--corridor-text), transparent 88%);
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-plane {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(38rem, 76vw);
+  max-width: none;
+  margin: 0;
+  border-top: none;
+  padding-top: 0;
+  text-align: center;
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-plane-title {
+  font-size: clamp(2.8rem, 6.5vw, 5.5rem);
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-plane-note {
+  margin-inline: auto;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-plane-media {
+  width: min(19rem, 30vw);
+  padding-top: 0;
+  text-align: left;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-gate {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(32rem, 84vw);
+  max-width: none;
+  text-align: center;
+  background: color-mix(in oklch, var(--corridor-ink), transparent 22%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-gate-rule {
+  margin-inline: auto;
+  width: 70%;
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-progress {
+  display: block;
+  position: absolute;
+  inset-inline: var(--corridor-gutter);
+  bottom: clamp(1.4rem, 3.5vh, 2.25rem);
+  z-index: 6;
+  height: 1px;
+  background: color-mix(in oklch, var(--corridor-line), transparent 20%);
+}
+
+.corridor-stage[data-motion='pinned'] .corridor-fog {
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ── Soft composition hints — unpinned scrub on touch / low tier ────────── */
+
+.corridor-stage[data-motion='soft'] .corridor-plane,
+.corridor-stage[data-motion='soft'] .corridor-gate,
+.corridor-stage[data-motion='soft'] .corridor-slate {
+  will-change: transform, opacity;
+}
+
+.corridor-stage[data-motion='soft'] .corridor-media-img {
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .corridor-section *,
+  .corridor-section *::before,
+  .corridor-section *::after {
     animation: none !important;
     transition-duration: 0.01ms !important;
   }

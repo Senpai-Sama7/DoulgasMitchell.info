@@ -25,6 +25,11 @@ const MaskParallaxSection = dynamic(
   () => import('@/components/site/mask-parallax-section').then((m) => m.MaskParallaxSection),
   { ssr: true }
 );
+const FlightCorridorSection = dynamic(
+  () =>
+    import('@/components/site/flight-corridor-section').then((m) => m.FlightCorridorSection),
+  { ssr: true }
+);
 const SystemAtlasSection = dynamic(
   () => import('@/components/site/system-atlas-section').then((m) => m.SystemAtlasSection),
   { ssr: true }
@@ -165,6 +170,8 @@ export function HomePageShell({
         <ImmersiveHeroSection />
         <ImmersiveAboutSection />
         <MaskParallaxSection />
+        {/* Unnumbered interlude — the flight corridor between Story and Map */}
+        <FlightCorridorSection />
         <SystemAtlasSection />
         <TelemetrySection />
         <ImmersiveMethodSection />
