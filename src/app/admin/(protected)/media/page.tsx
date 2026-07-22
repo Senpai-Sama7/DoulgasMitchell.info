@@ -18,10 +18,23 @@ import {
   X,
   MoreHorizontal,
   FolderOpen,
+  RefreshCw,
+  AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,6 +50,8 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MediaUploader } from '@/components/admin/media-uploader';
+import { useToast } from '@/hooks/use-toast';
+import { adminFetch, adminJson } from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 import { formatFileSize } from '@/lib/upload';
 import { logger } from '@/lib/logger';
@@ -55,11 +70,22 @@ interface Media {
   colorPalette?: string | null;
   folder?: string | null;
   createdAt: string;
-  _count: {
+  _count?: {
     articleUsages: number;
     projectUsages: number;
   };
 }
+
+interface MediaListResponse {
+  media: Media[];
+  featureAvailable?: boolean;
+}
+
+interface FolderListResponse {
+  folders: string[];
+}
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 const container = {
   hidden: { opacity: 0 },
@@ -74,20 +100,64 @@ const motionItem = {
   show: { opacity: 1, y: 0 },
 };
 
+/** Palette values come from the DB as JSON strings — never trust them blindly. */
+function parseColorPalette(value: string | null | undefined): string[] {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.filter((entry): entry is string => typeof entry === 'string').slice(0, 8)
+      : [];
+  } catch {
+    return [];
+  }
+}
+
+function ColorPaletteDots({ palette, size = 'md' }: { palette: string[]; size?: 'sm' | 'md' }) {
+  if (palette.length === 0) return null;
+  return (
+    <div className="flex gap-1">
+      {palette.map((color, i) => (
+        <div
+          key={`${color}-${i}`}
+          className={cn(
+            'rounded-full border border-black/5',
+            size === 'md' ? 'w-3 h-3' : 'w-2.5 h-2.5'
+          )}
+          style={{ backgroundColor: color }}
+          title={color}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function MediaLibraryPage() {
+  const { toast } = useToast();
   const [media, setMedia] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [featureAvailable, setFeatureAvailable] = useState(true);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [folders, setFolders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [uploaderOpen, setUploaderOpen] = useState(false);
+  const [deleteTargets, setDeleteTargets] = useState<string[] | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchQuery), SEARCH_DEBOUNCE_MS);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
 
   const fetchMedia = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
     try {
       const params = new URLSearchParams();
       if (selectedCategory !== 'all') {
@@ -96,40 +166,40 @@ export default function MediaLibraryPage() {
       if (selectedFolder) {
         params.append('folder', selectedFolder);
       }
-      if (searchQuery) {
-        params.append('search', searchQuery);
+      if (debouncedSearch) {
+        params.append('search', debouncedSearch);
       }
 
-      const response = await fetch(`/api/upload?${params.toString()}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setMedia(data.media);
-        setFeatureAvailable(data.featureAvailable !== false);
-      }
+      const data = await adminFetch<MediaListResponse>(`/api/upload?${params.toString()}`);
+      setMedia(data.media ?? []);
+      setFeatureAvailable(data.featureAvailable !== false);
     } catch (error) {
       logger.error('Failed to fetch media:', error);
+      setLoadError(
+        error instanceof Error ? error.message : 'Failed to load the media library.'
+      );
     } finally {
       setLoading(false);
     }
-  }, [selectedCategory, selectedFolder, searchQuery]);
+  }, [selectedCategory, selectedFolder, debouncedSearch]);
 
   const fetchFolders = useCallback(async () => {
     try {
-      const response = await fetch('/api/upload?folders=true');
-      const data = await response.json();
-      if (data.success) {
-        setFolders(data.folders);
-      }
+      const data = await adminFetch<FolderListResponse>('/api/upload?folders=true');
+      setFolders(data.folders ?? []);
     } catch (error) {
+      // Folder chips are a convenience — a failure here should not block the page.
       logger.error('Failed to fetch folders:', error);
     }
   }, []);
 
   useEffect(() => {
     fetchMedia();
+  }, [fetchMedia]);
+
+  useEffect(() => {
     fetchFolders();
-  }, [fetchMedia, fetchFolders]);
+  }, [fetchFolders]);
 
   const toggleSelection = (id: string) => {
     setSelectedItems((prev) => {
@@ -147,27 +217,40 @@ export default function MediaLibraryPage() {
     setSelectedItems(new Set());
   };
 
-  const deleteSelected = async () => {
-    if (selectedItems.size === 0) return;
+  const requestDelete = (ids: string[]) => {
+    if (ids.length === 0) return;
+    setDeleteTargets(ids);
+  };
 
-    if (!confirm(`Delete ${selectedItems.size} items?`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTargets || deleteTargets.length === 0) return;
 
+    setIsDeleting(true);
     try {
-      const response = await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ids: Array.from(selectedItems), action: 'delete' }),
+      await adminJson('/api/upload', 'DELETE', { ids: deleteTargets, action: 'delete' });
+
+      const deletedIds = new Set(deleteTargets);
+      setMedia((prev) => prev.filter((m) => !deletedIds.has(m.id)));
+      setSelectedItems((prev) => {
+        const next = new Set(prev);
+        deletedIds.forEach((id) => next.delete(id));
+        return next;
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setMedia((prev) => prev.filter((m) => !selectedItems.has(m.id)));
-        setSelectedItems(new Set());
-        fetchFolders();
-      }
+      toast({
+        title: 'Media deleted',
+        description: `${deleteTargets.length} file${deleteTargets.length === 1 ? '' : 's'} removed.`,
+      });
+      setDeleteTargets(null);
+      fetchFolders();
     } catch (error) {
       logger.error('Delete failed:', error);
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Could not delete the selected files.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -175,32 +258,41 @@ export default function MediaLibraryPage() {
     if (selectedItems.size === 0) return;
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          ids: Array.from(selectedItems), 
-          action: 'move',
-          folder: folder
-        }),
+      await adminJson('/api/upload', 'DELETE', {
+        ids: Array.from(selectedItems),
+        action: 'move',
+        folder,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
-        fetchMedia();
-        fetchFolders();
-        setSelectedItems(new Set());
-      }
+      fetchMedia();
+      fetchFolders();
+      setSelectedItems(new Set());
+      toast({
+        title: 'Media moved',
+        description: `Moved to ${folder || 'the root folder'}.`,
+      });
     } catch (error) {
       logger.error('Move failed:', error);
+      toast({
+        title: 'Move failed',
+        description: error instanceof Error ? error.message : 'Could not move the selected files.',
+        variant: 'destructive',
+      });
     }
   };
 
-  const copyUrl = (url: string, id: string) => {
-    navigator.clipboard.writeText(url);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 2000);
+  const copyUrl = async (url: string, id: string) => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {
+      toast({
+        title: 'Copy failed',
+        description: 'Clipboard access was blocked by the browser.',
+        variant: 'destructive',
+      });
+    }
   };
 
   const getFileIcon = (category: string) => {
@@ -272,6 +364,21 @@ export default function MediaLibraryPage() {
         </Card>
       )}
 
+      {loadError && (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 py-4">
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertTriangle className="h-4 w-4 shrink-0" />
+              {loadError}
+            </div>
+            <Button variant="outline" size="sm" onClick={() => fetchMedia()}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Filters & Search */}
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1 space-y-4">
@@ -284,7 +391,7 @@ export default function MediaLibraryPage() {
               className="pl-9"
             />
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             <Button
               variant={selectedFolder === null ? 'secondary' : 'ghost'}
@@ -315,7 +422,7 @@ export default function MediaLibraryPage() {
             </Button>
           </div>
         </div>
-        
+
         <div className="flex gap-2 self-start">
           <Tabs value={selectedCategory} onValueChange={setSelectedCategory}>
             <TabsList>
@@ -341,7 +448,7 @@ export default function MediaLibraryPage() {
             {selectedItems.size} selected
           </span>
           <div className="h-4 w-px bg-border hidden sm:block" />
-          
+
           <div className="flex flex-wrap gap-2">
             <Button variant="ghost" size="sm" onClick={clearSelection}>
               <X className="h-4 w-4 mr-2" />
@@ -370,7 +477,7 @@ export default function MediaLibraryPage() {
             <Button
               variant="destructive"
               size="sm"
-              onClick={deleteSelected}
+              onClick={() => requestDelete(Array.from(selectedItems))}
             >
               <Trash2 className="h-4 w-4 mr-2" />
               Delete
@@ -385,6 +492,7 @@ export default function MediaLibraryPage() {
           variant={viewMode === 'grid' ? 'default' : 'outline'}
           size="icon"
           onClick={() => setViewMode('grid')}
+          aria-label="Grid view"
         >
           <Grid3X3 className="h-4 w-4" />
         </Button>
@@ -392,6 +500,7 @@ export default function MediaLibraryPage() {
           variant={viewMode === 'list' ? 'default' : 'outline'}
           size="icon"
           onClick={() => setViewMode('list')}
+          aria-label="List view"
         >
           <List className="h-4 w-4" />
         </Button>
@@ -411,9 +520,13 @@ export default function MediaLibraryPage() {
         <div className="text-center py-12">
           <FolderOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">
-            {featureAvailable ? 'No media files found' : 'Media results are unavailable in this environment'}
+            {loadError
+              ? 'Media could not be loaded'
+              : featureAvailable
+                ? 'No media files found'
+                : 'Media results are unavailable in this environment'}
           </p>
-          {featureAvailable && (
+          {featureAvailable && !loadError && (
             <Button
               variant="outline"
               className="mt-4"
@@ -435,179 +548,200 @@ export default function MediaLibraryPage() {
               : 'space-y-2'
           )}
         >
-          {media.map((item) => (
-            <motion.div key={item.id} variants={motionItem}>
-              {viewMode === 'grid' ? (
-                <Card
-                  className={cn(
-                    'group cursor-pointer transition-all',
-                    selectedItems.has(item.id) && 'ring-2 ring-primary'
-                  )}
-                  onClick={() => toggleSelection(item.id)}
-                >
-                  <CardContent className="p-0">
-                    <div className="aspect-square relative overflow-hidden rounded-t-lg bg-muted">
+          {media.map((item) => {
+            const palette = parseColorPalette(item.colorPalette);
+            return (
+              <motion.div key={item.id} variants={motionItem}>
+                {viewMode === 'grid' ? (
+                  <Card
+                    className={cn(
+                      'group cursor-pointer transition-all',
+                      selectedItems.has(item.id) && 'ring-2 ring-primary'
+                    )}
+                    onClick={() => toggleSelection(item.id)}
+                  >
+                    <CardContent className="p-0">
+                      <div className="aspect-square relative overflow-hidden rounded-t-lg bg-muted">
+                        {item.category === 'image' ? (
+                          <Image
+                            src={item.thumbnailUrl || item.url}
+                            alt={item.originalName}
+                            className="w-full h-full object-cover"
+                            width={400}
+                            height={400}
+                            loading="lazy"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            {getFileIcon(item.category)}
+                          </div>
+                        )}
+                        {/* Overlay */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                          <div className="flex gap-2">
+                            <Button
+                              size="icon"
+                              variant="secondary"
+                              aria-label={`Copy URL for ${item.originalName}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                copyUrl(item.url, item.id);
+                              }}
+                            >
+                              {copiedId === item.id ? (
+                                <Check className="h-4 w-4" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="destructive"
+                              aria-label={`Delete ${item.originalName}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                requestDelete([item.id]);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-3">
+                        <p className="font-medium truncate text-sm">
+                          {item.originalName}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            {formatFileSize(item.size)}
+                          </p>
+                          {item.width && item.height && (
+                            <span className="text-[10px] text-muted-foreground/60">• {item.width}×{item.height}</span>
+                          )}
+                        </div>
+
+                        {palette.length > 0 && (
+                          <div className="mt-2">
+                            <ColorPaletteDots palette={palette} />
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div
+                    className={cn(
+                      'flex items-center gap-4 p-3 rounded-lg border transition-all',
+                      selectedItems.has(item.id)
+                        ? 'border-primary bg-primary/5'
+                        : 'border-border hover:bg-muted/50'
+                    )}
+                    onClick={() => toggleSelection(item.id)}
+                  >
+                    <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
                       {item.category === 'image' ? (
                         <Image
                           src={item.thumbnailUrl || item.url}
                           alt={item.originalName}
-                          className="w-full h-full object-cover"
-                          width={400}
-                          height={400}
-                          loading="lazy"
+                          className="w-full h-full object-cover rounded"
+                          width={48}
+                          height={48}
                           unoptimized
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          {getFileIcon(item.category)}
-                        </div>
+                        getFileIcon(item.category)
                       )}
-                      {/* Overlay */}
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
-                        <div className="flex gap-2">
-                          <Button
-                            size="icon"
-                            variant="secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              copyUrl(item.url, item.id);
-                            }}
-                          >
-                            {copiedId === item.id ? (
-                              <Check className="h-4 w-4" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            size="icon"
-                            variant="destructive"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedItems(new Set([item.id]));
-                              deleteSelected();
-                            }}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
                     </div>
-                    <div className="p-3">
-                      <p className="font-medium truncate text-sm">
-                        {item.originalName}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{item.originalName}</p>
+                      <div className="flex items-center gap-3">
+                        <p className="text-sm text-muted-foreground">
                           {formatFileSize(item.size)}
+                          {' • '}
+                          {new Date(item.createdAt).toLocaleDateString()}
+                          {(item._count?.articleUsages ?? 0) > 0 && (
+                            <span className="ml-2 text-blue-500">
+                              Used in {item._count?.articleUsages} article
+                              {(item._count?.articleUsages ?? 0) > 1 ? 's' : ''}
+                            </span>
+                          )}
                         </p>
-                        {item.width && item.height && (
-                          <span className="text-[10px] text-muted-foreground/60">• {item.width}×{item.height}</span>
-                        )}
+                        <ColorPaletteDots palette={palette} size="sm" />
                       </div>
-                      
-                      {item.colorPalette && (
-                        <div className="flex gap-1 mt-2">
-                          {JSON.parse(item.colorPalette).map((color: string, i: number) => (
-                            <div 
-                              key={i} 
-                              className="w-3 h-3 rounded-full border border-black/5" 
-                              style={{ backgroundColor: color }}
-                              title={color}
-                            />
-                          ))}
-                        </div>
-                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div
-                  className={cn(
-                    'flex items-center gap-4 p-3 rounded-lg border transition-all',
-                    selectedItems.has(item.id)
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted/50'
-                  )}
-                  onClick={() => toggleSelection(item.id)}
-                >
-                  <div className="w-12 h-12 rounded bg-muted flex items-center justify-center flex-shrink-0">
-                    {item.category === 'image' ? (
-                      <Image
-                        src={item.thumbnailUrl || item.url}
-                        alt={item.originalName}
-                        className="w-full h-full object-cover rounded"
-                        width={48}
-                        height={48}
-                        unoptimized
-                      />
-                    ) : (
-                      getFileIcon(item.category)
-                    )}
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Open actions for ${item.originalName}`}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => copyUrl(item.url, item.id)}
+                        >
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy URL
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => requestDelete([item.id])}
+                        >
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{item.originalName}</p>
-                    <div className="flex items-center gap-3">
-                      <p className="text-sm text-muted-foreground">
-                        {formatFileSize(item.size)}
-                        {' • '}
-                        {new Date(item.createdAt).toLocaleDateString()}
-                        {item._count.articleUsages > 0 && (
-                          <span className="ml-2 text-blue-500">
-                            Used in {item._count.articleUsages} article
-                            {item._count.articleUsages > 1 ? 's' : ''}
-                          </span>
-                        )}
-                      </p>
-                      {item.colorPalette && (
-                        <div className="flex gap-1">
-                          {JSON.parse(item.colorPalette).map((color: string, i: number) => (
-                            <div 
-                              key={i} 
-                              className="w-2.5 h-2.5 rounded-full border border-black/5" 
-                              style={{ backgroundColor: color }}
-                              title={color}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() => copyUrl(item.url, item.id)}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        Copy URL
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="text-destructive"
-                        onClick={() => {
-                          setSelectedItems(new Set([item.id]));
-                          deleteSelected();
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              )}
-            </motion.div>
-          ))}
+                )}
+              </motion.div>
+            );
+          })}
         </motion.div>
       )}
+
+      <AlertDialog
+        open={Boolean(deleteTargets)}
+        onOpenChange={(open) => !open && !isDeleting && setDeleteTargets(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {deleteTargets?.length === 1 ? 'this file' : `${deleteTargets?.length ?? 0} files`}?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              The stored asset{deleteTargets && deleteTargets.length > 1 ? 's' : ''} and thumbnail
+              {deleteTargets && deleteTargets.length > 1 ? 's' : ''} will be permanently removed. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

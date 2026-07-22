@@ -65,6 +65,14 @@ export function setSessionExpiredHandler(handler: (() => void) | null): () => vo
   return previous;
 }
 
+/**
+ * For callers that bypass `adminFetch` (e.g. XMLHttpRequest uploads with
+ * progress events) but still need the shared 401 recovery behavior.
+ */
+export function triggerSessionExpiredRedirect() {
+  sessionExpiredHandler();
+}
+
 async function parseResponseBody(response: Response): Promise<unknown> {
   const text = await response.text().catch(() => '');
   if (!text) return null;
