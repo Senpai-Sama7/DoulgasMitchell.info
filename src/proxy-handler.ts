@@ -16,14 +16,29 @@ function getJwtSecret() {
 const JWT_ISSUER = 'douglasmitchell.info';
 const JWT_AUDIENCE = 'admin-portal';
 
-// Routes that don't require authentication under /admin
+// Routes that don't require authentication under /admin.
+// NOTE: '/api/admin/auth' also covers the passkey login flows under
+// '/api/admin/auth/passkey/*'; the register flows there still enforce a
+// session inside their handlers.
 const publicAdminRoutes = [
   '/admin/login',
   '/api/admin/auth',
-  '/api/admin/webauthn',
   '/api/admin/setup',
   '/api/admin/check',
 ];
+
+/** Build the login redirect, preserving the admin deep link for post-login resume. */
+function buildLoginRedirect(request: NextRequest, sessionExpired: boolean) {
+  const loginUrl = new URL('/admin/login', request.url);
+  if (sessionExpired) {
+    loginUrl.searchParams.set('reason', 'session-expired');
+  }
+  const nextPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  if (nextPath !== '/admin') {
+    loginUrl.searchParams.set('next', nextPath);
+  }
+  return loginUrl;
+}
 
 /**
  * Combined Proxy/Middleware for Douglas Mitchell Platform
@@ -91,7 +106,7 @@ export async function proxy(request: NextRequest) {
           if (pathname.startsWith('/api/')) {
             return new NextResponse(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: securityHeaders });
           }
-          return NextResponse.redirect(new URL('/admin/login', request.url));
+          return NextResponse.redirect(buildLoginRedirect(request, false));
         }
 
         // Verify the JWT token
@@ -108,7 +123,7 @@ export async function proxy(request: NextRequest) {
           }
           
           // Redirect to login and clear cookie
-          const response = NextResponse.redirect(new URL('/admin/login', request.url));
+          const response = NextResponse.redirect(buildLoginRedirect(request, true));
           response.cookies.delete('admin-session');
           return response;
         }
