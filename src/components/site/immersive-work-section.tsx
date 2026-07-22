@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback, type CSSProperties, type PointerEvent } from 'react';
 import Link from 'next/link';
+import { useReducedMotion } from 'framer-motion';
 import { ArrowRight, ArrowUpRight } from 'lucide-react';
 import { Magnetic, usePinnedScene } from '@/components/immersive';
 import { ScrollTrigger } from '@/lib/gsap';
@@ -10,6 +12,10 @@ interface ImmersiveWorkSectionProps {
   projects: ProjectShowcase[];
 }
 
+/** Max tilt in degrees — kept shallow so panels read as planes, not cards. */
+const TILT_X_MAX = 3.2;
+const TILT_Y_MAX = 4.4;
+
 /**
  * Chapter 07 — Proof. The section pins for 1800px of scroll while the inner
  * track translates X by (track.scrollWidth − viewport), turning vertical
@@ -17,10 +23,41 @@ interface ImmersiveWorkSectionProps {
  * panels. The default markup is a vertical editorial stack — mobile, touch,
  * reduced-motion, and low motion tiers never get the horizontal hijack; the
  * pinned build only elevates the layout via [data-motion='pinned'].
- * The category filter is intentionally dropped for cinematic purity — each
- * panel carries its category as a first-class editorial credit instead.
+ *
+ * Cinematic grammar of the pinned rail:
+ * - the intro reads as a film title card: huge serif, a scrubbing hairline
+ *   that tracks rail progress in place;
+ * - each case panel carries an oversized outlined index numeral and a
+ *   full-bleed signal plane cut from project.color (clip-path widens on
+ *   hover) instead of a tiny category dot;
+ * - fine pointers get a shallow CSS 3D tilt driven by custom properties;
+ * - the primary "read" affordance is magnetic.
  */
 export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  // Shallow 3D tilt — mouse (fine pointer) only, never under reduced motion.
+  // Writes CSS custom properties; the transform itself only exists in the
+  // pinned stylesheet, so touch/static tiers stay untouched.
+  const handleTilt = useCallback(
+    (event: PointerEvent<HTMLAnchorElement>) => {
+      if (prefersReducedMotion || event.pointerType !== 'mouse') return;
+      const card = event.currentTarget;
+      const rect = card.getBoundingClientRect();
+      const px = (event.clientX - rect.left) / rect.width - 0.5;
+      const py = (event.clientY - rect.top) / rect.height - 0.5;
+      card.style.setProperty('--tilt-x', `${(-py * TILT_X_MAX).toFixed(2)}deg`);
+      card.style.setProperty('--tilt-y', `${(px * TILT_Y_MAX).toFixed(2)}deg`);
+    },
+    [prefersReducedMotion]
+  );
+
+  const resetTilt = useCallback((event: PointerEvent<HTMLAnchorElement>) => {
+    const card = event.currentTarget;
+    card.style.setProperty('--tilt-x', '0deg');
+    card.style.setProperty('--tilt-y', '0deg');
+  }, []);
+
   const stageRef = usePinnedScene<HTMLDivElement>(
     ({ timeline, root }) => {
       root.dataset.motion = 'pinned';
@@ -40,9 +77,13 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
         0
       );
 
-      const fill = root.querySelector<HTMLElement>('.proof-progress-fill');
-      if (fill) {
-        timeline.fromTo(fill, { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'none' }, 0);
+      // Both hairlines scrub in lockstep with the rail: the title-card line
+      // inside the intro panel and the fixed strip along the viewport bottom.
+      const fills = root.querySelectorAll<HTMLElement>(
+        '.proof-progress-fill, .proof-intro-hairline-fill'
+      );
+      if (fills.length) {
+        timeline.fromTo(fills, { scaleX: 0 }, { scaleX: 1, duration: 1, ease: 'none' }, 0);
       }
 
       // The layout flips from static stack to horizontal rail above —
@@ -63,7 +104,7 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
       <div ref={stageRef} className="proof-stage">
         <div className="proof-viewport">
           <div className="proof-track scrollbar-hidden" data-cursor="drag">
-            {/* Oversized intro slide */}
+            {/* Title card — huge type plus a hairline that scrubs with the rail */}
             <article className="proof-panel proof-panel-intro">
               <div>
                 <p className="chapter-label mb-6">Chapter 07 · Proof</p>
@@ -72,6 +113,9 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
                   <br />
                   <span className="text-muted-foreground">architecture.</span>
                 </h2>
+                <div className="proof-intro-hairline" aria-hidden>
+                  <span className="proof-intro-hairline-fill" />
+                </div>
                 <p className="mt-6 max-w-md text-muted-foreground md:text-lg">
                   Case studies written as decision logs: challenge, constraint, path taken, outcome.
                 </p>
@@ -89,17 +133,20 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
                   href={`/work/${project.slug}`}
                   className="proof-panel-link group"
                   data-cursor="interactive"
+                  style={{ '--plane': project.color } as CSSProperties}
+                  onPointerMove={handleTilt}
+                  onPointerLeave={resetTilt}
                 >
-                  <div className="flex w-full flex-wrap items-baseline justify-between gap-4">
-                    <span className="proof-panel-index font-display" aria-hidden>
-                      {String(index + 1).padStart(2, '0')}
-                    </span>
+                  {/* Full-bleed signal plane cut from project.color */}
+                  <span className="proof-panel-plane" aria-hidden />
+
+                  {/* Oversized outlined numeral — ghost layer behind the copy */}
+                  <span className="proof-panel-index font-display" aria-hidden>
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+
+                  <div className="proof-panel-body">
                     <p className="flex flex-wrap items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
-                      <span
-                        className="inline-block h-1.5 w-1.5"
-                        style={{ backgroundColor: project.color }}
-                        aria-hidden
-                      />
                       {project.category}
                       <span className="text-muted-foreground/40" aria-hidden>
                         ·
@@ -110,31 +157,33 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
                       </span>
                       {project.status}
                     </p>
-                  </div>
 
-                  <h3 className="proof-panel-title font-display transition-colors group-hover:text-foreground">
-                    {project.title}
-                  </h3>
+                    <h3 className="proof-panel-title font-display transition-colors group-hover:text-foreground">
+                      {project.title}
+                    </h3>
 
-                  <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-                    {project.description}
-                  </p>
+                    <p className="mt-5 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
+                      {project.description}
+                    </p>
 
-                  <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground/80">
-                    {project.techStack.map((tech) => (
-                      <li key={tech}>{tech}</li>
-                    ))}
-                  </ul>
+                    <ul className="mt-6 flex flex-wrap gap-x-4 gap-y-1 font-mono text-xs text-muted-foreground/80">
+                      {project.techStack.map((tech) => (
+                        <li key={tech}>{tech}</li>
+                      ))}
+                    </ul>
 
-                  <span className="mt-8 inline-flex items-center gap-3 text-sm font-medium">
-                    Read the decision log
-                    <span className="inline-flex h-11 w-11 items-center justify-center border border-border/70 text-muted-foreground transition-colors group-hover:border-foreground/50 group-hover:text-foreground">
-                      <ArrowUpRight
-                        className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                        aria-hidden
-                      />
+                    <span className="mt-8 inline-flex items-center gap-3 text-sm font-medium">
+                      Read the decision log
+                      <Magnetic strength={0.28} radius={80}>
+                        <span className="inline-flex h-11 w-11 items-center justify-center border border-border/70 text-muted-foreground transition-colors group-hover:border-foreground/50 group-hover:text-foreground">
+                          <ArrowUpRight
+                            className="h-4 w-4 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                            aria-hidden
+                          />
+                        </span>
+                      </Magnetic>
                     </span>
-                  </span>
+                  </div>
                 </Link>
               </article>
             ))}

@@ -127,8 +127,29 @@ export function ImmersiveContactSection() {
       <div className="editorial-container section-spacing relative z-10">
         {/* ── Ceremonial opener ─────────────────────────────────────────── */}
         <ScrollReveal className="mb-16 lg:mb-24">
-          <p className="chapter-label mb-8">10 · Invitation</p>
-          <h2 className="max-w-4xl font-display text-[clamp(2.75rem,7vw,5.75rem)] leading-[0.95] tracking-[-0.03em]">
+          <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-2">
+            <p className="chapter-label">10 · Invitation</p>
+            {/* Live signal — a quiet pulse that says the channel is open.
+                Animation is gated behind prefers-reduced-motion in CSS. */}
+            <span className="inline-flex items-center gap-2" aria-hidden>
+              <span className="invitation-signal">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle className="invitation-signal-wave" cx="12" cy="12" r="9" />
+                  <circle
+                    className="invitation-signal-wave invitation-signal-wave-late"
+                    cx="12"
+                    cy="12"
+                    r="9"
+                  />
+                  <circle className="invitation-signal-core" cx="12" cy="12" r="2.6" />
+                </svg>
+              </span>
+              <span className="font-mono text-[0.6rem] font-medium uppercase tracking-[0.22em] text-brand-accent">
+                Channel open
+              </span>
+            </span>
+          </div>
+          <h2 className="invitation-title font-display">
             Let&apos;s build something
             <br />
             <span className="text-muted-foreground">that holds.</span>

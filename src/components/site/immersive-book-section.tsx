@@ -28,16 +28,39 @@ export function ImmersiveBookSection() {
       root.dataset.motion = 'pinned';
 
       const book = root.querySelector<HTMLElement>('.book-object');
+      const sheen = root.querySelector<HTMLElement>('.book-sheen');
+      const shadow = root.querySelector<HTMLElement>('.book-shadow');
       const words = gsap.utils.toArray<HTMLElement>('.artifact-title-line', root);
       const metaItems = gsap.utils.toArray<HTMLElement>('.artifact-meta-item', root);
       const unmasks = gsap.utils.toArray<HTMLElement>('.artifact-unmask', root);
       const cta = root.querySelector<HTMLElement>('.artifact-cta');
 
+      // Wider rotation arc with a slight vertical recline that settles flat —
+      // the object reads as picked up spine-first and set down facing you.
       if (book) {
         timeline.fromTo(
           book,
-          { rotationY: 64, scale: 0.9 },
-          { rotationY: 16, scale: 1, duration: 3.1, ease: 'none' },
+          { rotationY: 78, rotationX: 7, scale: 0.86 },
+          { rotationY: 12, rotationX: 0, scale: 1, duration: 3.1, ease: 'none' },
+          0
+        );
+      }
+      // Specular band sweeps the cover once across the scrub — the light
+      // moves because the object is turning.
+      if (sheen) {
+        timeline.fromTo(
+          sheen,
+          { xPercent: -170 },
+          { xPercent: 170, duration: 3.1, ease: 'none' },
+          0
+        );
+      }
+      // Contact shadow tightens and darkens as the book squares up.
+      if (shadow) {
+        timeline.fromTo(
+          shadow,
+          { opacity: 0.35, scaleX: 1.18 },
+          { opacity: 0.85, scaleX: 0.94, duration: 3.1, ease: 'none' },
           0
         );
       }
@@ -115,6 +138,9 @@ export function ImmersiveBookSection() {
                         height={533}
                         className="block h-auto w-full object-cover"
                       />
+                      {/* Scrub-driven specular sweep — parked off-cover for
+                          static/reduced-motion tiers */}
+                      <span className="book-sheen" aria-hidden />
                     </div>
                   </div>
                 </a>
