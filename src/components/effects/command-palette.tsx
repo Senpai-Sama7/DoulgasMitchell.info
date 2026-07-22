@@ -9,6 +9,7 @@ import {
   Command,
   CornerDownLeft,
   FileText,
+  Film,
   Gauge,
   Home,
   Layers,
@@ -73,8 +74,18 @@ export function CommandPalette({
       category: 'Chapters',
     },
     {
+      id: 'cinema',
+      label: '03 · Cinema',
+      icon: Film,
+      action: () => {
+        onNavigate('#cinema');
+        onClose();
+      },
+      category: 'Chapters',
+    },
+    {
       id: 'atlas',
-      label: '03 · Systems Atlas',
+      label: '04 · Systems Atlas',
       icon: Network,
       action: () => {
         onNavigate('#atlas');
@@ -84,7 +95,7 @@ export function CommandPalette({
     },
     {
       id: 'telemetry',
-      label: '04 · Telemetry',
+      label: '05 · Telemetry',
       icon: Activity,
       action: () => {
         onNavigate('#telemetry');
@@ -94,7 +105,7 @@ export function CommandPalette({
     },
     {
       id: 'method',
-      label: '05 · Method',
+      label: '06 · Method',
       icon: Layers,
       action: () => {
         onNavigate('#method');
@@ -104,7 +115,7 @@ export function CommandPalette({
     },
     {
       id: 'simulator',
-      label: '06 · Instrument',
+      label: '07 · Instrument',
       icon: Gauge,
       action: () => {
         onNavigate('#simulator');
@@ -114,7 +125,7 @@ export function CommandPalette({
     },
     {
       id: 'work',
-      label: '07 · Proof',
+      label: '08 · Proof',
       icon: Briefcase,
       action: () => {
         onNavigate('#work');
@@ -124,7 +135,7 @@ export function CommandPalette({
     },
     {
       id: 'book',
-      label: '08 · Artifact',
+      label: '09 · Artifact',
       icon: BookOpen,
       action: () => {
         onNavigate('#book');
@@ -134,7 +145,7 @@ export function CommandPalette({
     },
     {
       id: 'writing',
-      label: '09 · Voice',
+      label: '10 · Voice',
       icon: FileText,
       action: () => {
         onNavigate('#writing');
@@ -154,7 +165,7 @@ export function CommandPalette({
     },
     {
       id: 'contact',
-      label: '10 · Invitation',
+      label: '11 · Invitation',
       icon: Mail,
       action: () => {
         onNavigate('#contact');

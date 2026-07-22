@@ -61,7 +61,7 @@ export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionPro
         <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_1.5fr] lg:items-end">
           <div>
             <ScrollReveal y={12}>
-              <p className="chapter-label mb-5">09 · Voice</p>
+              <p className="chapter-label mb-5">10 · Voice</p>
             </ScrollReveal>
             <KineticHeading
               lines={[

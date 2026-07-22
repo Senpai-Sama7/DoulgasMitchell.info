@@ -27,27 +27,35 @@ interface NavLink {
 
 const navLinks: readonly NavLink[] = [
   { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
-  { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '03', beat: 'Systems' },
+  {
+    href: '/#cinema',
+    label: 'Cinema',
+    sectionId: 'cinema',
+    chapter: '03',
+    beat: 'Depth',
+    wideOnly: true,
+  },
+  { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '04', beat: 'Systems' },
   {
     href: '/#telemetry',
     label: 'Telemetry',
     sectionId: 'telemetry',
-    chapter: '04',
+    chapter: '05',
     beat: 'Doctrine',
   },
-  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '05', beat: 'Method' },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '06', beat: 'Method' },
   {
     href: '/#simulator',
     label: 'Instrument',
     sectionId: 'simulator',
-    chapter: '06',
+    chapter: '07',
     beat: 'Decision',
     wideOnly: true,
   },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '07', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '08', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '09', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '10', beat: 'Invitation' },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '08', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '09', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '10', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '11', beat: 'Invitation' },
 ];
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;

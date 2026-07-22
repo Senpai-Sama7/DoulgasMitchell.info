@@ -4752,3 +4752,501 @@ a:focus-visible .lux-underline {
     display: none;
   }
 }
+
+/* MASK PARALLAX CINEMA */
+/* ═══════════════════════════════════════════════════════════════════════════
+   Chapter 03 · Cinema — pinned depth study in three planes.
+   BACK: composite-masked grain/gradient field + scan rules, parallaxing
+   slower than content. MID: kinetic claim, clip-path unmasked line-by-line.
+   FORE: CSS-3D wayfinding plates (perspective parent) that scrub from
+   rotateX(18deg) translateZ(-80px) to upright. Base styles are the static /
+   final upright composition (touch, reduced motion, low tier); everything
+   pinned-only lives under [data-motion='pinned']. The scrub animates
+   transform / opacity / clip-path / filter only.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.cinema-section {
+  --cinema-ink: oklch(0.105 0.014 250);
+  --cinema-panel: oklch(0.145 0.015 248);
+  --cinema-panel-raised: oklch(0.175 0.017 246);
+  --cinema-text: oklch(0.95 0.006 236);
+  --cinema-muted: oklch(0.65 0.018 236);
+  --cinema-line: oklch(0.3 0.02 240);
+  --cinema-signal: oklch(0.74 0.09 193);
+  position: relative;
+  overflow: clip;
+  color: var(--cinema-text);
+  background: var(--cinema-ink);
+}
+
+.cinema-stage {
+  position: relative;
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  isolation: isolate;
+  padding-block: clamp(5rem, 9vw, 8rem);
+}
+
+/* ── Mask utilities ─────────────────────────────────────────────────────── */
+
+/* Radial spotlight ∩ vertical fade — the composite window onto the field. */
+.cinema-mask-composite {
+  -webkit-mask-image:
+    radial-gradient(ellipse 115% 92% at 50% 40%, black 36%, transparent 82%),
+    linear-gradient(180deg, transparent 0%, black 12%, black 84%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    radial-gradient(ellipse 115% 92% at 50% 40%, black 36%, transparent 82%),
+    linear-gradient(180deg, transparent 0%, black 12%, black 84%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* Horizontal ∩ vertical frame fade — for structural layers. */
+.cinema-mask-frame {
+  -webkit-mask-image:
+    linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, transparent 0%, black 14%, black 86%, transparent 100%),
+    linear-gradient(180deg, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-composite: intersect;
+}
+
+/* ── BACK plane — masked grain/gradient field + scan rules ─────────────── */
+
+.cinema-mask-field {
+  position: absolute;
+  inset: -12% -4%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse 52% 44% at 22% 34%,
+      color-mix(in oklch, var(--cinema-signal), transparent 87%),
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 46% 56% at 79% 64%,
+      color-mix(in oklch, var(--cinema-text), transparent 96%),
+      transparent 70%
+    ),
+    linear-gradient(158deg, oklch(0.135 0.018 248), var(--cinema-ink) 62%);
+  will-change: transform;
+}
+
+.cinema-mask-field::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.26;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='cinemaGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23cinemaGrain)'/%3E%3C/svg%3E");
+  background-size: 220px 220px;
+  mix-blend-mode: overlay;
+}
+
+.cinema-mask-scan {
+  position: absolute;
+  inset: -14% 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+  background-image:
+    linear-gradient(
+      90deg,
+      color-mix(in oklch, var(--cinema-text), transparent 94%) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      color-mix(in oklch, var(--cinema-signal), transparent 92%) 1px,
+      transparent 1px
+    );
+  background-size:
+    clamp(5rem, 8vw, 8rem) 100%,
+    100% clamp(14rem, 30vh, 20rem);
+  will-change: transform;
+}
+
+/* ── Shell + opening slate ─────────────────────────────────────────────── */
+
+.cinema-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.cinema-opening {
+  position: relative;
+  z-index: 2;
+}
+
+.cinema-chapter,
+.cinema-kicker,
+.cinema-card-figure,
+.cinema-card-eyebrow,
+.cinema-card-link,
+.cinema-exit {
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  text-transform: uppercase;
+}
+
+.cinema-chapter {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  color: var(--cinema-muted);
+}
+
+.cinema-chapter::before {
+  content: '';
+  width: 2.5rem;
+  height: 1px;
+  background: var(--cinema-signal);
+}
+
+.cinema-kicker {
+  margin-top: 0.7rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.24em;
+  color: var(--cinema-signal);
+}
+
+/* ── MID plane — the kinetic claim ─────────────────────────────────────── */
+
+.cinema-statement {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(2.25rem, 5vh, 3.5rem);
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(2.9rem, 8vw, 7.5rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: -0.05em;
+}
+
+.cinema-line {
+  display: block;
+  will-change: transform;
+}
+
+.cinema-line:nth-child(2) {
+  margin-left: clamp(1.75rem, 7vw, 7rem);
+}
+
+.cinema-line:nth-child(3) {
+  margin-left: clamp(0.75rem, 3vw, 3rem);
+}
+
+.cinema-line-em {
+  font-style: italic;
+  color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 42%);
+}
+
+/* ── FORE plane — CSS-3D wayfinding plates ─────────────────────────────── */
+
+.cinema-deck {
+  position: relative;
+  z-index: 3;
+}
+
+.cinema-deck-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: clamp(2.75rem, 6vw, 4.5rem);
+  list-style: none;
+  padding: 0;
+}
+
+/* Static composition — asymmetric editorial plates, never an equal row. */
+@media (min-width: 48rem) {
+  .cinema-deck-grid {
+    grid-template-columns: repeat(12, 1fr);
+  }
+
+  .cinema-card-3d[data-panel='atlas'] {
+    grid-column: 1 / span 7;
+  }
+
+  .cinema-card-3d[data-panel='telemetry'] {
+    grid-column: 8 / span 5;
+  }
+
+  .cinema-card-3d[data-panel='instrument'] {
+    grid-column: 1 / span 5;
+  }
+
+  .cinema-card-3d[data-panel='proof'] {
+    grid-column: 6 / span 7;
+  }
+}
+
+.cinema-card-3d {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-width: 0;
+  padding: clamp(1.15rem, 2vw, 1.6rem);
+  border: 1px solid var(--cinema-line);
+  background: color-mix(in oklch, var(--cinema-panel), transparent 3%);
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  transition:
+    border-color 0.4s ease,
+    background-color 0.4s ease;
+}
+
+.cinema-card-3d::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: -1px;
+  width: clamp(3rem, 24%, 7rem);
+  height: 1px;
+  background: var(--cinema-signal);
+  pointer-events: none;
+}
+
+.cinema-card-3d::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0.6rem;
+  height: 0.6rem;
+  border-top: 1px solid color-mix(in oklch, var(--cinema-signal), transparent 30%);
+  border-right: 1px solid color-mix(in oklch, var(--cinema-signal), transparent 30%);
+  pointer-events: none;
+}
+
+.cinema-card-3d:hover,
+.cinema-card-3d:focus-within {
+  border-color: color-mix(in oklch, var(--cinema-signal), transparent 55%);
+  background: color-mix(in oklch, var(--cinema-panel-raised), transparent 3%);
+}
+
+.cinema-card-figure {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.18em;
+  color: var(--cinema-muted);
+}
+
+.cinema-card-title {
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(1.6rem, 2.3vw, 2.15rem);
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.cinema-card-eyebrow {
+  font-size: 0.56rem;
+  letter-spacing: 0.22em;
+  color: var(--cinema-signal);
+}
+
+.cinema-card-desc {
+  max-width: 26rem;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--cinema-muted);
+}
+
+.cinema-card-rule {
+  display: block;
+  height: 1px;
+  margin-top: 0.25rem;
+  background: linear-gradient(90deg, var(--cinema-signal), transparent 78%);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.cinema-card-cta {
+  margin-top: auto;
+  align-self: flex-start;
+  padding-top: 0.5rem;
+}
+
+.cinema-card-link {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--cinema-text);
+  transition: color 0.3s ease;
+}
+
+.cinema-card-link span {
+  display: inline-block;
+  transition: translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cinema-card-link:hover,
+.cinema-card-link:focus-visible {
+  color: var(--cinema-signal);
+}
+
+.cinema-card-link:hover span,
+.cinema-card-link:focus-visible span {
+  translate: 0.25rem 0;
+}
+
+.cinema-exit {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 1.4rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--cinema-muted);
+}
+
+.cinema-exit::before {
+  content: '';
+  width: 2rem;
+  height: 1px;
+  background: color-mix(in oklch, var(--cinema-signal), transparent 30%);
+}
+
+/* ── Progress hairline — pinned scrub only ─────────────────────────────── */
+
+.cinema-progress {
+  display: none;
+}
+
+.cinema-progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--cinema-signal);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+}
+
+/* ── Pinned composition — three absolute planes in a 100svh viewport ───── */
+
+.cinema-stage[data-motion='pinned'] {
+  --cinema-gutter: max(clamp(1.25rem, 4vw, 3.5rem), calc((100% - 90rem) / 2 + 3.5rem));
+  height: 100svh;
+  padding-block: 0;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-shell {
+  position: absolute;
+  inset: 0;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-opening {
+  position: absolute;
+  top: clamp(5.5rem, 11vh, 7.5rem);
+  inset-inline: var(--cinema-gutter);
+  z-index: 4;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-statement {
+  position: absolute;
+  inset: 0 var(--cinema-gutter);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0;
+  padding-bottom: 17vh;
+  font-size: clamp(3.4rem, 9.2vw, 9.5rem);
+  will-change: transform, opacity, filter;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-line {
+  will-change: transform, clip-path;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-deck {
+  position: absolute;
+  inset-inline: var(--cinema-gutter);
+  bottom: clamp(3.4rem, 8.5vh, 5.5rem);
+  margin: 0;
+  perspective: 1400px;
+  perspective-origin: 50% 6%;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-deck-grid {
+  grid-template-columns: 1.3fr 0.95fr 1.15fr 1fr;
+  align-items: end;
+  gap: clamp(0.8rem, 1.3vw, 1.4rem);
+  margin-top: 0;
+  transform-style: preserve-3d;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-card-3d {
+  grid-column: auto;
+  backface-visibility: hidden;
+  box-shadow: 0 2.5rem 5rem oklch(0.03 0.01 250 / 0.42);
+}
+
+/* Asymmetric skyline: varied heights + bottom offsets, aligned to end. */
+.cinema-stage[data-motion='pinned'] [data-panel='atlas'] {
+  min-height: clamp(13rem, 30vh, 17rem);
+}
+
+.cinema-stage[data-motion='pinned'] [data-panel='telemetry'] {
+  min-height: clamp(10rem, 24vh, 13.5rem);
+  margin-bottom: clamp(1.5rem, 5vh, 3rem);
+}
+
+.cinema-stage[data-motion='pinned'] [data-panel='instrument'] {
+  min-height: clamp(14.5rem, 34vh, 19rem);
+}
+
+.cinema-stage[data-motion='pinned'] [data-panel='proof'] {
+  min-height: clamp(11rem, 27vh, 15rem);
+  margin-bottom: clamp(0.75rem, 2.5vh, 1.5rem);
+}
+
+/* Narrower fine-pointer viewports: fall back to a 2×2 asymmetric deck. */
+@media (max-width: 68rem) {
+  .cinema-stage[data-motion='pinned'] .cinema-deck-grid {
+    grid-template-columns: 1.25fr 1fr;
+  }
+
+  .cinema-stage[data-motion='pinned'] [data-panel='atlas'],
+  .cinema-stage[data-motion='pinned'] [data-panel='telemetry'],
+  .cinema-stage[data-motion='pinned'] [data-panel='instrument'],
+  .cinema-stage[data-motion='pinned'] [data-panel='proof'] {
+    min-height: clamp(8.5rem, 20vh, 11rem);
+    margin-bottom: 0;
+  }
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-progress {
+  display: block;
+  position: absolute;
+  inset-inline: var(--cinema-gutter);
+  bottom: clamp(1.4rem, 3.5vh, 2.25rem);
+  z-index: 4;
+  height: 1px;
+  background: color-mix(in oklch, var(--cinema-line), transparent 20%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinema-section *,
+  .cinema-section *::before,
+  .cinema-section *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}

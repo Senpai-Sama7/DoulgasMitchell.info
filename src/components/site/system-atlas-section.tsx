@@ -142,7 +142,7 @@ const SCROLL_BEATS: readonly {
 ];
 
 /**
- * Chapter 03 — Systems Atlas. A live operating model rather than a decorative
+ * Chapter 04 — Systems Atlas. A live operating model rather than a decorative
  * diagram: the graph stays selectable while a 1600px desktop scroll beat pans
  * the camera and traces Intake → Receipt. usePinnedScene supplies the static
  * path for reduced motion, touch input, and low motion tiers.
@@ -259,7 +259,7 @@ export function SystemAtlasSection() {
 
         <div className="atlas-layout">
           <header className="atlas-copy">
-            <p className="chapter-label atlas-chapter-label">Chapter 03 · Systems Atlas</p>
+            <p className="chapter-label atlas-chapter-label">Chapter 04 · Systems Atlas</p>
             <h2 id="atlas-title" className="atlas-title">
               The operating
               <br />

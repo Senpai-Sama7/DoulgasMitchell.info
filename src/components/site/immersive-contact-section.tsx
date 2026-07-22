@@ -128,7 +128,7 @@ export function ImmersiveContactSection() {
         {/* ── Ceremonial opener ─────────────────────────────────────────── */}
         <ScrollReveal className="mb-16 lg:mb-24">
           <div className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-2">
-            <p className="chapter-label">10 · Invitation</p>
+            <p className="chapter-label">11 · Invitation</p>
             {/* Live signal — a quiet pulse that says the channel is open.
                 Animation is gated behind prefers-reduced-motion in CSS. */}
             <span className="inline-flex items-center gap-2" aria-hidden>

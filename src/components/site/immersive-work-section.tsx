@@ -17,7 +17,7 @@ const TILT_X_MAX = 3.2;
 const TILT_Y_MAX = 4.4;
 
 /**
- * Chapter 07 — Proof. The section pins for 1800px of scroll while the inner
+ * Chapter 08 — Proof. The section pins for 1800px of scroll while the inner
  * track translates X by (track.scrollWidth − viewport), turning vertical
  * scroll into a horizontal traversal of oversized editorial case-study
  * panels. The default markup is a vertical editorial stack — mobile, touch,
@@ -107,7 +107,7 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
             {/* Title card — huge type plus a hairline that scrubs with the rail */}
             <article className="proof-panel proof-panel-intro">
               <div>
-                <p className="chapter-label mb-6">Chapter 07 · Proof</p>
+                <p className="chapter-label mb-6">Chapter 08 · Proof</p>
                 <h2 className="proof-intro-title font-display">
                   Proof
                   <br />

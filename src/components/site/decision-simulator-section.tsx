@@ -313,7 +313,7 @@ function SimulatorGate({
 }
 
 /**
- * Chapter 06 — Decision Instrument. A full working console around the
+ * Chapter 07 — Decision Instrument. A full working console around the
  * Four-Gate autonomy check: every toggle re-runs the decision-intelligence
  * pipeline live — calibrated confidence on a radial gauge, an uncertainty
  * decomposition radar, a decision receipt ledger, and a walk-forward
@@ -341,7 +341,7 @@ export function DecisionSimulatorSection() {
         {/* Chapter head */}
         <ScrollReveal className="mb-12 grid gap-8 lg:mb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
-            <p className="chapter-label mb-4">Chapter 06 · Decision Instrument</p>
+            <p className="chapter-label mb-4">Chapter 07 · Decision Instrument</p>
             <h2 className="editorial-title">
               Run the
               <br />
@@ -367,7 +367,7 @@ export function DecisionSimulatorSection() {
 
               <div className="sim-frame-head">
                 <span className="font-mono text-[0.6rem] uppercase tracking-[0.24em] text-muted-foreground">
-                  Instrument 06 · Autonomy gate array
+                  Instrument 07 · Autonomy gate array
                 </span>
                 <span className="flex items-center gap-4">
                   <span className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">

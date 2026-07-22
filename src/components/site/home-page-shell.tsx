@@ -21,6 +21,10 @@ const ImmersiveAboutSection = dynamic(
   () => import('@/components/site/immersive-about-section').then((m) => m.ImmersiveAboutSection),
   { ssr: true }
 );
+const MaskParallaxSection = dynamic(
+  () => import('@/components/site/mask-parallax-section').then((m) => m.MaskParallaxSection),
+  { ssr: true }
+);
 const SystemAtlasSection = dynamic(
   () => import('@/components/site/system-atlas-section').then((m) => m.SystemAtlasSection),
   { ssr: true }
@@ -160,6 +164,7 @@ export function HomePageShell({
 
         <ImmersiveHeroSection />
         <ImmersiveAboutSection />
+        <MaskParallaxSection />
         <SystemAtlasSection />
         <TelemetrySection />
         <ImmersiveMethodSection />

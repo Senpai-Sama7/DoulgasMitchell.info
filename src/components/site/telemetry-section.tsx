@@ -99,7 +99,7 @@ const chartTick = {
 };
 
 /**
- * Chapter 04 — Telemetry. A 1700px pinned doctrine beat on high-motion desktop
+ * Chapter 05 — Telemetry. A 1700px pinned doctrine beat on high-motion desktop
  * contexts; touch, low-tier, and reduced-motion contexts receive the same
  * signal field, model chart, principles, and receipt link as a static chapter.
  */
@@ -234,7 +234,7 @@ export function TelemetrySection() {
 
         <div className="telemetry-shell">
           <header className="telemetry-opening">
-            <p className="telemetry-chapter">Chapter 04 · Telemetry</p>
+            <p className="telemetry-chapter">Chapter 05 · Telemetry</p>
             <div className="telemetry-opening-layout">
               <div>
                 <p className="telemetry-kicker">Doctrine / instrumented practice</p>
@@ -251,7 +251,7 @@ export function TelemetrySection() {
             <figure className="telemetry-viz telemetry-signal-field" data-telemetry-viz="signal">
               <header className="telemetry-viz-head">
                 <div>
-                  <span>FIG 04–A</span>
+                  <span>FIG 05–A</span>
                   <h3>Signal field</h3>
                 </div>
                 <p>85 plotted nodes / public archive</p>
@@ -345,7 +345,7 @@ export function TelemetrySection() {
             <figure className="telemetry-viz telemetry-latency" data-telemetry-viz="latency">
               <header className="telemetry-viz-head">
                 <div>
-                  <span>FIG 04–B</span>
+                  <span>FIG 05–B</span>
                   <h3>Decision latency compression</h3>
                 </div>
                 <p>Relative index / B0 = 100</p>
@@ -440,7 +440,7 @@ export function TelemetrySection() {
             >
               <header className="telemetry-viz-head">
                 <div>
-                  <span>FIG 04–C</span>
+                  <span>FIG 05–C</span>
                   <h3 id="telemetry-principles-title">Doctrine spine</h3>
                 </div>
                 <p>Three controls / one system</p>
