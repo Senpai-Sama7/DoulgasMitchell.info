@@ -161,7 +161,14 @@ export async function requireAdminSession(): Promise<Session> {
 // Delete session
 export async function deleteSession(token: string): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete('admin-session');
+  // Expire with the same attributes used at set-time so browsers reliably drop it.
+  cookieStore.set('admin-session', '', {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0,
+    path: '/',
+  });
   
   try {
     await deleteAdminSessionByToken(token);

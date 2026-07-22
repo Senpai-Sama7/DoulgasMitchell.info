@@ -2,11 +2,16 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Public Site Smoke Tests', () => {
   test('should load the homepage', async ({ page }) => {
+    // Skip the cinematic gate so the hero heading is in the accessibility tree
+    // immediately (WebKit is especially sensitive to overlay timing).
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('dm-video-entrance-v1', '1');
+    });
     await page.goto('/');
     await expect(page).toHaveTitle(/Douglas Mitchell/);
     await expect(
-      page.getByRole('heading', { name: /Douglas Mitchell/i, includeHidden: true })
-    ).toBeVisible();
+      page.getByRole('heading', { name: /Douglas Mitchell/i })
+    ).toBeVisible({ timeout: 15000 });
   });
 
   test('should navigate to work section', async ({ page }) => {

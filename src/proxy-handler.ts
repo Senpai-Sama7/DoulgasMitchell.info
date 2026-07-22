@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { jwtVerify } from 'jose';
+import { sanitizeAdminNextPath } from '@/lib/admin-api-client';
 import { rateLimit } from '@/lib/rate-limit';
 import { getClientIp, validateTrustedOrigin } from '@/lib/request';
 import { logger } from '@/lib/logger';
@@ -33,11 +34,18 @@ function buildLoginRedirect(request: NextRequest, sessionExpired: boolean) {
   if (sessionExpired) {
     loginUrl.searchParams.set('reason', 'session-expired');
   }
-  const nextPath = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  const rawNext = `${request.nextUrl.pathname}${request.nextUrl.search}`;
+  const nextPath = sanitizeAdminNextPath(rawNext);
   if (nextPath !== '/admin') {
     loginUrl.searchParams.set('next', nextPath);
   }
   return loginUrl;
+}
+
+function isPublicAdminRoute(pathname: string): boolean {
+  return publicAdminRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
 }
 
 /**
@@ -95,9 +103,8 @@ export async function proxy(request: NextRequest) {
 
     // 4. Admin Authentication Protection
     if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
-      // Check if it's a public route
-      const isPublicRoute = publicAdminRoutes.some(route => pathname.startsWith(route));
-      if (!isPublicRoute) {
+      // Check if it's a public route (exact match or nested under the allowlisted prefix)
+      if (!isPublicAdminRoute(pathname)) {
         // Check for the admin session token
         const token = request.cookies.get('admin-session')?.value;
 

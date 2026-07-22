@@ -38,15 +38,36 @@ export const SESSION_EXPIRED_REASON = 'session-expired';
 
 /**
  * Only allow post-login redirects back into the admin portal. Everything else
- * (protocol-relative URLs, external hosts, public routes) falls back to the
- * dashboard so the `next` param can never become an open redirect.
+ * (protocol-relative URLs, external hosts, path traversal, public routes)
+ * falls back to the dashboard so the `next` param can never become an open
+ * redirect.
  */
 export function sanitizeAdminNextPath(next: string | null | undefined): string {
   if (!next) return '/admin';
-  if (!next.startsWith('/admin') || next.startsWith('//') || next.includes('\\')) {
+
+  try {
+    // Resolve against a fixed origin so relative paths and tricks like
+    // `/admin/../` or `//evil` normalize into a comparable URL.
+    const resolved = new URL(next, 'https://douglasmitchell.info');
+    if (resolved.origin !== 'https://douglasmitchell.info') {
+      return '/admin';
+    }
+
+    const pathname = resolved.pathname;
+    if (
+      pathname.includes('\\') ||
+      pathname.includes('%2e') ||
+      pathname.includes('%2E') ||
+      !(pathname === '/admin' || pathname.startsWith('/admin/'))
+    ) {
+      return '/admin';
+    }
+
+    // Keep query string (e.g. media folder filters) but drop hash fragments.
+    return `${pathname}${resolved.search}`;
+  } catch {
     return '/admin';
   }
-  return next;
 }
 
 function defaultSessionExpiredHandler() {

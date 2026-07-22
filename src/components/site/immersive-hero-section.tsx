@@ -234,7 +234,11 @@ export function ImmersiveHeroSection() {
             </span>
           </p>
 
-          <h1 className="display-title" aria-label="Douglas Mitchell">
+          <h1 className="display-title">
+            {/* Accessible name lives outside aria-hidden kinetic letters —
+                WebKit/Playwright otherwise treat the heading as nameless when
+                every child is aria-hidden and only aria-label is set. */}
+            <span className="sr-only">Douglas Mitchell</span>
             {NAME_LINES.map((line, lineIndex) => (
               <span
                 key={line}

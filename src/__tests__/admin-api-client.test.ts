@@ -185,13 +185,18 @@ describe('admin-api-client', () => {
     it('accepts admin-internal paths', () => {
       expect(sanitizeAdminNextPath('/admin/content')).toBe('/admin/content');
       expect(sanitizeAdminNextPath('/admin/media?folder=x')).toBe('/admin/media?folder=x');
+      expect(sanitizeAdminNextPath('/admin')).toBe('/admin');
     });
 
-    it('rejects external and non-admin destinations', () => {
+    it('rejects external, traversal, and non-admin destinations', () => {
       expect(sanitizeAdminNextPath('https://evil.example')).toBe('/admin');
       expect(sanitizeAdminNextPath('//evil.example/admin')).toBe('/admin');
       expect(sanitizeAdminNextPath('/settings')).toBe('/admin');
       expect(sanitizeAdminNextPath('/admin\\..\\escape')).toBe('/admin');
+      expect(sanitizeAdminNextPath('/admin/../')).toBe('/admin');
+      expect(sanitizeAdminNextPath('/admin/../../etc/passwd')).toBe('/admin');
+      expect(sanitizeAdminNextPath('/admin/%2e%2e/secret')).toBe('/admin');
+      expect(sanitizeAdminNextPath('/adminlogin')).toBe('/admin');
       expect(sanitizeAdminNextPath(null)).toBe('/admin');
       expect(sanitizeAdminNextPath(undefined)).toBe('/admin');
       expect(sanitizeAdminNextPath('')).toBe('/admin');
