@@ -11,7 +11,10 @@ test.describe('Public Site Smoke Tests', () => {
 
   test('should navigate to work section', async ({ page }) => {
     await page.goto('/');
-    const workLink = page.getByRole('link', { name: /Work/i }).first();
+    // Prefer the hash nav target — a loose /Work/i match also hits project
+    // titles like "AI Workflow Automation" and leaves the homepage.
+    const workLink = page.locator('a[href="#work"], a[href="/#work"]').first();
+    await expect(workLink).toBeVisible();
     await workLink.click();
     await expect(page).toHaveURL(/.*#work/);
   });
