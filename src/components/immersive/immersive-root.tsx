@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { ImmersiveProvider } from '@/components/immersive/immersive-context';
 import { PageTransition } from '@/components/immersive/page-transition';
-import { StoryIntro } from '@/components/immersive/story-intro';
+import { VideoEntrance } from '@/components/immersive/video-entrance';
 import { gsap, lenisEasing, ScrollTrigger } from '@/lib/gsap';
 import {
   getLenisOptions,
@@ -261,7 +261,7 @@ export function ImmersiveRoot({ children }: { children: React.ReactNode }) {
   return (
     <ImmersiveProvider motionTier={motionTier} lenisEnabled={lenisEnabled} lenisRef={lenisRef}>
       {!prefersReducedMotion && <ScrollProgressBar />}
-      {!isAdmin && <StoryIntro />}
+      <VideoEntrance />
       {showCursor && <ImmersiveCursor />}
       <PageTransition>{children}</PageTransition>
     </ImmersiveProvider>

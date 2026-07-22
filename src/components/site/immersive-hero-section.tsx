@@ -9,39 +9,124 @@ import {
   useImmersive,
   usePinnedScene,
 } from '@/components/immersive';
+import { emitHeroSceneProgress } from '@/components/immersive/scene-progress';
 import { easings, gsap } from '@/lib/gsap';
-import { siteProfile } from '@/lib/site-content';
+import { methodLadder, siteProfile } from '@/lib/site-content';
 
 const NAME_LINES = ['Douglas', 'Mitchell'] as const;
 
+/** Doctrine title cards for the pinned film — the methodLadder, uppercased. */
+const DOCTRINE_WORDS = methodLadder.map((step) => step.title.toUpperCase());
+
 /**
- * Chapter 0 — "Arrival". Full-viewport cinematic opener: kinetic letter
- * reveal for the brand name, one headline, one supporting sentence, magnetic
- * CTAs, and a brief pinned scrub (1300px) where the copy parallaxes away from
- * the dimming SignatureScene backdrop before handing off to Identity.
+ * The hero carries exactly one supporting sentence. The full summary is two;
+ * the second ("holds under load") already lives in the headline, so take the
+ * first sentence from the canonical source.
+ */
+const SUPPORT_LINE = (() => {
+  const cut = siteProfile.summary.indexOf('. ');
+  return cut === -1 ? siteProfile.summary : siteProfile.summary.slice(0, cut + 1);
+})();
+
+/**
+ * Doctrine film pacing in progress units (total pinned timeline = 1).
+ * Each word owns a slot: masked rise in, hold, masked exit up — a scrubbed
+ * title-card sequence rather than a crossfade.
+ */
+const FILM = {
+  firstWord: 0.3,
+  slot: 0.14,
+  wordIn: 0.06,
+  wordHold: 0.085,
+  wordOut: 0.06,
+} as const;
+
+/**
+ * Chapter 0 — "Arrival". A product-film opening in two movements:
+ *
+ * Entrance (time-based, ~3s): masked letter cascade for the brand name, then
+ * headline → sentence → CTAs in reading order.
+ *
+ * Pinned scrub (1500px), three beats:
+ *   A (0–0.25)    hold the composition; scroll cue fades, backdrop pushes in.
+ *   B (0.25–0.55) copy compresses through a closing clip mask; the doctrine
+ *                 film takes the frame — CLARIFY → CONSTRAIN → AUTOMATE →
+ *                 MEASURE, one large title card at a time.
+ *   C (0.55–1)    final cards exit, vignette deepens, world dims — handoff
+ *                 into 02 · Identity.
+ *
+ * Static contexts (reduced motion / touch / low tier) get the resting first
+ * viewport with no pin and never see the film layer (hidden via CSS).
  */
 export function ImmersiveHeroSection() {
   const { scrollTo } = useImmersive();
 
-  // Pinned departure: backdrop recedes and dims, copy layers lift at
-  // staggered rates, then the whole composition fades into the next chapter.
   const sectionRef = usePinnedScene<HTMLElement>(
     ({ timeline }) => {
+      // Publish scrub progress so the WebGL world can respond in kind.
+      timeline.eventCallback('onUpdate', () => {
+        emitHeroSceneProgress(timeline.progress());
+      });
+
+      // Beat A — hold. Only the cue and a slow backdrop push move.
       timeline
-        .to('.hero-backdrop', { scale: 1.12, autoAlpha: 0.35, duration: 1 }, 0)
-        .to('.hero-layer-name', { yPercent: -12, duration: 1 }, 0)
-        .to('.hero-layer-tail', { yPercent: -26, duration: 1 }, 0)
-        .to('.hero-cue', { autoAlpha: 0, duration: 0.12 }, 0.02)
-        .to('.hero-copy', { autoAlpha: 0, filter: 'blur(8px)', duration: 0.3 }, 0.7);
+        .to('.hero-backdrop', { scale: 1.1, duration: 1 }, 0)
+        .to('.hero-cue', { autoAlpha: 0, duration: 0.08 }, 0.02);
+
+      // Beat B — the copy lifts and compresses through a closing mask.
+      timeline
+        .to('.hero-layer-tail', { yPercent: -22, duration: 0.2 }, 0.25)
+        .to('.hero-layer-name', { yPercent: -10, duration: 0.22 }, 0.26)
+        .to(
+          '.hero-copy',
+          {
+            clipPath: 'inset(0% 0% 100% 0%)',
+            autoAlpha: 0,
+            filter: 'blur(10px)',
+            duration: 0.18,
+          },
+          0.26
+        )
+        .to('.hero-film', { autoAlpha: 1, duration: 0.05 }, 0.28)
+        .fromTo(
+          '.hero-film-frame',
+          { scale: 1.05 },
+          { scale: 0.985, duration: 0.62 },
+          0.28
+        );
+
+      // Doctrine title cards — one word at a time, masked in from below,
+      // out above, with a slight crossover between cards.
+      DOCTRINE_WORDS.forEach((_, index) => {
+        const at = FILM.firstWord + index * FILM.slot;
+        const card = `.hero-film-word[data-index="${index}"]`;
+        const title = `${card} .hero-film-title`;
+
+        timeline
+          .to(card, { autoAlpha: 1, duration: 0.04 }, at)
+          .fromTo(title, { yPercent: 120 }, { yPercent: 0, duration: FILM.wordIn }, at)
+          .to(title, { yPercent: -120, duration: FILM.wordOut }, at + FILM.wordHold)
+          .to(card, { autoAlpha: 0, duration: 0.04 }, at + FILM.wordHold + 0.015);
+      });
+
+      // Beat C — vignette deepens, the world dims, handoff to Identity.
+      timeline
+        .to('.hero-backdrop', { autoAlpha: 0.3, duration: 0.4 }, 0.6)
+        .to('.hero-vignette', { autoAlpha: 1, duration: 0.35 }, 0.62)
+        .to('.hero-film', { autoAlpha: 0, duration: 0.08 }, 0.9);
     },
     {
-      distance: 1300,
+      distance: 1500,
       scrub: 1,
       onStatic: (root) => {
-        // Resting state: everything legible, no residual scrub styles.
+        // Resting state: everything legible, world at rest, no scrub residue.
+        // The film layer stays hidden via its own CSS resting state.
+        emitHeroSceneProgress(0);
         gsap.set(
-          root.querySelectorAll('.hero-backdrop, .hero-copy, .hero-layer-name, .hero-layer-tail, .hero-cue'),
-          { clearProps: 'opacity,visibility,transform,filter' }
+          root.querySelectorAll(
+            '.hero-backdrop, .hero-copy, .hero-layer-name, .hero-layer-tail, .hero-cue, .hero-vignette'
+          ),
+          { clearProps: 'opacity,visibility,transform,filter,clipPath' }
         );
       },
     }
@@ -59,15 +144,15 @@ export function ImmersiveHeroSection() {
           .timeline({ defaults: { ease: easings.expo } })
           .fromTo(
             '.hero-letter',
-            { yPercent: 115 },
-            { yPercent: 0, duration: 1.1, stagger: 0.035 },
-            0.15
+            { yPercent: 120 },
+            { yPercent: 0, duration: 1.15, stagger: { each: 0.032, from: 'start' } },
+            0.18
           )
           .fromTo(
             '[data-arrive]',
-            { autoAlpha: 0, y: 22 },
-            { autoAlpha: 1, y: 0, duration: 0.85, stagger: 0.09 },
-            0.6
+            { autoAlpha: 0, y: 24 },
+            { autoAlpha: 1, y: 0, duration: 0.9, stagger: 0.1 },
+            0.65
           );
       });
 
@@ -105,12 +190,41 @@ export function ImmersiveHeroSection() {
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-48 bg-gradient-to-t from-background via-background/70 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-28 bg-gradient-to-b from-background/55 to-transparent" />
 
+      {/* Beat C vignette — deepens as the film hands off into Identity. */}
+      <div
+        className="hero-vignette pointer-events-none absolute inset-0 z-30 opacity-0"
+        style={{
+          background:
+            'radial-gradient(120% 90% at 50% 46%, transparent 26%, color-mix(in oklch, var(--background), transparent 55%) 62%, var(--background) 97%)',
+        }}
+        aria-hidden
+      />
+
       {/* Without JS the entrance timeline never runs — restore the resting state. */}
       <noscript>
         <style>{`.hero-arrival [data-arrive]{opacity:1!important}.hero-arrival .hero-letter{transform:none!important}`}</style>
       </noscript>
 
-      <div className="hero-copy editorial-container relative z-20 flex min-h-[100svh] flex-col justify-end pb-14 pt-28 md:pb-20 md:pt-36">
+      {/* Doctrine film — pinned title cards. Decorative: the methodLadder is
+          read properly in chapter 04, so this layer stays aria-hidden. */}
+      <div className="hero-film pointer-events-none absolute inset-0 z-20" aria-hidden>
+        <div className="hero-film-scrim absolute inset-0" />
+        <div className="hero-film-frame absolute inset-0 will-change-transform">
+          {DOCTRINE_WORDS.map((word, index) => (
+            <div key={word} data-index={index} className="hero-film-word">
+              <span className="hero-film-index">
+                {String(index + 1).padStart(2, '0')}
+                <span> / {String(DOCTRINE_WORDS.length).padStart(2, '0')}</span>
+              </span>
+              <span className="hero-film-mask">
+                <span className="hero-film-title">{word}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="hero-copy clip-mask editorial-container relative z-20 flex min-h-[100svh] flex-col justify-end pb-14 pt-28 md:pb-20 md:pt-36">
         {/* Hero budget: brand signal · one headline · one sentence · CTAs · cue */}
         <div className="hero-layer-name will-change-transform">
           <p className="chapter-label mb-8" data-arrive>
@@ -161,7 +275,7 @@ export function ImmersiveHeroSection() {
                 className="mt-4 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg"
                 data-arrive
               >
-                {siteProfile.summary}
+                {SUPPORT_LINE}
               </p>
             </div>
 
@@ -171,21 +285,21 @@ export function ImmersiveHeroSection() {
             >
               <Magnetic>
                 <a
-                  href="#about"
-                  onClick={(event) => handleAnchor(event, '#about')}
+                  href="#atlas"
+                  onClick={(event) => handleAnchor(event, '#atlas')}
                   className="immersive-button w-fit"
                 >
-                  Enter the story
+                  Enter the system
                   <ArrowDown className="h-4 w-4" />
                 </a>
               </Magnetic>
               <Magnetic strength={0.26}>
                 <a
-                  href="#work"
-                  onClick={(event) => handleAnchor(event, '#work')}
+                  href="#simulator"
+                  onClick={(event) => handleAnchor(event, '#simulator')}
                   className="immersive-button-ghost w-fit"
                 >
-                  Proof of work
+                  Run the gate
                   <ArrowUpRight className="h-4 w-4" />
                 </a>
               </Magnetic>

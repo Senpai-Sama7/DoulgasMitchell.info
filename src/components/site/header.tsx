@@ -15,14 +15,48 @@ import { useTheme } from '@/lib/theme';
  * same order as the chapter rail, so the header reads as wayfinding for the
  * story rather than a generic link strip.
  */
-const navLinks = [
+interface NavLink {
+  href: string;
+  label: string;
+  sectionId: string;
+  chapter: string;
+  beat: string;
+  /** Only rendered in the desktop strip at lg+ to keep the md band uncrowded. */
+  wideOnly?: boolean;
+}
+
+const navLinks: readonly NavLink[] = [
   { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
-  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '03', beat: 'Method' },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '04', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '05', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '06', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '07', beat: 'Invitation' },
-] as const;
+  {
+    href: '/#cinema',
+    label: 'Cinema',
+    sectionId: 'cinema',
+    chapter: '03',
+    beat: 'Depth',
+    wideOnly: true,
+  },
+  { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '04', beat: 'Systems' },
+  {
+    href: '/#telemetry',
+    label: 'Telemetry',
+    sectionId: 'telemetry',
+    chapter: '05',
+    beat: 'Doctrine',
+  },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '06', beat: 'Method' },
+  {
+    href: '/#simulator',
+    label: 'Instrument',
+    sectionId: 'simulator',
+    chapter: '07',
+    beat: 'Decision',
+    wideOnly: true,
+  },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '08', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '09', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '10', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '11', beat: 'Invitation' },
+];
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;
 
@@ -125,7 +159,7 @@ export function SiteHeader() {
           : 'border-b border-transparent bg-gradient-to-b from-background/70 via-background/30 to-transparent'
       )}
     >
-      <nav aria-label="Primary" className="editorial-container">
+      <nav aria-label="Primary" className="editorial-container !max-w-[1440px]">
         <div className="flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
           {/* Wordmark — the serif signal, nothing else */}
           <Link
@@ -145,17 +179,17 @@ export function SiteHeader() {
           </Link>
 
           {/* Chapter nav — mono wayfinding with a teal signal hairline */}
-          <ul className="hidden items-center md:flex">
+          <ul className="hidden items-center xl:flex">
             {navLinks.map((link) => {
               const isActive = activeSection === link.sectionId;
               return (
-                <li key={link.href}>
+                <li key={link.href} className={cn(link.wideOnly && 'hidden lg:block')}>
                   <a
                     href={link.href}
                     aria-current={isActive ? 'location' : undefined}
                     data-cursor="interactive"
                     className={cn(
-                      'group relative flex items-baseline gap-1.5 px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'group relative flex items-baseline gap-1.5 whitespace-nowrap px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
@@ -225,7 +259,7 @@ export function SiteHeader() {
               aria-label="Open navigation menu"
               aria-controls="site-mobile-menu"
               aria-expanded={isMobileMenuOpen}
-              className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-foreground md:hidden"
+              className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-foreground xl:hidden"
             >
               Menu
             </button>
@@ -249,7 +283,7 @@ export function SiteHeader() {
             /* h-dvh instead of inset-0: the scrolled header's backdrop-blur makes
                the header the containing block for fixed descendants, so bottom-0
                would resolve against the 4rem bar rather than the viewport. */
-            className="fixed inset-x-0 top-0 z-[60] flex h-dvh flex-col overflow-y-auto bg-background md:hidden"
+            className="fixed inset-x-0 top-0 z-[60] flex h-dvh flex-col overflow-y-auto bg-background xl:hidden"
           >
             <div
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--brand-accent),transparent_93%),transparent_60%)]"
@@ -268,7 +302,10 @@ export function SiteHeader() {
               </button>
             </div>
 
-            <nav aria-label="Chapters" className="relative flex flex-1 flex-col justify-center px-5 py-8">
+            <nav
+              aria-label="Chapters"
+              className="relative flex flex-1 flex-col justify-center px-5 py-8"
+            >
               <p className="chapter-label mb-6">Chapters</p>
               <ol>
                 {navLinks.map((link) => {

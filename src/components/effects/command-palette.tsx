@@ -3,15 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
+  Activity,
   BookOpen,
   Briefcase,
   Command,
   CornerDownLeft,
   FileText,
+  Film,
+  Gauge,
   Home,
   Layers,
   Mail,
   Moon,
+  Network,
   Search,
   Sun,
   User,
@@ -37,7 +41,13 @@ interface CommandPaletteProps {
   onToggleTheme: () => void;
 }
 
-export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTheme }: CommandPaletteProps) {
+export function CommandPalette({
+  isOpen,
+  onClose,
+  onNavigate,
+  isDark,
+  onToggleTheme,
+}: CommandPaletteProps) {
   const [search, setSearch] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -45,73 +55,141 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
   const commands: CommandItem[] = [
     {
       id: 'home',
-      label: '00 · Prelude / Top',
+      label: '01 · Arrival / Top',
       icon: Home,
-      action: () => { onNavigate('#'); onClose(); },
+      action: () => {
+        onNavigate('#');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'about',
       label: '02 · Identity',
       icon: User,
-      action: () => { onNavigate('#about'); onClose(); },
+      action: () => {
+        onNavigate('#about');
+        onClose();
+      },
+      category: 'Chapters',
+    },
+    {
+      id: 'cinema',
+      label: '03 · Cinema',
+      icon: Film,
+      action: () => {
+        onNavigate('#cinema');
+        onClose();
+      },
+      category: 'Chapters',
+    },
+    {
+      id: 'atlas',
+      label: '04 · Systems Atlas',
+      icon: Network,
+      action: () => {
+        onNavigate('#atlas');
+        onClose();
+      },
+      category: 'Chapters',
+    },
+    {
+      id: 'telemetry',
+      label: '05 · Telemetry',
+      icon: Activity,
+      action: () => {
+        onNavigate('#telemetry');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'method',
-      label: '03 · Method',
+      label: '06 · Method',
       icon: Layers,
-      action: () => { onNavigate('#method'); onClose(); },
+      action: () => {
+        onNavigate('#method');
+        onClose();
+      },
+      category: 'Chapters',
+    },
+    {
+      id: 'simulator',
+      label: '07 · Instrument',
+      icon: Gauge,
+      action: () => {
+        onNavigate('#simulator');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'work',
-      label: '04 · Proof',
+      label: '08 · Proof',
       icon: Briefcase,
-      action: () => { onNavigate('#work'); onClose(); },
+      action: () => {
+        onNavigate('#work');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'book',
-      label: '05 · Artifact',
+      label: '09 · Artifact',
       icon: BookOpen,
-      action: () => { onNavigate('#book'); onClose(); },
+      action: () => {
+        onNavigate('#book');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'writing',
-      label: '06 · Voice',
+      label: '10 · Voice',
       icon: FileText,
-      action: () => { onNavigate('#writing'); onClose(); },
+      action: () => {
+        onNavigate('#writing');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'certifications',
       label: 'Credentials',
       icon: Award,
-      action: () => { onNavigate('#certifications'); onClose(); },
+      action: () => {
+        onNavigate('#certifications');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'contact',
-      label: '07 · Invitation',
+      label: '11 · Invitation',
       icon: Mail,
-      action: () => { onNavigate('#contact'); onClose(); },
+      action: () => {
+        onNavigate('#contact');
+        onClose();
+      },
       category: 'Chapters',
     },
     {
       id: 'theme',
       label: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
       icon: isDark ? Sun : Moon,
-      action: () => { onToggleTheme(); onClose(); },
+      action: () => {
+        onToggleTheme();
+        onClose();
+      },
       category: 'Preferences',
       shortcut: '⇧D',
     },
   ];
 
-  const filteredCommands = commands.filter(cmd => 
-    cmd.label.toLowerCase().includes(search.toLowerCase()) ||
-    cmd.category.toLowerCase().includes(search.toLowerCase())
+  const filteredCommands = commands.filter(
+    (cmd) =>
+      cmd.label.toLowerCase().includes(search.toLowerCase()) ||
+      cmd.category.toLowerCase().includes(search.toLowerCase())
   );
 
   // Reset state when opening - using requestAnimationFrame to avoid cascading renders
@@ -157,15 +235,11 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex(prev => 
-            prev < filteredCommands.length - 1 ? prev + 1 : 0
-          );
+          setSelectedIndex((prev) => (prev < filteredCommands.length - 1 ? prev + 1 : 0));
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex(prev => 
-            prev > 0 ? prev - 1 : filteredCommands.length - 1
-          );
+          setSelectedIndex((prev) => (prev > 0 ? prev - 1 : filteredCommands.length - 1));
           break;
         case 'Enter':
           e.preventDefault();
@@ -241,34 +315,34 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
                   filteredCommands.map((cmd, index) => {
                     const CommandIcon = cmd.icon;
                     return (
-                    <button
-                      key={cmd.id}
-                      onClick={cmd.action}
-                      onMouseEnter={() => setSelectedIndex(index)}
-                      className={cn(
-                        'w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left',
-                        index === selectedIndex
-                          ? 'bg-primary text-primary-foreground'
-                          : 'hover:bg-muted'
-                      )}
-                    >
-                      <CommandIcon className="h-4 w-4 flex-shrink-0" />
-                      <span className="flex-1">{cmd.label}</span>
-                      {cmd.shortcut && (
-                        <kbd className={cn(
-                          'text-xs font-mono px-1.5 py-0.5 rounded',
+                      <button
+                        key={cmd.id}
+                        onClick={cmd.action}
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={cn(
+                          'w-full flex items-center gap-3 p-3 rounded-lg transition-colors text-left',
                           index === selectedIndex
-                            ? 'bg-primary-foreground/20'
-                            : 'bg-muted'
-                        )}>
-                          {cmd.shortcut}
-                        </kbd>
-                      )}
-                      {index === selectedIndex && (
-                        <CornerDownLeft className="h-3 w-3 opacity-50" />
-                      )}
-                    </button>
-                  );
+                            ? 'bg-primary text-primary-foreground'
+                            : 'hover:bg-muted'
+                        )}
+                      >
+                        <CommandIcon className="h-4 w-4 flex-shrink-0" />
+                        <span className="flex-1">{cmd.label}</span>
+                        {cmd.shortcut && (
+                          <kbd
+                            className={cn(
+                              'text-xs font-mono px-1.5 py-0.5 rounded',
+                              index === selectedIndex ? 'bg-primary-foreground/20' : 'bg-muted'
+                            )}
+                          >
+                            {cmd.shortcut}
+                          </kbd>
+                        )}
+                        {index === selectedIndex && (
+                          <CornerDownLeft className="h-3 w-3 opacity-50" />
+                        )}
+                      </button>
+                    );
                   })
                 )}
               </div>

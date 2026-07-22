@@ -8,11 +8,14 @@ import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
    story's back matter, not a template link dump. */
 const indexLinks = [
   { href: '/#about', label: 'About', chapter: '02' },
-  { href: '/#method', label: 'Method', chapter: '03' },
-  { href: '/#work', label: 'Work', chapter: '04' },
-  { href: '/#book', label: 'Book', chapter: '05' },
-  { href: '/#writing', label: 'Writing', chapter: '06' },
-  { href: '/#contact', label: 'Contact', chapter: '07' },
+  { href: '/#atlas', label: 'Atlas', chapter: '03' },
+  { href: '/#telemetry', label: 'Telemetry', chapter: '04' },
+  { href: '/#method', label: 'Method', chapter: '05' },
+  { href: '/#simulator', label: 'Instrument', chapter: '06' },
+  { href: '/#work', label: 'Work', chapter: '07' },
+  { href: '/#book', label: 'Book', chapter: '08' },
+  { href: '/#writing', label: 'Writing', chapter: '09' },
+  { href: '/#contact', label: 'Contact', chapter: '10' },
 ] as const;
 
 export function SiteFooter() {
@@ -110,8 +113,8 @@ export function SiteFooter() {
           <div>
             <h2 className="immersive-kicker mb-5">Correspond</h2>
             <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
-              One inbox, one person. A short brief, the current constraint, and the outcome you
-              want is enough to start.
+              One inbox, one person. A short brief, the current constraint, and the outcome you want
+              is enough to start.
             </p>
             <div className="mt-6">
               <Magnetic strength={0.22} radius={80}>
