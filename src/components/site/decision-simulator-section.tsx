@@ -126,7 +126,8 @@ function deriveReading(answers: Record<string, GateAnswer>): InstrumentReading {
 
   const strength = Math.min(1, primary / MAX_EVIDENCE);
   const sortedScores = [...scores].sort((a, b) => b - a);
-  const margin = sortedScores[0] > 0 ? (sortedScores[0] - (sortedScores[1] ?? 0)) / sortedScores[0] : 0;
+  const margin =
+    sortedScores[0] > 0 ? (sortedScores[0] - (sortedScores[1] ?? 0)) / sortedScores[0] : 0;
 
   // Refusal condition: an undefined failure path combined with irreversible
   // error cost. No confidence level buys autonomy past that pair.
@@ -180,7 +181,10 @@ function deriveReading(answers: Record<string, GateAnswer>): InstrumentReading {
     date: new Date(FORECAST_ANCHOR_UTC - (20 - index) * DAY_MS).toISOString().slice(0, 10),
     value: Math.max(
       2,
-      base + drift * (index - 10) + Math.sin(index / 2.6) * volatility * 0.45 + (random() - 0.5) * 2 * volatility
+      base +
+        drift * (index - 10) +
+        Math.sin(index / 2.6) * volatility * 0.45 +
+        (random() - 0.5) * 2 * volatility
     ),
   }));
 
@@ -272,7 +276,11 @@ function SimulatorGate({
         </AnimatePresence>
       </div>
 
-      <div className="gate-switch sim-gate-switch" role="group" aria-label={`${gate.title} gate signal`}>
+      <div
+        className="gate-switch sim-gate-switch"
+        role="group"
+        aria-label={`${gate.title} gate signal`}
+      >
         {(['pass', 'fail'] as const).map((value) => {
           const selected = answer === value;
           return (
@@ -290,9 +298,7 @@ function SimulatorGate({
                   className="gate-switch-thumb"
                   data-value={value}
                   transition={
-                    reduceMotion
-                      ? { duration: 0 }
-                      : { type: 'spring', stiffness: 460, damping: 38 }
+                    reduceMotion ? { duration: 0 } : { type: 'spring', stiffness: 460, damping: 38 }
                   }
                   aria-hidden
                 />
@@ -307,7 +313,7 @@ function SimulatorGate({
 }
 
 /**
- * Chapter 05 — Decision Instrument. A full working console around the
+ * Chapter 06 — Decision Instrument. A full working console around the
  * Four-Gate autonomy check: every toggle re-runs the decision-intelligence
  * pipeline live — calibrated confidence on a radial gauge, an uncertainty
  * decomposition radar, a decision receipt ledger, and a walk-forward
@@ -335,7 +341,7 @@ export function DecisionSimulatorSection() {
         {/* Chapter head */}
         <ScrollReveal className="mb-12 grid gap-8 lg:mb-16 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
           <div>
-            <p className="chapter-label mb-4">Chapter 05 · Decision Instrument</p>
+            <p className="chapter-label mb-4">Chapter 06 · Decision Instrument</p>
             <h2 className="editorial-title">
               Run the
               <br />
@@ -344,9 +350,9 @@ export function DecisionSimulatorSection() {
           </div>
           <p className="max-w-md text-muted-foreground lg:justify-self-end">
             Flip the four gates against a real use case. Every reading re-runs the same
-            decision-intelligence pipeline that scores the archive console — calibrated
-            confidence, uncertainty decomposition, a policy verdict, and the forecast it
-            implies. Nothing here is a mock-up of judgment; it is the judgment.
+            decision-intelligence pipeline that scores the archive console — calibrated confidence,
+            uncertainty decomposition, a policy verdict, and the forecast it implies. Nothing here
+            is a mock-up of judgment; it is the judgment.
           </p>
         </ScrollReveal>
 
@@ -361,7 +367,7 @@ export function DecisionSimulatorSection() {
 
               <div className="sim-frame-head">
                 <span className="font-mono text-[0.6rem] uppercase tracking-[0.24em] text-muted-foreground">
-                  Instrument 05 · Autonomy gate array
+                  Instrument 06 · Autonomy gate array
                 </span>
                 <span className="flex items-center gap-4">
                   <span className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
@@ -505,9 +511,7 @@ export function DecisionSimulatorSection() {
                     }
                     animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
                     exit={
-                      prefersReducedMotion
-                        ? undefined
-                        : { opacity: 0, y: -10, filter: 'blur(5px)' }
+                      prefersReducedMotion ? undefined : { opacity: 0, y: -10, filter: 'blur(5px)' }
                     }
                     transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
                   >

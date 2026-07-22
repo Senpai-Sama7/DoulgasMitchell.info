@@ -127,15 +127,15 @@ export function ImmersiveContactSection() {
       <div className="editorial-container section-spacing relative z-10">
         {/* ── Ceremonial opener ─────────────────────────────────────────── */}
         <ScrollReveal className="mb-16 lg:mb-24">
-          <p className="chapter-label mb-8">09 · Invitation</p>
+          <p className="chapter-label mb-8">10 · Invitation</p>
           <h2 className="max-w-4xl font-display text-[clamp(2.75rem,7vw,5.75rem)] leading-[0.95] tracking-[-0.03em]">
             Let&apos;s build something
             <br />
             <span className="text-muted-foreground">that holds.</span>
           </h2>
           <p className="mt-8 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            Bring the ambiguous problem — a project, an AI workflow, a system that keeps slipping.
-            A short brief, the current constraint, and the desired outcome is enough to start.
+            Bring the ambiguous problem — a project, an AI workflow, a system that keeps slipping. A
+            short brief, the current constraint, and the desired outcome is enough to start.
           </p>
           {emailHref ? (
             <div className="mt-10 flex flex-wrap items-center gap-5">

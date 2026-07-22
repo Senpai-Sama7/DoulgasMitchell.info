@@ -10,7 +10,12 @@ import { SiteFooter } from '@/components/site/footer';
 import { SiteHeader } from '@/components/site/header';
 import { PageViewTracker } from '@/components/site/page-view-tracker';
 import { useTheme } from '@/lib/theme';
-import type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowcase } from '@/lib/site-content';
+import type {
+  ArticleShowcase,
+  BookShowcase,
+  CertificationShowcase,
+  ProjectShowcase,
+} from '@/lib/site-content';
 
 const ImmersiveAboutSection = dynamic(
   () => import('@/components/site/immersive-about-section').then((m) => m.ImmersiveAboutSection),
@@ -20,15 +25,17 @@ const SystemAtlasSection = dynamic(
   () => import('@/components/site/system-atlas-section').then((m) => m.SystemAtlasSection),
   { ssr: true }
 );
+const TelemetrySection = dynamic(
+  () => import('@/components/site/telemetry-section').then((m) => m.TelemetrySection),
+  { ssr: true }
+);
 const ImmersiveMethodSection = dynamic(
   () => import('@/components/site/immersive-method-section').then((m) => m.ImmersiveMethodSection),
   { ssr: true }
 );
 const DecisionSimulatorSection = dynamic(
   () =>
-    import('@/components/site/decision-simulator-section').then(
-      (m) => m.DecisionSimulatorSection
-    ),
+    import('@/components/site/decision-simulator-section').then((m) => m.DecisionSimulatorSection),
   { ssr: true }
 );
 const ImmersiveWorkSection = dynamic(
@@ -40,7 +47,8 @@ const ImmersiveBookSection = dynamic(
   { ssr: true }
 );
 const ImmersiveWritingSection = dynamic(
-  () => import('@/components/site/immersive-writing-section').then((m) => m.ImmersiveWritingSection),
+  () =>
+    import('@/components/site/immersive-writing-section').then((m) => m.ImmersiveWritingSection),
   { ssr: true }
 );
 const ImmersiveCertificationsSection = dynamic(
@@ -55,7 +63,8 @@ const PublicKnowledgeConsole = dynamic(
   { ssr: false }
 );
 const ImmersiveContactSection = dynamic(
-  () => import('@/components/site/immersive-contact-section').then((m) => m.ImmersiveContactSection),
+  () =>
+    import('@/components/site/immersive-contact-section').then((m) => m.ImmersiveContactSection),
   { ssr: true }
 );
 const CommandPalette = dynamic(
@@ -152,6 +161,7 @@ export function HomePageShell({
         <ImmersiveHeroSection />
         <ImmersiveAboutSection />
         <SystemAtlasSection />
+        <TelemetrySection />
         <ImmersiveMethodSection />
         <DecisionSimulatorSection />
         <ImmersiveWorkSection projects={projects} />

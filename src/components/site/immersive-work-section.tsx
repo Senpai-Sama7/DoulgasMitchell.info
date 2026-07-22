@@ -11,7 +11,7 @@ interface ImmersiveWorkSectionProps {
 }
 
 /**
- * Chapter 06 — Proof. The section pins for 1800px of scroll while the inner
+ * Chapter 07 — Proof. The section pins for 1800px of scroll while the inner
  * track translates X by (track.scrollWidth − viewport), turning vertical
  * scroll into a horizontal traversal of oversized editorial case-study
  * panels. The default markup is a vertical editorial stack — mobile, touch,
@@ -66,15 +66,14 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
             {/* Oversized intro slide */}
             <article className="proof-panel proof-panel-intro">
               <div>
-                <p className="chapter-label mb-6">Chapter 06 · Proof</p>
+                <p className="chapter-label mb-6">Chapter 07 · Proof</p>
                 <h2 className="proof-intro-title font-display">
                   Proof
                   <br />
                   <span className="text-muted-foreground">architecture.</span>
                 </h2>
                 <p className="mt-6 max-w-md text-muted-foreground md:text-lg">
-                  Case studies written as decision logs: challenge, constraint, path taken,
-                  outcome.
+                  Case studies written as decision logs: challenge, constraint, path taken, outcome.
                 </p>
               </div>
               <p className="proof-scroll-hint mt-10 items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
@@ -148,8 +147,8 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
                   The archive runs deeper.
                 </h3>
                 <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground md:text-base">
-                  85+ public experiments and field tests live on GitHub — the unedited lab,
-                  receipts included.
+                  85+ public experiments and field tests live on GitHub — the unedited lab, receipts
+                  included.
                 </p>
               </div>
               <div className="mt-8">

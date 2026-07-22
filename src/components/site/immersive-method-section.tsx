@@ -11,10 +11,10 @@ import { easings, gsap, ScrollTrigger } from '@/lib/gsap';
 import { methodGates, methodLadder, methodPatterns } from '@/lib/site-content';
 
 /**
- * Chapter 04 — Method. Opens on a pinned beat where the four Clarity Ladder
+ * Chapter 05 — Method. Opens on a pinned beat where the four Clarity Ladder
  * steps scrub into focus one at a time behind large display numerals, then
  * unpins into the pattern ledger. The Four-Gate check that used to live here
- * grew into the full Decision Instrument (Chapter 05 · #simulator); this
+ * grew into the full Decision Instrument (Chapter 06 · #simulator); this
  * chapter keeps a compact teaser strip that deep-links into it.
  * Reduced-motion / touch / low-tier contexts get the same content as a static
  * editorial stack (the default markup state — the pin only elevates it).
@@ -84,7 +84,7 @@ export function ImmersiveMethodSection() {
         <div className="editorial-container w-full">
           <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-end">
             <div>
-              <p className="chapter-label mb-4">Chapter 04 · Method</p>
+              <p className="chapter-label mb-4">Chapter 05 · Method</p>
               <h2 className="editorial-title">
                 The Operator
                 <br />
@@ -92,9 +92,8 @@ export function ImmersiveMethodSection() {
               </h2>
             </div>
             <p className="max-w-md text-muted-foreground lg:justify-self-end">
-              A field manual for when to clarify, constrain, automate, and measure. Climb the
-              ladder before you ship autonomy — the simplest control surface that earns the
-              outcome wins.
+              A field manual for when to clarify, constrain, automate, and measure. Climb the ladder
+              before you ship autonomy — the simplest control surface that earns the outcome wins.
             </p>
           </div>
 

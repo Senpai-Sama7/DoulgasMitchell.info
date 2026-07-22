@@ -9,7 +9,7 @@ import { bookShowcase } from '@/lib/site-content';
 import { mediaManifest } from '@/lib/media-manifest';
 
 /**
- * Chapter 07 — Artifact. A pinned product reveal: the book is a real CSS 3D
+ * Chapter 08 — Artifact. A pinned product reveal: the book is a real CSS 3D
  * object (front board, spine, back board inside a perspective stage) whose
  * rotateY scrubs from a spine-forward recline to a near-frontal product shot,
  * while the title unmasks word by word and the highlights wipe in as
@@ -125,7 +125,7 @@ export function ImmersiveBookSection() {
             {/* Kinetic copy column */}
             <div>
               <p className="artifact-meta-item chapter-label mb-6">
-                Chapter 07 · Artifact
+                Chapter 08 · Artifact
                 {bookShowcase.publishDate ? (
                   <>
                     <span className="text-muted-foreground/50" aria-hidden>

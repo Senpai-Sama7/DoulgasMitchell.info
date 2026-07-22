@@ -28,19 +28,26 @@ interface NavLink {
 const navLinks: readonly NavLink[] = [
   { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
   { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '03', beat: 'Systems' },
-  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '04', beat: 'Method' },
+  {
+    href: '/#telemetry',
+    label: 'Telemetry',
+    sectionId: 'telemetry',
+    chapter: '04',
+    beat: 'Doctrine',
+  },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '05', beat: 'Method' },
   {
     href: '/#simulator',
     label: 'Instrument',
     sectionId: 'simulator',
-    chapter: '05',
+    chapter: '06',
     beat: 'Decision',
     wideOnly: true,
   },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '06', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '07', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '08', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '09', beat: 'Invitation' },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '07', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '08', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '09', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '10', beat: 'Invitation' },
 ];
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;
@@ -144,7 +151,7 @@ export function SiteHeader() {
           : 'border-b border-transparent bg-gradient-to-b from-background/70 via-background/30 to-transparent'
       )}
     >
-      <nav aria-label="Primary" className="editorial-container">
+      <nav aria-label="Primary" className="editorial-container !max-w-[1440px]">
         <div className="flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
           {/* Wordmark — the serif signal, nothing else */}
           <Link
@@ -174,7 +181,7 @@ export function SiteHeader() {
                     aria-current={isActive ? 'location' : undefined}
                     data-cursor="interactive"
                     className={cn(
-                      'group relative flex items-baseline gap-1.5 px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      'group relative flex items-baseline gap-1.5 whitespace-nowrap px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
                       isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
@@ -287,7 +294,10 @@ export function SiteHeader() {
               </button>
             </div>
 
-            <nav aria-label="Chapters" className="relative flex flex-1 flex-col justify-center px-5 py-8">
+            <nav
+              aria-label="Chapters"
+              className="relative flex flex-1 flex-col justify-center px-5 py-8"
+            >
               <p className="chapter-label mb-6">Chapters</p>
               <ol>
                 {navLinks.map((link) => {
