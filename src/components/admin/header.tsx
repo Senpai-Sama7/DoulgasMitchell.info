@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Bell, Command, Search, Sparkles, FileText, BarChart3, Shield, ImageIcon, LayoutDashboard, Key, Lock, Settings, MessageSquare, PlusSquare } from 'lucide-react';
+import { Command, Search, Sparkles, FileText, BarChart3, Shield, ImageIcon, LayoutDashboard, Key, Lock, Settings, MessageSquare, PlusSquare } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { NotificationsBell } from '@/components/admin/notifications-bell';
 import { cn } from '@/lib/utils';
 
 interface AdminHeaderProps {
@@ -268,16 +269,7 @@ export function AdminHeader({ user }: AdminHeaderProps) {
           <Command className="h-4 w-4" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative"
-          disabled
-          aria-label="Notifications"
-        >
-          <Bell className="h-4 w-4" />
-          <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-primary/40 animate-pulse" />
-        </Button>
+        <NotificationsBell />
       </div>
     </header>
   );

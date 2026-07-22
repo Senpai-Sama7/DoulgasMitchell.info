@@ -8,4 +8,5 @@ export { DataTable } from './data-table';
 export { default as MarkdownEditor } from './markdown-editor';
 export { MediaUploader } from './media-uploader';
 export { AdminOperatorConsole } from './operator-console';
+export { NotificationsBell } from './notifications-bell';
 export { PasskeyManager } from './passkey-manager';
