@@ -1,40 +1,48 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { AuthenticatorTransport } from '@simplewebauthn/server';
+import { NextRequest } from 'next/server';
 import { getRegistrationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
-import { findAdminUserById } from '@/lib/admin-compat';
-import { logger } from '@/lib/logger';
+import { findAdminUserById, getAdminPasskeysForUser } from '@/lib/admin-compat';
+import { ApiHandler } from '@/lib/api-response';
 import { validateTrustedOrigin } from '@/lib/request';
 
 export async function POST(request: NextRequest) {
   try {
     const originCheck = validateTrustedOrigin(request);
     if (!originCheck.allowed) {
-      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+      return ApiHandler.forbidden(originCheck.reason);
     }
 
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return ApiHandler.unauthorized();
     }
 
     const user = await findAdminUserById(session.userId);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return ApiHandler.notFound('User not found');
     }
 
-    const options = await getRegistrationOptions({
-      id: user.id,
-      email: user.email,
-      name: user.name,
-    });
+    const existingPasskeys = await getAdminPasskeysForUser(user.id);
+
+    const options = await getRegistrationOptions(
+      {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      },
+      existingPasskeys.map((passkey) => ({
+        id: passkey.credentialId,
+        transports: passkey.transports as AuthenticatorTransport[],
+      }))
+    );
 
     await setPasskeyChallengeCookie('register', user.email, options.challenge);
 
-    return NextResponse.json(options);
+    return ApiHandler.success({ options });
   } catch (error) {
-    logger.error('Passkey register options error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ApiHandler.internalServerError('Passkey register options error', error);
   }
 }

@@ -1,26 +1,35 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { verifyRegistration } from '@/lib/webauthn';
 import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { getSession } from '@/lib/auth';
 import { logActivity } from '@/lib/activity';
 import { createPasskeyRecord, findAdminUserById } from '@/lib/admin-compat';
-import { logger } from '@/lib/logger';
+import { ApiHandler } from '@/lib/api-response';
 import {
   isInvalidJsonBodyError,
   readJsonBody,
   validateTrustedOrigin,
 } from '@/lib/request';
 
+interface RegistrationResponseLike {
+  id?: unknown;
+  response?: {
+    attestationObject?: unknown;
+    clientDataJSON?: unknown;
+    transports?: unknown;
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const originCheck = validateTrustedOrigin(request);
     if (!originCheck.allowed) {
-      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+      return ApiHandler.forbidden(originCheck.reason);
     }
 
     const session = await getSession();
     if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return ApiHandler.unauthorized();
     }
 
     const body = await readJsonBody<{
@@ -30,47 +39,48 @@ export async function POST(request: NextRequest) {
     const { response, deviceName } = body;
 
     if (!response || typeof response !== 'object') {
-      return NextResponse.json({ error: 'Registration response is required' }, { status: 400 });
+      return ApiHandler.error('Registration response is required', 400);
     }
 
-    const registrationResponse = response as Record<string, unknown>;
+    // WebAuthn nests the attestation payload under `response.response`.
+    const registrationResponse = response as RegistrationResponseLike;
     if (
-      typeof registrationResponse.attestationObject !== 'string' ||
-      typeof registrationResponse.clientDataJSON !== 'string'
+      typeof registrationResponse.id !== 'string' ||
+      typeof registrationResponse.response?.attestationObject !== 'string' ||
+      typeof registrationResponse.response?.clientDataJSON !== 'string'
     ) {
-      return NextResponse.json({ error: 'Invalid registration response structure' }, { status: 400 });
+      return ApiHandler.error('Invalid registration response structure', 400);
     }
 
     const user = await findAdminUserById(session.userId);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return ApiHandler.notFound('User not found');
     }
 
     const expectedChallenge = await consumePasskeyChallengeCookie('register', user.email);
     if (!expectedChallenge) {
-      return NextResponse.json({ error: 'Invalid or expired challenge' }, { status: 400 });
+      return ApiHandler.error('Invalid or expired challenge. Start the registration again.', 400);
     }
 
     const verification = await verifyRegistration(response, expectedChallenge);
 
     if (verification.verified && verification.registrationInfo) {
       const { credential } = verification.registrationInfo;
-      const { id: credentialID, publicKey: credentialPublicKey, counter } = credential;
 
-      // Save the new passkey to the database
       await createPasskeyRecord({
         userId: user.id,
-        credentialId: credentialID,
-        publicKey: credentialPublicKey,
-        counter,
-        deviceName: deviceName || 'New Device',
+        credentialId: credential.id,
+        publicKey: credential.publicKey,
+        counter: credential.counter,
+        deviceName: deviceName?.trim() || 'New Device',
+        transports: credential.transports ?? [],
       });
 
       await logActivity({
         action: 'create',
         resource: 'passkey',
-        resourceId: credentialID,
+        resourceId: credential.id,
         userId: user.id,
         request,
         details: {
@@ -78,16 +88,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({ success: true });
+      return ApiHandler.success(undefined, 'Passkey registered.');
     }
 
-    return NextResponse.json({ error: 'Registration failed' }, { status: 400 });
+    return ApiHandler.error('Registration verification failed', 400);
   } catch (error) {
     if (isInvalidJsonBodyError(error)) {
-      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+      return ApiHandler.error('Request body must be valid JSON.', 400);
     }
 
-    logger.error('Passkey register verify error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ApiHandler.internalServerError('Passkey register verify error', error);
   }
 }

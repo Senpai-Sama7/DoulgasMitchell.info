@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { verifyAuthentication } from '@/lib/webauthn';
 import { consumePasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { createSession, setSessionCookie, clearRateLimit } from '@/lib/auth';
+import { ApiHandler } from '@/lib/api-response';
 import {
   getClientIp,
   getUserAgent,
@@ -10,7 +11,6 @@ import {
   validateTrustedOrigin,
 } from '@/lib/request';
 import { logActivity } from '@/lib/activity';
-import { logger } from '@/lib/logger';
 import { rateLimit } from '@/lib/rate-limit';
 import {
   findAdminUserByEmail,
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
   try {
     const originCheck = validateTrustedOrigin(request);
     if (!originCheck.allowed) {
-      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+      return ApiHandler.forbidden(originCheck.reason);
     }
 
     const body = await readJsonBody<{
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { email, response } = body;
 
     if (!email || !response) {
-      return NextResponse.json({ error: 'Email and response are required' }, { status: 400 });
+      return ApiHandler.error('Email and response are required', 400);
     }
 
     const clientIp = await getClientIp(request);
@@ -44,24 +44,25 @@ export async function POST(request: NextRequest) {
     });
 
     if (!limit.allowed) {
-      return NextResponse.json({ error: 'Too many passkey attempts. Please try again later.' }, { status: 429 });
+      return ApiHandler.error('Too many passkey attempts. Please try again later.', 429);
     }
 
     const expectedChallenge = await consumePasskeyChallengeCookie('auth', email);
     if (!expectedChallenge) {
-      return NextResponse.json({ error: 'Invalid or expired challenge' }, { status: 400 });
+      return ApiHandler.error('Invalid or expired challenge', 400);
     }
 
     const user = await findAdminUserByEmail(email);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      // Same status/message as an unrecognized passkey to avoid user enumeration.
+      return ApiHandler.unauthorized('Passkey not recognized');
     }
 
     const passkeys = await getAdminPasskeysForUser(user.id);
     const passkey = passkeys.find((item) => item.credentialId === response.id);
     if (!passkey) {
-      return NextResponse.json({ error: 'Passkey not recognized' }, { status: 401 });
+      return ApiHandler.unauthorized('Passkey not recognized');
     }
 
     const verification = await verifyAuthentication(response, expectedChallenge, {
@@ -98,8 +99,7 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({
-        success: true,
+      return ApiHandler.success({
         user: {
           id: user.id,
           email: user.email,
@@ -109,13 +109,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ error: 'Verification failed' }, { status: 401 });
+    return ApiHandler.unauthorized('Verification failed');
   } catch (error) {
     if (isInvalidJsonBodyError(error)) {
-      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+      return ApiHandler.error('Request body must be valid JSON.', 400);
     }
 
-    logger.error('Passkey verify error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ApiHandler.internalServerError('Passkey verify error', error);
   }
 }

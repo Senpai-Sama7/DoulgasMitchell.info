@@ -18,9 +18,14 @@ export const origin = env.PASSKEY_EXPECTED_ORIGINS?.split(',') || [
 ];
 
 /**
- * Generate registration options for a new passkey
+ * Generate registration options for a new passkey.
+ * Pass `excludeCredentials` so an authenticator that is already registered
+ * for this user cannot be registered a second time.
  */
-export async function getRegistrationOptions(user: { id: string; email: string; name?: string | null }) {
+export async function getRegistrationOptions(
+  user: { id: string; email: string; name?: string | null },
+  excludeCredentials?: { id: string; transports?: AuthenticatorTransport[] }[]
+) {
   return generateRegistrationOptions({
     rpName,
     rpID,
@@ -28,6 +33,10 @@ export async function getRegistrationOptions(user: { id: string; email: string; 
     userName: user.email,
     userDisplayName: user.name || user.email,
     attestationType: 'none',
+    excludeCredentials: excludeCredentials?.map((cred) => ({
+      id: cred.id,
+      transports: cred.transports,
+    })),
     authenticatorSelection: {
       residentKey: 'required',
       userVerification: 'preferred',

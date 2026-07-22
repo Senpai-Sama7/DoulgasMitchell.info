@@ -10,7 +10,6 @@ import {
   deleteAdminSessionByToken,
   findAdminSessionByToken,
 } from './admin-compat';
-import { hasTable } from './db-introspection';
 
 function getJwtSecret() {
   const secret = env.JWT_SECRET;
