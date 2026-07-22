@@ -10,30 +10,22 @@ test.describe('Public Site Smoke Tests', () => {
   });
 
   test('should navigate to work section', async ({ page }) => {
+    // Skip the first-visit video gate and use a viewport wide enough for the
+    // xl chapter row — WebKit's default 1280px Desktop Safari width often
+    // falls below Tailwind xl once scrollbars reduce layout width.
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('dm-video-entrance-v1', '1');
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
-
-    // First-visit video gate can cover the chrome — dismiss if present.
-    const skipIntro = page.getByRole('button', { name: /skip intro/i });
-    if (await skipIntro.isVisible().catch(() => false)) {
-      await skipIntro.click();
-      await expect(skipIntro).toBeHidden({ timeout: 10000 });
-    }
 
     // Prefer the hash nav target — a loose /Work/i name match also hits
     // project titles like "AI Workflow Automation" and leaves the homepage.
-    // Desktop chapter links are `xl:`-only; WebKit's 1280px Desktop Safari
-    // viewport often falls below that once scrollbars eat width, so fall
-    // back to the mobile menu scene when the primary row is hidden.
-    const desktopWork = page.locator('nav[aria-label="Primary"] ul a[href="/#work"]');
-    if (await desktopWork.isVisible()) {
-      await desktopWork.click();
-    } else {
-      await page.getByRole('button', { name: /open navigation menu/i }).click();
-      const mobileWork = page.locator('#site-mobile-menu a[href="/#work"]');
-      await expect(mobileWork).toBeVisible();
-      await mobileWork.click();
-    }
-
+    const workLink = page
+      .getByRole('navigation', { name: 'Primary' })
+      .locator('a[href="/#work"]');
+    await expect(workLink).toBeVisible();
+    await workLink.click();
     await expect(page).toHaveURL(/.*#work/);
   });
 
