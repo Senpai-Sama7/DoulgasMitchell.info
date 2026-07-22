@@ -1,16 +1,13 @@
 'use client';
 
 import { FormEvent, KeyboardEvent, useEffect, useState } from 'react';
-import { BrainCircuit, Loader2, Shield, Sparkles } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import {
   Conversation,
   ConversationContent,
   ConversationScrollButton,
 } from '@/components/ai-elements/conversation';
-import { Message, MessageContent, MessageResponse } from '@/components/ai-elements/message';
-import { Suggestion, Suggestions } from '@/components/ai-elements/suggestion';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { MessageResponse } from '@/components/ai-elements/message';
 import { Textarea } from '@/components/ui/textarea';
 import { logger } from '@/lib/logger';
 
@@ -53,6 +50,22 @@ const DEFAULT_SUGGESTIONS = [
   'What certifications are featured here?',
 ];
 
+const THINKING_READOUTS = [
+  'Scanning the public knowledge base',
+  'Weighing evidence and confidence',
+  'Composing the answer',
+] as const;
+
+const specRowClass = 'grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-4 py-3';
+const specLabelClass = 'font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground';
+
+/**
+ * Interlude beat — the public archive rendered as a console instrument in the
+ * same ink + teal precision grammar as the Four-Gate decision check: spec
+ * rows instead of badge pills, ledger entries instead of chat bubbles, a
+ * status lamp instead of a spinner. All assistant behaviour (history, rate
+ * budget, decision intelligence, reset confirm) is unchanged.
+ */
 export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistantSettings }) {
   const [messages, setMessages] = useState<PublicAssistantMessage[]>([]);
   const [input, setInput] = useState('');
@@ -78,7 +91,7 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
         logger.error('Failed to parse chat history', e);
       }
     }
-    
+
     // Default welcome message if no history
     setMessages([
       {
@@ -212,81 +225,163 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
   }
 
   return (
-    <section id="public-assistant" className="section-spacing relative w-full max-w-[100vw] overflow-hidden">
-      <div className="editorial-container relative">
-        <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <div className="min-w-0 space-y-6">
-            <div className="space-y-4">
-              <p className="immersive-kicker flex items-center gap-2">
-                <Sparkles className="h-3.5 w-3.5" />
-                Knowledge console
-              </p>
-              <div>
-                <h2 className="editorial-title max-w-xl">Ask the public archive</h2>
-                <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground">
-                  {settings.welcomeMessage}
-                </p>
+    <section
+      id="public-assistant"
+      className="relative w-full max-w-[100vw] overflow-hidden border-t border-border/50 bg-muted/20"
+    >
+      <div className="editorial-container section-spacing relative">
+        <div className="grid gap-12 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+          {/* ── Editorial brief ─────────────────────────────────────────── */}
+          <div className="min-w-0">
+            <p className="chapter-label mb-8">Interlude · Console</p>
+            <h2 className="editorial-title">
+              Query the
+              <br />
+              <span className="text-muted-foreground">public record.</span>
+            </h2>
+            <p className="mt-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+              {settings.welcomeMessage}
+            </p>
+
+            {/* Operating protocol — spec rows, not badge pills */}
+            <dl className="mt-10 divide-y divide-border/55 border-y border-border/55">
+              <div className={specRowClass}>
+                <dt className={specLabelClass}>Scope</dt>
+                <dd className="text-sm leading-relaxed text-foreground/85">
+                  Public portfolio record only. Sensitive topics and private contact details are
+                  refused automatically.
+                </dd>
               </div>
+              <div className={specRowClass}>
+                <dt className={specLabelClass}>Mode</dt>
+                <dd className="text-sm leading-relaxed text-foreground/85">
+                  {settings.enableDecisionIntelligence
+                    ? 'Confidence-weighted answers with decision rationale.'
+                    : 'Deterministic answers from the published archive.'}
+                </dd>
+              </div>
+              <div className={specRowClass}>
+                <dt className={specLabelClass}>Budget</dt>
+                <dd className="text-sm tabular-nums text-foreground/85">
+                  {settings.maxQuestionsPerIp} questions · IP · day
+                </dd>
+              </div>
+              <div className={specRowClass}>
+                <dt className={specLabelClass}>Remaining</dt>
+                <dd className="font-mono text-sm tabular-nums text-foreground/85">
+                  {remaining !== null ? remaining : '—'}
+                </dd>
+              </div>
+            </dl>
+            <div aria-live="polite" className="sr-only">
+              {remaining !== null ? `${remaining} public archive questions remaining today.` : ''}
             </div>
 
-            <div className="space-y-3 max-w-full overflow-hidden">
-              <div className="flex flex-wrap gap-2 max-w-full">
-                <Badge variant="secondary" className="gap-1.5 shrink-0">
-                  <Shield className="h-3.5 w-3.5" />
-                  Portfolio-only
-                </Badge>
-                <Badge variant="secondary" className="gap-1.5 shrink-0">
-                  <BrainCircuit className="h-3.5 w-3.5" />
-                  {settings.enableDecisionIntelligence ? 'Confidence-aware answers' : 'Deterministic answers'}
-                </Badge>
-                <Badge variant="outline" className="shrink-0">{settings.maxQuestionsPerIp} questions / IP / day</Badge>
-              </div>
-              <p className="text-xs text-muted-foreground break-words">
-                Ask about projects, articles, the book, certifications, or operating principles. Sensitive topics and private contact details are refused automatically.
-              </p>
-              <div className="glass-panel p-4 text-sm text-muted-foreground">
-                The assistant only uses public site content. For better answers, include the topic you care about and the outcome you want.
-              </div>
-              {remaining !== null ? (
-                <p className="text-xs font-mono uppercase tracking-[0.22em] text-muted-foreground">
-                  Remaining today: {remaining}
-                </p>
-              ) : null}
-              <div aria-live="polite" className="sr-only">
-                {remaining !== null ? `${remaining} public archive questions remaining today.` : ''}
-              </div>
-            </div>
-
-            <Suggestions>
-              {suggestions.map((suggestion) => (
-                <Suggestion
+            {/* Sample queries — an index, not a pill farm */}
+            <p className="immersive-kicker mb-1 mt-10">Sample queries</p>
+            <div className="divide-y divide-border/50">
+              {suggestions.map((suggestion, index) => (
+                <button
                   key={suggestion}
-                  suggestion={suggestion}
-                  onClick={(prompt) => {
-                    void submitQuestion(prompt);
+                  type="button"
+                  data-cursor="interactive"
+                  disabled={isLoading}
+                  onClick={() => {
+                    void submitQuestion(suggestion);
                   }}
-                />
+                  className="group flex w-full items-baseline gap-4 py-3 text-left disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  <span
+                    className="font-mono text-[0.6rem] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                    aria-hidden
+                  >
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <span className="lux-underline min-w-0 text-sm text-foreground/85 transition-colors group-hover:text-foreground">
+                    {suggestion}
+                  </span>
+                  <ArrowUpRight
+                    className="ml-auto h-3 w-3 shrink-0 self-center text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                    aria-hidden
+                  />
+                </button>
               ))}
-            </Suggestions>
+            </div>
           </div>
 
-          <div className="glass-panel mx-auto w-full max-w-full overflow-hidden">
-            <Conversation className="h-[28rem] md:h-[34rem] rounded-[32px] w-full">
-              <ConversationContent className="gap-5 p-4 md:p-6 w-full">
-                {messages.map((message) => (
-                  <Message key={message.id} from={message.role === 'assistant' ? 'assistant' : 'user'} className="w-full">
-                    <MessageContent
-                      className={message.role === 'assistant' ? 'rounded-2xl border border-border/70 bg-background/60 px-4 py-4 max-w-[90%] md:max-w-[85%]' : 'max-w-[90%] md:max-w-[85%] ml-auto'}
+          {/* ── The instrument ──────────────────────────────────────────── */}
+          <div className="console-instrument min-w-0">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-border/60 px-4 py-3 md:px-6">
+              <div className="flex items-center gap-2.5">
+                <span className="console-lamp" data-state={isLoading ? 'busy' : 'idle'} aria-hidden />
+                <span className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-muted-foreground">
+                  Archive console
+                </span>
+              </div>
+              <div className="flex items-center gap-5">
+                {remaining !== null ? (
+                  <span className="font-mono text-[0.6rem] uppercase tracking-[0.18em] tabular-nums text-muted-foreground">
+                    {remaining} remaining
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  data-cursor="interactive"
+                  onClick={() => {
+                    if (resetPending) {
+                      clearConversation();
+                      return;
+                    }
+                    setResetPending(true);
+                    window.setTimeout(() => setResetPending(false), 2500);
+                  }}
+                  disabled={isLoading || messages.length <= 1}
+                  className="min-h-11 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {resetPending ? 'Confirm reset' : 'Reset'}
+                </button>
+              </div>
+            </div>
+
+            <Conversation className="h-[26rem] w-full md:h-[32rem]">
+              <ConversationContent className="w-full gap-7 p-4 md:p-6">
+                {messages.map((message) =>
+                  message.role === 'user' ? (
+                    <div key={message.id} className="console-entry w-full" data-role="user">
+                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+                        Query
+                      </p>
+                      <p className="mt-1.5 break-words text-sm font-medium leading-relaxed">
+                        {message.text}
+                      </p>
+                    </div>
+                  ) : (
+                    <div
+                      key={message.id}
+                      className="console-entry w-full"
+                      data-role={message.refusal ? 'refusal' : 'assistant'}
                     >
-                      <MessageResponse className="break-words overflow-hidden">{message.text}</MessageResponse>
-                      {message.role === 'assistant' && settings.enableDecisionIntelligence && message.decision ? (
-                        <div className="mt-4 space-y-3 border-t border-border/60 pt-4">
-                          <div className="flex flex-wrap gap-2">
-                            <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.16em] text-foreground">
+                      <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+                        {message.refusal ? 'Archive · Refused' : 'Archive'}
+                      </p>
+                      <MessageResponse className="mt-2 break-words text-sm leading-relaxed">
+                        {message.text}
+                      </MessageResponse>
+
+                      {settings.enableDecisionIntelligence && message.decision ? (
+                        <div className="mt-4 space-y-3 border-t border-border/50 pt-4">
+                          <div className="flex flex-wrap items-baseline gap-x-5 gap-y-1 font-mono text-[0.6rem] uppercase tracking-[0.18em]">
+                            <span
+                              className={
+                                message.decision.action === 'proceed'
+                                  ? 'text-brand-accent'
+                                  : 'text-foreground'
+                              }
+                            >
                               {message.decision.label}
                             </span>
                             {typeof message.confidence === 'number' ? (
-                              <span className="rounded-full border border-border/70 px-3 py-1 text-[11px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                              <span className="tabular-nums text-muted-foreground">
                                 {Math.round(message.confidence * 100)}% confidence
                               </span>
                             ) : null}
@@ -297,104 +392,98 @@ export function PublicKnowledgeConsole({ settings }: { settings: PublicAssistant
                           </p>
 
                           {message.uncertainty ? (
-                            <div className="grid gap-2 sm:grid-cols-3">
-                              <div className="rounded-2xl border border-border/60 bg-background/50 px-3 py-2">
-                                <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                            <dl className="grid divide-y divide-border/60 border border-border/60 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+                              <div className="px-3 py-2">
+                                <dt className="font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground">
                                   Epistemic
-                                </div>
-                                <div className="mt-1 text-sm font-medium">
+                                </dt>
+                                <dd className="mt-1 text-sm font-medium tabular-nums">
                                   {Math.round(message.uncertainty.epistemic * 100)}%
-                                </div>
+                                </dd>
                               </div>
-                              <div className="rounded-2xl border border-border/60 bg-background/50 px-3 py-2">
-                                <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                              <div className="px-3 py-2">
+                                <dt className="font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground">
                                   Aleatoric
-                                </div>
-                                <div className="mt-1 text-sm font-medium">
+                                </dt>
+                                <dd className="mt-1 text-sm font-medium tabular-nums">
                                   {Math.round(message.uncertainty.aleatoric * 100)}%
-                                </div>
+                                </dd>
                               </div>
-                              <div className="rounded-2xl border border-border/60 bg-background/50 px-3 py-2">
-                                <div className="text-[10px] font-mono uppercase tracking-[0.16em] text-muted-foreground">
+                              <div className="px-3 py-2">
+                                <dt className="font-mono text-[0.55rem] uppercase tracking-[0.16em] text-muted-foreground">
                                   Calibration
-                                </div>
-                                <div className="mt-1 text-sm font-medium">
+                                </dt>
+                                <dd className="mt-1 text-sm font-medium">
                                   {message.uncertainty.calibrationStatus.replace(/-/g, ' ')}
-                                </div>
+                                </dd>
                               </div>
-                            </div>
+                            </dl>
                           ) : null}
                         </div>
                       ) : null}
-                    </MessageContent>
-                  </Message>
-                ))}
-                {isThinking && (
-                  <Message from="assistant" className="w-full">
-                    <MessageContent className="rounded-2xl border border-border/70 bg-background/60 px-4 py-4 max-w-[90%] md:max-w-[85%]">
-                      <div className="flex items-center gap-3">
-                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                        <span className="font-mono text-xs text-muted-foreground">
-                          {thinkingStep === 0 ? 'Analyzing public knowledge base...' : 
-                           thinkingStep === 1 ? 'Evaluating evidence and confidence...' : 
-                           'Synthesizing architectural response...'}
-                        </span>
-                      </div>
-                    </MessageContent>
-                  </Message>
+                    </div>
+                  )
                 )}
+
+                {isThinking ? (
+                  <div className="console-entry w-full" data-role="assistant">
+                    <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-muted-foreground">
+                      Archive · Working
+                    </p>
+                    <p className="mt-2 flex items-center gap-2 font-mono text-xs text-muted-foreground">
+                      {THINKING_READOUTS[thinkingStep] ?? THINKING_READOUTS[0]}
+                      <span className="console-caret" aria-hidden />
+                    </p>
+                  </div>
+                ) : null}
                 <ConversationScrollButton />
               </ConversationContent>
             </Conversation>
 
-            <div className="border-t border-border/70 p-4">
-              <form onSubmit={handleSubmit} className="space-y-3">
+            {/* Composer — a prompt line, not a chat box */}
+            <form onSubmit={handleSubmit} className="border-t border-border/60">
+              <div className="flex items-start gap-3 px-4 pt-4 md:px-6">
+                <span
+                  className="select-none pt-1 font-mono text-sm leading-none text-brand-accent"
+                  aria-hidden
+                >
+                  &gt;
+                </span>
                 <Textarea
                   value={input}
                   onChange={(event) => setInput(event.target.value)}
                   onKeyDown={handleComposerKeyDown}
-                  placeholder="Ask about Douglas Mitchell’s public work..."
+                  placeholder="Query the public archive…"
                   aria-label="Ask the public archive about Douglas Mitchell"
                   disabled={isLoading}
-                  rows={3}
-                  className="min-h-[88px] resize-none"
+                  rows={2}
+                  className="min-h-16 resize-none rounded-none border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0 dark:bg-transparent"
                 />
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    Public, non-sensitive questions only. Press Enter to ask, Shift+Enter for a new line.
+              </div>
+              <div className="flex flex-wrap items-center justify-between gap-3 px-4 pb-4 pt-3 md:px-6">
+                <p className="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground/70">
+                  Enter to ask · Shift+Enter for a new line
+                </p>
+                <button
+                  type="submit"
+                  data-cursor="interactive"
+                  disabled={isLoading || !input.trim()}
+                  className="inline-flex min-h-10 items-center gap-2 border border-foreground bg-foreground px-5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-35"
+                >
+                  {isLoading ? 'Working' : 'Ask'}
+                </button>
+              </div>
+              <div aria-live="polite" aria-atomic="true">
+                {resetPending ? (
+                  <p className="px-4 pb-4 font-mono text-[0.6rem] uppercase tracking-[0.16em] text-muted-foreground md:px-6">
+                    Press reset again to clear this session.
                   </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        if (resetPending) {
-                          clearConversation();
-                          return;
-                        }
-                        setResetPending(true);
-                        window.setTimeout(() => setResetPending(false), 2500);
-                      }}
-                      className="h-9 px-3 text-xs text-muted-foreground hover:text-foreground"
-                      disabled={isLoading || messages.length <= 1}
-                    >
-                      {resetPending ? 'Confirm reset' : 'Reset'}
-                    </Button>
-                    <Button type="submit" disabled={isLoading || !input.trim()}>
-                      {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                      Ask
-                    </Button>
-                  </div>
-                </div>
-                <div aria-live="polite" aria-atomic="true">
-                  {resetPending ? (
-                    <p className="text-xs text-muted-foreground">Press reset again to clear this public archive session.</p>
-                  ) : null}
-                  {error ? <p className="text-xs text-destructive">{error}</p> : null}
-                </div>
-              </form>
-            </div>
+                ) : null}
+                {error ? (
+                  <p className="px-4 pb-4 text-xs text-destructive md:px-6">{error}</p>
+                ) : null}
+              </div>
+            </form>
           </div>
         </div>
       </div>

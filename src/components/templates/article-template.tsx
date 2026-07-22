@@ -18,36 +18,29 @@ export function ArticleTemplate({ article, related = [] }: ArticleTemplateProps)
           <ScrollReveal>
             <Link
               href="/#writing"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              data-cursor="interactive"
+              className="inline-flex min-h-11 items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" />
-              Back to writing
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Chapter 06 · Voice
             </Link>
           </ScrollReveal>
         </div>
 
         <header className="editorial-container mx-auto mt-10 max-w-[44rem]">
           <ScrollReveal>
-            <div className="immersive-kicker mb-6 flex flex-wrap gap-x-3 gap-y-1">
-              <span>{article.category}</span>
-              <span className="text-muted-foreground/30">·</span>
-              <span>{article.readTime}</span>
-              <span className="text-muted-foreground/30">·</span>
-              <span>{article.date}</span>
+            <div className="mb-6 flex flex-wrap items-baseline gap-x-4 gap-y-2">
+              <p className="chapter-label">{article.category}</p>
+              <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground/70">
+                {article.readTime} · {article.date}
+              </span>
             </div>
             <h1 className="editorial-title">{article.title}</h1>
             <p className="mt-6 text-xl leading-relaxed text-muted-foreground">{article.excerpt}</p>
             {article.tags.length > 0 ? (
-              <div className="mt-8 flex flex-wrap gap-2">
-                {article.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full border border-border/60 bg-muted/20 px-3 py-1 text-xs text-muted-foreground"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <p className="mt-8 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
+                {article.tags.join(' · ')}
+              </p>
             ) : null}
           </ScrollReveal>
         </header>
@@ -65,19 +58,23 @@ export function ArticleTemplate({ article, related = [] }: ArticleTemplateProps)
         {related.length > 0 ? (
           <div className="editorial-container mt-20">
             <ScrollReveal className="mb-8">
-              <p className="immersive-kicker mb-2">Related</p>
+              <p className="chapter-label mb-4">Related · Voice</p>
               <h2 className="font-display text-2xl tracking-tight">More essays</h2>
             </ScrollReveal>
             <ScrollRevealStagger className="grid gap-4 md:grid-cols-2">
               {related.map((item) => (
                 <ScrollRevealItem key={item.slug}>
-                  <Link href={`/writing/${item.slug}`} className="bento-card group block p-6 md:p-8">
+                  <Link
+                    href={`/writing/${item.slug}`}
+                    data-cursor="interactive"
+                    className="bento-card group block p-6 md:p-8"
+                  >
                     <p className="immersive-kicker mb-3">{item.category}</p>
-                    <h3 className="font-medium leading-snug transition-colors group-hover:text-foreground/80">
-                      {item.title}
+                    <h3 className="font-medium leading-snug">
+                      <span className="lux-underline">{item.title}</span>
                     </h3>
                     <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{item.excerpt}</p>
-                    <span className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                    <span className="mt-4 inline-flex items-center gap-1.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground">
                       Read essay
                       <ArrowUpRight className="h-3 w-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                     </span>
