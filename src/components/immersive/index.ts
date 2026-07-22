@@ -15,3 +15,8 @@ export {
   type PinnedSceneContext,
   type UsePinnedSceneOptions,
 } from './use-pinned-scene';
+export {
+  useFilmPlayback,
+  type FilmPlayback,
+  type UseFilmPlaybackOptions,
+} from './use-film-playback';

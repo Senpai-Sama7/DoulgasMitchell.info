@@ -6,11 +6,13 @@ import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import {
   Magnetic,
   SignatureScene,
+  useFilmPlayback,
   useImmersive,
   usePinnedScene,
 } from '@/components/immersive';
 import { emitHeroSceneProgress } from '@/components/immersive/scene-progress';
 import { easings, gsap } from '@/lib/gsap';
+import { mediaManifest } from '@/lib/media-manifest';
 import { methodLadder, siteProfile } from '@/lib/site-content';
 
 const NAME_LINES = ['Douglas', 'Mitchell'] as const;
@@ -60,6 +62,10 @@ const FILM = {
  */
 export function ImmersiveHeroSection() {
   const { scrollTo } = useImmersive();
+  // Film plate playback — in-view autoplay with iOS muted/playsinline
+  // re-assertion. Decorative layer, so no play affordance: if playback is
+  // refused the poster frame stands in as a still portrait plate.
+  const { videoRef: plateRef } = useFilmPlayback({ threshold: 0.1 });
 
   const sectionRef = usePinnedScene<HTMLElement>(
     ({ timeline }) => {
@@ -68,15 +74,22 @@ export function ImmersiveHeroSection() {
         emitHeroSceneProgress(timeline.progress());
       });
 
-      // Beat A — hold. Only the cue and a slow backdrop push move.
+      // Beat A — hold. Only the cue and a slow backdrop push move; the film
+      // plate counter-drifts so the world reads as parallax depth, not a still.
       timeline
         .to('.hero-backdrop', { scale: 1.1, duration: 1 }, 0)
+        .to('.hero-plate', { yPercent: -7, duration: 1 }, 0)
         .to('.hero-cue', { autoAlpha: 0, duration: 0.08 }, 0.02);
 
       // Beat B — the copy lifts and compresses through a closing mask.
       timeline
         .to('.hero-layer-tail', { yPercent: -22, duration: 0.2 }, 0.25)
         .to('.hero-layer-name', { yPercent: -10, duration: 0.22 }, 0.26)
+        .to(
+          '.hero-plate',
+          { autoAlpha: 0, scale: 0.96, filter: 'blur(6px)', duration: 0.18 },
+          0.26
+        )
         .to(
           '.hero-copy',
           {
@@ -124,7 +137,7 @@ export function ImmersiveHeroSection() {
         emitHeroSceneProgress(0);
         gsap.set(
           root.querySelectorAll(
-            '.hero-backdrop, .hero-copy, .hero-layer-name, .hero-layer-tail, .hero-cue, .hero-vignette'
+            '.hero-backdrop, .hero-plate, .hero-copy, .hero-layer-name, .hero-layer-tail, .hero-cue, .hero-vignette'
           ),
           { clearProps: 'opacity,visibility,transform,filter,clipPath' }
         );
@@ -147,6 +160,20 @@ export function ImmersiveHeroSection() {
             { yPercent: 120 },
             { yPercent: 0, duration: 1.15, stagger: { each: 0.032, from: 'start' } },
             0.18
+          )
+          // The film plate mask-reveals out of its own letterbox slit while
+          // the film inside settles back — a product-film opening beat.
+          .fromTo(
+            '.hero-plate',
+            { autoAlpha: 0, clipPath: 'inset(42% 8% 42% 8%)' },
+            { autoAlpha: 1, clipPath: 'inset(0% 0% 0% 0%)', duration: 1.35 },
+            0.45
+          )
+          .fromTo(
+            '.hero-plate-video',
+            { scale: 1.24 },
+            { scale: 1, duration: 2.1, ease: 'power2.out' },
+            0.45
           )
           .fromTo(
             '[data-arrive]',
@@ -185,6 +212,41 @@ export function ImmersiveHeroSection() {
           }}
           aria-hidden
         />
+
+        {/* Cinematic film plate — the product-film object inside the Arrival
+            world. Desktop: a letterboxed portrait plate with grain and teal
+            edge hairlines floating in the WebGL field. Mobile: the dominant
+            full-bleed visual behind the copy (see .hero-plate media query).
+            Decorative — the story is carried by the copy. */}
+        <div className="hero-plate" aria-hidden>
+          <div className="hero-plate-frame">
+            <video
+              ref={plateRef}
+              className="hero-plate-video"
+              src={mediaManifest.hero.videoLoop}
+              poster={mediaManifest.hero.videoPoster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              tabIndex={-1}
+            />
+            <span className="hero-plate-grain" />
+            <span className="hero-plate-scrim" />
+            <span className="hero-plate-edge hero-plate-edge-top" />
+            <span className="hero-plate-edge hero-plate-edge-bottom" />
+            <span className="hero-plate-meta hero-plate-meta-top">
+              <span>Reel 01 — Arrival</span>
+              <span>Loop</span>
+            </span>
+            <span className="hero-plate-meta hero-plate-meta-bottom">
+              <span>Field print · Houston</span>
+              <span>29°45′ N</span>
+            </span>
+          </div>
+        </div>
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-48 bg-gradient-to-t from-background via-background/70 to-transparent" />
@@ -202,7 +264,7 @@ export function ImmersiveHeroSection() {
 
       {/* Without JS the entrance timeline never runs — restore the resting state. */}
       <noscript>
-        <style>{`.hero-arrival [data-arrive]{opacity:1!important}.hero-arrival .hero-letter{transform:none!important}`}</style>
+        <style>{`.hero-arrival [data-arrive]{opacity:1!important}.hero-arrival .hero-letter{transform:none!important}.hero-arrival .hero-plate{opacity:1!important}`}</style>
       </noscript>
 
       {/* Doctrine film — pinned title cards. Decorative: the methodLadder is
