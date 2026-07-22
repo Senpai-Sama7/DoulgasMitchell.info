@@ -5206,6 +5206,19 @@ a:focus-visible .lux-underline {
   will-change: transform;
 }
 
+/* Phones: the cinematic 21/10 letterbox crops the subject down to chin and
+   chest. Give the film a taller portrait frame and bias the crop toward the
+   upper third so the face stays in shot. */
+@media (max-width: 48rem) {
+  .cinema-media {
+    aspect-ratio: 4 / 5;
+  }
+
+  .cinema-media-video {
+    object-position: 50% 18%;
+  }
+}
+
 .cinema-media-scrim {
   position: absolute;
   inset: 0;
@@ -5620,6 +5633,23 @@ a:focus-visible .lux-underline {
   .cinema-stage[data-motion='pinned'] .cinema-strip-note {
     display: none;
   }
+}
+
+/* ── Soft composition — unpinned scrub on touch / low tier ────────────────
+   The flowing editorial layout stays exactly as-is; the soft timeline only
+   drives transform / clip-path / opacity. These hints keep the compressed
+   choreography smooth on constrained devices. */
+.cinema-stage[data-motion='soft'] .cinema-line {
+  will-change: transform, clip-path;
+}
+
+.cinema-stage[data-motion='soft'] .cinema-media {
+  will-change: clip-path, opacity;
+}
+
+.cinema-stage[data-motion='soft'] .cinema-overline-text,
+.cinema-stage[data-motion='soft'] .cinema-strip {
+  will-change: transform, opacity;
 }
 
 @media (prefers-reduced-motion: reduce) {

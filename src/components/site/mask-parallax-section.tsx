@@ -11,13 +11,12 @@ import { mediaManifest } from '@/lib/media-manifest';
 const STATEMENT_LINES = ['Systems that', 'survive contact', 'with reality.'] as const;
 
 /** Movement III — kinetic overline carried on top of the full-bleed film. */
-const OVERLINE_LINES = ['Built in the field,', 'proved under load.'] as const;
+const OVERLINE_LINES = ['Made by hand in Houston,', 'proved in the field.'] as const;
 
 interface CinemaWaypoint {
   id: 'atlas' | 'telemetry' | 'instrument' | 'proof';
   /** Chapter number the strip points at (post-Cinema numbering). */
   chapter: string;
-  figure: string;
   title: string;
   note: string;
   href: string;
@@ -27,38 +26,35 @@ interface CinemaWaypoint {
  * Movement IV — the waypoint corridor. Full-width editorial index strips
  * (number / title / note / arrow), not cards: each is a single Magnetic
  * anchor row separated by hairlines, standing up out of CSS-3D perspective.
+ * Copy sells the work in plain language — where to go, what you'll find.
  */
 const CINEMA_WAYPOINTS: readonly CinemaWaypoint[] = [
   {
     id: 'atlas',
     chapter: '04',
-    figure: 'FIG 03–A',
-    title: 'Atlas',
-    note: 'The operating graph — decision paths and proof surfaces wired as one map.',
+    title: 'Map',
+    note: 'How the systems I build fit together — decisions, tooling, and proof on one map.',
     href: '#atlas',
   },
   {
     id: 'telemetry',
     chapter: '05',
-    figure: 'FIG 03–B',
-    title: 'Telemetry',
-    note: 'Signal, latency, and the human checkpoint — inspected together.',
+    title: 'Signals',
+    note: 'Live numbers from real work — signal, speed, and the human checkpoint.',
     href: '#telemetry',
   },
   {
     id: 'instrument',
     chapter: '07',
-    figure: 'FIG 03–C',
-    title: 'Instrument',
-    note: 'A working console for autonomy thresholds — run it, do not take my word.',
+    title: 'Try it',
+    note: 'A working console you can drive yourself — no need to take my word for it.',
     href: '#simulator',
   },
   {
     id: 'proof',
     chapter: '08',
-    figure: 'FIG 03–D',
-    title: 'Proof',
-    note: 'Shipped systems with inspectable outcomes.',
+    title: 'Work',
+    note: 'Things I have shipped, with outcomes you can inspect.',
     href: '#work',
   },
 ];
@@ -92,9 +88,11 @@ const SCENE_DISTANCE = 2600;
  * rolling movement counter (01–04) top-right, and a progress hairline along
  * the bottom of the pin.
  *
- * Touch, reduced-motion, and low-tier contexts skip the pin entirely and get
- * the flowing editorial composition: slate → statement → film figure →
- * pull-line → waypoint index.
+ * Touch and low-tier contexts skip the pin but keep motion: a soft, unpinned
+ * scrub (see `onSoft`) plays a compressed cut of the same story through the
+ * flowing editorial composition. Reduced-motion contexts get the flowing
+ * composition fully static: slate → statement → film figure → pull-line →
+ * waypoint index.
  */
 export function MaskParallaxSection() {
   const { scrollTo } = useImmersive();
@@ -370,7 +368,7 @@ export function MaskParallaxSection() {
       distance: SCENE_DISTANCE,
       scrub: 1,
       onStatic: (root) => {
-        // Static path: the flowing editorial composition, no pin trap.
+        // Reduced-motion path: the flowing editorial composition, no pin trap.
         root.dataset.motion = 'static';
         gsap.set(
           root.querySelectorAll(
@@ -378,6 +376,114 @@ export function MaskParallaxSection() {
           ),
           { clearProps: 'all' }
         );
+      },
+      // Soft path (touch / low tier, motion allowed): the flowing editorial
+      // layout stays, but a compressed cut of the story scrubs through it as
+      // the section rides the viewport — unmasking claim, opening film,
+      // rising overline, standing strips. No pin, transform/clip-path only.
+      onSoft: ({ timeline, root }) => {
+        const field = root.querySelector<HTMLElement>('.cinema-field');
+        const scan = root.querySelector<HTMLElement>('.cinema-scan');
+        const lines = gsap.utils.toArray<HTMLElement>('.cinema-line', root);
+        const media = root.querySelector<HTMLElement>('.cinema-media');
+        const mediaVideo = root.querySelector<HTMLElement>('.cinema-media-video');
+        const caption = root.querySelector<HTMLElement>('.cinema-media-caption');
+        const overlineTexts = gsap.utils.toArray<HTMLElement>('.cinema-overline-text', root);
+        const strips = gsap.utils.toArray<HTMLElement>('.cinema-strip', root);
+        const exit = root.querySelector<HTMLElement>('.cinema-exit');
+
+        // Field drift — the whole take keeps a slow parallax breath.
+        if (field) {
+          timeline.fromTo(field, { yPercent: -4 }, { yPercent: 4, duration: 8, ease: 'none' }, 0);
+        }
+        if (scan) {
+          timeline.fromTo(scan, { yPercent: -7 }, { yPercent: 7, duration: 8, ease: 'none' }, 0);
+        }
+
+        // The claim unmasks line-by-line as it enters.
+        lines.forEach((line, index) => {
+          timeline.fromTo(
+            line,
+            { clipPath: 'inset(-12% 100% -14% 0%)', yPercent: 14 },
+            {
+              clipPath: 'inset(-12% 0% -14% 0%)',
+              yPercent: 0,
+              duration: 1,
+              ease: easings.power4,
+            },
+            0.2 + index * 0.45
+          );
+        });
+
+        // The film settles into frame with a gentle counter-zoom.
+        if (media) {
+          timeline.fromTo(
+            media,
+            { clipPath: 'inset(8% 6% 8% 6% round 18px)', opacity: 0.35 },
+            {
+              clipPath: 'inset(0% 0% 0% 0% round 0px)',
+              opacity: 1,
+              duration: 1.6,
+              ease: 'power2.out',
+            },
+            1.6
+          );
+        }
+        if (mediaVideo) {
+          timeline.fromTo(
+            mediaVideo,
+            { scale: 1.18 },
+            { scale: 1, duration: 2.6, ease: 'power1.out' },
+            1.6
+          );
+        }
+        if (caption) {
+          timeline.fromTo(
+            caption,
+            { autoAlpha: 0, y: 10 },
+            { autoAlpha: 1, y: 0, duration: 0.6, ease: easings.power4 },
+            2.6
+          );
+        }
+
+        // Overline rises through its masks…
+        overlineTexts.forEach((text, index) => {
+          timeline.fromTo(
+            text,
+            { yPercent: 120 },
+            { yPercent: 0, duration: 0.9, ease: easings.power4 },
+            3.5 + index * 0.35
+          );
+        });
+
+        // …then the waypoint strips stand up one by one.
+        strips.forEach((strip, index) => {
+          const at = 4.6 + index * 0.65;
+          timeline.fromTo(
+            strip,
+            { autoAlpha: 0, y: 30 },
+            { autoAlpha: 1, y: 0, duration: 0.9, ease: easings.power4 },
+            at
+          );
+          const rule = strip.querySelector<HTMLElement>('.cinema-strip-rule');
+          if (rule) {
+            timeline.fromTo(
+              rule,
+              { scaleX: 0 },
+              { scaleX: 1, duration: 0.55, ease: easings.cubic },
+              at + 0.3
+            );
+          }
+        });
+
+        if (exit) {
+          timeline.fromTo(
+            exit,
+            { autoAlpha: 0, y: 12 },
+            { autoAlpha: 1, y: 0, duration: 0.5, ease: easings.power4 },
+            7.4
+          );
+        }
       },
     }
   );
@@ -393,8 +499,8 @@ export function MaskParallaxSection() {
 
         <div className="cinema-shell">
           <header className="cinema-opening">
-            <p className="cinema-chapter">Chapter 03 · Cinema</p>
-            <p className="cinema-kicker">One take / the field, the film, the map</p>
+            <p className="cinema-chapter">Chapter 03 · Story</p>
+            <p className="cinema-kicker">One take — who I am, what I ship, where to go next</p>
           </header>
 
           {/* Movement I — the claim */}
@@ -429,7 +535,7 @@ export function MaskParallaxSection() {
             />
             <span className="cinema-media-scrim" aria-hidden />
             <figcaption className="cinema-media-caption">
-              <span>FIG 03 — Field print</span>
+              <span>Houston · field notes</span>
               <span>29°45′ N · 95°22′ W</span>
             </figcaption>
           </figure>
@@ -456,8 +562,8 @@ export function MaskParallaxSection() {
                       onClick={(event) => handleWaypointNavigate(event, waypoint.href)}
                     >
                       <span className="cinema-strip-no">
-                        <span>{waypoint.figure}</span>
-                        <span>CH {waypoint.chapter}</span>
+                        <span>Chapter</span>
+                        <span>{waypoint.chapter}</span>
                       </span>
                       <span className="cinema-strip-title">{waypoint.title}</span>
                       <span className="cinema-strip-note">{waypoint.note}</span>
@@ -470,7 +576,7 @@ export function MaskParallaxSection() {
                 </li>
               ))}
             </ol>
-            <p className="cinema-exit">One continuous take — choose where to cut.</p>
+            <p className="cinema-exit">That was the one-take tour — pick your next stop.</p>
           </nav>
 
           {/* Progress hairline — bottom of the pin */}
