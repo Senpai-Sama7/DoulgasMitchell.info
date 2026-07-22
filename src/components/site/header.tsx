@@ -26,36 +26,36 @@ interface NavLink {
 }
 
 const navLinks: readonly NavLink[] = [
-  { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
+  { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Who I am' },
   {
     href: '/#cinema',
-    label: 'Cinema',
+    label: 'Story',
     sectionId: 'cinema',
     chapter: '03',
-    beat: 'Depth',
+    beat: 'The film',
     wideOnly: true,
   },
-  { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '04', beat: 'Systems' },
+  { href: '/#atlas', label: 'Map', sectionId: 'atlas', chapter: '04', beat: 'The systems' },
   {
     href: '/#telemetry',
-    label: 'Telemetry',
+    label: 'Signals',
     sectionId: 'telemetry',
     chapter: '05',
-    beat: 'Doctrine',
+    beat: 'The numbers',
   },
-  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '06', beat: 'Method' },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '06', beat: 'How I work' },
   {
     href: '/#simulator',
-    label: 'Instrument',
+    label: 'Try it',
     sectionId: 'simulator',
     chapter: '07',
-    beat: 'Decision',
+    beat: 'Hands on',
     wideOnly: true,
   },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '08', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '09', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '10', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '11', beat: 'Invitation' },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '08', beat: 'What shipped' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '09', beat: 'In print' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '10', beat: 'Field notes' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '11', beat: 'Say hello' },
 ];
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;

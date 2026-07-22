@@ -94,7 +94,7 @@ export const siteProfile = {
   name: 'Douglas Mitchell',
   headline: 'Operations Analyst · AI Practitioner · Author',
   summary:
-    'I design decision systems and operating models that compress ambiguity, keep humans in the loop, and leave an audit trail. Work that holds under load, not just in a demo.',
+    'I design decision systems and operating models that cut through ambiguity, keep people in the loop, and leave receipts you can check. Everything here was built to hold up under real load — not just in a demo.',
   location: 'Houston, TX',
   githubUrl: 'https://github.com/Senpai-Sama7',
   linkedinUrl: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
