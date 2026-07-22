@@ -36,7 +36,7 @@ export function ImmersiveHeroSection() {
   const lineTwo = 'Mitchell'.split('');
 
   return (
-    <section ref={containerRef} className="relative min-h-[100svh] overflow-hidden">
+    <section id="hero" ref={containerRef} className="relative min-h-[100svh] overflow-hidden">
       <SignatureScene className="absolute inset-0 -z-10 h-full w-full" />
 
       {/* Full-bleed atmosphere overlays — brand plane, not inset media */}
