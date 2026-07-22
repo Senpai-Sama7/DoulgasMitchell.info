@@ -53,6 +53,7 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
+import { adminFetch, adminJson } from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
@@ -362,21 +363,16 @@ function EditorDialog({
     setGenerating(true);
     setGenerationMessage('Generating a project narrative draft...');
     try {
-      const response = await fetch('/api/admin/content/case-study', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: fields.title,
-          description: fields.description,
-          role: fields.role,
-          context: fields.context,
-          technologies: fields.technologies ? String(fields.technologies).split(',') : [],
-          metrics: [] // Could be parsed from fields if needed
-        }),
+      const data = await adminJson<{ draft?: string }>('/api/admin/content/case-study', 'POST', {
+        title: fields.title,
+        description: fields.description,
+        technologies: fields.techStackText
+          ? String(fields.techStackText).split(',').map((entry) => entry.trim()).filter(Boolean)
+          : [],
+        metrics: [],
       });
 
-      const data = await response.json();
-      if (data.success && data.draft) {
+      if (data.draft) {
         onFieldChange('longDescription', data.draft);
         setGenerationMessage('Draft generated. Review tone and specifics before publishing.');
         toast({
@@ -384,20 +380,21 @@ function EditorDialog({
           description: 'The long description has been populated with a first-pass case study.',
         });
       } else {
-        const message = data.error || 'Unknown error';
-        setGenerationMessage(`Generation failed: ${message}`);
+        setGenerationMessage('Generation returned no draft. Try again with more context.');
         toast({
           title: 'Draft generation failed',
-          description: message,
+          description: 'The AI drafting service returned no draft.',
           variant: 'destructive',
         });
       }
     } catch (error) {
       logger.error('Generation error:', error);
-      setGenerationMessage('Failed to connect to the AI drafting service.');
+      const message =
+        error instanceof Error ? error.message : 'Failed to connect to the AI drafting service.';
+      setGenerationMessage(`Generation failed: ${message}`);
       toast({
         title: 'Draft generation failed',
-        description: 'Failed to connect to the AI drafting service.',
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -412,6 +409,11 @@ function EditorDialog({
           <DialogTitle>{isNew ? 'Create' : 'Edit'} {editor.type}</DialogTitle>
           <DialogDescription>
             {isNew ? 'Fill in the details to create a new content item.' : 'Update the live metadata for this content item.'}
+            {!isNew && editor.updatedAt ? (
+              <span className="mt-1 block font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                Last saved {new Date(editor.updatedAt).toLocaleString()}
+              </span>
+            ) : null}
           </DialogDescription>
         </DialogHeader>
 
@@ -442,7 +444,7 @@ function EditorDialog({
 
           {'longDescription' in fields ? (
             <FieldRow label="Long Description">
-              {editor.type.toString() === 'Project' && (
+              {editor.type === 'project' && (
                 <div className="mb-2 space-y-2">
                   <Button 
                     variant="outline" 
@@ -595,10 +597,14 @@ export default function ContentManagementPage() {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState<ContentType>('article');
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
   const [loadingEditor, setLoadingEditor] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
+  const [editorDirty, setEditorDirty] = useState(false);
+  const [showDiscardConfirm, setShowDiscardConfirm] = useState(false);
   const [editorError, setEditorError] = useState<string | null>(null);
   const [banner, setBanner] = useState<string | null>(null);
   const [deleteCandidate, setDeleteCandidate] = useState<{ type: ContentType; item: ContentItem } | null>(null);
@@ -617,15 +623,11 @@ export default function ContentManagementPage() {
   const loadContent = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/admin/content', { cache: 'no-store' });
-      const data = (await response.json()) as ContentApiResponse;
-      if (response.ok) {
-        setContent(data);
-      } else {
-        setBanner('Failed to load content inventory.');
-      }
-    } catch {
-      setBanner('Failed to load content inventory.');
+      setBanner(null);
+      const data = await adminFetch<ContentApiResponse>('/api/admin/content', { cache: 'no-store' });
+      setContent(data);
+    } catch (error) {
+      setBanner(error instanceof Error ? error.message : 'Failed to load content inventory.');
     } finally {
       setLoading(false);
     }
@@ -662,9 +664,15 @@ export default function ContentManagementPage() {
 
   const filteredContent = useMemo(() => {
     const normalizedQuery = searchQuery.toLowerCase();
-    const matcher = (contentItem: ContentItem) =>
-      contentItem.title.toLowerCase().includes(normalizedQuery) ||
-      contentItem.slug.toLowerCase().includes(normalizedQuery);
+    const matcher = (contentItem: ContentItem) => {
+      const matchesQuery =
+        contentItem.title.toLowerCase().includes(normalizedQuery) ||
+        contentItem.slug.toLowerCase().includes(normalizedQuery);
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (contentItem.status || '').toLowerCase() === statusFilter;
+      return matchesQuery && matchesStatus;
+    };
 
     return {
       article: content.articles.filter(matcher),
@@ -672,7 +680,22 @@ export default function ContentManagementPage() {
       certification: content.certifications.filter(matcher),
       book: content.books.filter(matcher),
     };
-  }, [content, searchQuery]);
+  }, [content, searchQuery, statusFilter]);
+
+  const statusOptions = useMemo(() => {
+    const collections: Record<ContentType, ContentItem[]> = {
+      article: content.articles,
+      project: content.projects,
+      certification: content.certifications,
+      book: content.books,
+    };
+    const statuses = new Set<string>();
+    for (const item of collections[activeTab]) {
+      const normalized = (item.status || '').toLowerCase();
+      if (normalized) statuses.add(normalized);
+    }
+    return Array.from(statuses).sort();
+  }, [content, activeTab]);
 
   const inventoryCards = [
     {
@@ -695,14 +718,16 @@ export default function ContentManagementPage() {
   const openEditor = async (type: ContentType, contentItem: ContentItem) => {
     setLoadingEditor(true);
     setEditorError(null);
+    setEditorDirty(false);
     setBanner(null);
     setEditorOpen(true);
 
     try {
-      const response = await fetch(`/api/admin/content?type=${type}&id=${contentItem.id}`);
-      const data = (await response.json()) as EditorApiResponse;
+      const data = await adminFetch<EditorApiResponse>(
+        `/api/admin/content?type=${encodeURIComponent(type)}&id=${encodeURIComponent(contentItem.id)}`
+      );
 
-      if (!response.ok || !data.item) {
+      if (!data.item) {
         throw new Error(data.error || 'Failed to load editor');
       }
 
@@ -720,10 +745,13 @@ export default function ContentManagementPage() {
       type: activeTab,
       fields: { ...DEFAULT_FIELDS[activeTab] }
     });
+    setEditorDirty(false);
+    setEditorError(null);
     setEditorOpen(true);
   }, [activeTab]);
 
   const handleFieldChange = (key: string, value: string | boolean) => {
+    setEditorDirty(true);
     setEditor((current) => {
       if (!current) return current;
       return {
@@ -736,6 +764,31 @@ export default function ContentManagementPage() {
     });
   };
 
+  const closeEditor = () => {
+    setEditorOpen(false);
+    setEditorError(null);
+    setEditorDirty(false);
+  };
+
+  const handleEditorOpenChange = (open: boolean) => {
+    if (open) {
+      setEditorOpen(true);
+      return;
+    }
+
+    if (saving) {
+      return;
+    }
+
+    // Guard against accidentally discarding unsaved edits.
+    if (editorDirty) {
+      setShowDiscardConfirm(true);
+      return;
+    }
+
+    closeEditor();
+  };
+
   const handleDelete = (type: ContentType, item: ContentItem) => {
     setDeleteCandidate({ type, item });
   };
@@ -745,19 +798,24 @@ export default function ContentManagementPage() {
       return;
     }
 
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/content?type=${deleteCandidate.type}&id=${deleteCandidate.item.id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete item.');
-      }
+      await adminFetch(
+        `/api/admin/content?type=${encodeURIComponent(deleteCandidate.type)}&id=${encodeURIComponent(deleteCandidate.item.id)}`,
+        { method: 'DELETE' }
+      );
 
       toast({ title: 'Success', description: `${deleteCandidate.item.title} was deleted.` });
       setDeleteCandidate(null);
       void loadContent();
-    } catch {
-      toast({ title: 'Error', description: 'Failed to delete item.', variant: 'destructive' });
+    } catch (error) {
+      toast({
+        title: 'Delete failed',
+        description: error instanceof Error ? error.message : 'Failed to delete item.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -768,28 +826,23 @@ export default function ContentManagementPage() {
     setEditorError(null);
 
     const isNew = !editor.id;
-    const method = isNew ? 'POST' : 'PATCH';
 
     try {
-      const response = await fetch('/api/admin/content', {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: editor.type,
-          id: editor.id,
-          fields: editor.fields,
-        }),
+      const data = await adminJson<EditorApiResponse>('/api/admin/content', isNew ? 'POST' : 'PATCH', {
+        type: editor.type,
+        id: editor.id,
+        fields: editor.fields,
       });
-      const data = (await response.json()) as EditorApiResponse;
 
-      if (!response.ok || !data.item) {
+      if (!data.item) {
         throw new Error(data.error || 'Failed to save content item.');
       }
 
       toast({ title: 'Success', description: isNew ? 'Content created.' : 'Content updated.' });
       void loadContent();
-      setEditorOpen(false);
+      closeEditor();
     } catch (error) {
+      // Keep the dialog open with the draft intact so the operator can retry.
       setEditorError(error instanceof Error ? error.message : 'Failed to save content item.');
     } finally {
       setSaving(false);
@@ -832,8 +885,14 @@ export default function ContentManagementPage() {
       </motion.div>
 
       {content.warning || banner ? (
-        <motion.div variants={item} className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
-          {banner || content.warning}
+        <motion.div variants={item} className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
+          <span>{banner || content.warning}</span>
+          {banner ? (
+            <Button variant="outline" size="sm" onClick={() => void loadContent()} disabled={loading}>
+              {loading ? <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" /> : null}
+              Retry
+            </Button>
+          ) : null}
         </motion.div>
       ) : null}
 
@@ -848,10 +907,31 @@ export default function ContentManagementPage() {
             className="pl-9"
           />
         </div>
-        {searchQuery ? (
-          <Button variant="outline" onClick={() => setSearchQuery('')}>
+        {statusOptions.length > 1 ? (
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-full sm:w-[180px]" aria-label="Filter by status">
+              <SelectValue placeholder="All statuses" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All statuses</SelectItem>
+              {statusOptions.map((status) => (
+                <SelectItem key={status} value={status}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : null}
+        {searchQuery || statusFilter !== 'all' ? (
+          <Button
+            variant="outline"
+            onClick={() => {
+              setSearchQuery('');
+              setStatusFilter('all');
+            }}
+          >
             <Filter className="mr-2 h-4 w-4" />
-            Clear Filter
+            Clear Filters
           </Button>
         ) : (
           <div className="text-xs text-muted-foreground">Type / to focus search instantly.</div>
@@ -859,7 +939,13 @@ export default function ContentManagementPage() {
       </motion.div>
 
       <motion.div variants={item}>
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as ContentType)}>
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            setActiveTab(value as ContentType);
+            setStatusFilter('all');
+          }}
+        >
           <TabsList className="grid h-auto grid-cols-2 gap-2 md:inline-flex">
             <TabsTrigger value="article">
               <FileText className="mr-2 h-4 w-4" />
@@ -978,17 +1064,15 @@ export default function ContentManagementPage() {
         open={editorOpen}
         saving={saving}
         error={editorError}
-        onOpenChange={(open) => {
-          setEditorOpen(open);
-          if (!open) {
-            setEditorError(null);
-          }
-        }}
+        onOpenChange={handleEditorOpenChange}
         onFieldChange={handleFieldChange}
         onSave={handleSave}
       />
 
-      <AlertDialog open={Boolean(deleteCandidate)} onOpenChange={(open) => !open && setDeleteCandidate(null)}>
+      <AlertDialog
+        open={Boolean(deleteCandidate)}
+        onOpenChange={(open) => !open && !isDeleting && setDeleteCandidate(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete content item?</AlertDialogTitle>
@@ -999,9 +1083,46 @@ export default function ContentManagementPage() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void confirmDelete()} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Delete item
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete item'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showDiscardConfirm} onOpenChange={setShowDiscardConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have edits in the content editor that have not been saved. Closing will discard them.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowDiscardConfirm(false);
+                closeEditor();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Discard changes
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
