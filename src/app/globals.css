@@ -4569,11 +4569,20 @@ a:focus-visible .lux-underline {
 
 /* ═══════════════════════════════════════════════════════════════════════════
    VIDEO ENTRANCE
-   Cinematic gate on first visit per session — a full-bleed muted film loop
-   under a masked brand reveal, exited by a GSAP clip-path shutter wipe with a
-   signal-teal hairline riding the edge. Theme-independent: the gate always
-   reads as cool ink so the reveal into either theme lands the same way.
-   Everything is absolutely positioned inside a fixed panel — zero CLS.
+   Six-beat cinematic gate on first visit per session.
+   I: ink hold — a signal-teal sight hairline blooms at dead center and the
+   prelude slate (№ 00 · Prelude) stamps beneath it. II: the hairline becomes
+   the film — the same center line widens into a letterbox slit that opens to
+   full bleed while the loop scales down into it, under film grain + scanline
+   overlays and mono reel metadata; on fine pointers the film drifts with the
+   cursor. III: masked wordmark cascade — Douglas, then Mitchell, rising
+   through overflow masks. IV: the claim wipes on through a clip-path.
+   V: progress hairline + reel counter. VI: two-stage letterbox shutter —
+   collapse to a wide band (the live page mask-revealed above and below for a
+   breath), then the band snaps shut, twin teal hairlines riding both edges.
+   Theme-independent: the gate always reads as cool ink so the reveal into
+   either theme lands the same way. Everything is absolutely positioned
+   inside a fixed panel — zero CLS.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .video-entrance {
@@ -4585,7 +4594,7 @@ a:focus-visible .lux-underline {
   z-index: 90;
 }
 
-/* Clip-path host — GSAP wipes this from inset(0 0 0 0) to inset(0 0 100% 0) */
+/* Clip-path host — GSAP collapses this to a band, then shut, on exit */
 .video-entrance-panel {
   position: absolute;
   inset: 0;
@@ -4594,12 +4603,27 @@ a:focus-visible .lux-underline {
   will-change: clip-path;
 }
 
+/* Beat II host — letterbox slit that widens to full bleed */
+.video-entrance-film {
+  position: absolute;
+  inset: 0;
+  will-change: clip-path;
+}
+
+/* Pointer-drift plane — oversized so ±2% cursor drift never shows an edge */
+.video-entrance-drift {
+  position: absolute;
+  inset: -3%;
+  will-change: transform;
+}
+
 .video-entrance-media {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  pointer-events: none;
   will-change: transform, opacity;
 }
 
@@ -4622,6 +4646,53 @@ a:focus-visible .lux-underline {
     );
 }
 
+/* Film grain — SVG turbulence tile, overlay-blended */
+.video-entrance-grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='entranceGrain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23entranceGrain)'/%3E%3C/svg%3E");
+  background-size: 196px 196px;
+  mix-blend-mode: overlay;
+}
+
+/* Scanline pass — faint horizontal rules, screen-projector texture */
+.video-entrance-scan {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.16;
+  background-image: repeating-linear-gradient(
+    180deg,
+    transparent 0px,
+    transparent 3px,
+    color-mix(in oklch, var(--entrance-ink), transparent 30%) 3px,
+    color-mix(in oklch, var(--entrance-ink), transparent 30%) 4px
+  );
+}
+
+/* Beat I — the sight hairline the film opens out of. Hidden (scaleX 0) until
+   GSAP blooms it so SSR paint never flashes a full-width line. */
+.video-entrance-sight {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(340px, 62vw);
+  height: 1px;
+  transform: translate(-50%, -50%) scaleX(0);
+  transform-origin: 50% 50%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--entrance-teal) 22%,
+    var(--entrance-teal) 78%,
+    transparent
+  );
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
 .video-entrance-content {
   position: absolute;
   inset: 0;
@@ -4629,27 +4700,27 @@ a:focus-visible .lux-underline {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: 1.4rem;
   padding: 0 1.5rem;
   text-align: center;
   pointer-events: none;
 }
 
-/* Mono kicker with signal rules on both flanks */
-.video-entrance-kicker {
+/* Beat I slate — № 00 · Prelude, mono with signal rules on both flanks */
+.video-entrance-prelude {
   display: inline-flex;
   align-items: center;
   gap: 0.875rem;
   font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
   font-size: 0.6875rem;
   font-weight: 500;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.24em;
   text-transform: uppercase;
   color: color-mix(in oklch, var(--entrance-foam), transparent 22%);
 }
 
-.video-entrance-kicker::before,
-.video-entrance-kicker::after {
+.video-entrance-prelude::before,
+.video-entrance-prelude::after {
   content: '';
   width: 2.5rem;
   height: 1px;
@@ -4657,31 +4728,99 @@ a:focus-visible .lux-underline {
   background: color-mix(in oklch, var(--entrance-teal), transparent 30%);
 }
 
-/* Overflow mask for the wordmark rise — padding/negative-margin pair keeps
-   Instrument Serif descenders unclipped at rest */
-.video-entrance-line {
+.video-entrance-prelude-no {
+  color: var(--entrance-teal);
+}
+
+/* Beat III — wordmark cascade: one overflow mask per word. The padding /
+   negative-margin pair keeps Instrument Serif descenders unclipped at rest. */
+.video-entrance-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 0.92;
+}
+
+.video-entrance-title-line {
   display: block;
   overflow: hidden;
   padding-bottom: 0.14em;
   margin-bottom: -0.14em;
 }
 
-.video-entrance-name {
+.video-entrance-title-line[data-line='1'] {
+  transform: translateX(clamp(1.5rem, 6vw, 5rem));
+}
+
+.video-entrance-title-text {
   display: inline-block;
-  font-size: clamp(3rem, 10vw, 7rem);
+  font-size: clamp(3.2rem, 11vw, 8.5rem);
   line-height: 0.95;
   letter-spacing: -0.02em;
   color: var(--entrance-foam);
-  will-change: transform, opacity;
+  transform: translateY(116%);
+  will-change: transform;
 }
 
-/* Hold hairline — fills left-to-right while the gate breathes */
+.video-entrance-title-line[data-line='1'] .video-entrance-title-text {
+  font-style: italic;
+  color: color-mix(in oklch, var(--entrance-foam), var(--entrance-teal) 40%);
+}
+
+/* Beat IV — the claim, wiped on left-to-right through a clip-path */
+.video-entrance-claim {
+  margin-top: 0.4rem;
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 2.3vw, 1.55rem);
+  letter-spacing: 0.01em;
+  color: color-mix(in oklch, var(--entrance-foam), var(--entrance-teal) 32%);
+  will-change: clip-path, opacity;
+}
+
+/* Beat V — reel counter + hold hairline in one row */
+.video-entrance-progress-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: 0.75rem;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: color-mix(in oklch, var(--entrance-foam), transparent 30%);
+}
+
+/* Rolling digit window: 00 stacked over 01, GSAP slides the track -50% */
+.video-entrance-counter {
+  display: block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.video-entrance-counter-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.video-entrance-counter-track span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  color: var(--entrance-teal);
+}
+
+.video-entrance-counter-total {
+  line-height: 1;
+}
+
 .video-entrance-progress {
   position: relative;
   display: block;
-  width: min(280px, 44vw);
+  width: min(280px, 40vw);
   height: 1px;
-  margin-top: 0.75rem;
   overflow: hidden;
   background: color-mix(in oklch, var(--entrance-foam), transparent 84%);
 }
@@ -4695,12 +4834,46 @@ a:focus-visible .lux-underline {
   will-change: transform;
 }
 
-/* Teal hairline that rides the wipe edge during exit */
+/* Reel metadata — mono corner stamps */
+.video-entrance-meta {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.5625rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--entrance-foam), transparent 45%);
+}
+
+.video-entrance-meta-tl,
+.video-entrance-meta-tr,
+.video-entrance-meta-bl {
+  position: absolute;
+}
+
+.video-entrance-meta-tl {
+  top: clamp(1.25rem, 4vw, 2.5rem);
+  left: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.video-entrance-meta-tr {
+  top: clamp(1.25rem, 4vw, 2.5rem);
+  right: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.video-entrance-meta-bl {
+  bottom: calc(clamp(1.25rem, 4vw, 2.5rem) + env(safe-area-inset-bottom, 0px));
+  left: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+/* Twin teal hairlines riding the letterbox shutter edges — translated with
+   transforms only (never top/bottom) so the exit stays compositor-cheap */
 .video-entrance-edge {
   position: absolute;
   left: 0;
   right: 0;
-  top: 100%;
   height: 2px;
   opacity: 0;
   pointer-events: none;
@@ -4711,7 +4884,15 @@ a:focus-visible .lux-underline {
     var(--entrance-teal) 82%,
     transparent
   );
-  will-change: top, opacity;
+  will-change: transform, opacity;
+}
+
+.video-entrance-edge-top {
+  top: 0;
+}
+
+.video-entrance-edge-bottom {
+  bottom: 0;
 }
 
 .video-entrance-skip {

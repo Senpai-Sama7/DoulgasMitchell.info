@@ -7,8 +7,11 @@ import { mediaManifest } from '@/lib/media-manifest';
 
 const ENTRANCE_KEY = 'dm-video-entrance-v1';
 
-/** How long the brand mark holds over the film before the wipe (seconds). */
-const HOLD_SECONDS = 2.4;
+/** How long the progress hairline holds before the shutter (seconds). */
+const HOLD_SECONDS = 1.2;
+
+/** Brand wordmark — one masked line per word, staggered rise. */
+const TITLE_LINES = ['Douglas', 'Mitchell'] as const;
 
 function subscribeEntrance(_onStoreChange: () => void) {
   return () => undefined;
@@ -25,16 +28,30 @@ function getEntranceServerSnapshot() {
 }
 
 /**
- * Cinematic video gate — the one-shot prelude on first visit per session.
+ * Cinematic multi-beat gate — the one-shot prelude on first visit per session.
+ * Six beats over ~4.5s plus a two-stage shutter exit (skippable at any point):
  *
- * A muted full-bleed film loop plays beneath a masked brand reveal (kicker,
- * wordmark, progress hairline), then a GSAP clip-path shutter wipes the whole
- * panel upward — a signal-teal hairline riding the wipe edge — to disclose the
- * live page underneath. Scroll is locked while the gate is up.
+ *  I    Ink hold. A signal-teal sight hairline blooms across dead center and
+ *       the prelude slate stamps beneath it — № 00 · Prelude.
+ *  II   The hairline becomes the film: the same center line widens into a
+ *       letterbox slit that opens to full bleed while the loop scales down
+ *       into it. Grain + scanlines settle, mono reel metadata stamps the
+ *       corners, and on fine pointers the film drifts with the cursor.
+ *  III  Masked wordmark cascade — Douglas, then Mitchell, each rising through
+ *       its own overflow mask, the second line offset and italic.
+ *  IV   The claim wipes on left-to-right through a clip-path:
+ *       "Decision systems under uncertainty."
+ *  V    The progress hairline fills while the reel counter reads 00.
+ *  VI   Exit — the counter rolls 00 → 01, content lifts, and the panel
+ *       collapses in two stages: first to a wide letterbox band (the live
+ *       page is mask-revealed above and below for a breath), then the band
+ *       snaps shut, twin teal hairlines riding both closing edges.
  *
- * Skipped entirely on reduced motion and on revisits within the session
- * (`dm-video-entrance-v1`). The session key is only written once the exit
- * completes, so a mid-animation re-render can never strand a half-open gate.
+ * Scroll is locked while the gate is up. Skipped entirely on reduced motion
+ * and on revisits within the session (`dm-video-entrance-v1`); the session
+ * key is only written once the exit completes, so a mid-animation re-render
+ * can never strand a half-open gate. Escape and the Skip button both jump
+ * straight to the shutter.
  */
 export function VideoEntrance() {
   const prefersReducedMotion = useReducedMotion();
@@ -49,7 +66,7 @@ export function VideoEntrance() {
 
   const active = shouldPlay && !done && prefersReducedMotion !== true;
 
-  /** Jump straight to the wipe exit — shared by the Skip button and Escape. */
+  /** Jump straight to the shutter exit — shared by the Skip button and Escape. */
   const handleSkip = useCallback(() => {
     const tl = timelineRef.current;
     if (!tl) return;
@@ -69,7 +86,25 @@ export function VideoEntrance() {
     };
     window.addEventListener('keydown', onKeyDown);
 
+    let removeDrift: (() => void) | undefined;
+
     const ctx = gsap.context(() => {
+      // Fine pointers only: the film plane drifts a hair with the cursor so
+      // the gate feels inhabited rather than played back.
+      if (window.matchMedia('(pointer: fine)').matches) {
+        const drift = rootRef.current?.querySelector<HTMLElement>('.video-entrance-drift');
+        if (drift) {
+          const driftX = gsap.quickTo(drift, 'xPercent', { duration: 1.2, ease: 'power3.out' });
+          const driftY = gsap.quickTo(drift, 'yPercent', { duration: 1.2, ease: 'power3.out' });
+          const onPointerMove = (event: PointerEvent) => {
+            driftX((event.clientX / window.innerWidth - 0.5) * 2.2);
+            driftY((event.clientY / window.innerHeight - 0.5) * 1.6);
+          };
+          window.addEventListener('pointermove', onPointerMove, { passive: true });
+          removeDrift = () => window.removeEventListener('pointermove', onPointerMove);
+        }
+      }
+
       const tl = gsap.timeline({
         defaults: { ease: easings.expo },
         onComplete: () => {
@@ -80,77 +115,158 @@ export function VideoEntrance() {
       });
       timelineRef.current = tl;
 
-      // Arrival — the film breathes in from ink, then the brand mark unmasks.
+      // ── Beat I — ink hold: the sight hairline blooms, the slate stamps ──
       tl.fromTo(
-        '.video-entrance-media',
-        { autoAlpha: 0, scale: 1.08 },
-        { autoAlpha: 1, scale: 1, duration: 1.6, ease: 'power2.out' },
+        '.video-entrance-sight',
+        { scaleX: 0, autoAlpha: 1 },
+        { scaleX: 1, duration: 0.7, ease: easings.power4 },
         0
+      ).fromTo(
+        '.video-entrance-prelude',
+        { autoAlpha: 0, y: 14 },
+        { autoAlpha: 1, y: 0, duration: 0.6, ease: 'power2.out' },
+        0.3
+      );
+
+      // ── Beat II — the hairline becomes the film: slit opens to full bleed ─
+      tl.to(
+        '.video-entrance-sight',
+        { autoAlpha: 0, duration: 0.35, ease: 'power1.out' },
+        1.0
       )
         .fromTo(
-          '.video-entrance-kicker',
-          { autoAlpha: 0, y: 16 },
-          { autoAlpha: 1, y: 0, duration: 0.7 },
-          0.25
+          '.video-entrance-film',
+          { clipPath: 'inset(49.7% 0% 49.7% 0%)' },
+          { clipPath: 'inset(0% 0% 0% 0%)', duration: 1.4, ease: easings.power4 },
+          1.0
         )
         .fromTo(
-          '.video-entrance-name',
-          { autoAlpha: 0, yPercent: 112 },
-          { autoAlpha: 1, yPercent: 0, duration: 1.05, ease: easings.power4 },
-          0.4
-        )
-        .fromTo(
-          '.video-entrance-progress',
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.5, ease: 'power2.out' },
-          0.55
+          '.video-entrance-media',
+          { autoAlpha: 0, scale: 1.32 },
+          { autoAlpha: 1, scale: 1.06, duration: 1.8, ease: 'power2.out' },
+          1.0
         )
         .fromTo(
           '.video-entrance-skip',
           { autoAlpha: 0, y: 8 },
           { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' },
-          0.9
+          1.25
         )
-        // Hold — the hairline fills linearly; when full, the gate opens.
+        .fromTo(
+          '.video-entrance-grain, .video-entrance-scan',
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.8, ease: 'power1.out' },
+          1.4
+        )
+        .fromTo(
+          '.video-entrance-meta',
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.6, ease: 'power2.out' },
+          1.55
+        )
+        .to(
+          '.video-entrance-prelude',
+          { autoAlpha: 0, y: -16, duration: 0.45, ease: 'power2.in' },
+          1.75
+        );
+
+      // ── Beat III — masked wordmark cascade: Douglas, then Mitchell ──────
+      const titleLines = gsap.utils.toArray<HTMLElement>('.video-entrance-title-text');
+      titleLines.forEach((line, index) => {
+        tl.fromTo(
+          line,
+          { yPercent: 116 },
+          { yPercent: 0, duration: 0.95, ease: easings.power4 },
+          2.0 + index * 0.18
+        );
+      });
+
+      // ── Beat IV — the claim wipes on through a clip-path ────────────────
+      tl.fromTo(
+        '.video-entrance-claim',
+        { autoAlpha: 1, clipPath: 'inset(-10% 102% -14% 0%)' },
+        { clipPath: 'inset(-10% 0% -14% 0%)', duration: 0.8, ease: easings.power4 },
+        2.7
+      )
+        // ── Beat V — progress hairline fills, reel counter reads 00 ───────
+        .fromTo(
+          '.video-entrance-progress-row',
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.45, ease: 'power2.out' },
+          3.05
+        )
         .fromTo(
           '.video-entrance-progress-fill',
           { scaleX: 0 },
           { scaleX: 1, duration: HOLD_SECONDS, ease: 'none' },
-          0.55
+          3.2
         )
         .addLabel('exit', '>')
-        // Exit — type lifts out, then the shutter wipes up with a teal edge
-        // while the film scales into the mask for depth.
+        // ── Beat VI — counter rolls 00 → 01, two-stage letterbox shutter ──
         .to(
-          '.video-entrance-content, .video-entrance-skip',
-          { autoAlpha: 0, y: -18, duration: 0.4, ease: 'power2.in' },
+          '.video-entrance-counter-track',
+          { yPercent: -50, duration: 0.45, ease: easings.power4 },
           'exit'
         )
-        .set('.video-entrance-edge', { autoAlpha: 1 }, 'exit+=0.2')
+        .to(
+          '.video-entrance-content, .video-entrance-meta, .video-entrance-skip',
+          { autoAlpha: 0, y: -18, duration: 0.4, ease: 'power2.in' },
+          'exit+=0.22'
+        )
         .to(
           '.video-entrance-media',
-          { scale: 1.07, duration: 1.05, ease: easings.power4 },
-          'exit+=0.2'
+          { scale: 1.2, duration: 1.3, ease: easings.power4 },
+          'exit+=0.28'
+        )
+        .set('.video-entrance-edge', { autoAlpha: 1 }, 'exit+=0.28')
+        // Stage 1 — collapse to a wide letterbox band; the live page is
+        // mask-revealed above and below while the band holds for a breath.
+        .to(
+          '.video-entrance-panel',
+          { clipPath: 'inset(34% 0% 34% 0%)', duration: 0.7, ease: 'power3.inOut' },
+          'exit+=0.3'
+        )
+        .to(
+          '.video-entrance-edge-top',
+          { y: () => window.innerHeight * 0.34, duration: 0.7, ease: 'power3.inOut' },
+          'exit+=0.3'
+        )
+        .to(
+          '.video-entrance-edge-bottom',
+          { y: () => window.innerHeight * -0.34, duration: 0.7, ease: 'power3.inOut' },
+          'exit+=0.3'
+        )
+        // Stage 2 — the band snaps shut, hairlines converging on center.
+        .to(
+          '.video-entrance-panel',
+          { clipPath: 'inset(50.05% 0% 50.05% 0%)', duration: 0.5, ease: 'power3.in' },
+          'exit+=1.22'
+        )
+        .to(
+          '.video-entrance-edge-top',
+          { y: () => window.innerHeight * 0.5005, duration: 0.5, ease: 'power3.in' },
+          'exit+=1.22'
+        )
+        .to(
+          '.video-entrance-edge-bottom',
+          { y: () => window.innerHeight * -0.5005, duration: 0.5, ease: 'power3.in' },
+          'exit+=1.22'
         )
         .to(
           '.video-entrance-panel',
-          { clipPath: 'inset(0% 0% 100% 0%)', duration: 1.05, ease: easings.power4 },
-          'exit+=0.2'
-        )
-        .to(
-          '.video-entrance-edge',
-          { top: '0%', duration: 1.05, ease: easings.power4 },
-          'exit+=0.2'
-        )
-        .to(
-          '.video-entrance-edge',
           { autoAlpha: 0, duration: 0.18, ease: 'power1.out' },
-          'exit+=1.1'
+          'exit+=1.7'
+        )
+        .to(
+          '.video-entrance-edge',
+          { autoAlpha: 0, duration: 0.25, ease: 'power1.out' },
+          'exit+=1.72'
         );
     }, rootRef);
 
     return () => {
       window.removeEventListener('keydown', onKeyDown);
+      removeDrift?.();
       timelineRef.current = null;
       ctx.revert();
       document.documentElement.style.overflow = previousOverflow;
@@ -166,32 +282,75 @@ export function VideoEntrance() {
         style={{ clipPath: 'inset(0% 0% 0% 0%)' }}
         aria-hidden
       >
-        <video
-          className="video-entrance-media opacity-0"
-          src={mediaManifest.hero.videoLoop}
-          poster={mediaManifest.hero.videoPoster}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          tabIndex={-1}
-        />
-        <div className="video-entrance-scrim" />
+        {/* Beat II host — the letterbox slit that opens to full bleed */}
+        <div className="video-entrance-film" style={{ clipPath: 'inset(49.7% 0% 49.7% 0%)' }}>
+          <div className="video-entrance-drift">
+            <video
+              className="video-entrance-media opacity-0"
+              src={mediaManifest.hero.videoLoop}
+              poster={mediaManifest.hero.videoPoster}
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="auto"
+              disablePictureInPicture
+              tabIndex={-1}
+            />
+          </div>
+          <div className="video-entrance-scrim" />
+          <div className="video-entrance-grain opacity-0" />
+          <div className="video-entrance-scan opacity-0" />
+        </div>
+
+        {/* Beat I — the sight hairline the film opens out of */}
+        <span className="video-entrance-sight" />
+
+        {/* Beats I / III–V — slate, wordmark cascade, claim, progress */}
         <div className="video-entrance-content">
-          <p className="video-entrance-kicker opacity-0">Chapter 00 · Prelude</p>
-          <p className="video-entrance-line">
-            <span className="video-entrance-name font-display opacity-0">
-              Douglas Mitchell
-            </span>
+          <p className="video-entrance-prelude opacity-0">
+            <span className="video-entrance-prelude-no">№ 00</span>
+            <span>Prelude</span>
           </p>
-          <span className="video-entrance-progress opacity-0">
-            <span className="video-entrance-progress-fill" />
+
+          <p className="video-entrance-title">
+            {TITLE_LINES.map((line, index) => (
+              <span key={line} className="video-entrance-title-line" data-line={index}>
+                <span className="video-entrance-title-text font-display">{line}</span>
+              </span>
+            ))}
+          </p>
+
+          <p className="video-entrance-claim opacity-0">
+            Decision systems under uncertainty.
+          </p>
+
+          <span className="video-entrance-progress-row opacity-0">
+            <span className="video-entrance-counter">
+              <span className="video-entrance-counter-track">
+                <span>00</span>
+                <span>01</span>
+              </span>
+            </span>
+            <span className="video-entrance-progress">
+              <span className="video-entrance-progress-fill" />
+            </span>
+            <span className="video-entrance-counter-total">01</span>
           </span>
         </div>
+
+        {/* Reel metadata — mono corner stamps */}
+        <div className="video-entrance-meta opacity-0">
+          <span className="video-entrance-meta-tl">DM — Reel 00</span>
+          <span className="video-entrance-meta-tr">Field print · 2026</span>
+          <span className="video-entrance-meta-bl">29°45′ N · 95°22′ W — HOU</span>
+        </div>
       </div>
-      <span className="video-entrance-edge" aria-hidden />
+
+      {/* Twin teal hairlines riding the letterbox shutter edges */}
+      <span className="video-entrance-edge video-entrance-edge-top" aria-hidden />
+      <span className="video-entrance-edge video-entrance-edge-bottom" aria-hidden />
+
       <button
         type="button"
         className="video-entrance-skip opacity-0"
