@@ -9,6 +9,7 @@ export { ScrollReveal, ScrollRevealItem, ScrollRevealStagger } from './scroll-re
 export { SignatureScene } from './signature-scene';
 export { Magnetic } from './magnetic';
 export { ChapterRail, HOME_CHAPTERS, type Chapter } from './chapter-rail';
+export { StoryIntro } from './story-intro';
 export {
   usePinnedScene,
   type PinnedSceneContext,

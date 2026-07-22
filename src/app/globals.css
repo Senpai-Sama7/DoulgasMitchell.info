@@ -901,10 +901,14 @@ button, a, input, select, textarea, summary {
   top: 0;
   left: 0;
   height: 2px;
-  background: var(--brand-accent);
-  z-index: 45;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--brand-accent), transparent 20%),
+    var(--brand-accent)
+  );
+  z-index: 60;
   transform-origin: left;
-  transition: transform 0.1s ease-out;
+  pointer-events: none;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
