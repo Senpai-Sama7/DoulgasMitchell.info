@@ -92,9 +92,9 @@ export interface ContactMethod {
 
 export const siteProfile = {
   name: 'Douglas Mitchell',
-  headline: 'Operations Analyst, AI Practitioner, Systems Strategist, and Author.',
+  headline: 'Operations Analyst · AI Practitioner · Author',
   summary:
-    'I design resilient systems that blend operational rigor, AI fluency, and human-centered execution. The result is proof-driven work that looks premium and performs in the real world.',
+    'I design decision systems and operating models that compress ambiguity, keep humans in the loop, and leave an audit trail. Work that holds under load, not just in a demo.',
   location: 'Houston, TX',
   githubUrl: 'https://github.com/Senpai-Sama7',
   linkedinUrl: 'https://www.linkedin.com/in/douglas-mitchell-the-architect/',
@@ -102,21 +102,139 @@ export const siteProfile = {
     'https://www.amazon.com/Confident-Mind-Practical-Authentic-Confidence-ebook/dp/B0FPJPPPC9',
 };
 
+/** Proof metrics live below the fold — never in the hero composition. */
 export const heroMetrics: HeroMetric[] = [
   {
-    label: 'Proof of Work',
+    label: 'Public experiments',
     value: '85+',
-    detail: 'public repositories and experiments across systems, AI, and product execution.',
+    detail: 'Repositories and field tests across systems, AI, and product execution.',
   },
   {
-    label: 'Operating Focus',
-    value: '3x',
-    detail: 'discipline across operations, automation, and human performance architecture.',
+    label: 'Operating disciplines',
+    value: '3',
+    detail: 'Operations design, automation with checkpoints, human performance systems.',
   },
   {
-    label: 'Credential Signal',
+    label: 'Verified credentials',
     value: '2',
-    detail: 'verified AI credentials from Google and Anthropic with practical delivery focus.',
+    detail: 'Google AI and Anthropic certifications applied to delivery, not theater.',
+  },
+];
+
+export interface MethodLadderStep {
+  id: string;
+  title: string;
+  summary: string;
+  rule: string;
+}
+
+export interface MethodGate {
+  id: string;
+  title: string;
+  question: string;
+  failSignal: string;
+  passSignal: string;
+}
+
+export interface MethodPattern {
+  id: string;
+  title: string;
+  solves: string;
+  implement: string;
+  antipattern: string;
+}
+
+/** Practitioner playbook — structured like a field manual, not a feature grid. */
+export const methodLadder: MethodLadderStep[] = [
+  {
+    id: 'clarify',
+    title: 'Clarify',
+    summary: 'Name the decision, the owner, and the evidence bar before any tooling.',
+    rule: 'If the decision tree is already mapable, write the workflow. Do not invent an agent.',
+  },
+  {
+    id: 'constrain',
+    title: 'Constrain',
+    summary: 'Bound context, tools, and autonomy so the system cannot silently expand scope.',
+    rule: 'Pin identity and hard limits. Load tools just-in-time. Evict distractors early.',
+  },
+  {
+    id: 'automate',
+    title: 'Automate',
+    summary: 'Route only the high-confidence path. Escalate ambiguity with a human checkpoint.',
+    rule: 'Automation without receipts is theater. Every action needs a decision trace.',
+  },
+  {
+    id: 'measure',
+    title: 'Measure',
+    summary: 'Instrument outcomes, calibration, and failure modes. Improve one lever per cycle.',
+    rule: 'Prefer one architectural fix over ten prompt tweaks when evals regress.',
+  },
+];
+
+export const methodGates: MethodGate[] = [
+  {
+    id: 'complexity',
+    title: 'Complexity',
+    question: 'Is the problem space ambiguous enough that a fixed workflow cannot cover the branches?',
+    failSignal: 'You can map the full tree in an afternoon. Build the workflow.',
+    passSignal: 'Branches explode under real intake. Judgment is required mid-flight.',
+  },
+  {
+    id: 'value',
+    title: 'Value',
+    question: 'Does the outcome justify exploration cost (tokens, latency, review time)?',
+    failSignal: 'Unit economics only work if the model is perfect on the first try.',
+    passSignal: 'Wrong answers are cheap to catch; correct ones unlock material leverage.',
+  },
+  {
+    id: 'bottlenecks',
+    title: 'Bottlenecks',
+    question: 'Have you derisked the critical capabilities (write, recover, observe) first?',
+    failSignal: 'The demo path works; the failure path is undefined.',
+    passSignal: 'Write, debug, and recover are designed before autonomy expands.',
+  },
+  {
+    id: 'error-cost',
+    title: 'Cost of error',
+    question: 'Can a wrong action be detected and reversed before damage compounds?',
+    failSignal: 'Silent mutations, irreversible sends, or no human gate on high stakes.',
+    passSignal: 'Read-only default, approval on write, receipts on every side effect.',
+  },
+];
+
+export const methodPatterns: MethodPattern[] = [
+  {
+    id: 'intake-normalization',
+    title: 'Intake Normalization',
+    solves: 'Noisy handoffs that force humans to re-translate requests under time pressure.',
+    implement:
+      'Validate structure before the model runs. Reject incomplete intake instead of guessing.',
+    antipattern: 'Dumping free text into a prompt and hoping classification sticks.',
+  },
+  {
+    id: 'confidence-routing',
+    title: 'Confidence Routing',
+    solves: 'Auto-execution on ambiguous cases that later become incidents.',
+    implement:
+      'Threshold confidence. Auto-run only the clear path. Escalate the rest with context intact.',
+    antipattern: 'Always-on automation with a generic "something went wrong" toast.',
+  },
+  {
+    id: 'decision-receipts',
+    title: 'Decision Receipts',
+    solves: 'No audit trail when someone asks why the system acted.',
+    implement:
+      'Persist inputs, confidence, policy hit, approver, and action hash for every mutation.',
+    antipattern: 'Silent side effects with no reconstruction path.',
+  },
+  {
+    id: 'eval-first-loops',
+    title: 'Eval-First Loops',
+    solves: 'Prompt churn that masks architecture problems.',
+    implement:
+      'Score structural and output metrics. Diagnose by theme. Change one system lever, re-run.',
+    antipattern: 'Tweaking wording until a single sample looks good.',
   },
 ];
 
@@ -131,17 +249,17 @@ export const operatingPrinciples: OperatingPrinciple[] = [
   {
     title: 'Operational Clarity',
     description:
-      'Every system should reduce ambiguity, compress decision time, and create leverage for the people running it.',
+      'Name the decision, the owner, and the evidence bar. Systems earn trust by shrinking ambiguity, not by adding dashboards.',
   },
   {
     title: 'Human-First Automation',
     description:
-      'Automation is only premium when it preserves judgment, trust, and quality instead of adding brittle complexity.',
+      'Automate the high-confidence path. Keep judgment on ambiguous cases. Preserve quality and an audit trail.',
   },
   {
     title: 'Proof Over Posturing',
     description:
-      'A polished brand matters, but the real differentiator is shipping systems that can survive contact with reality.',
+      'Ship systems that survive contact with reality: receipts, rollback, and measurable outcomes over slideware.',
   },
 ];
 
@@ -160,7 +278,7 @@ export const featuredProjects: ProjectShowcase[] = [
     featured: true,
     stars: 42,
     forks: 12,
-    color: 'from-emerald-500/10 to-teal-500/10',
+    color: 'oklch(0.52 0.09 195)',
     timeline: '2024 → Present',
     status: 'Production-minded',
     challenge:
@@ -195,7 +313,7 @@ export const featuredProjects: ProjectShowcase[] = [
     featured: true,
     stars: 38,
     forks: 8,
-    color: 'from-violet-500/10 to-purple-500/10',
+    color: 'oklch(0.55 0.08 155)',
     timeline: '2024 → Present',
     status: 'Experience system',
     challenge:
@@ -230,7 +348,7 @@ export const featuredProjects: ProjectShowcase[] = [
     featured: true,
     stars: 56,
     forks: 15,
-    color: 'from-amber-500/10 to-orange-500/10',
+    color: 'oklch(0.58 0.1 55)',
     timeline: '2023 → Present',
     status: 'Reusable foundation',
     challenge:
@@ -598,57 +716,57 @@ export const contactMethods: ContactMethod[] = [
     label: 'Email',
     value: PUBLIC_CONTACT_VALUE,
     href: PUBLIC_CONTACT_HREF,
-    color: 'hover:text-blue-500',
+    color: 'hover:text-brand-accent',
   },
   {
     label: 'GitHub',
     value: '@Senpai-Sama7',
     href: siteProfile.githubUrl,
-    color: 'hover:text-purple-500',
+    color: 'hover:text-brand-accent',
   },
   {
     label: 'LinkedIn',
     value: 'douglas-mitchell-the-architect',
     href: siteProfile.linkedinUrl,
-    color: 'hover:text-blue-600',
+    color: 'hover:text-brand-accent',
   },
   {
     label: 'Location',
     value: siteProfile.location,
-    color: 'hover:text-red-500',
+    color: 'hover:text-brand-accent',
   },
 ];
 
 export const expertiseByCategory = {
-  frontend: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'UI Systems'],
-  backend: ['Node.js', 'Python', 'Prisma', 'REST APIs', 'Automation Pipelines'],
-  infrastructure: ['Docker', 'CI/CD', 'Observability', 'Deployment Hygiene', 'System Design'],
-  ai: ['Applied AI', 'Prompt Engineering', 'Human-in-the-loop Systems', 'Evaluation', 'Workflow Automation'],
+  Operations: ['Decision systems', 'Process redesign', 'Intake normalization', 'Audit trails'],
+  Automation: ['Human-in-the-loop flows', 'Confidence routing', 'n8n / Python pipelines', 'Eval loops'],
+  Product: ['Next.js systems', 'Editorial interfaces', 'State craft', 'Observability'],
+  Research: ['Context engineering', 'Prompt attractors', 'Calibration', 'Applied AI delivery'],
 };
 
 export const aboutRoles = [
   {
     title: 'Operations Analyst',
     description:
-      'Improves clarity, throughput, and execution by redesigning the way work moves through a system.',
-    stats: 'Process-first thinking',
+      'Redesigns how work moves: owners, evidence bars, throughput, and failure recovery.',
+    stats: 'Clarity before tooling',
   },
   {
     title: 'AI Practitioner',
     description:
-      'Applies AI where it creates leverage, not noise, with emphasis on trust, quality, and useful automation.',
-    stats: 'Google AI + Anthropic credentials',
-  },
-  {
-    title: 'Author',
-    description:
-      'Builds frameworks that help people create durable confidence through honesty, repetition, and evidence.',
-    stats: 'Published book + companion ecosystem',
+      'Applies models where leverage is real. Confidence thresholds, checkpoints, and receipts.',
+    stats: 'Google AI · Anthropic',
   },
   {
     title: 'Systems Strategist',
     description:
-      'Connects product thinking, technical execution, and operational discipline into measurable operating outcomes.',
-    stats: 'Systems-level execution',
+      'Connects architecture, delivery discipline, and operating constraints into one model.',
+    stats: 'Boundaries that hold',
+  },
+  {
+    title: 'Author',
+    description:
+      'Builds practice systems for durable confidence: honesty, repetition, and measurable follow-through.',
+    stats: 'The Confident Mind',
   },
 ];

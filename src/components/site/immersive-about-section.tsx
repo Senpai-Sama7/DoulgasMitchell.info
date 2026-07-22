@@ -2,14 +2,14 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { operatingPrinciples, aboutRoles, expertiseByCategory } from '@/lib/site-content';
 import {
-  ScrollReveal,
-  ScrollRevealItem,
-  ScrollRevealStagger,
-} from '@/components/immersive/scroll-reveal';
-
-const accentNumbers = ['01', '02', '03', '04'];
+  aboutRoles,
+  expertiseByCategory,
+  heroMetrics,
+  operatingPrinciples,
+  siteProfile,
+} from '@/lib/site-content';
+import { ScrollReveal } from '@/components/immersive/scroll-reveal';
 
 export function ImmersiveAboutSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -17,74 +17,81 @@ export function ImmersiveAboutSection() {
     target: sectionRef,
     offset: ['start end', 'end start'],
   });
-  const lineH = useTransform(scrollYProgress, [0.1, 0.6], ['0%', '100%']);
+  const lineH = useTransform(scrollYProgress, [0.12, 0.62], ['0%', '100%']);
 
   return (
     <section id="about" ref={sectionRef} className="section-spacing overflow-hidden">
       <div className="editorial-container">
-
-        {/* Section header */}
-        <ScrollReveal className="mb-20 grid gap-6 lg:grid-cols-[1fr_1.4fr] lg:items-end">
+        <ScrollReveal className="mb-16 grid gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-end">
           <div>
             <p className="immersive-kicker mb-4">About</p>
             <h2 className="editorial-title">
-              Systems thinking<br />
-              <span className="text-muted-foreground">with editorial precision.</span>
+              Operator first.
+              <br />
+              <span className="text-muted-foreground">Editor second.</span>
             </h2>
           </div>
-          <p className="max-w-lg text-lg leading-relaxed text-muted-foreground">
-            I work at the intersection of operations, AI, and human performance — designing
-            systems that reduce ambiguity and increase execution quality. The through-line
-            is always: less noise, sharper decisions, better outcomes.
+          <p className="max-w-md text-lg leading-relaxed text-muted-foreground lg:justify-self-end">
+            {siteProfile.headline}. I build the decision path, the automation boundary, and the
+            proof layer so teams can move without guessing.
           </p>
         </ScrollReveal>
 
-        {/* Role cards with animated accent numbers */}
-        <ScrollRevealStagger className="mb-20 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {aboutRoles.map((role, i) => (
-            <ScrollRevealItem key={role.title}>
-              <div className="bento-card group relative h-full overflow-hidden p-7">
-                {/* Large background number */}
-                <span
-                  aria-hidden
-                  className="absolute -right-2 -top-3 font-display text-[5rem] font-light leading-none text-foreground/5 transition-all duration-500 group-hover:text-foreground/8 group-hover:-translate-y-1"
+        {/* Asymmetric role narrative — not four equal cards */}
+        <div className="mb-20 grid gap-10 lg:grid-cols-[5fr_7fr]">
+          <ScrollReveal className="space-y-6">
+            <p className="immersive-kicker">Roles in practice</p>
+            <ol className="space-y-0">
+              {aboutRoles.map((role, index) => (
+                <li
+                  key={role.title}
+                  className="grid grid-cols-[3rem_1fr] gap-4 border-t border-border/60 py-5 first:border-t-0 first:pt-0"
                 >
-                  {accentNumbers[i]}
-                </span>
-                <div className="relative">
-                  <h3 className="text-base font-medium">{role.title}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    {role.description}
+                  <span className="font-mono text-xs tracking-widest text-brand-accent">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
+                  <div>
+                    <h3 className="text-lg font-medium tracking-tight">{role.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                      {role.description}
+                    </p>
+                    {role.stats ? (
+                      <p className="mt-3 text-xs text-muted-foreground/70">{role.stats}</p>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.08} className="lg:pt-10">
+            <div className="proof-strip">
+              {heroMetrics.map((metric) => (
+                <div key={metric.label}>
+                  <p className="font-display text-4xl tracking-tight md:text-5xl">{metric.value}</p>
+                  <p className="mt-2 text-sm font-medium">{metric.label}</p>
+                  <p className="mt-1 max-w-sm text-sm leading-relaxed text-muted-foreground">
+                    {metric.detail}
                   </p>
-                  {role.stats && (
-                    <p className="mt-4 text-xs text-muted-foreground/60">{role.stats}</p>
-                  )}
                 </div>
-              </div>
-            </ScrollRevealItem>
-          ))}
-        </ScrollRevealStagger>
+              ))}
+            </div>
+          </ScrollReveal>
+        </div>
 
-        {/* Principles + expertise — two column with animated vertical line */}
-        <div className="grid gap-16 lg:grid-cols-[1fr_1.1fr]">
-
-          {/* Operating principles */}
+        <div className="grid gap-16 lg:grid-cols-[1fr_1.15fr]">
           <ScrollReveal>
             <p className="immersive-kicker mb-8">Operating principles</p>
             <div className="relative pl-6">
-              {/* Animated scroll-driven vertical line */}
-              <div className="absolute left-0 top-0 h-full w-px bg-border/30">
-                <motion.div
-                  className="w-full origin-top bg-foreground/30"
-                  style={{ height: lineH }}
-                />
+              <div className="absolute left-0 top-0 h-full w-px bg-border/40">
+                <motion.div className="w-full origin-top bg-brand-accent/70" style={{ height: lineH }} />
               </div>
-              <ul className="space-y-8">
-                {operatingPrinciples.map((p) => (
-                  <li key={p.title}>
-                    <h3 className="font-medium">{p.title}</h3>
+              <ul className="space-y-9">
+                {operatingPrinciples.map((principle) => (
+                  <li key={principle.title}>
+                    <h3 className="text-base font-medium">{principle.title}</h3>
                     <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                      {p.description}
+                      {principle.description}
                     </p>
                   </li>
                 ))}
@@ -92,25 +99,17 @@ export function ImmersiveAboutSection() {
             </div>
           </ScrollReveal>
 
-          {/* Expertise matrix */}
-          <ScrollReveal delay={0.12}>
-            <p className="immersive-kicker mb-8">Expertise</p>
-            <div className="space-y-7">
+          <ScrollReveal delay={0.1}>
+            <p className="immersive-kicker mb-6">Field map</p>
+            <div>
               {Object.entries(expertiseByCategory).map(([category, items]) => (
-                <div key={category}>
-                  <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+                <div key={category} className="expertise-row">
+                  <h3 className="pt-0.5 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
                     {category}
                   </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {(items as string[]).map((item) => (
-                      <span
-                        key={item}
-                        className="rounded-full border border-border/70 bg-muted/30 px-3 py-1 text-sm transition-colors hover:border-foreground/25 hover:bg-muted/60"
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+                  <p className="text-sm leading-relaxed text-foreground/85">
+                    {(items as string[]).join(' · ')}
+                  </p>
                 </div>
               ))}
             </div>

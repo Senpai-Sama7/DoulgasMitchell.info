@@ -12,6 +12,7 @@ import { useTheme } from '@/lib/theme';
 
 const navLinks = [
   { href: '/#about', label: 'About', sectionId: 'about' },
+  { href: '/#method', label: 'Method', sectionId: 'method' },
   { href: '/#work', label: 'Work', sectionId: 'work' },
   { href: '/#writing', label: 'Writing', sectionId: 'writing' },
   { href: '/#book', label: 'Book', sectionId: 'book' },
@@ -145,8 +146,8 @@ export function SiteHeader() {
                     href={link.href}
                     aria-current={isActive ? 'location' : undefined}
                     className={cn(
-                      'nav-link rounded-full px-4 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isActive && 'text-foreground after:w-[calc(100%-2rem)]'
+                      'nav-link px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isActive && 'text-foreground after:w-[calc(100%-1.5rem)]'
                     )}
                   >
                     {link.label}

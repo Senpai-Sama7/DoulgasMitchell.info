@@ -11,6 +11,9 @@ import {
   bookShowcase,
   certificationShowcase,
   heroMetrics,
+  methodGates,
+  methodLadder,
+  methodPatterns,
   operatingPrinciples,
   siteProfile,
   socialLinks,
@@ -55,6 +58,7 @@ interface KnowledgeEntry {
     | 'profile'
     | 'principle'
     | 'metric'
+    | 'method'
     | 'project'
     | 'article'
     | 'book'
@@ -166,6 +170,7 @@ const KIND_SYNONYMS: Record<KnowledgeKind, string[]> = {
   book: ['book', 'confident mind'],
   certification: ['badge', 'badges', 'certification', 'certifications', 'credential', 'credentials'],
   contact: ['connect', 'contact', 'email', 'hire', 'reach'],
+  method: ['gate', 'gates', 'ladder', 'method', 'operator', 'pattern', 'patterns', 'playbook'],
   metric: ['metric', 'metrics', 'number', 'numbers', 'stats'],
   principle: ['approach', 'philosophy', 'principle', 'principles'],
   profile: ['about', 'background', 'bio', 'douglas', 'mitchell', 'who'],
@@ -175,6 +180,7 @@ const KIND_SYNONYMS: Record<KnowledgeKind, string[]> = {
 const COLLECTION_PROMPTS: Partial<Record<KnowledgeKind, RegExp>> = {
   article: /\b(all|articles|essays|list|published|writing)\b/i,
   certification: /\b(all|badges|certifications|credentials|featured|list)\b/i,
+  method: /\b(all|gates|ladder|method|patterns|playbook)\b/i,
   project: /\b(all|featured|list|main|projects|standout)\b/i,
 };
 
@@ -253,6 +259,42 @@ function buildStaticKnowledge(): KnowledgeEntry[] {
     ),
   }));
 
+  const methodEntries: KnowledgeEntry[] = [
+    ...methodLadder.map((step) => ({
+      id: `method-ladder-${step.id}`,
+      kind: 'method' as const,
+      title: `Clarity Ladder · ${step.title}`,
+      summary: step.summary,
+      detail: `${step.summary} Production rule: ${step.rule}`,
+      keywords: tokenize(
+        `${step.title} ${step.summary} ${step.rule} clarity ladder method playbook operator`
+      ),
+      href: '/#method',
+    })),
+    ...methodGates.map((gate) => ({
+      id: `method-gate-${gate.id}`,
+      kind: 'method' as const,
+      title: `Four-Gate Check · ${gate.title}`,
+      summary: gate.question,
+      detail: `Question: ${gate.question} Pass: ${gate.passSignal} Fail: ${gate.failSignal}`,
+      keywords: tokenize(
+        `${gate.title} ${gate.question} ${gate.passSignal} ${gate.failSignal} decision gate agent suitability`
+      ),
+      href: '/#method',
+    })),
+    ...methodPatterns.map((pattern) => ({
+      id: `method-pattern-${pattern.id}`,
+      kind: 'method' as const,
+      title: pattern.title,
+      summary: pattern.solves,
+      detail: `Solves: ${pattern.solves} Implement: ${pattern.implement} Anti-pattern: ${pattern.antipattern}`,
+      keywords: tokenize(
+        `${pattern.title} ${pattern.solves} ${pattern.implement} ${pattern.antipattern} operating pattern`
+      ),
+      href: '/#method',
+    })),
+  ];
+
   const metricEntries = heroMetrics.map<KnowledgeEntry>((metric) => ({
     id: `metric-${metric.label}`,
     kind: 'metric',
@@ -301,6 +343,7 @@ function buildStaticKnowledge(): KnowledgeEntry[] {
     bookEntry,
     contactEntry,
     ...principleEntries,
+    ...methodEntries,
     ...metricEntries,
     ...certificationEntries,
   ];
@@ -459,6 +502,7 @@ function buildCollectionAnswer(kind: KnowledgeKind, entries: KnowledgeEntry[]): 
   const labels: Partial<Record<KnowledgeKind, string>> = {
     article: 'published writing',
     certification: 'featured certifications',
+    method: 'operator method entries',
     project: 'featured projects',
   };
   const leadIn = labels[kind] ?? 'featured items';

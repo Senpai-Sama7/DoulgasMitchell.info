@@ -41,7 +41,7 @@ export function ImmersiveBookSection() {
                 style={{ background: 'color-mix(in oklch, var(--foreground), transparent 82%)' }}
                 aria-hidden
               />
-              <div className="relative mx-auto w-full max-w-[280px] overflow-hidden rounded-2xl shadow-2xl ring-1 ring-border/20 lg:max-w-none">
+              <div className="relative mx-auto w-full max-w-[280px] overflow-hidden border border-border/40 shadow-[0_28px_60px_-36px_color-mix(in_oklch,var(--foreground),transparent_70%)] lg:max-w-none">
                 <Image
                   src={mediaManifest.book.cover}
                   alt={bookShowcase.title}
@@ -88,8 +88,8 @@ export function ImmersiveBookSection() {
               <ScrollRevealStagger className="mt-12 grid gap-3 sm:grid-cols-2">
                 {bookShowcase.highlights.slice(0, 4).map((h) => (
                   <ScrollRevealItem key={h}>
-                    <div className="glass-panel flex gap-3 p-4">
-                      <Star className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/50" aria-hidden />
+                    <div className="border border-border/60 bg-background/50 p-4">
+                      <Star className="mb-2 h-3.5 w-3.5 text-muted-foreground/50" aria-hidden />
                       <p className="text-sm leading-relaxed text-muted-foreground">{h}</p>
                     </div>
                   </ScrollRevealItem>
@@ -100,13 +100,13 @@ export function ImmersiveBookSection() {
             {/* Testimonials */}
             {bookShowcase.testimonials?.length > 0 && (
               <ScrollReveal className="mt-10" delay={0.1}>
-                <div className="glass-panel p-6">
+                <div className="border border-border/60 bg-background/50 p-6">
                   <Quote className="mb-3 h-5 w-5 text-muted-foreground/40" aria-hidden />
                   <blockquote className="text-base leading-relaxed text-foreground/85">
                     {bookShowcase.testimonials[0].text}
                   </blockquote>
                   <footer className="mt-4 text-sm text-muted-foreground">
-                    — {bookShowcase.testimonials[0].author}
+                    {bookShowcase.testimonials[0].author}
                   </footer>
                 </div>
               </ScrollReveal>

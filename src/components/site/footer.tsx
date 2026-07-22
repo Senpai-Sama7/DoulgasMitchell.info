@@ -6,6 +6,7 @@ import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
 const footerLinks = {
   navigation: [
     { href: '/#about', label: 'About' },
+    { href: '/#method', label: 'Method' },
     { href: '/#work', label: 'Work' },
     { href: '/#writing', label: 'Writing' },
     { href: '/#book', label: 'Book' },

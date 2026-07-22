@@ -2,8 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
-import { AnimatePresence } from 'framer-motion';
-import { useReducedMotion } from 'framer-motion';
+import { AnimatePresence, useReducedMotion } from 'framer-motion';
 import { ImmersiveHeroSection } from '@/components/site/immersive-hero-section';
 import { SiteFooter } from '@/components/site/footer';
 import { SiteHeader } from '@/components/site/header';
@@ -13,6 +12,10 @@ import type { ArticleShowcase, BookShowcase, CertificationShowcase, ProjectShowc
 
 const ImmersiveAboutSection = dynamic(
   () => import('@/components/site/immersive-about-section').then((m) => m.ImmersiveAboutSection),
+  { ssr: true }
+);
+const ImmersiveMethodSection = dynamic(
+  () => import('@/components/site/immersive-method-section').then((m) => m.ImmersiveMethodSection),
   { ssr: true }
 );
 const ImmersiveWorkSection = dynamic(
@@ -128,7 +131,7 @@ export function HomePageShell({
       <main id="main-content" className="flex-1">
         {contentSource === 'fallback' && contentWarning ? (
           <div className="editorial-container pt-24">
-            <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
+            <div className="border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-100">
               {contentWarning}
             </div>
           </div>
@@ -136,6 +139,7 @@ export function HomePageShell({
 
         <ImmersiveHeroSection />
         <ImmersiveAboutSection />
+        <ImmersiveMethodSection />
         <ImmersiveWorkSection projects={projects} />
         <ImmersiveBookSection />
         <ImmersiveWritingSection articles={articles} />
