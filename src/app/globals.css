@@ -4552,6 +4552,13 @@ a:focus-visible .lux-underline {
   perspective: 1250px;
 }
 
+/* Cursor-tilt wrapper — sits between the anchor and the 3D object so the
+   quickTo tilt composes with the scrub-driven rotation instead of fighting it */
+.book-tilt {
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
 .book-sheen {
   position: absolute;
   inset: 0;
@@ -4565,6 +4572,51 @@ a:focus-visible .lux-underline {
   );
   mix-blend-mode: soft-light;
   transform: translateX(-170%);
+}
+
+/* Breathing halo behind the cover — a soft central teal glow that swells and
+   settles. Pure CSS so it runs on every motion tier; the animation is gated
+   so reduced-motion users get a calm, still glow. */
+.book-glow {
+  position: absolute;
+  inset: -14% -18%;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 58% 52% at 50% 46%,
+    color-mix(in oklch, var(--brand-accent), transparent 70%),
+    transparent 72%
+  );
+  filter: blur(30px);
+  opacity: 0.45;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .book-glow {
+    animation: book-glow-breathe 6.5s ease-in-out infinite;
+  }
+}
+
+@keyframes book-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 0.62;
+    transform: scale(1.05);
+  }
+}
+
+/* Soft (unpinned) scrub on touch / low tier — same flowing layout, the
+   compressed turn only touches transform / clip-path / opacity. */
+.artifact-stage[data-motion='soft'] .book-object {
+  will-change: transform;
+}
+
+.artifact-stage[data-motion='soft'] .artifact-unmask {
+  will-change: clip-path, opacity;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
