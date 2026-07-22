@@ -4934,22 +4934,27 @@ a:focus-visible .lux-underline {
   }
 }
 
-/* MASK PARALLAX CINEMA */
 /* ═══════════════════════════════════════════════════════════════════════════
-   Chapter 03 · Cinema — pinned depth study in three planes.
-   BACK: composite-masked grain/gradient field + scan rules, parallaxing
-   slower than content. MID: kinetic claim, clip-path unmasked line-by-line.
-   FORE: CSS-3D wayfinding plates (perspective parent) that scrub from
-   rotateX(18deg) translateZ(-80px) to upright. Base styles are the static /
-   final upright composition (touch, reduced motion, low tier); everything
-   pinned-only lives under [data-motion='pinned']. The scrub animates
-   transform / opacity / clip-path / filter only.
+   CHAPTER 03 · CINEMA — pinned mask scroll-story in four movements
+   One continuous take (~2600px scrub), not a section of cards:
+   I  SLATE — chapter slate + the claim unmasking line-by-line via clip-path.
+   II THE FILM — the type parts like curtains while a full-bleed media plane
+      opens through an evolving mask: inset(… round 999px) slit relaxing to a
+      hard full-bleed rectangle, film counter-zooming inside.
+   III OVERLINE — kinetic serif lines ride the film while it pans; the film
+      then contracts into an offset left plate.
+   IV CORRIDOR — four editorial waypoint strips (number / title / note /
+      arrow) stand up out of CSS-3D perspective; each is one Magnetic row.
+   Persistent: composite-masked grain/gradient field + scan grid parallax,
+   scrub-driven vignette, rolling movement counter, progress hairline.
+   Base styles are the flowing static composition (touch, reduced motion, low
+   tier); everything pinned-only lives under [data-motion='pinned']. The
+   scrub animates transform / opacity / clip-path / filter / mask only.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .cinema-section {
   --cinema-ink: oklch(0.105 0.014 250);
   --cinema-panel: oklch(0.145 0.015 248);
-  --cinema-panel-raised: oklch(0.175 0.017 246);
   --cinema-text: oklch(0.95 0.006 236);
   --cinema-muted: oklch(0.65 0.018 236);
   --cinema-line: oklch(0.3 0.02 240);
@@ -4960,11 +4965,43 @@ a:focus-visible .lux-underline {
   background: var(--cinema-ink);
 }
 
+/* Chapter depth handoff (in): the page's paper bleeds into the ink so the
+   about → cinema cut reads as atmosphere, not a hard edge. */
+.cinema-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(7rem, 16vh, 12rem);
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(180deg, var(--background), transparent);
+}
+
+/* Chapter depth handoff (out): a signal seam passes the frame to Atlas —
+   both chapters share the same ink, so the corridor reads continuous. */
+.cinema-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  z-index: 3;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in oklch, var(--cinema-signal), transparent 45%) 28%,
+    color-mix(in oklch, var(--cinema-signal), transparent 45%) 72%,
+    transparent
+  );
+}
+
 .cinema-stage {
   position: relative;
   min-height: 100svh;
-  display: flex;
-  align-items: center;
   overflow: hidden;
   isolation: isolate;
   padding-block: clamp(5rem, 9vw, 8rem);
@@ -4996,9 +5033,9 @@ a:focus-visible .lux-underline {
   mask-composite: intersect;
 }
 
-/* ── BACK plane — masked grain/gradient field + scan rules ─────────────── */
+/* ── BACK plane — masked grain/gradient field + scan grid ──────────────── */
 
-.cinema-mask-field {
+.cinema-field {
   position: absolute;
   inset: -12% -4%;
   z-index: 0;
@@ -5018,7 +5055,7 @@ a:focus-visible .lux-underline {
   will-change: transform;
 }
 
-.cinema-mask-field::after {
+.cinema-field::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -5028,7 +5065,7 @@ a:focus-visible .lux-underline {
   mix-blend-mode: overlay;
 }
 
-.cinema-mask-scan {
+.cinema-scan {
   position: absolute;
   inset: -14% 0;
   z-index: 0;
@@ -5050,6 +5087,22 @@ a:focus-visible .lux-underline {
   will-change: transform;
 }
 
+/* Scrub-driven vignette — breathes in over the film during the pin, out at
+   the corridor's end. Invisible on the static path. */
+.cinema-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    ellipse 72% 62% at 50% 46%,
+    transparent 52%,
+    color-mix(in oklch, var(--cinema-ink), transparent 22%) 100%
+  );
+  will-change: opacity;
+}
+
 /* ── Shell + opening slate ─────────────────────────────────────────────── */
 
 .cinema-shell {
@@ -5068,9 +5121,10 @@ a:focus-visible .lux-underline {
 
 .cinema-chapter,
 .cinema-kicker,
-.cinema-card-figure,
-.cinema-card-eyebrow,
-.cinema-card-link,
+.cinema-strip-no,
+.cinema-strip-arrow,
+.cinema-media-caption,
+.cinema-movements,
 .cinema-exit {
   font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
   text-transform: uppercase;
@@ -5099,7 +5153,7 @@ a:focus-visible .lux-underline {
   color: var(--cinema-signal);
 }
 
-/* ── MID plane — the kinetic claim ─────────────────────────────────────── */
+/* ── Movement I — the claim ────────────────────────────────────────────── */
 
 .cinema-statement {
   position: relative;
@@ -5130,157 +5184,223 @@ a:focus-visible .lux-underline {
   color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 42%);
 }
 
-/* ── FORE plane — CSS-3D wayfinding plates ─────────────────────────────── */
+/* ── Movements II/III — the film plane ─────────────────────────────────── */
 
-.cinema-deck {
+.cinema-media {
   position: relative;
-  z-index: 3;
-}
-
-.cinema-deck-grid {
-  display: grid;
-  gap: 1rem;
-  margin-top: clamp(2.75rem, 6vw, 4.5rem);
-  list-style: none;
-  padding: 0;
-}
-
-/* Static composition — asymmetric editorial plates, never an equal row. */
-@media (min-width: 48rem) {
-  .cinema-deck-grid {
-    grid-template-columns: repeat(12, 1fr);
-  }
-
-  .cinema-card-3d[data-panel='atlas'] {
-    grid-column: 1 / span 7;
-  }
-
-  .cinema-card-3d[data-panel='telemetry'] {
-    grid-column: 8 / span 5;
-  }
-
-  .cinema-card-3d[data-panel='instrument'] {
-    grid-column: 1 / span 5;
-  }
-
-  .cinema-card-3d[data-panel='proof'] {
-    grid-column: 6 / span 7;
-  }
-}
-
-.cinema-card-3d {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  min-width: 0;
-  padding: clamp(1.15rem, 2vw, 1.6rem);
+  z-index: 1;
+  margin-top: clamp(3rem, 6vw, 5rem);
+  aspect-ratio: 21 / 10;
+  overflow: hidden;
   border: 1px solid var(--cinema-line);
-  background: color-mix(in oklch, var(--cinema-panel), transparent 3%);
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
-  transition:
-    border-color 0.4s ease,
-    background-color 0.4s ease;
+  will-change: clip-path, opacity;
 }
 
-.cinema-card-3d::before {
-  content: '';
+.cinema-media-video {
   position: absolute;
-  top: -1px;
-  left: -1px;
-  width: clamp(3rem, 24%, 7rem);
-  height: 1px;
-  background: var(--cinema-signal);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   pointer-events: none;
+  will-change: transform;
 }
 
-.cinema-card-3d::after {
-  content: '';
+.cinema-media-scrim {
   position: absolute;
-  top: 0;
-  right: 0;
-  width: 0.6rem;
-  height: 0.6rem;
-  border-top: 1px solid color-mix(in oklch, var(--cinema-signal), transparent 30%);
-  border-right: 1px solid color-mix(in oklch, var(--cinema-signal), transparent 30%);
+  inset: 0;
   pointer-events: none;
+  opacity: 0.32;
+  background: linear-gradient(
+    180deg,
+    color-mix(in oklch, var(--cinema-ink), transparent 55%),
+    transparent 38%,
+    transparent 55%,
+    color-mix(in oklch, var(--cinema-ink), transparent 25%)
+  );
+  will-change: opacity;
 }
 
-.cinema-card-3d:hover,
-.cinema-card-3d:focus-within {
-  border-color: color-mix(in oklch, var(--cinema-signal), transparent 55%);
-  background: color-mix(in oklch, var(--cinema-panel-raised), transparent 3%);
-}
-
-.cinema-card-figure {
+.cinema-media-caption {
+  position: absolute;
+  inset-inline: clamp(0.9rem, 2vw, 1.5rem);
+  bottom: clamp(0.8rem, 1.8vw, 1.3rem);
   display: flex;
   justify-content: space-between;
-  gap: 0.75rem;
+  gap: 1rem;
+  font-size: 0.56rem;
+  letter-spacing: 0.2em;
+  color: color-mix(in oklch, var(--cinema-text), transparent 25%);
+}
+
+/* Kinetic overline — a pull-line in the static flow, a projected title over
+   the full-bleed film while pinned. */
+.cinema-overline {
+  position: relative;
+  z-index: 1;
+  margin-top: clamp(2.75rem, 6vw, 4.5rem);
+  font-family: var(--font-instrument-serif), Georgia, serif;
+  font-style: italic;
+  font-size: clamp(1.7rem, 4vw, 2.9rem);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 28%);
+}
+
+.cinema-overline-mask {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.cinema-overline-mask:nth-child(2) {
+  margin-left: clamp(1.25rem, 4vw, 3.5rem);
+}
+
+.cinema-overline-text {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* ── Movement IV — the waypoint corridor ───────────────────────────────── */
+
+.cinema-index {
+  position: relative;
+  z-index: 4;
+  margin-top: clamp(3rem, 7vw, 5rem);
+}
+
+.cinema-index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--cinema-line);
+}
+
+.cinema-strip {
+  position: relative;
+  min-width: 0;
+}
+
+/* Magnetic renders an inline-block span — the corridor rows need full width */
+.cinema-strip-magnet {
+  display: block;
+}
+
+.cinema-strip-link {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-areas: 'no title note arrow';
+  grid-template-columns: minmax(6.5rem, 0.2fr) minmax(0, 0.42fr) 1fr auto;
+  align-items: center;
+  gap: clamp(1rem, 2.5vw, 2rem);
+  padding-block: clamp(1.1rem, 2.4vw, 1.7rem);
+  padding-inline: 0.25rem;
+  color: var(--cinema-text);
+}
+
+/* Hover wash — a masked teal breath sliding in from the left edge */
+.cinema-strip-link::before {
+  content: '';
+  position: absolute;
+  inset: 0 -1rem;
+  z-index: -1;
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--cinema-signal), transparent 91%),
+    transparent 70%
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.cinema-strip-link:hover::before,
+.cinema-strip-link:focus-visible::before {
+  transform: scaleX(1);
+}
+
+.cinema-strip-link:focus-visible {
+  outline: 2px solid var(--cinema-signal);
+  outline-offset: 3px;
+}
+
+.cinema-strip-no {
+  grid-area: no;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
   font-size: 0.56rem;
   letter-spacing: 0.18em;
   color: var(--cinema-muted);
 }
 
-.cinema-card-title {
+.cinema-strip-title {
+  grid-area: title;
   font-family: var(--font-instrument-serif), Georgia, serif;
-  font-size: clamp(1.6rem, 2.3vw, 2.15rem);
+  font-size: clamp(2rem, 3.4vw, 3.2rem);
   font-weight: 400;
-  line-height: 1;
+  line-height: 0.95;
   letter-spacing: -0.02em;
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.3s ease;
 }
 
-.cinema-card-eyebrow {
-  font-size: 0.56rem;
-  letter-spacing: 0.22em;
-  color: var(--cinema-signal);
+.cinema-strip-link:hover .cinema-strip-title,
+.cinema-strip-link:focus-visible .cinema-strip-title {
+  transform: translateX(0.5rem);
+  color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 45%);
 }
 
-.cinema-card-desc {
+.cinema-strip-note {
+  grid-area: note;
   max-width: 26rem;
   font-size: 0.82rem;
-  line-height: 1.55;
+  line-height: 1.5;
   color: var(--cinema-muted);
 }
 
-.cinema-card-rule {
+.cinema-strip-arrow {
+  grid-area: arrow;
+  font-size: 1rem;
+  color: var(--cinema-muted);
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    color 0.3s ease;
+}
+
+.cinema-strip-link:hover .cinema-strip-arrow,
+.cinema-strip-link:focus-visible .cinema-strip-arrow {
+  transform: translateX(0.4rem);
+  color: var(--cinema-signal);
+}
+
+.cinema-strip-rule {
   display: block;
   height: 1px;
-  margin-top: 0.25rem;
-  background: linear-gradient(90deg, var(--cinema-signal), transparent 78%);
+  background: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--cinema-signal), transparent 40%),
+    var(--cinema-line) 40%,
+    transparent 96%
+  );
   transform-origin: left center;
   will-change: transform;
 }
 
-.cinema-card-cta {
-  margin-top: auto;
-  align-self: flex-start;
-  padding-top: 0.5rem;
-}
-
-.cinema-card-link {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  font-size: 0.6rem;
-  letter-spacing: 0.2em;
-  color: var(--cinema-text);
-  transition: color 0.3s ease;
-}
-
-.cinema-card-link span {
-  display: inline-block;
-  transition: translate 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.cinema-card-link:hover,
-.cinema-card-link:focus-visible {
-  color: var(--cinema-signal);
-}
-
-.cinema-card-link:hover span,
-.cinema-card-link:focus-visible span {
-  translate: 0.25rem 0;
+/* Small screens: the strip stacks — number row, then title, then note */
+@media (max-width: 48rem) {
+  .cinema-strip-link {
+    grid-template-areas:
+      'no arrow'
+      'title title'
+      'note note';
+    grid-template-columns: 1fr auto;
+    row-gap: 0.45rem;
+  }
 }
 
 .cinema-exit {
@@ -5300,7 +5420,7 @@ a:focus-visible .lux-underline {
   background: color-mix(in oklch, var(--cinema-signal), transparent 30%);
 }
 
-/* ── Progress hairline — pinned scrub only ─────────────────────────────── */
+/* ── Progress hairline + movement counter — pinned scrub only ──────────── */
 
 .cinema-progress {
   display: none;
@@ -5316,7 +5436,31 @@ a:focus-visible .lux-underline {
   will-change: transform;
 }
 
-/* ── Pinned composition — three absolute planes in a 100svh viewport ───── */
+.cinema-movements {
+  display: none;
+}
+
+.cinema-movements-counter {
+  display: block;
+  height: 1em;
+  overflow: hidden;
+  line-height: 1;
+}
+
+.cinema-movements-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.cinema-movements-track span {
+  display: block;
+  height: 1em;
+  line-height: 1;
+  color: var(--cinema-signal);
+}
+
+/* ── Pinned composition — absolute planes in a 100svh viewport ─────────── */
 
 .cinema-stage[data-motion='pinned'] {
   --cinema-gutter: max(clamp(1.25rem, 4vw, 3.5rem), calc((100% - 90rem) / 2 + 3.5rem));
@@ -5334,83 +5478,109 @@ a:focus-visible .lux-underline {
 
 .cinema-stage[data-motion='pinned'] .cinema-opening {
   position: absolute;
-  top: clamp(5.5rem, 11vh, 7.5rem);
+  top: clamp(5rem, 10vh, 7rem);
   inset-inline: var(--cinema-gutter);
-  z-index: 4;
+  z-index: 6;
 }
 
+/* MID plane — the claim floats in the center of the take */
 .cinema-stage[data-motion='pinned'] .cinema-statement {
   position: absolute;
   inset: 0 var(--cinema-gutter);
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
   margin: 0;
-  padding-bottom: 17vh;
-  font-size: clamp(3.4rem, 9.2vw, 9.5rem);
-  will-change: transform, opacity, filter;
+  padding-bottom: 10vh;
+  font-size: clamp(3.4rem, 9vw, 9rem);
 }
 
 .cinema-stage[data-motion='pinned'] .cinema-line {
-  will-change: transform, clip-path;
+  will-change: transform, clip-path, filter, opacity;
 }
 
-.cinema-stage[data-motion='pinned'] .cinema-deck {
+/* The film plane goes full-bleed; the evolving clip-path is the frame */
+.cinema-stage[data-motion='pinned'] .cinema-media {
   position: absolute;
-  inset-inline: var(--cinema-gutter);
-  bottom: clamp(3.4rem, 8.5vh, 5.5rem);
+  inset: 0;
+  z-index: 3;
   margin: 0;
-  perspective: 1400px;
-  perspective-origin: 50% 6%;
+  aspect-ratio: auto;
+  border: none;
+  opacity: 0;
 }
 
-.cinema-stage[data-motion='pinned'] .cinema-deck-grid {
-  grid-template-columns: 1.3fr 0.95fr 1.15fr 1fr;
-  align-items: end;
-  gap: clamp(0.8rem, 1.3vw, 1.4rem);
-  margin-top: 0;
+.cinema-stage[data-motion='pinned'] .cinema-media-caption {
+  inset-inline: var(--cinema-gutter);
+  bottom: clamp(4.5rem, 10vh, 7rem);
+  font-size: 0.6rem;
+}
+
+/* Projected overline — centered over the full-bleed film */
+.cinema-stage[data-motion='pinned'] .cinema-overline {
+  position: absolute;
+  inset: 0 var(--cinema-gutter);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(2.3rem, 5.2vw, 4.4rem);
+  pointer-events: none;
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-overline-mask:nth-child(2) {
+  margin-left: 0;
+}
+
+/* The corridor — right half of the frame, standing up out of perspective */
+.cinema-stage[data-motion='pinned'] .cinema-index {
+  position: absolute;
+  left: calc(50% + clamp(1rem, 3vw, 2.5rem));
+  right: var(--cinema-gutter);
+  top: 50%;
+  z-index: 6;
+  margin: 0;
+  transform: translateY(-50%);
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-index-list {
+  border-top: none;
+  perspective: 1100px;
   transform-style: preserve-3d;
 }
 
-.cinema-stage[data-motion='pinned'] .cinema-card-3d {
-  grid-column: auto;
+.cinema-stage[data-motion='pinned'] .cinema-strip {
+  transform-style: preserve-3d;
   backface-visibility: hidden;
-  box-shadow: 0 2.5rem 5rem oklch(0.03 0.01 250 / 0.42);
+  will-change: transform, opacity;
 }
 
-/* Asymmetric skyline: varied heights + bottom offsets, aligned to end. */
-.cinema-stage[data-motion='pinned'] [data-panel='atlas'] {
-  min-height: clamp(13rem, 30vh, 17rem);
+.cinema-stage[data-motion='pinned'] .cinema-strip-link {
+  grid-template-areas:
+    'no arrow'
+    'title title'
+    'note note';
+  grid-template-columns: 1fr auto;
+  row-gap: 0.4rem;
+  padding-block: clamp(0.9rem, 2.2vh, 1.4rem);
 }
 
-.cinema-stage[data-motion='pinned'] [data-panel='telemetry'] {
-  min-height: clamp(10rem, 24vh, 13.5rem);
-  margin-bottom: clamp(1.5rem, 5vh, 3rem);
+.cinema-stage[data-motion='pinned'] .cinema-strip-title {
+  font-size: clamp(1.7rem, 2.6vw, 2.6rem);
 }
 
-.cinema-stage[data-motion='pinned'] [data-panel='instrument'] {
-  min-height: clamp(14.5rem, 34vh, 19rem);
+.cinema-stage[data-motion='pinned'] .cinema-strip-note {
+  max-width: 30rem;
+  font-size: 0.78rem;
 }
 
-.cinema-stage[data-motion='pinned'] [data-panel='proof'] {
-  min-height: clamp(11rem, 27vh, 15rem);
-  margin-bottom: clamp(0.75rem, 2.5vh, 1.5rem);
-}
-
-/* Narrower fine-pointer viewports: fall back to a 2×2 asymmetric deck. */
-@media (max-width: 68rem) {
-  .cinema-stage[data-motion='pinned'] .cinema-deck-grid {
-    grid-template-columns: 1.25fr 1fr;
-  }
-
-  .cinema-stage[data-motion='pinned'] [data-panel='atlas'],
-  .cinema-stage[data-motion='pinned'] [data-panel='telemetry'],
-  .cinema-stage[data-motion='pinned'] [data-panel='instrument'],
-  .cinema-stage[data-motion='pinned'] [data-panel='proof'] {
-    min-height: clamp(8.5rem, 20vh, 11rem);
-    margin-bottom: 0;
-  }
+.cinema-stage[data-motion='pinned'] .cinema-exit {
+  margin-top: 1.1rem;
 }
 
 .cinema-stage[data-motion='pinned'] .cinema-progress {
@@ -5418,9 +5588,38 @@ a:focus-visible .lux-underline {
   position: absolute;
   inset-inline: var(--cinema-gutter);
   bottom: clamp(1.4rem, 3.5vh, 2.25rem);
-  z-index: 4;
+  z-index: 6;
   height: 1px;
   background: color-mix(in oklch, var(--cinema-line), transparent 20%);
+}
+
+.cinema-stage[data-motion='pinned'] .cinema-movements {
+  position: absolute;
+  top: clamp(5rem, 10vh, 7rem);
+  right: var(--cinema-gutter);
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: var(--cinema-muted);
+  opacity: 0;
+}
+
+/* Narrower fine-pointer viewports: tighter corridor, smaller claim */
+@media (max-width: 68rem) {
+  .cinema-stage[data-motion='pinned'] .cinema-index {
+    left: calc(44% + 1rem);
+  }
+
+  .cinema-stage[data-motion='pinned'] .cinema-statement {
+    font-size: clamp(3rem, 8.4vw, 6.5rem);
+  }
+
+  .cinema-stage[data-motion='pinned'] .cinema-strip-note {
+    display: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

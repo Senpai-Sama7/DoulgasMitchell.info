@@ -13,7 +13,7 @@ export interface PinnedSceneContext {
 }
 
 export interface UsePinnedSceneOptions {
-  /** Scroll distance (px) the scene stays pinned. Clamped to 1200–1800. */
+  /** Scroll distance (px) the scene stays pinned. Clamped to 1200–2800. */
   distance?: number;
   /** Scrub smoothing in seconds (true = hard-linked to scroll). */
   scrub?: number | boolean;
@@ -30,7 +30,8 @@ export interface UsePinnedSceneOptions {
 }
 
 const MIN_PIN_DISTANCE = 1200;
-const MAX_PIN_DISTANCE = 1800;
+/** Long-form scroll stories (Cinema) legitimately need up to ~2800px. */
+const MAX_PIN_DISTANCE = 2800;
 
 /**
  * Pinned, scrubbed scene helper. Attach the returned ref to a section, then
