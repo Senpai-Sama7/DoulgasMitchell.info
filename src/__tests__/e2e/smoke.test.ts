@@ -10,8 +10,21 @@ test.describe('Public Site Smoke Tests', () => {
   });
 
   test('should navigate to work section', async ({ page }) => {
+    // Skip the first-visit video gate and use a viewport wide enough for the
+    // xl chapter row — WebKit's default 1280px Desktop Safari width often
+    // falls below Tailwind xl once scrollbars reduce layout width.
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('dm-video-entrance-v1', '1');
+    });
+    await page.setViewportSize({ width: 1440, height: 900 });
     await page.goto('/');
-    const workLink = page.getByRole('link', { name: /Work/i }).first();
+
+    // Prefer the hash nav target — a loose /Work/i name match also hits
+    // project titles like "AI Workflow Automation" and leaves the homepage.
+    const workLink = page
+      .getByRole('navigation', { name: 'Primary' })
+      .locator('a[href="/#work"]');
+    await expect(workLink).toBeVisible();
     await workLink.click();
     await expect(page).toHaveURL(/.*#work/);
   });

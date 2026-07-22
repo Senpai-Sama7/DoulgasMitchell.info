@@ -19,9 +19,10 @@ export const mediaManifest = {
     poster: resolve('/images/hero-poster.svg'),
   },
   book: {
-    cover: resolve('/images/book-cover-placeholder.svg'),
-    coverFallback: resolve('/images/book-cover-placeholder.svg'),
-    coverHiRes: resolve('/images/the-confident-mind.jpg'),
+    /** Real cover art — 736×1408 portrait scan of The Confident Mind. */
+    cover: resolve('/images/book-cover.jpg'),
+    coverFallback: resolve('/images/the-confident-mind.jpg'),
+    coverHiRes: resolve('/images/book-cover.jpg'),
   },
   certs: {
     googleAi: resolve('/images/certs/google-ai-professional-certificate.svg'),

@@ -91,8 +91,9 @@ export function ImmersiveAboutSection() {
               <span className="text-muted-foreground">Editor second.</span>
             </h2>
             <p className="mt-7 max-w-md text-lg leading-relaxed text-muted-foreground">
-              {siteProfile.headline}. I build the decision path, the automation boundary, and the
-              proof layer so teams can move without guessing.
+              I&apos;m an operations analyst, AI practitioner, and author based in{' '}
+              {siteProfile.location}. I build the decision path, the automation boundary, and the
+              proof layer — so the teams I work with can move without guessing.
             </p>
           </ScrollReveal>
 
