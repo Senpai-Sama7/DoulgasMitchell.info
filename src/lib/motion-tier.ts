@@ -105,6 +105,11 @@ export function getLenisOptions(tier: MotionTier): LenisTierOptions | null {
 /**
  * Pinned/scrubbed ScrollTrigger scenes stay high-tier only, even though Lenis
  * now also runs on `low`: pinning re-layouts are the costly part.
+ *
+ * Non-pinnable contexts are NOT necessarily static: `usePinnedScene` offers a
+ * soft, unpinned scrub path (`onSoft`) for touch / low-tier devices when
+ * `prefers-reduced-motion` is not set. That gating lives in the hook — this
+ * predicate only answers "may we pin?".
  */
 export function shouldEnablePinnedScenes(tier: MotionTier): boolean {
   return tier === 'high';
