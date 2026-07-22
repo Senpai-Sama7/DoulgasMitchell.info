@@ -134,8 +134,8 @@ export function ImmersiveBookSection() {
                       <Image
                         src={mediaManifest.book.cover}
                         alt={bookShowcase.title}
-                        width={400}
-                        height={533}
+                        width={368}
+                        height={704}
                         className="block h-auto w-full object-cover"
                       />
                       {/* Scrub-driven specular sweep — parked off-cover for
