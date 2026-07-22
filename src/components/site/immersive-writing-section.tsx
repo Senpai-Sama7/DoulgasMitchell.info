@@ -1,36 +1,84 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowUpRight, Clock } from 'lucide-react';
 import type { ArticleShowcase } from '@/lib/site-content';
-import { ScrollReveal, ScrollRevealItem, ScrollRevealStagger } from '@/components/immersive/scroll-reveal';
+import { Magnetic } from '@/components/immersive/magnetic';
+import {
+  ScrollReveal,
+  ScrollRevealItem,
+  ScrollRevealStagger,
+} from '@/components/immersive/scroll-reveal';
 
 interface ImmersiveWritingSectionProps {
   articles: ArticleShowcase[];
 }
 
-export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionProps) {
-  const [hovered, setHovered] = useState<string | null>(null);
+const lineContainer = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.14 } },
+};
 
+const lineReveal = {
+  hidden: { y: '110%' },
+  visible: {
+    y: '0%',
+    transition: { duration: 0.85, ease: [0.22, 1, 0.36, 1] as const },
+  },
+};
+
+/** Masked line reveal for the chapter heading — staggers on enter. */
+function KineticHeading({ lines }: { lines: React.ReactNode[] }) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.h2
+      className="editorial-title"
+      initial={prefersReducedMotion ? false : 'hidden'}
+      whileInView={prefersReducedMotion ? undefined : 'visible'}
+      viewport={{ once: true, margin: '-12%' }}
+      variants={prefersReducedMotion ? undefined : lineContainer}
+    >
+      {lines.map((line, index) => (
+        <span key={index} className="kinetic-line">
+          <motion.span
+            className="kinetic-line-inner"
+            variants={prefersReducedMotion ? undefined : lineReveal}
+          >
+            {line}
+          </motion.span>
+        </span>
+      ))}
+    </motion.h2>
+  );
+}
+
+export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionProps) {
   return (
     <section id="writing" className="section-spacing">
       <div className="editorial-container">
-        <ScrollReveal className="mb-12 grid gap-8 lg:grid-cols-[1fr_1.5fr] lg:items-end">
+        <div className="mb-12 grid gap-8 lg:grid-cols-[1fr_1.5fr] lg:items-end">
           <div>
-            <p className="immersive-kicker mb-4">Writing</p>
-            <h2 className="editorial-title">
-              Essays &amp;
-              <br />
-              <span className="text-muted-foreground">field notes.</span>
-            </h2>
+            <ScrollReveal y={12}>
+              <p className="chapter-label mb-5">06 · Voice</p>
+            </ScrollReveal>
+            <KineticHeading
+              lines={[
+                <>Essays &amp;</>,
+                <span key="l2" className="text-muted-foreground">
+                  field notes.
+                </span>,
+              ]}
+            />
           </div>
-          <p className="max-w-xl text-muted-foreground">
-            Long-form work on operations, context engineering, and human performance. Written to be
-            used, cited, and argued with.
-          </p>
-        </ScrollReveal>
+          <ScrollReveal delay={0.1}>
+            <p className="max-w-xl text-muted-foreground">
+              Long-form work on operations, context engineering, and human performance. Written to
+              be used, cited, and argued with.
+            </p>
+          </ScrollReveal>
+        </div>
 
         <ScrollRevealStagger className="divide-y divide-border/55 border-y border-border/55">
           {articles.map((article, index) => (
@@ -38,12 +86,11 @@ export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionPro
               <Link
                 href={`/writing/${article.slug}`}
                 className="group block"
-                onMouseEnter={() => setHovered(article.slug)}
-                onMouseLeave={() => setHovered(null)}
+                data-cursor="interactive"
               >
                 <article className="flex flex-col gap-5 py-8 md:flex-row md:items-start md:gap-10">
                   <div
-                    className="hidden shrink-0 font-display text-5xl font-light leading-none text-foreground/10 transition-colors group-hover:text-foreground/18 md:block"
+                    className="hidden shrink-0 font-display text-5xl font-light leading-none text-foreground/10 transition-colors duration-500 group-hover:text-brand-accent/40 md:block"
                     aria-hidden
                   >
                     {String(index + 1).padStart(2, '0')}
@@ -71,7 +118,7 @@ export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionPro
                         ) : null}
                       </div>
                       <h3 className="text-xl font-medium leading-snug tracking-tight md:text-2xl">
-                        <span className="link-underline">{article.title}</span>
+                        <span className="lux-underline">{article.title}</span>
                       </h3>
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                         {article.excerpt}
@@ -81,13 +128,11 @@ export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionPro
                       </p>
                     </div>
 
-                    <motion.span
-                      className="inline-flex h-10 w-10 shrink-0 items-center justify-center border border-border/70 text-muted-foreground transition-colors group-hover:border-foreground/40 group-hover:text-foreground"
-                      animate={hovered === article.slug ? { x: 2, y: -2 } : { x: 0, y: 0 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <ArrowUpRight className="h-4 w-4" />
-                    </motion.span>
+                    <Magnetic strength={0.28} radius={72} className="shrink-0">
+                      <span className="inline-flex h-10 w-10 items-center justify-center border border-border/70 text-muted-foreground transition-colors duration-300 group-hover:border-foreground/40 group-hover:text-foreground">
+                        <ArrowUpRight className="h-4 w-4 transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                      </span>
+                    </Magnetic>
                   </div>
                 </article>
               </Link>
@@ -96,10 +141,12 @@ export function ImmersiveWritingSection({ articles }: ImmersiveWritingSectionPro
         </ScrollRevealStagger>
 
         <ScrollReveal delay={0.08} className="mt-10">
-          <Link href="/search?q=" className="immersive-button-ghost inline-flex">
-            Browse all writing
-            <ArrowUpRight className="h-4 w-4" />
-          </Link>
+          <Magnetic strength={0.22}>
+            <Link href="/search?q=" className="immersive-button-ghost inline-flex">
+              Browse all writing
+              <ArrowUpRight className="h-4 w-4" />
+            </Link>
+          </Magnetic>
         </ScrollReveal>
       </div>
     </section>

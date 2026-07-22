@@ -4,7 +4,11 @@ import Image from 'next/image';
 import { ExternalLink } from 'lucide-react';
 import type { CertificationShowcase } from '@/lib/site-content';
 import { mediaManifest } from '@/lib/media-manifest';
-import { ScrollReveal, ScrollRevealItem, ScrollRevealStagger } from '@/components/immersive/scroll-reveal';
+import {
+  ScrollReveal,
+  ScrollRevealItem,
+  ScrollRevealStagger,
+} from '@/components/immersive/scroll-reveal';
 
 const certImages: Record<string, string> = {
   'google-ai-professional-certificate': mediaManifest.certs.googleAi,
@@ -33,14 +37,14 @@ export function ImmersiveCertificationsSection({ items }: ImmersiveCertification
         <ScrollRevealStagger className="divide-y divide-border/55 border-y border-border/55">
           {items.map((cert) => (
             <ScrollRevealItem key={cert.id}>
-              <article className="flex flex-col gap-5 py-7 sm:flex-row sm:items-start">
+              <article className="group/row flex flex-col gap-5 py-7 transition-colors duration-300 hover:bg-brand-accent/[0.03] sm:flex-row sm:items-start">
                 <div className="relative h-14 w-14 shrink-0 overflow-hidden border border-border/70 bg-muted">
                   {certImages[cert.id] ? (
                     <Image
                       src={certImages[cert.id]}
                       alt=""
                       fill
-                      className="object-cover"
+                      className="object-cover grayscale-[0.6] transition-[filter] duration-500 group-hover/row:grayscale-0"
                       sizes="56px"
                     />
                   ) : (
@@ -63,10 +67,11 @@ export function ImmersiveCertificationsSection({ items }: ImmersiveCertification
                     href={cert.credentialUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium link-underline"
+                    data-cursor="interactive"
+                    className="lux-underline mt-4 inline-flex items-center gap-1.5 text-sm font-medium"
                   >
                     Verify credential
-                    <ExternalLink className="h-3.5 w-3.5" />
+                    <ExternalLink className="h-3.5 w-3.5 transition-transform duration-300 ease-out group-hover/row:-translate-y-0.5 group-hover/row:translate-x-0.5" />
                   </a>
                 </div>
               </article>
