@@ -1,14 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { Geist_Mono, Instrument_Serif, JetBrains_Mono, Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 import { ImmersiveRoot } from "@/components/immersive";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-// Critical path fonts — preloaded, display:swap prevents FOIT
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Body: Source Sans 3 — readable workhorse with character (not Inter/Geist default)
+const sourceSans = Source_Sans_3({
+  variable: "--font-source-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -19,9 +19,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// Decorative/UI accent fonts — NOT on the critical path.
-// preload:false prevents render-blocking <link rel=preload> in <head>.
-// display:swap still prevents FOIT when they do load.
+// Display: Instrument Serif — editorial contrast against the sans body
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
@@ -43,7 +41,10 @@ export const viewport: Viewport = {
   maximumScale: 5,
   minimumScale: 1,
   userScalable: true,
-  themeColor: '#000000',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#f4f6f8' },
+    { media: '(prefers-color-scheme: dark)', color: '#151820' },
+  ],
 };
 
 export const metadata: Metadata = {
@@ -52,7 +53,7 @@ export const metadata: Metadata = {
     default: "Douglas Mitchell | Operations Analyst & AI Practitioner",
     template: "%s | Douglas Mitchell"
   },
-  description: "Operations Analyst, AI Practitioner, and Author of The Confident Mind. Building systems at the intersection of technology and human potential. Google AI & Anthropic Certified.",
+  description: "Operations Analyst, AI Practitioner, and author of The Confident Mind. Designs decision systems, automation with human checkpoints, and proof-driven operating models.",
   keywords: [
     "Douglas Mitchell",
     "Operations Analyst",
@@ -66,6 +67,8 @@ export const metadata: Metadata = {
     "Workflow Automation",
     "Google AI Certified",
     "Anthropic",
+    "Context Engineering",
+    "Decision Systems",
   ],
   authors: [{ name: "Douglas Mitchell" }],
   creator: "Douglas Mitchell",
@@ -80,7 +83,7 @@ export const metadata: Metadata = {
     url: "https://douglasmitchell.info",
     siteName: "Douglas Mitchell",
     title: "Douglas Mitchell | Operations Analyst & AI Practitioner",
-    description: "Operations Analyst, AI Practitioner, and Author of The Confident Mind. Building systems at the intersection of technology and human potential.",
+    description: "Operations Analyst, AI Practitioner, and author of The Confident Mind. Designs decision systems and proof-driven operating models.",
     images: [
       {
         url: "/og-image.png",
@@ -93,7 +96,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Douglas Mitchell | Operations Analyst & AI Practitioner",
-    description: "Operations Analyst, AI Practitioner, and Author of The Confident Mind. Building systems at the intersection of technology and human potential.",
+    description: "Operations Analyst, AI Practitioner, and author of The Confident Mind. Designs decision systems and proof-driven operating models.",
     images: ["/og-image.png"],
   },
   alternates: {
@@ -185,16 +188,13 @@ export default function RootLayout({
       </head>
       <body
         className={`${
-          geistSans.variable
-        } ${geistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} relative antialiased bg-background text-foreground min-h-screen flex flex-col`}
+          sourceSans.variable
+        } ${geistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} site-atmosphere relative antialiased bg-background text-foreground min-h-screen flex flex-col font-sans`}
       >
         {/* Skip link for keyboard/screen reader navigation */}
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-
-        {/* Noise texture via CSS — removes one DOM node vs dedicated div.
-            Applied as body::before in globals.css instead. */}
 
         <ImmersiveRoot>{children}</ImmersiveRoot>
 

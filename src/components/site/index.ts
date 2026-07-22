@@ -5,6 +5,7 @@ export { SiteFooter } from './footer';
 // Immersive public components
 export { ImmersiveHeroSection } from './immersive-hero-section';
 export { ImmersiveAboutSection } from './immersive-about-section';
+export { ImmersiveMethodSection } from './immersive-method-section';
 export { ImmersiveWorkSection } from './immersive-work-section';
 export { ImmersiveBookSection } from './immersive-book-section';
 export { ImmersiveWritingSection } from './immersive-writing-section';

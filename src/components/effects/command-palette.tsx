@@ -3,18 +3,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Search,
-  Home,
-  User,
-  Briefcase,
   BookOpen,
-  Mail,
-  FileText,
-  Award,
-  Moon,
-  Sun,
+  Briefcase,
   Command,
   CornerDownLeft,
+  FileText,
+  Home,
+  Layers,
+  Mail,
+  Moon,
+  Search,
+  Sun,
+  User,
+  Award,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -54,6 +55,13 @@ export function CommandPalette({ isOpen, onClose, onNavigate, isDark, onToggleTh
       label: 'Go to About',
       icon: User,
       action: () => { onNavigate('#about'); onClose(); },
+      category: 'Navigation',
+    },
+    {
+      id: 'method',
+      label: 'Go to Method Playbook',
+      icon: Layers,
+      action: () => { onNavigate('#method'); onClose(); },
       category: 'Navigation',
     },
     {
