@@ -1,30 +1,62 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Menu, Moon, Sparkles, Sun, X } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion, type Variants } from 'framer-motion';
+import { Moon, Sun } from 'lucide-react';
+import { Magnetic } from '@/components/immersive/magnetic';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { siteProfile } from '@/lib/site-content';
-import { mediaManifest } from '@/lib/media-manifest';
 import { useTheme } from '@/lib/theme';
 
+/**
+ * Primary nav mirrors the homepage chapter arc — same ids, same numbering,
+ * same order as the chapter rail, so the header reads as wayfinding for the
+ * story rather than a generic link strip.
+ */
 const navLinks = [
-  { href: '/#about', label: 'About', sectionId: 'about' },
-  { href: '/#method', label: 'Method', sectionId: 'method' },
-  { href: '/#work', label: 'Work', sectionId: 'work' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing' },
-  { href: '/#book', label: 'Book', sectionId: 'book' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact' },
+  { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '03', beat: 'Method' },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '04', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '05', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '06', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '07', beat: 'Invitation' },
 ] as const;
+
+const signatureEase = [0.22, 1, 0.36, 1] as const;
+
+const menuVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.35,
+      ease: signatureEase,
+      when: 'beforeChildren',
+      staggerChildren: 0.055,
+      delayChildren: 0.05,
+    },
+  },
+  exit: { opacity: 0, transition: { duration: 0.28, ease: signatureEase } },
+};
+
+const menuLinkVariants: Variants = {
+  hidden: { y: '110%' },
+  visible: { y: '0%', transition: { duration: 0.6, ease: signatureEase } },
+};
+
+const menuMetaVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: signatureEase } },
+};
 
 export function SiteHeader() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState<string>('about');
   const { isDark, toggle } = useTheme();
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
     const syncHeaderState = () => {
@@ -51,18 +83,6 @@ export function SiteHeader() {
       window.removeEventListener('scroll', syncHeaderState);
       window.removeEventListener('hashchange', syncHeaderState);
     };
-  }, []);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.defaultMuted = true;
-      videoRef.current.muted = true;
-      videoRef.current.setAttribute('muted', '');
-      videoRef.current.setAttribute('playsinline', '');
-      void videoRef.current.play().catch(() => {
-        // Decorative media should fail silently.
-      });
-    }
   }, []);
 
   useEffect(() => {
@@ -107,37 +127,25 @@ export function SiteHeader() {
     >
       <nav aria-label="Primary" className="editorial-container">
         <div className="flex h-16 items-center justify-between gap-4 md:h-[4.5rem]">
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="group flex items-center gap-3 rounded-full px-1 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          {/* Wordmark — the serif signal, nothing else */}
+          <Link
+            href="/"
+            data-cursor="interactive"
+            className="group flex items-baseline gap-2.5 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <span className="font-display text-xl tracking-tight transition-opacity duration-300 group-hover:opacity-80 md:text-[1.35rem]">
+              {siteProfile.name}
+            </span>
+            <span
+              className="hidden font-mono text-[0.55rem] uppercase tracking-[0.28em] text-muted-foreground/70 lg:inline"
+              aria-hidden
             >
-              <div
-                aria-hidden="true"
-                className="hidden h-9 w-9 shrink-0 overflow-hidden rounded-full border border-border/60 shadow-sm sm:block"
-              >
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster="/media/dougie-frame-poster.webp"
-                  className="h-full w-full object-cover"
-                  aria-hidden
-                  tabIndex={-1}
-                >
-                  <source src={mediaManifest.hero.videoLoop} type="video/mp4" />
-                  <source src={mediaManifest.hero.videoLoopAlt} type="video/mp4" />
-                </video>
-              </div>
-              <span className="font-display text-lg tracking-tight transition-opacity group-hover:opacity-80">
-                {siteProfile.name}
-              </span>
-            </Link>
-          </div>
+              {siteProfile.location}
+            </span>
+          </Link>
 
-          <ul className="hidden items-center gap-0.5 md:flex">
+          {/* Chapter nav — mono wayfinding with a teal signal hairline */}
+          <ul className="hidden items-center md:flex">
             {navLinks.map((link) => {
               const isActive = activeSection === link.sectionId;
               return (
@@ -145,19 +153,45 @@ export function SiteHeader() {
                   <a
                     href={link.href}
                     aria-current={isActive ? 'location' : undefined}
+                    data-cursor="interactive"
                     className={cn(
-                      'nav-link px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                      isActive && 'text-foreground after:w-[calc(100%-1.5rem)]'
+                      'group relative flex items-baseline gap-1.5 px-3 py-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                      isActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
                     )}
                   >
+                    <span
+                      className={cn(
+                        'tabular-nums transition-colors duration-300',
+                        isActive ? 'text-brand-accent' : 'text-muted-foreground/50'
+                      )}
+                      aria-hidden
+                    >
+                      {link.chapter}
+                    </span>
                     {link.label}
+                    <span
+                      className={cn(
+                        'absolute inset-x-3 bottom-1 h-px origin-left bg-brand-accent/80 transition-transform duration-500',
+                        isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                      )}
+                      aria-hidden
+                    />
                   </a>
                 </li>
               );
             })}
           </ul>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <Link
+              href="/chat"
+              data-cursor="interactive"
+              className="hidden min-h-11 items-center px-2.5 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors duration-300 hover:text-foreground sm:flex"
+              aria-label="Open the archive console"
+            >
+              Console
+            </Link>
+
             <Button
               variant="ghost"
               size="icon"
@@ -169,105 +203,147 @@ export function SiteHeader() {
               <motion.div
                 initial={false}
                 animate={{ rotate: isDark ? 180 : 0 }}
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.35, ease: signatureEase }}
               >
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </motion.div>
             </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-full md:hidden"
-              onClick={() => setIsMobileMenuOpen((current) => !current)}
-              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+            <Magnetic className="hidden sm:block" strength={0.24} radius={90}>
+              <Link
+                href="/#contact"
+                className="immersive-button !px-5 !py-2.5 text-sm"
+                aria-label="Jump to contact section"
+              >
+                Connect
+              </Link>
+            </Magnetic>
+
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open navigation menu"
               aria-controls="site-mobile-menu"
               aria-expanded={isMobileMenuOpen}
+              className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-foreground md:hidden"
             >
-              {isMobileMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-            </Button>
-
-            <Link
-              href="/chat"
-              className="hidden items-center gap-1.5 rounded-full border border-border/50 px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-border hover:bg-muted/30 hover:text-foreground sm:flex"
-              aria-label="Ask the AI assistant"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Chat</span>
-            </Link>
-
-            <Link
-              href="/#contact"
-              className="immersive-button !px-4 !py-2.5 text-sm sm:!px-5"
-              aria-label="Jump to contact section"
-            >
-              <Mail className="h-4 w-4 sm:hidden" />
-              <span className="hidden sm:inline">Connect</span>
-            </Link>
+              Menu
+            </button>
           </div>
         </div>
       </nav>
 
+      {/* Full-viewport chapter takeover — the mobile menu is a scene, not a dropdown */}
       <AnimatePresence>
         {isMobileMenuOpen ? (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-background/60 backdrop-blur-md md:hidden"
-              onClick={() => setIsMobileMenuOpen(false)}
-              aria-hidden="true"
+          <motion.div
+            id="site-mobile-menu"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Site navigation"
+            data-lenis-prevent
+            variants={prefersReducedMotion ? undefined : menuVariants}
+            initial={prefersReducedMotion ? false : 'hidden'}
+            animate="visible"
+            exit={prefersReducedMotion ? undefined : 'exit'}
+            /* h-dvh instead of inset-0: the scrolled header's backdrop-blur makes
+               the header the containing block for fixed descendants, so bottom-0
+               would resolve against the 4rem bar rather than the viewport. */
+            className="fixed inset-x-0 top-0 z-[60] flex h-dvh flex-col overflow-y-auto bg-background md:hidden"
+          >
+            <div
+              className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--brand-accent),transparent_93%),transparent_60%)]"
+              aria-hidden
             />
 
-            <motion.div
-              id="site-mobile-menu"
-              role="dialog"
-              aria-modal="true"
-              aria-label="Site navigation"
-              initial={{ opacity: 0, y: -8, scale: 0.98 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.98 }}
-              transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-              className="absolute inset-x-3 top-[calc(100%+0.5rem)] z-50 overflow-hidden rounded-2xl border border-border/50 bg-background/90 shadow-2xl backdrop-blur-2xl md:hidden"
-            >
-              <div className="space-y-1 p-3">
-                {navLinks.map((link, index) => {
+            <div className="relative flex h-16 shrink-0 items-center justify-between px-5">
+              <span className="font-display text-lg tracking-tight">{siteProfile.name}</span>
+              <button
+                type="button"
+                onClick={() => setIsMobileMenuOpen(false)}
+                aria-label="Close navigation menu"
+                className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground"
+              >
+                Close
+              </button>
+            </div>
+
+            <nav aria-label="Chapters" className="relative flex flex-1 flex-col justify-center px-5 py-8">
+              <p className="chapter-label mb-6">Chapters</p>
+              <ol>
+                {navLinks.map((link) => {
                   const isActive = activeSection === link.sectionId;
                   return (
-                    <motion.a
+                    <li
                       key={link.href}
-                      href={link.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      aria-current={isActive ? 'location' : undefined}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.04 }}
-                      className={cn(
-                        'flex items-center justify-between rounded-xl px-4 py-3.5 text-sm transition-colors',
-                        isActive
-                          ? 'bg-foreground text-background'
-                          : 'text-foreground hover:bg-muted/50'
-                      )}
+                      className="overflow-hidden border-b border-border/45 last:border-b-0"
                     >
-                      <span>{link.label}</span>
-                      <span className="immersive-kicker !text-[0.6rem] opacity-60">{link.sectionId}</span>
-                    </motion.a>
+                      <motion.a
+                        href={link.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        aria-current={isActive ? 'location' : undefined}
+                        variants={prefersReducedMotion ? undefined : menuLinkVariants}
+                        className="group flex items-baseline justify-between gap-4 py-4"
+                      >
+                        <span className="flex min-w-0 items-baseline gap-4">
+                          <span
+                            className={cn(
+                              'font-mono text-[0.65rem] tabular-nums tracking-[0.22em]',
+                              isActive ? 'text-brand-accent' : 'text-muted-foreground/60'
+                            )}
+                            aria-hidden
+                          >
+                            {link.chapter}
+                          </span>
+                          <span
+                            className={cn(
+                              'font-display text-4xl leading-none tracking-tight transition-colors',
+                              isActive ? 'text-foreground' : 'text-foreground/85'
+                            )}
+                          >
+                            {link.label}
+                          </span>
+                        </span>
+                        <span className="font-mono text-[0.55rem] uppercase tracking-[0.24em] text-muted-foreground/60">
+                          {link.beat}
+                        </span>
+                      </motion.a>
+                    </li>
                   );
                 })}
+              </ol>
+            </nav>
+
+            <motion.div
+              variants={prefersReducedMotion ? undefined : menuMetaVariants}
+              className="relative shrink-0 space-y-5 px-5 pb-10"
+            >
+              <div className="flex items-center justify-between border-t border-border/45 pt-5">
                 <Link
                   href="/chat"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-between rounded-xl px-4 py-3.5 text-sm text-foreground transition-colors hover:bg-muted/50"
+                  className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground"
                 >
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    AI Assistant
-                  </span>
+                  Archive console
                 </Link>
+                <button
+                  type="button"
+                  onClick={toggle}
+                  aria-pressed={isDark}
+                  className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  {isDark ? 'Light mode' : 'Dark mode'}
+                </button>
               </div>
+              <Link
+                href="/#contact"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="immersive-button w-full"
+              >
+                Connect
+              </Link>
             </motion.div>
-          </>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </header>

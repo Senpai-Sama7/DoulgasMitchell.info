@@ -1,101 +1,134 @@
-import { Github, Linkedin, Mail, BookOpen, ArrowUpRight } from 'lucide-react';
 import Link from 'next/link';
+import { ArrowUpRight } from 'lucide-react';
+import { Magnetic } from '@/components/immersive/magnetic';
 import { siteProfile } from '@/lib/site-content';
 import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
 
-const footerLinks = {
-  navigation: [
-    { href: '/#about', label: 'About' },
-    { href: '/#method', label: 'Method' },
-    { href: '/#work', label: 'Work' },
-    { href: '/#writing', label: 'Writing' },
-    { href: '/#book', label: 'Book' },
-    { href: '/#contact', label: 'Contact' },
-  ],
-  external: [
-    { href: siteProfile.githubUrl, label: 'GitHub', icon: Github },
-    { href: siteProfile.linkedinUrl, label: 'LinkedIn', icon: Linkedin },
-    { href: siteProfile.bookUrl, label: 'The Confident Mind', icon: BookOpen },
-  ],
-} as const;
+/* Same chapter numbering as the header nav and rail — the footer is the
+   story's back matter, not a template link dump. */
+const indexLinks = [
+  { href: '/#about', label: 'About', chapter: '02' },
+  { href: '/#method', label: 'Method', chapter: '03' },
+  { href: '/#work', label: 'Work', chapter: '04' },
+  { href: '/#book', label: 'Book', chapter: '05' },
+  { href: '/#writing', label: 'Writing', chapter: '06' },
+  { href: '/#contact', label: 'Contact', chapter: '07' },
+] as const;
 
 export function SiteFooter() {
   const currentYear = new Date().getFullYear();
 
-  return (
-    <footer className="relative border-t border-border/60 bg-background">
-      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+  const elsewhereLinks = [
+    { href: siteProfile.githubUrl, label: 'GitHub' },
+    { href: siteProfile.linkedinUrl, label: 'LinkedIn' },
+    { href: siteProfile.bookUrl, label: 'The Confident Mind' },
+  ] as const;
 
-      <div className="editorial-container py-16 md:py-20">
-        <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr_1fr] lg:gap-16">
-          <div className="max-w-md">
-            <p className="font-display text-2xl tracking-tight">{siteProfile.name}</p>
-            <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+  return (
+    <footer className="relative overflow-hidden border-t border-border/60 bg-background">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand-accent/50 to-transparent" />
+
+      <div className="editorial-container pt-16 md:pt-24">
+        {/* ── Wordmark — the closing signature ─────────────────────────── */}
+        <div className="border-b border-border/50 pb-10 md:pb-14">
+          <p className="chapter-label mb-8">Colophon</p>
+          <p className="font-display text-[clamp(2.75rem,8.5vw,7rem)] leading-[0.92] tracking-[-0.035em]">
+            {siteProfile.name}
+          </p>
+          <div className="mt-6 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-3">
+            <p className="max-w-md text-sm leading-relaxed text-muted-foreground">
               {siteProfile.headline}
             </p>
-            <p className="mt-3 immersive-kicker">{siteProfile.location}</p>
+            <p className="font-mono text-[0.65rem] uppercase tracking-[0.22em] text-muted-foreground">
+              {siteProfile.location}
+            </p>
           </div>
+        </div>
 
-          <div>
-            <h2 className="immersive-kicker mb-5">Navigate</h2>
-            <ul className="space-y-3">
-              {footerLinks.navigation.map((link) => (
+        {/* ── Back matter columns ──────────────────────────────────────── */}
+        <div className="grid gap-12 py-12 md:grid-cols-2 md:py-14 lg:grid-cols-[1fr_1.1fr_1.2fr] lg:gap-16">
+          <nav aria-label="Footer index">
+            <h2 className="immersive-kicker mb-5">Index</h2>
+            <ul className="space-y-0.5">
+              {indexLinks.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
-                    className="group inline-flex items-center gap-2 text-sm text-foreground/85 transition-colors hover:text-foreground"
+                    data-cursor="interactive"
+                    className="group flex items-baseline gap-3 py-1.5 text-sm text-foreground/85 transition-colors hover:text-foreground"
                   >
-                    <span className="h-px w-0 bg-foreground/40 transition-all group-hover:w-4" />
-                    {link.label}
+                    <span
+                      className="font-mono text-[0.6rem] tabular-nums tracking-[0.2em] text-muted-foreground/60"
+                      aria-hidden
+                    >
+                      {link.chapter}
+                    </span>
+                    <span className="lux-underline">{link.label}</span>
                   </a>
                 </li>
               ))}
               <li>
                 <Link
                   href="/chat"
-                  className="group inline-flex items-center gap-2 text-sm text-foreground/85 transition-colors hover:text-foreground"
+                  data-cursor="interactive"
+                  className="group flex items-baseline gap-3 py-1.5 text-sm text-foreground/85 transition-colors hover:text-foreground"
                 >
-                  <span className="h-px w-0 bg-foreground/40 transition-all group-hover:w-4" />
-                  AI Assistant
+                  <span
+                    className="font-mono text-[0.6rem] tracking-[0.2em] text-muted-foreground/60"
+                    aria-hidden
+                  >
+                    ··
+                  </span>
+                  <span className="lux-underline">Archive console</span>
                 </Link>
               </li>
             </ul>
-          </div>
+          </nav>
 
           <div>
-            <h2 className="immersive-kicker mb-5">Connect</h2>
-            <ul className="space-y-3">
-              {footerLinks.external.map((link) => (
-                <li key={link.href}>
+            <h2 className="immersive-kicker mb-5">Elsewhere</h2>
+            <div className="flex flex-wrap gap-2.5">
+              {elsewhereLinks.map((link) => (
+                <Magnetic key={link.label} strength={0.22} radius={70}>
                   <a
                     href={link.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group inline-flex items-center gap-2 text-sm text-foreground/85 transition-colors hover:text-foreground"
+                    className="group inline-flex min-h-11 items-center gap-2 border border-border/70 px-4 text-sm transition-colors duration-300 hover:border-brand-accent/50 hover:bg-brand-accent/5"
                   >
-                    <link.icon className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                     {link.label}
-                    <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                    <ArrowUpRight
+                      className="h-3 w-3 text-muted-foreground transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      aria-hidden
+                    />
                   </a>
-                </li>
+                </Magnetic>
               ))}
-              <li>
-                <a
-                  href={PUBLIC_CONTACT_HREF}
-                  className="group inline-flex items-center gap-2 text-sm text-foreground/85 transition-colors hover:text-foreground"
-                >
-                  <Mail className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  Email Douglas Mitchell
+            </div>
+          </div>
+
+          <div>
+            <h2 className="immersive-kicker mb-5">Correspond</h2>
+            <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">
+              One inbox, one person. A short brief, the current constraint, and the outcome you
+              want is enough to start.
+            </p>
+            <div className="mt-6">
+              <Magnetic strength={0.22} radius={80}>
+                <a href={PUBLIC_CONTACT_HREF} className="immersive-button-ghost">
+                  Email Douglas
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
                 </a>
-              </li>
-            </ul>
+              </Magnetic>
+            </div>
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-border/50 pt-8 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <p>© {currentYear} Douglas Mitchell. All rights reserved.</p>
-          <p className="immersive-kicker !text-[0.625rem]">
-            Crafted with intent ·{' '}
+        {/* ── Meta bar ─────────────────────────────────────────────────── */}
+        <div className="flex flex-col gap-3 border-t border-border/50 py-7 font-mono text-[0.625rem] uppercase tracking-[0.18em] text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <p>© {currentYear} Douglas Mitchell · All rights reserved</p>
+          <p>
+            Set in Instrument Serif · Signal teal on ink ·{' '}
             <Link href="/admin" className="transition-colors hover:text-foreground">
               Studio
             </Link>

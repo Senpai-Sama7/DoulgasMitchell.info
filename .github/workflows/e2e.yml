@@ -28,11 +28,17 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+      - name: Prepare SQLite schema for contact + auth surfaces
+        run: bun run db:push
+        env:
+          DATABASE_URL: file:./dev.db
+
       - name: Generate production build
         run: bun run build
         env:
           DATABASE_URL: file:./dev.db
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-secret-32-chars-minimum-length' }}
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
       - name: Run E2E tests
         run: bun run test:e2e
@@ -40,6 +46,7 @@ jobs:
           NODE_ENV: production
           JWT_SECRET: ${{ secrets.JWT_SECRET || 'test-secret-32-chars-minimum-length' }}
           DATABASE_URL: file:./dev.db
+          NEXT_PUBLIC_SITE_URL: http://localhost:3000
 
       - name: Upload test results
         if: always()

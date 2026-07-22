@@ -3,6 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { AnimatePresence, useReducedMotion } from 'framer-motion';
+import { ChapterRail } from '@/components/immersive/chapter-rail';
+import { useImmersive } from '@/components/immersive/immersive-context';
 import { ImmersiveHeroSection } from '@/components/site/immersive-hero-section';
 import { SiteFooter } from '@/components/site/footer';
 import { SiteHeader } from '@/components/site/header';
@@ -82,6 +84,7 @@ export function HomePageShell({
 }: HomePageShellProps) {
   const prefersReducedMotion = useReducedMotion();
   const { isDark, toggle } = useTheme();
+  const { scrollTo } = useImmersive();
   const [isCommandOpen, setIsCommandOpen] = useState(false);
 
   useEffect(() => {
@@ -90,12 +93,12 @@ export function HomePageShell({
       const timer = window.setTimeout(() => {
         const el = document.getElementById(id);
         if (el) {
-          el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+          scrollTo(el, { immediate: prefersReducedMotion === true });
         }
       }, 120);
       return () => window.clearTimeout(timer);
     }
-  }, [prefersReducedMotion]);
+  }, [prefersReducedMotion, scrollTo]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -112,21 +115,19 @@ export function HomePageShell({
   const handleNavigate = useCallback(
     (href: string) => {
       if (href === '#') {
-        window.scrollTo({ top: 0, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        scrollTo(0, { immediate: prefersReducedMotion === true });
         return;
       }
-      const element = document.querySelector(href);
-      if (element instanceof HTMLElement) {
-        element.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth' });
-      }
+      scrollTo(href, { immediate: prefersReducedMotion === true });
     },
-    [prefersReducedMotion]
+    [prefersReducedMotion, scrollTo]
   );
 
   return (
     <>
       <PageViewTracker />
       <SiteHeader />
+      <ChapterRail />
 
       <main id="main-content" className="flex-1">
         {contentSource === 'fallback' && contentWarning ? (

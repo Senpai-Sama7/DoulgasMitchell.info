@@ -27,7 +27,7 @@ export function SecondaryPageShell({
         {(kicker || title || description) && (
           <div className="editorial-container pb-10">
             <ScrollReveal className="max-w-3xl">
-              {kicker ? <p className="immersive-kicker mb-4">{kicker}</p> : null}
+              {kicker ? <p className="chapter-label mb-6">{kicker}</p> : null}
               {title ? <h1 className="display-title text-balance">{title}</h1> : null}
               {description ? (
                 <p className="mt-6 text-lg text-muted-foreground">{description}</p>
