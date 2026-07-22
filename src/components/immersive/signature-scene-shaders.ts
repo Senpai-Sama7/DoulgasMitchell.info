@@ -1,6 +1,7 @@
 export const sphereVertexShader = `
 uniform float uTime;
 uniform vec2 uMouse;
+uniform float uScroll;
 varying vec3 vNormal;
 varying vec3 vPosition;
 varying float vDisplace;
@@ -60,7 +61,9 @@ void main() {
   float mouseInfluence = length(uMouse) * 0.3;
   vec3 noisePos = position * 1.8 + vec3(speed, speed * 0.7, speed * 0.5);
   float noise = snoise(noisePos + vec3(uMouse.x, uMouse.y, 0.0) * 0.5);
-  float displacement = noise * 0.18 + mouseInfluence * 0.1;
+  // Scroll agitates the surface — the system visibly working under load.
+  // Amplitude-only modulation: no phase dependence, so scrubbing never jitters.
+  float displacement = noise * (0.18 + uScroll * 0.16) + mouseInfluence * 0.1;
   vDisplace = displacement;
   vec3 newPos = position + normal * displacement;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(newPos, 1.0);
@@ -70,6 +73,7 @@ void main() {
 export const sphereFragmentShader = `
 uniform float uTime;
 uniform vec2 uMouse;
+uniform float uScroll;
 uniform vec3 uColor1;
 uniform vec3 uColor2;
 uniform vec3 uColor3;
@@ -90,6 +94,9 @@ void main() {
   vec3 lightDir = normalize(vec3(uMouse.x * 2.0, uMouse.y * 2.0, 3.0));
   float spec = pow(max(dot(reflect(-lightDir, vNormal), viewDir), 0.0), 32.0);
   color += vec3(1.0, 0.85, 1.0) * spec * 1.5;
+  // Deep in the scroll film the palette settles toward the cool signal and
+  // the glare dims — the world recedes as the title cards take the frame.
+  color = mix(color, uColor2 * 0.55, uScroll * 0.4);
   float alpha = 0.92 + fresnel * 0.08;
   gl_FragColor = vec4(color, alpha);
 }

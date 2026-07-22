@@ -4,6 +4,10 @@ import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import {
+  HERO_SCENE_PROGRESS_EVENT,
+  type HeroSceneProgressDetail,
+} from '@/components/immersive/scene-progress';
+import {
   sphereFragmentShader,
   sphereVertexShader,
 } from '@/components/immersive/signature-scene-shaders';
@@ -66,12 +70,17 @@ export function SignatureSceneInner() {
   const mouse = useRef(new THREE.Vector2(0, 0));
   const targetRotation = useRef(new THREE.Vector2(0, 0));
   const currentRotation = useRef(new THREE.Vector2(0, 0));
+  // Arrival pin scrub progress (0–1), published by the hero via window event
+  // and eased here so the world never snaps when the scrub jumps.
+  const scrollTarget = useRef(0);
+  const scrollCurrent = useRef(0);
   const { viewport } = useThree();
 
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
       uMouse: { value: new THREE.Vector2(0, 0) },
+      uScroll: { value: 0 },
       uColor1: { value: new THREE.Color('#7b2ff7') },
       uColor2: { value: new THREE.Color('#00d4ff') },
       uColor3: { value: new THREE.Color('#ff3cac') },
@@ -79,11 +88,25 @@ export function SignatureSceneInner() {
     []
   );
 
+  useEffect(() => {
+    const handleProgress = (event: Event) => {
+      const { progress } = (event as CustomEvent<HeroSceneProgressDetail>).detail;
+      scrollTarget.current = THREE.MathUtils.clamp(progress, 0, 1);
+    };
+    window.addEventListener(HERO_SCENE_PROGRESS_EVENT, handleProgress);
+    return () => window.removeEventListener(HERO_SCENE_PROGRESS_EVENT, handleProgress);
+  }, []);
+
   useFrame((state) => {
     const elapsed = state.clock.getElapsedTime();
+    scrollCurrent.current +=
+      (scrollTarget.current - scrollCurrent.current) * 0.08;
+    const scroll = scrollCurrent.current;
+
     if (materialRef.current) {
       materialRef.current.uniforms.uTime.value = elapsed;
       materialRef.current.uniforms.uMouse.value.set(mouse.current.x, mouse.current.y);
+      materialRef.current.uniforms.uScroll.value = scroll;
     }
 
     targetRotation.current.x = mouse.current.y * 0.8;
@@ -94,8 +117,11 @@ export function SignatureSceneInner() {
       (targetRotation.current.y - currentRotation.current.y) * 0.05;
 
     if (groupRef.current) {
+      // Scroll adds a slow extra turn and a gentle retreat into depth.
       groupRef.current.rotation.x = currentRotation.current.x;
-      groupRef.current.rotation.y = elapsed * 0.3 + currentRotation.current.y;
+      groupRef.current.rotation.y =
+        elapsed * 0.3 + currentRotation.current.y + scroll * 1.1;
+      groupRef.current.position.z = -scroll * 0.8;
     }
   });
 
