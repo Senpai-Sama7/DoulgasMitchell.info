@@ -11,7 +11,7 @@ interface ImmersiveWorkSectionProps {
 }
 
 /**
- * Chapter 04 — Proof. The section pins for 1800px of scroll while the inner
+ * Chapter 05 — Proof. The section pins for 1800px of scroll while the inner
  * track translates X by (track.scrollWidth − viewport), turning vertical
  * scroll into a horizontal traversal of oversized editorial case-study
  * panels. The default markup is a vertical editorial stack — mobile, touch,
@@ -66,7 +66,7 @@ export function ImmersiveWorkSection({ projects }: ImmersiveWorkSectionProps) {
             {/* Oversized intro slide */}
             <article className="proof-panel proof-panel-intro">
               <div>
-                <p className="chapter-label mb-6">Chapter 04 · Proof</p>
+                <p className="chapter-label mb-6">Chapter 05 · Proof</p>
                 <h2 className="proof-intro-title font-display">
                   Proof
                   <br />

@@ -16,6 +16,10 @@ const ImmersiveAboutSection = dynamic(
   () => import('@/components/site/immersive-about-section').then((m) => m.ImmersiveAboutSection),
   { ssr: true }
 );
+const SystemAtlasSection = dynamic(
+  () => import('@/components/site/system-atlas-section').then((m) => m.SystemAtlasSection),
+  { ssr: true }
+);
 const ImmersiveMethodSection = dynamic(
   () => import('@/components/site/immersive-method-section').then((m) => m.ImmersiveMethodSection),
   { ssr: true }
@@ -140,6 +144,7 @@ export function HomePageShell({
 
         <ImmersiveHeroSection />
         <ImmersiveAboutSection />
+        <SystemAtlasSection />
         <ImmersiveMethodSection />
         <ImmersiveWorkSection projects={projects} />
         <ImmersiveBookSection />

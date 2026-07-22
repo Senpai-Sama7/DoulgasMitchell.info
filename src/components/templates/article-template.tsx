@@ -22,7 +22,7 @@ export function ArticleTemplate({ article, related = [] }: ArticleTemplateProps)
               className="inline-flex min-h-11 items-center gap-2 font-mono text-[0.65rem] uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Chapter 06 · Voice
+              Chapter 07 · Voice
             </Link>
           </ScrollReveal>
         </div>

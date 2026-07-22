@@ -17,11 +17,12 @@ import { useTheme } from '@/lib/theme';
  */
 const navLinks = [
   { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
-  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '03', beat: 'Method' },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '04', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '05', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '06', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '07', beat: 'Invitation' },
+  { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '03', beat: 'Systems' },
+  { href: '/#method', label: 'Method', sectionId: 'method', chapter: '04', beat: 'Method' },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '05', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '06', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '07', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '08', beat: 'Invitation' },
 ] as const;
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;
@@ -145,7 +146,7 @@ export function SiteHeader() {
           </Link>
 
           {/* Chapter nav — mono wayfinding with a teal signal hairline */}
-          <ul className="hidden items-center md:flex">
+          <ul className="hidden items-center xl:flex">
             {navLinks.map((link) => {
               const isActive = activeSection === link.sectionId;
               return (
@@ -225,7 +226,7 @@ export function SiteHeader() {
               aria-label="Open navigation menu"
               aria-controls="site-mobile-menu"
               aria-expanded={isMobileMenuOpen}
-              className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-foreground md:hidden"
+              className="flex min-h-11 items-center px-2 font-mono text-[0.65rem] uppercase tracking-[0.22em] text-foreground xl:hidden"
             >
               Menu
             </button>
@@ -249,7 +250,7 @@ export function SiteHeader() {
             /* h-dvh instead of inset-0: the scrolled header's backdrop-blur makes
                the header the containing block for fixed descendants, so bottom-0
                would resolve against the 4rem bar rather than the viewport. */
-            className="fixed inset-x-0 top-0 z-[60] flex h-dvh flex-col overflow-y-auto bg-background md:hidden"
+            className="fixed inset-x-0 top-0 z-[60] flex h-dvh flex-col overflow-y-auto bg-background xl:hidden"
           >
             <div
               className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,color-mix(in_oklch,var(--brand-accent),transparent_93%),transparent_60%)]"

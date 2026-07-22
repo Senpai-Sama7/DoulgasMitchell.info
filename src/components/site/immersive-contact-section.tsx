@@ -35,7 +35,7 @@ const labelClass =
   'block font-mono text-[0.65rem] font-medium uppercase tracking-[0.2em] text-muted-foreground';
 
 /**
- * Chapter 7 — "Invitation". The closing chapter reads as a ceremony, not a
+ * Chapter 8 — "Invitation". The closing chapter reads as a ceremony, not a
  * form dump: large display type, magnetic CTAs, direct lines as editorial
  * rows, and a calm underlined form that still submits to /api/contact with
  * the honeypot, validation, and status states intact.
@@ -127,7 +127,7 @@ export function ImmersiveContactSection() {
       <div className="editorial-container section-spacing relative z-10">
         {/* ── Ceremonial opener ─────────────────────────────────────────── */}
         <ScrollReveal className="mb-16 lg:mb-24">
-          <p className="chapter-label mb-8">07 · Invitation</p>
+          <p className="chapter-label mb-8">08 · Invitation</p>
           <h2 className="max-w-4xl font-display text-[clamp(2.75rem,7vw,5.75rem)] leading-[0.95] tracking-[-0.03em]">
             Let&apos;s build something
             <br />

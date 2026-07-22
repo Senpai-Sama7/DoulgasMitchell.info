@@ -8,11 +8,12 @@ import { PUBLIC_CONTACT_HREF } from '@/lib/public-contact-config';
    story's back matter, not a template link dump. */
 const indexLinks = [
   { href: '/#about', label: 'About', chapter: '02' },
-  { href: '/#method', label: 'Method', chapter: '03' },
-  { href: '/#work', label: 'Work', chapter: '04' },
-  { href: '/#book', label: 'Book', chapter: '05' },
-  { href: '/#writing', label: 'Writing', chapter: '06' },
-  { href: '/#contact', label: 'Contact', chapter: '07' },
+  { href: '/#atlas', label: 'Atlas', chapter: '03' },
+  { href: '/#method', label: 'Method', chapter: '04' },
+  { href: '/#work', label: 'Work', chapter: '05' },
+  { href: '/#book', label: 'Book', chapter: '06' },
+  { href: '/#writing', label: 'Writing', chapter: '07' },
+  { href: '/#contact', label: 'Contact', chapter: '08' },
 ] as const;
 
 export function SiteFooter() {

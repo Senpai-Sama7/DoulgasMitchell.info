@@ -19,6 +19,7 @@ export interface Chapter {
 export const HOME_CHAPTERS: readonly Chapter[] = [
   { id: 'hero', label: 'Arrival' },
   { id: 'about', label: 'Identity' },
+  { id: 'atlas', label: 'Atlas' },
   { id: 'method', label: 'Method' },
   { id: 'work', label: 'Proof' },
   { id: 'book', label: 'Artifact' },
