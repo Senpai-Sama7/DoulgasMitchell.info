@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { adminJson, isAdminApiError } from '@/lib/admin-api-client';
 
 const mdParser = new MarkdownIt({
   html: true,
@@ -73,20 +74,16 @@ export default function MarkdownEditor({ value, onChange, minHeight = '400px', t
     setShowPanel(true);
 
     try {
-      const response = await fetch('/api/admin/ai/optimize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: value, type }),
-      });
-      const data = await response.json();
-
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || 'Optimization failed.');
-      }
-
+      const data = await adminJson<{ data: OptimizationResult }>(
+        '/api/admin/ai/optimize',
+        'POST',
+        { content: value, type }
+      );
       setResult(data.data);
     } catch (error) {
-      setAnalysisError(error instanceof Error ? error.message : 'Optimization failed.');
+      setAnalysisError(
+        isAdminApiError(error) ? error.message : 'Optimization failed.'
+      );
       setResult(null);
     } finally {
       setIsOptimizing(false);

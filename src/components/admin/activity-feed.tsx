@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Bell, 
@@ -9,12 +9,13 @@ import {
   AlertTriangle, 
   AlertCircle, 
   Clock, 
-  ExternalLink
+  ExternalLink,
+  RefreshCw
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import type { Notification } from '@/lib/notifications';
-import { logger } from '@/lib/logger';
+import { adminFetch, isAdminApiError } from '@/lib/admin-api-client';
 
 interface ActivityFeedProps {
   initialNotifications?: Notification[];
@@ -24,26 +25,28 @@ interface ActivityFeedProps {
 export function ActivityFeed({ initialNotifications = [], className }: ActivityFeedProps) {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
   const [loading, setLoading] = useState(!initialNotifications.length);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  const fetchNotifications = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const data = await adminFetch<{ notifications?: Notification[] }>('/api/admin/notifications');
+      setNotifications(data.notifications || []);
+    } catch (error) {
+      setLoadError(
+        isAdminApiError(error) ? error.message : 'Failed to load the activity feed.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchNotifications = async () => {
-      try {
-        const response = await fetch('/api/admin/notifications');
-        if (response.ok) {
-          const data = await response.json();
-          setNotifications(data.notifications || []);
-        }
-      } catch (error) {
-        logger.error('Failed to fetch notifications:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (!initialNotifications.length) {
-      fetchNotifications();
+      void fetchNotifications();
     }
-  }, [initialNotifications]);
+  }, [initialNotifications, fetchNotifications]);
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
@@ -70,6 +73,18 @@ export function ActivityFeed({ initialNotifications = [], className }: ActivityF
             {[1, 2, 3].map(i => (
               <div key={i} className="h-16 w-full animate-pulse bg-zinc-900/50 border border-zinc-800 rounded-sm" />
             ))}
+          </div>
+        ) : loadError ? (
+          <div className="flex flex-col items-center gap-3 py-8 text-center border border-dashed border-red-900/50 rounded-sm">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+            <p className="text-xs text-zinc-400 max-w-[260px]">{loadError}</p>
+            <button
+              type="button"
+              onClick={() => void fetchNotifications()}
+              className="inline-flex items-center gap-1 text-[10px] uppercase tracking-widest font-mono text-zinc-500 hover:text-white transition-colors"
+            >
+              <RefreshCw className="w-3 h-3" /> Retry
+            </button>
           </div>
         ) : notifications.length > 0 ? (
           <AnimatePresence initial={false}>

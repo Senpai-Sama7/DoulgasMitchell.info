@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { adminFetch, adminJson, isAdminApiError } from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 
 type Message = {
@@ -192,12 +193,13 @@ export function AdminAIAgent() {
   async function loadConfiguration(showToast = false) {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/ai', { cache: 'no-store' });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'Failed to load AI controls.');
-      }
+      const payload = await adminFetch<{
+        settings: AdminAiSettings;
+        activeModel?: string;
+        modelCatalog?: AdminAiModelCatalogEntry[];
+        usage?: AdminAiUsageMonth | null;
+        budget?: AdminAiBudgetSummary | null;
+      }>('/api/admin/ai', { cache: 'no-store' });
 
       setSettings(payload.settings);
       setDraftSettings(payload.settings);
@@ -216,8 +218,9 @@ export function AdminAIAgent() {
     } catch (error) {
       toast({
         title: 'AI controls unavailable',
-        description:
-          error instanceof Error ? error.message : 'Failed to load AI settings.',
+        description: isAdminApiError(error)
+          ? error.message
+          : 'Failed to load AI settings.',
         variant: 'destructive',
       });
     } finally {
@@ -251,20 +254,15 @@ export function AdminAIAgent() {
 
     try {
       setIsSaving(true);
-      const response = await fetch('/api/admin/ai', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selectedModel: draftSettings.selectedModel,
-          customModel: draftSettings.customModel.trim(),
-          monthlyBudgetUsd: parsedBudgetInput,
-        }),
+      const payload = await adminJson<{
+        settings: AdminAiSettings;
+        activeModel?: string;
+        budget?: AdminAiBudgetSummary | null;
+      }>('/api/admin/ai', 'PUT', {
+        selectedModel: draftSettings.selectedModel,
+        customModel: draftSettings.customModel.trim(),
+        monthlyBudgetUsd: parsedBudgetInput,
       });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'Failed to save AI settings.');
-      }
 
       setSettings(payload.settings);
       setDraftSettings(payload.settings);
@@ -283,8 +281,9 @@ export function AdminAIAgent() {
     } catch (error) {
       toast({
         title: 'Save failed',
-        description:
-          error instanceof Error ? error.message : 'Could not update AI settings.',
+        description: isAdminApiError(error)
+          ? error.message
+          : 'Could not update AI settings.',
         variant: 'destructive',
       });
       return false;
@@ -311,16 +310,12 @@ export function AdminAIAgent() {
     setIsSending(true);
 
     try {
-      const response = await fetch('/api/admin/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage }),
-      });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'AI failed to respond.');
-      }
+      const payload = await adminJson<{
+        reply: string;
+        activeModel?: string;
+        usage?: AdminAiUsageMonth | null;
+        budget?: AdminAiBudgetSummary | null;
+      }>('/api/admin/ai', 'POST', { message: userMessage });
 
       setMessages((prev) => [...prev, { role: 'ai', text: payload.reply }]);
       setActiveModel(payload.activeModel || activeModel);
@@ -331,10 +326,9 @@ export function AdminAIAgent() {
         ...prev,
         {
           role: 'ai',
-          text:
-            error instanceof Error
-              ? `Error: ${error.message}`
-              : 'Error: Connection to the Gemini backend failed.',
+          text: isAdminApiError(error)
+            ? `Error: ${error.message}`
+            : 'Error: Connection to the Gemini backend failed.',
         },
       ]);
     } finally {
