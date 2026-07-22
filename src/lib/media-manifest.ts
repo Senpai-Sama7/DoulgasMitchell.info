@@ -14,6 +14,8 @@ export const mediaManifest = {
   hero: {
     videoLoop: resolve('/media/breathing-dm-loop.mp4'),
     videoLoopAlt: resolve('/media/dougie-loop-v2.mp4'),
+    videoPoster: resolve('/media/breathing-dm-poster.webp'),
+    videoPosterAlt: resolve('/media/dougie-frame-poster.webp'),
     poster: resolve('/images/hero-poster.svg'),
   },
   book: {

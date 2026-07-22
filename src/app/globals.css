@@ -4566,3 +4566,189 @@ a:focus-visible .lux-underline {
   mix-blend-mode: soft-light;
   transform: translateX(-170%);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   VIDEO ENTRANCE
+   Cinematic gate on first visit per session — a full-bleed muted film loop
+   under a masked brand reveal, exited by a GSAP clip-path shutter wipe with a
+   signal-teal hairline riding the edge. Theme-independent: the gate always
+   reads as cool ink so the reveal into either theme lands the same way.
+   Everything is absolutely positioned inside a fixed panel — zero CLS.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.video-entrance {
+  --entrance-ink: oklch(0.13 0.012 250);
+  --entrance-foam: oklch(0.97 0.005 240);
+  --entrance-teal: oklch(0.72 0.09 195);
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+}
+
+/* Clip-path host — GSAP wipes this from inset(0 0 0 0) to inset(0 0 100% 0) */
+.video-entrance-panel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--entrance-ink);
+  will-change: clip-path;
+}
+
+.video-entrance-media {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform, opacity;
+}
+
+/* Ink scrim + a restrained teal breath for legibility over the loop */
+.video-entrance-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      60% 45% at 50% 42%,
+      color-mix(in oklch, var(--entrance-teal), transparent 88%),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in oklch, var(--entrance-ink), transparent 42%),
+      color-mix(in oklch, var(--entrance-ink), transparent 62%) 45%,
+      color-mix(in oklch, var(--entrance-ink), transparent 22%)
+    );
+}
+
+.video-entrance-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+/* Mono kicker with signal rules on both flanks */
+.video-entrance-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--entrance-foam), transparent 22%);
+}
+
+.video-entrance-kicker::before,
+.video-entrance-kicker::after {
+  content: '';
+  width: 2.5rem;
+  height: 1px;
+  flex: none;
+  background: color-mix(in oklch, var(--entrance-teal), transparent 30%);
+}
+
+/* Overflow mask for the wordmark rise — padding/negative-margin pair keeps
+   Instrument Serif descenders unclipped at rest */
+.video-entrance-line {
+  display: block;
+  overflow: hidden;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.video-entrance-name {
+  display: inline-block;
+  font-size: clamp(3rem, 10vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--entrance-foam);
+  will-change: transform, opacity;
+}
+
+/* Hold hairline — fills left-to-right while the gate breathes */
+.video-entrance-progress {
+  position: relative;
+  display: block;
+  width: min(280px, 44vw);
+  height: 1px;
+  margin-top: 0.75rem;
+  overflow: hidden;
+  background: color-mix(in oklch, var(--entrance-foam), transparent 84%);
+}
+
+.video-entrance-progress-fill {
+  position: absolute;
+  inset: 0;
+  background: var(--entrance-teal);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+/* Teal hairline that rides the wipe edge during exit */
+.video-entrance-edge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--entrance-teal) 18%,
+    var(--entrance-teal) 82%,
+    transparent
+  );
+  will-change: top, opacity;
+}
+
+.video-entrance-skip {
+  position: absolute;
+  right: clamp(1.25rem, 4vw, 2.5rem);
+  bottom: calc(clamp(1.25rem, 4vw, 2.5rem) + env(safe-area-inset-bottom, 0px));
+  padding: 0.5rem 1rem;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: color-mix(in oklch, var(--entrance-foam), transparent 18%);
+  background: color-mix(in oklch, var(--entrance-ink), transparent 45%);
+  border: 1px solid color-mix(in oklch, var(--entrance-foam), transparent 78%);
+  border-radius: 9999px;
+  backdrop-filter: blur(6px);
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.video-entrance-skip:hover {
+  color: var(--entrance-foam);
+  border-color: color-mix(in oklch, var(--entrance-teal), transparent 25%);
+}
+
+.video-entrance-skip:focus-visible {
+  outline: 2px solid var(--entrance-teal);
+  outline-offset: 3px;
+}
+
+/* Belt-and-suspenders: the component never mounts under reduced motion, but
+   if the preference flips mid-session the gate must not trap the page. */
+@media (prefers-reduced-motion: reduce) {
+  .video-entrance {
+    display: none;
+  }
+}
