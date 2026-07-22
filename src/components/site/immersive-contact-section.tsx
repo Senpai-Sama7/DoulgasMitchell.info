@@ -111,9 +111,12 @@ export function ImmersiveContactSection() {
       setFormState({ name: '', email: '', subject: '', message: '', website: '' });
     } catch {
       setSubmitStatus('error');
+      // Auto-clear errors so the form can be retried; keep success visible.
+      window.setTimeout(() => {
+        setSubmitStatus((current) => (current === 'error' ? 'idle' : current));
+      }, 8000);
     } finally {
       setIsSubmitting(false);
-      window.setTimeout(() => setSubmitStatus('idle'), 6000);
     }
   };
 
@@ -325,6 +328,7 @@ export function ImmersiveContactSection() {
               {/* Honeypot — humans never see it, bots fill it */}
               <input
                 type="text"
+                name="website"
                 value={formState.website}
                 onChange={(event) => setFormState({ ...formState, website: event.target.value })}
                 tabIndex={-1}

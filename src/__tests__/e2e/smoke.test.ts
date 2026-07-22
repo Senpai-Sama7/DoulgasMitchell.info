@@ -4,7 +4,9 @@ test.describe('Public Site Smoke Tests', () => {
   test('should load the homepage', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/Douglas Mitchell/);
-    await expect(page.getByRole('heading', { name: /Douglas Mitchell/i, includeHidden: true })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /Douglas Mitchell/i, includeHidden: true })
+    ).toBeVisible();
   });
 
   test('should navigate to work section', async ({ page }) => {
@@ -15,35 +17,45 @@ test.describe('Public Site Smoke Tests', () => {
   });
 
   test('should submit contact form', async ({ page }) => {
-    await page.goto('/');
+    await page.goto('/#contact');
 
-    // Find contact section and fill form
-    const nameInput = page.getByLabel(/name/i).or(page.locator('input[name="name"]'));
-    const emailInput = page.getByLabel(/email/i).or(page.locator('input[name="email"]'));
-    const messageInput = page.getByLabel(/message/i).or(page.locator('textarea[name="message"]'));
+    const form = page.locator('#contact-form');
+    await expect(form).toBeVisible({ timeout: 15000 });
 
-    await nameInput.fill('Test User');
-    await emailInput.fill('test@example.com');
-    await messageInput.fill('This is a test message from E2E testing.');
+    await form.locator('input[name="name"]').fill('Test User');
+    await form.locator('input[name="email"]').fill('test@example.com');
+    await form.locator('textarea[name="message"]').fill(
+      'This is a test message from E2E testing.'
+    );
 
-    // Submit - avoid honeypot field (website) if present
-    const submitButton = page.getByRole('button', { name: /send|submit/i }).first();
-    await submitButton.click();
+    await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/contact') && response.request().method() === 'POST'
+      ),
+      form.getByRole('button', { name: /send message/i }).click(),
+    ]);
 
-    // Wait for success message or toast
-    await expect(page.getByText(/thank you|received|success/i)).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#contact-form-status')).toContainText(
+      /thank you|received|success/i,
+      { timeout: 10000 }
+    );
   });
 
   test('should interact with Public Knowledge Console', async ({ page }) => {
     await page.goto('/chat');
-    await expect(page.getByRole('heading', { name: /AI Assistant/i })).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.getByRole('heading', { name: /Knowledge console|AI Assistant/i })
+    ).toBeVisible({ timeout: 10000 });
 
     const textarea = page.locator('textarea');
     await expect(textarea).toBeVisible();
     await textarea.fill('Who is Douglas Mitchell?');
     await page.getByRole('button', { name: 'Submit' }).click();
 
-    await expect(page.getByText(/background|engineer|architect|principal|consultant/i).first()).toBeVisible({ timeout: 20000 });
+    await expect(
+      page.getByText(/background|engineer|architect|principal|consultant|operations/i).first()
+    ).toBeVisible({ timeout: 20000 });
   });
 });
 

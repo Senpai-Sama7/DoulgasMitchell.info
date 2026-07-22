@@ -93,7 +93,8 @@ export async function POST(request: NextRequest) {
           }
         });
       }
-    } catch {
+    } catch (error) {
+      logger.error('Contact persistence failed:', error);
       return NextResponse.json(
         { error: 'Unable to submit your message right now. Please email directly.' },
         { status: 503 }
