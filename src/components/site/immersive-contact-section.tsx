@@ -127,7 +127,7 @@ export function ImmersiveContactSection() {
       <div className="editorial-container section-spacing relative z-10">
         {/* ── Ceremonial opener ─────────────────────────────────────────── */}
         <ScrollReveal className="mb-16 lg:mb-24">
-          <p className="chapter-label mb-8">08 · Invitation</p>
+          <p className="chapter-label mb-8">09 · Invitation</p>
           <h2 className="max-w-4xl font-display text-[clamp(2.75rem,7vw,5.75rem)] leading-[0.95] tracking-[-0.03em]">
             Let&apos;s build something
             <br />

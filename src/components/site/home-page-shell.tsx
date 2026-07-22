@@ -24,6 +24,13 @@ const ImmersiveMethodSection = dynamic(
   () => import('@/components/site/immersive-method-section').then((m) => m.ImmersiveMethodSection),
   { ssr: true }
 );
+const DecisionSimulatorSection = dynamic(
+  () =>
+    import('@/components/site/decision-simulator-section').then(
+      (m) => m.DecisionSimulatorSection
+    ),
+  { ssr: true }
+);
 const ImmersiveWorkSection = dynamic(
   () => import('@/components/site/immersive-work-section').then((m) => m.ImmersiveWorkSection),
   { ssr: true }
@@ -146,6 +153,7 @@ export function HomePageShell({
         <ImmersiveAboutSection />
         <SystemAtlasSection />
         <ImmersiveMethodSection />
+        <DecisionSimulatorSection />
         <ImmersiveWorkSection projects={projects} />
         <ImmersiveBookSection />
         <ImmersiveWritingSection articles={articles} />

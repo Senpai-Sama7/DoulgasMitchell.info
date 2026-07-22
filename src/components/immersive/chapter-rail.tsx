@@ -21,6 +21,7 @@ export const HOME_CHAPTERS: readonly Chapter[] = [
   { id: 'about', label: 'Identity' },
   { id: 'atlas', label: 'Atlas' },
   { id: 'method', label: 'Method' },
+  { id: 'simulator', label: 'Instrument' },
   { id: 'work', label: 'Proof' },
   { id: 'book', label: 'Artifact' },
   { id: 'writing', label: 'Voice' },

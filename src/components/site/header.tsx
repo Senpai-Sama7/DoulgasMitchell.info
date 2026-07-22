@@ -15,15 +15,33 @@ import { useTheme } from '@/lib/theme';
  * same order as the chapter rail, so the header reads as wayfinding for the
  * story rather than a generic link strip.
  */
-const navLinks = [
+interface NavLink {
+  href: string;
+  label: string;
+  sectionId: string;
+  chapter: string;
+  beat: string;
+  /** Only rendered in the desktop strip at lg+ to keep the md band uncrowded. */
+  wideOnly?: boolean;
+}
+
+const navLinks: readonly NavLink[] = [
   { href: '/#about', label: 'About', sectionId: 'about', chapter: '02', beat: 'Identity' },
   { href: '/#atlas', label: 'Atlas', sectionId: 'atlas', chapter: '03', beat: 'Systems' },
   { href: '/#method', label: 'Method', sectionId: 'method', chapter: '04', beat: 'Method' },
-  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '05', beat: 'Proof' },
-  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '06', beat: 'Artifact' },
-  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '07', beat: 'Voice' },
-  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '08', beat: 'Invitation' },
-] as const;
+  {
+    href: '/#simulator',
+    label: 'Instrument',
+    sectionId: 'simulator',
+    chapter: '05',
+    beat: 'Decision',
+    wideOnly: true,
+  },
+  { href: '/#work', label: 'Work', sectionId: 'work', chapter: '06', beat: 'Proof' },
+  { href: '/#book', label: 'Book', sectionId: 'book', chapter: '07', beat: 'Artifact' },
+  { href: '/#writing', label: 'Writing', sectionId: 'writing', chapter: '08', beat: 'Voice' },
+  { href: '/#contact', label: 'Contact', sectionId: 'contact', chapter: '09', beat: 'Invitation' },
+];
 
 const signatureEase = [0.22, 1, 0.36, 1] as const;
 
@@ -150,7 +168,7 @@ export function SiteHeader() {
             {navLinks.map((link) => {
               const isActive = activeSection === link.sectionId;
               return (
-                <li key={link.href}>
+                <li key={link.href} className={cn(link.wideOnly && 'hidden lg:block')}>
                   <a
                     href={link.href}
                     aria-current={isActive ? 'location' : undefined}
