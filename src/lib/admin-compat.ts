@@ -607,6 +607,7 @@ export async function createPasskeyRecord(input: {
   publicKey: Uint8Array;
   counter: number;
   deviceName?: string;
+  transports?: string[];
 }) {
   const columns = await getPasskeyColumns();
   const now = new Date();
@@ -623,7 +624,7 @@ export async function createPasskeyRecord(input: {
 
   if (columns.has('transports')) {
     insertColumns.push('transports');
-    values.push('[]');
+    values.push(JSON.stringify(input.transports ?? []));
   }
 
   if (columns.has('deviceType')) {
@@ -653,4 +654,53 @@ export async function createPasskeyRecord(input: {
     `INSERT INTO "PasskeyCredential" (${columnList}) VALUES (${placeholders})`,
     ...values
   );
+}
+
+export async function findPasskeyRecordById(id: string) {
+  if (!(await hasTable('PasskeyCredential'))) {
+    return null;
+  }
+
+  const columns = await getPasskeyColumns();
+  const userIdColumn = columns.has('userId') ? 'userId' : 'adminUserId';
+  const credentialIdColumn = columns.has('credentialId') ? 'credentialId' : 'credentialID';
+  const deviceNameSelect = columns.has('deviceName')
+    ? `${qualifiedColumn('PasskeyCredential', 'deviceName')} AS "deviceName"`
+    : `${sqlNull('deviceName')}`;
+
+  const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
+    `SELECT ${qualifiedColumn('PasskeyCredential', 'id')} AS id,
+            ${qualifiedColumn('PasskeyCredential', userIdColumn)} AS "userId",
+            ${qualifiedColumn('PasskeyCredential', credentialIdColumn)} AS "credentialId",
+            ${deviceNameSelect}
+     FROM "PasskeyCredential"
+     WHERE ${qualifiedColumn('PasskeyCredential', 'id')} = $1
+     LIMIT 1`,
+    id
+  );
+
+  const row = rows[0];
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: String(row.id),
+    userId: String(row.userId),
+    credentialId: String(row.credentialId),
+    deviceName: typeof row.deviceName === 'string' ? row.deviceName : null,
+  };
+}
+
+export async function deletePasskeyRecordById(id: string) {
+  if (!(await hasTable('PasskeyCredential'))) {
+    return false;
+  }
+
+  const deleted = await db.$executeRawUnsafe(
+    `DELETE FROM "PasskeyCredential" WHERE ${quoteIdentifier('id')} = $1`,
+    id
+  );
+
+  return deleted > 0;
 }

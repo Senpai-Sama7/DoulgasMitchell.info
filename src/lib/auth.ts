@@ -2,6 +2,7 @@ import { randomBytes } from 'crypto';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 import { env } from './env';
 import { clearRateLimit as clearScopedRateLimit, rateLimit } from './rate-limit';
 import {
@@ -9,7 +10,6 @@ import {
   deleteAdminSessionByToken,
   findAdminSessionByToken,
 } from './admin-compat';
-import { hasTable } from './db-introspection';
 
 function getJwtSecret() {
   const secret = env.JWT_SECRET;
@@ -116,20 +116,11 @@ export async function getSession(): Promise<Session | null> {
 
   const persistedSession = await findAdminSessionByToken(token);
 
-  if (!persistedSession) {
-    if (!(await hasTable('Session'))) {
-      // DB unreachable — force re-authentication rather than trusting JWT alone.
-      // Without DB verification we cannot confirm the session hasn't been revoked
-      // or that the role hasn't changed.
-      await deleteSession(token);
-      return null;
-    }
-    
-    await deleteSession(token);
-    return null;
-  }
-
-  if (!persistedSession.isActive) {
+  // Fail closed: without a live, active DB session record we cannot confirm
+  // the session hasn't been revoked or that the role hasn't changed — even
+  // when the DB itself is unreachable, force re-authentication rather than
+  // trusting the JWT alone.
+  if (!persistedSession || !persistedSession.isActive) {
     await deleteSession(token);
     return null;
   }
@@ -150,10 +141,34 @@ export async function getSession(): Promise<Session | null> {
   };
 }
 
+/**
+ * Server-component guard for protected admin pages. The (protected) layout
+ * covers the initial document request, but client-side navigations re-fetch
+ * page payloads without re-rendering the layout — every protected page must
+ * verify the session itself so an expired/revoked session cannot keep reading
+ * admin data. Redirects to the login screen with a session-expired notice.
+ */
+export async function requireAdminSession(): Promise<Session> {
+  const session = await getSession();
+
+  if (!session) {
+    redirect('/admin/login?reason=session-expired');
+  }
+
+  return session;
+}
+
 // Delete session
 export async function deleteSession(token: string): Promise<void> {
   const cookieStore = await cookies();
-  cookieStore.delete('admin-session');
+  // Expire with the same attributes used at set-time so browsers reliably drop it.
+  cookieStore.set('admin-session', '', {
+    httpOnly: true,
+    secure: env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 0,
+    path: '/',
+  });
   
   try {
     await deleteAdminSessionByToken(token);

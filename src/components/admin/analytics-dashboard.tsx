@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { Activity, Compass, Loader2, Mail, Search, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Activity, AlertCircle, Compass, Loader2, Mail, RefreshCw, Search, Users } from 'lucide-react';
 import { AnalyticsChart } from '@/components/admin/analytics-chart';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { adminFetch, isAdminApiError } from '@/lib/admin-api-client';
 import { formatPercent, type ForecastPoint } from '@/lib/decision-intelligence';
-import { logger } from '@/lib/logger';
 
 interface AnalyticsData {
   totalViews: number;
@@ -52,26 +53,27 @@ function decisionTone(action: 'proceed' | 'conditional' | 'defer' | 'refuse' | u
 export function AnalyticsDashboard() {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
 
-  useEffect(() => {
-    async function fetchAnalytics() {
-      setLoading(true);
-      try {
-        const response = await fetch(`/api/admin/analytics?days=${days}`);
-        const result = await response.json();
-        if (result.success) {
-          setData(result.data);
-        }
-      } catch (error) {
-        logger.error('Failed to fetch analytics:', error);
-      } finally {
-        setLoading(false);
-      }
+  const fetchAnalytics = useCallback(async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const result = await adminFetch<{ data: AnalyticsData }>(`/api/admin/analytics?days=${days}`);
+      setData(result.data);
+    } catch (error) {
+      setLoadError(
+        isAdminApiError(error) ? error.message : 'Failed to load analytics data.'
+      );
+    } finally {
+      setLoading(false);
     }
-
-    void fetchAnalytics();
   }, [days]);
+
+  useEffect(() => {
+    void fetchAnalytics();
+  }, [fetchAnalytics]);
 
   if (loading && !data) {
     return (
@@ -82,7 +84,17 @@ export function AnalyticsDashboard() {
   }
 
   if (!data) {
-    return null;
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-border/70 text-center">
+        <AlertCircle className="h-6 w-6 text-destructive" />
+        <p className="max-w-sm text-sm text-muted-foreground">
+          {loadError ?? 'Analytics data is unavailable right now.'}
+        </p>
+        <Button size="sm" variant="outline" onClick={() => void fetchAnalytics()}>
+          <RefreshCw className="mr-1 h-3 w-3" /> Retry
+        </Button>
+      </div>
+    );
   }
 
   const summaryCards = [
@@ -116,6 +128,18 @@ export function AnalyticsDashboard() {
 
   return (
     <div className="space-y-6 @container">
+      {loadError ? (
+        <div className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+          <span className="flex items-center gap-2">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {loadError} Showing the last loaded window.
+          </span>
+          <Button size="sm" variant="outline" onClick={() => void fetchAnalytics()}>
+            <RefreshCw className="mr-1 h-3 w-3" /> Retry
+          </Button>
+        </div>
+      ) : null}
+
       <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @2xl:grid-cols-4">
         {summaryCards.map((card) => (
           <Card key={card.label} className="bg-muted/30 border-none shadow-none">

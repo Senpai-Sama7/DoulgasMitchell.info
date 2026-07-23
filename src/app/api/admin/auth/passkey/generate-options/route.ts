@@ -1,9 +1,9 @@
 import type { AuthenticatorTransport } from '@simplewebauthn/server';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { getAuthenticationOptions } from '@/lib/webauthn';
 import { setPasskeyChallengeCookie } from '@/lib/passkey-challenge-cookie';
 import { findAdminUserByEmail, getAdminPasskeysForUser } from '@/lib/admin-compat';
-import { logger } from '@/lib/logger';
+import { ApiHandler } from '@/lib/api-response';
 import {
   getClientIp,
   isInvalidJsonBodyError,
@@ -16,14 +16,14 @@ export async function POST(request: NextRequest) {
   try {
     const originCheck = validateTrustedOrigin(request);
     if (!originCheck.allowed) {
-      return NextResponse.json({ error: originCheck.reason }, { status: 403 });
+      return ApiHandler.forbidden(originCheck.reason);
     }
 
     const body = await readJsonBody<{ email?: string }>(request);
     const { email } = body;
 
     if (!email) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+      return ApiHandler.error('Email is required', 400);
     }
 
     const limit = await rateLimit(`${await getClientIp(request)}:${String(email).toLowerCase()}`, {
@@ -33,17 +33,16 @@ export async function POST(request: NextRequest) {
     });
 
     if (!limit.allowed) {
-      return NextResponse.json({ error: 'Too many passkey attempts. Please try again later.' }, { status: 429 });
+      return ApiHandler.error('Too many passkey attempts. Please try again later.', 429);
     }
 
     const user = await findAdminUserByEmail(email);
     const passkeys = user ? await getAdminPasskeysForUser(user.id) : [];
 
+    // Deliberately a 200 without options — the login page uses `available` to
+    // suggest password sign-in without revealing whether the account exists.
     if (!user || passkeys.length === 0) {
-      return NextResponse.json({
-        available: false,
-        error: 'No passkeys found for this user',
-      });
+      return ApiHandler.success({ available: false });
     }
 
     const options = await getAuthenticationOptions(passkeys.map((passkey) => ({
@@ -53,16 +52,15 @@ export async function POST(request: NextRequest) {
 
     await setPasskeyChallengeCookie('auth', email, options.challenge);
 
-    return NextResponse.json({
+    return ApiHandler.success({
       available: true,
       options,
     });
   } catch (error) {
     if (isInvalidJsonBodyError(error)) {
-      return NextResponse.json({ error: 'Request body must be valid JSON.' }, { status: 400 });
+      return ApiHandler.error('Request body must be valid JSON.', 400);
     }
 
-    logger.error('Passkey options error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return ApiHandler.internalServerError('Passkey options error', error);
   }
 }

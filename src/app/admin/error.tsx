@@ -27,7 +27,7 @@ export default function AdminError({ error, reset }: AdminErrorProps) {
           <button type="button" onClick={reset} className="cta-button">
             Retry
           </button>
-          <Link href="/admin/dashboard" className="ghost-button">
+          <Link href="/admin" className="ghost-button">
             Dashboard
           </Link>
           <Link href="/" className="ghost-button">

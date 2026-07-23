@@ -1,0 +1,37 @@
+name: Neon Preview Cleanup
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+  workflow_dispatch:
+
+jobs:
+  prune-neon-preview-branches:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Prune stale Neon preview branches
+        if: github.event.action != 'closed'
+        continue-on-error: true
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          KEEP_BRANCH: preview/${{ github.event.pull_request.head.ref }}
+        run: bun scripts/neon-prune-preview-branches.mjs
+
+      - name: Delete Neon branch for closed PR
+        if: github.event.action == 'closed'
+        continue-on-error: true
+        uses: neondatabase/delete-branch-action@v3
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: preview/${{ github.event.pull_request.head.ref }}

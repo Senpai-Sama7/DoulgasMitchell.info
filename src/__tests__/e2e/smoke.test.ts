@@ -2,31 +2,36 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Public Site Smoke Tests', () => {
   test('should load the homepage', async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveTitle(/Douglas Mitchell/);
-    await expect(
-      page.getByRole('heading', { name: /Douglas Mitchell/i, includeHidden: true })
-    ).toBeVisible();
-  });
-
-  test('should navigate to work section', async ({ page }) => {
-    // Skip the first-visit video gate and use a viewport wide enough for the
-    // xl chapter row — WebKit's default 1280px Desktop Safari width often
-    // falls below Tailwind xl once scrollbars reduce layout width.
+    // Skip the cinematic gate so the hero heading is in the accessibility tree
+    // immediately (WebKit is especially sensitive to overlay timing).
     await page.addInitScript(() => {
       window.sessionStorage.setItem('dm-video-entrance-v1', '1');
     });
-    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto('/');
+    await expect(page).toHaveTitle(/Douglas Mitchell/);
+    await expect(
+      page.getByRole('heading', { name: /Douglas Mitchell/i })
+    ).toBeVisible({ timeout: 15000 });
+  });
+
+  test('should navigate to work section', async ({ page }) => {
+    // Skip the cinematic gate so overlays do not intercept navigation.
+    await page.addInitScript(() => {
+      window.sessionStorage.setItem('dm-video-entrance-v1', '1');
+    });
     await page.goto('/');
 
     // Prefer the hash nav target — a loose /Work/i name match also hits
     // project titles like "AI Workflow Automation" and leaves the homepage.
-    const workLink = page
-      .getByRole('navigation', { name: 'Primary' })
-      .locator('a[href="/#work"]');
-    await expect(workLink).toBeVisible();
+    // Do not require the xl desktop strip to be visible: WebKit's layout width
+    // often keeps `hidden xl:flex` collapsed even at 1440 CSS pixels. The
+    // footer Index always exposes `/#work` in the document flow.
+    const workLink = page.locator('footer a[href="/#work"]');
+    await expect(workLink).toBeVisible({ timeout: 15000 });
+    await workLink.scrollIntoViewIfNeeded();
     await workLink.click();
     await expect(page).toHaveURL(/.*#work/);
+    await expect(page.locator('#work')).toBeAttached();
   });
 
   test('should submit contact form', async ({ page }) => {

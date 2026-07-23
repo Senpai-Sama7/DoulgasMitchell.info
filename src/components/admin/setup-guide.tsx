@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { adminJson, isAdminApiError } from '@/lib/admin-api-client';
 import { getAiApiKey } from '@/lib/ai-helpers';
 import { Sparkles, Database, Key, Wand2, Check, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -23,17 +24,26 @@ export function SetupGuide({ needsSeed }: SetupGuideProps) {
   async function handleSeed() {
     setSeeding(true);
     try {
-      const res = await fetch('/api/seed', { method: 'POST' });
-      const data = await res.json();
+      // The seed route reports partial failures as { success: false } with a
+      // 200 status, so inspect the payload rather than relying on the throw.
+      const data = await adminJson<{ success: boolean; message?: string }>('/api/seed', 'POST');
       if (data.success) {
         setSeeded(true);
         toast({ title: 'Content seeded', description: 'Articles, projects, and certifications have been populated.' });
         setTimeout(() => router.refresh(), 500);
       } else {
-        toast({ title: 'Seed failed', description: data.message, variant: 'destructive' });
+        toast({
+          title: 'Seed failed',
+          description: data.message || 'Seeding did not complete.',
+          variant: 'destructive',
+        });
       }
-    } catch {
-      toast({ title: 'Seed failed', description: 'Could not reach the seed API.', variant: 'destructive' });
+    } catch (error) {
+      toast({
+        title: 'Seed failed',
+        description: isAdminApiError(error) ? error.message : 'Could not reach the seed API.',
+        variant: 'destructive',
+      });
     } finally {
       setSeeding(false);
     }

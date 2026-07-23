@@ -64,18 +64,17 @@ export const NotificationService = {
       });
 
       return logs.map(log => {
-        const details = typeof log.details === 'string' 
-          ? JSON.parse(log.details) 
-          : (log.details as unknown as Record<string, unknown>) || {};
-        
+        // Parse per-row so one malformed record cannot drop the whole list.
+        const details = parseNotificationDetails(log.details);
+
         return {
           id: log.resourceId || log.id,
-          type: details.type || 'info',
-          title: details.title || 'System Notification',
-          message: details.message || '',
+          type: normalizeNotificationType(details.type),
+          title: typeof details.title === 'string' && details.title ? details.title : 'System Notification',
+          message: typeof details.message === 'string' ? details.message : '',
           timestamp: log.createdAt,
-          read: !!details.read,
-          link: details.link,
+          read: Boolean(details.read),
+          link: typeof details.link === 'string' ? details.link : undefined,
           metadata: details
         };
       });
@@ -85,3 +84,19 @@ export const NotificationService = {
     }
   }
 };
+
+function parseNotificationDetails(details: unknown): Record<string, unknown> {
+  if (typeof details === 'string') {
+    try {
+      const parsed = JSON.parse(details) as unknown;
+      return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
+    } catch {
+      return {};
+    }
+  }
+  return details && typeof details === 'object' ? (details as Record<string, unknown>) : {};
+}
+
+function normalizeNotificationType(type: unknown): Notification['type'] {
+  return type === 'success' || type === 'warning' || type === 'error' ? type : 'info';
+}

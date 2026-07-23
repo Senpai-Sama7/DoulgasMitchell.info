@@ -14,6 +14,7 @@ import {
   CheckCircle,
   Loader2,
   FolderOpen,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -23,6 +24,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  extractApiErrorMessage,
+  triggerSessionExpiredRedirect,
+} from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 import { formatFileSize, getFileCategory, isPreviewable } from '@/lib/upload';
 import { logger } from '@/lib/logger';
@@ -41,12 +46,62 @@ interface UploadFile {
   };
 }
 
+interface UploadResultMedia {
+  id: string;
+  url: string;
+  thumbnailUrl?: string;
+  originalName?: string;
+}
+
+interface UploadResult {
+  success: boolean;
+  originalName?: string;
+  error?: string;
+  media?: UploadResultMedia;
+}
+
 interface MediaUploaderProps {
   onUploadComplete?: (files: UploadFile[]) => void;
   maxFiles?: number;
   className?: string;
   defaultFolder?: string | null;
   availableFolders?: string[];
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
+/**
+ * Upload via XMLHttpRequest so we get real upload progress events —
+ * `fetch` has no standardized upload progress API.
+ */
+function uploadWithProgress(
+  url: string,
+  formData: FormData,
+  onProgress: (percent: number) => void
+): Promise<{ status: number; payload: unknown }> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && event.total > 0) {
+        onProgress(Math.min(Math.round((event.loaded / event.total) * 100), 99));
+      }
+    };
+    xhr.onload = () => {
+      let payload: unknown = null;
+      try {
+        payload = JSON.parse(xhr.responseText) as unknown;
+      } catch {
+        payload = null;
+      }
+      resolve({ status: xhr.status, payload });
+    };
+    xhr.onerror = () => reject(new Error('Network error during upload. Check your connection and retry.'));
+    xhr.onabort = () => reject(new Error('Upload was cancelled.'));
+    xhr.send(formData);
+  });
 }
 
 export function MediaUploader({
@@ -97,71 +152,119 @@ export function MediaUploader({
     });
   };
 
-  const uploadFiles = async () => {
-    if (files.length === 0) return;
+  const performUpload = async (batch: UploadFile[]) => {
+    if (batch.length === 0) return;
 
     setIsUploading(true);
 
+    const batchIds = new Set(batch.map((f) => f.id));
+    setFiles((prev) =>
+      prev.map((file) =>
+        batchIds.has(file.id)
+          ? { ...file, status: 'uploading' as const, progress: 0, error: undefined }
+          : file
+      )
+    );
+
     const formData = new FormData();
-    const pendingFiles = files.filter((f) => f.status === 'pending');
-    
-    pendingFiles.forEach((file) => {
+    batch.forEach((file) => {
       formData.append('files', file.file);
     });
-
     if (targetFolder) {
       formData.append('folder', targetFolder);
     }
 
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Update file statuses
-        setFiles((prev) =>
-          prev.map((file) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  API response type
-            const result = data.results.find((r: any) => r.success && r.media?.originalName === file.file.name);
-            if (result) {
-              return {
-                ...file,
-                status: 'success',
-                progress: 100,
-                result: result.media,
-              };
-            }
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any  --  API response type
-            const failed = data.results.find((r: any) => !r.success && r.originalName === file.file.name);
-            if (failed) {
-              return {
-                ...file,
-                status: 'error',
-                error: failed.error,
-              };
-            }
-            return file;
-          })
-        );
-
-        onUploadComplete?.(files);
-      }
-    } catch (error) {
-      logger.error('Upload error:', error);
+    const markBatchFailed = (message: string) => {
       setFiles((prev) =>
         prev.map((file) =>
-          file.status === 'pending'
-            ? { ...file, status: 'error', error: 'Upload failed' }
+          batchIds.has(file.id)
+            ? { ...file, status: 'error' as const, error: message }
             : file
         )
       );
+    };
+
+    try {
+      const { status, payload } = await uploadWithProgress('/api/upload', formData, (percent) => {
+        setFiles((prev) =>
+          prev.map((file) =>
+            batchIds.has(file.id) && file.status === 'uploading'
+              ? { ...file, progress: percent }
+              : file
+          )
+        );
+      });
+
+      if (status === 401) {
+        markBatchFailed('Your session expired. Sign in again to continue.');
+        triggerSessionExpiredRedirect();
+        return;
+      }
+
+      if (status < 200 || status >= 300 || !isRecord(payload) || payload.success !== true) {
+        markBatchFailed(extractApiErrorMessage(payload, `Upload failed with status ${status}.`));
+        return;
+      }
+
+      const results: UploadResult[] = Array.isArray(payload.results)
+        ? (payload.results as UploadResult[])
+        : [];
+
+      let updatedFiles: UploadFile[] = [];
+      let successCount = 0;
+
+      setFiles((prev) => {
+        updatedFiles = prev.map((file) => {
+          if (!batchIds.has(file.id)) {
+            return file;
+          }
+
+          const success = results.find(
+            (r) => r.success && r.media?.originalName === file.file.name
+          );
+          if (success?.media) {
+            successCount += 1;
+            return {
+              ...file,
+              status: 'success' as const,
+              progress: 100,
+              result: {
+                id: success.media.id,
+                url: success.media.url,
+                thumbnailUrl: success.media.thumbnailUrl,
+              },
+            };
+          }
+
+          const failed = results.find(
+            (r) => !r.success && r.originalName === file.file.name
+          );
+          return {
+            ...file,
+            status: 'error' as const,
+            error: failed?.error || 'The server did not return a result for this file.',
+          };
+        });
+        return updatedFiles;
+      });
+
+      if (successCount > 0) {
+        onUploadComplete?.(updatedFiles);
+      }
+    } catch (error) {
+      logger.error('Upload error:', error);
+      markBatchFailed(error instanceof Error ? error.message : 'Upload failed. Please retry.');
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const uploadFiles = () => performUpload(files.filter((f) => f.status === 'pending'));
+
+  const retryFailed = () => {
+    const failed = files.filter((f) => f.status === 'error');
+    if (failed.length === 0) return;
+    void performUpload(failed);
   };
 
   const clearAll = () => {
@@ -186,6 +289,9 @@ export function MediaUploader({
         return <FileText className="h-8 w-8 text-gray-500" />;
     }
   };
+
+  const pendingCount = files.filter((f) => f.status === 'pending').length;
+  const failedCount = files.filter((f) => f.status === 'error').length;
 
   return (
     <div className={cn('space-y-4', className)}>
@@ -260,6 +366,7 @@ export function MediaUploader({
                   'flex items-center gap-3 p-3 rounded-lg border',
                   file.status === 'success' && 'border-green-500/30 bg-green-500/5',
                   file.status === 'error' && 'border-red-500/30 bg-red-500/5',
+                  file.status === 'uploading' && 'border-primary/30 bg-primary/5',
                   file.status === 'pending' && 'border-border bg-muted/50'
                 )}
               >
@@ -293,7 +400,12 @@ export function MediaUploader({
                     {formatFileSize(file.file.size)}
                   </p>
                   {file.status === 'uploading' && (
-                    <Progress value={file.progress} className="h-1 mt-2" />
+                    <div className="mt-2 flex items-center gap-2">
+                      <Progress value={file.progress} className="h-1 flex-1" />
+                      <span className="text-[10px] font-mono text-muted-foreground w-8 text-right">
+                        {file.progress}%
+                      </span>
+                    </div>
                   )}
                   {file.error && (
                     <p className="text-xs text-red-500 mt-1">{file.error}</p>
@@ -307,6 +419,7 @@ export function MediaUploader({
                   className="flex-shrink-0"
                   onClick={() => removeFile(file.id)}
                   disabled={isUploading}
+                  aria-label={`Remove ${file.file.name} from the upload list`}
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -318,7 +431,7 @@ export function MediaUploader({
 
       {/* Actions */}
       {files.length > 0 && (
-        <div className="flex justify-between">
+        <div className="flex flex-wrap justify-between gap-2">
           <Button
             variant="outline"
             onClick={clearAll}
@@ -326,25 +439,30 @@ export function MediaUploader({
           >
             Clear All
           </Button>
-          <Button
-            onClick={uploadFiles}
-            disabled={
-              isUploading ||
-              files.every((f) => f.status !== 'pending')
-            }
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              <>
-                <Upload className="h-4 w-4 mr-2" />
-                Upload {files.filter((f) => f.status === 'pending').length} files
-              </>
+          <div className="flex gap-2">
+            {failedCount > 0 && !isUploading && (
+              <Button variant="outline" onClick={retryFailed}>
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Retry {failedCount} failed
+              </Button>
             )}
-          </Button>
+            <Button
+              onClick={uploadFiles}
+              disabled={isUploading || pendingCount === 0}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4 mr-2" />
+                  Upload {pendingCount} file{pendingCount === 1 ? '' : 's'}
+                </>
+              )}
+            </Button>
+          </div>
         </div>
       )}
     </div>

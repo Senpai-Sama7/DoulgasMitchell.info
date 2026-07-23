@@ -60,60 +60,23 @@ function detectDevice(userAgent: string | null | undefined) {
 }
 
 async function getContactCounts(startDate: Date) {
-  if (await hasTable('ContactSubmission')) {
-    const [totalRows, seriesRows] = await Promise.all([
-      db.$queryRaw<Array<{ count: bigint | number | string }>>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "ContactSubmission"
-        WHERE "createdAt" >= ${startDate}
-      `,
-      db.$queryRaw<Array<{ date: string; count: bigint | number | string }>>`
-        SELECT DATE("createdAt")::text AS date, COUNT(*)::bigint AS count
-        FROM "ContactSubmission"
-        WHERE "createdAt" >= ${startDate}
-        GROUP BY DATE("createdAt")
-        ORDER BY date ASC
-      `,
-    ]);
+  // NOTE: only cast-free SQL here — this must run on both PostgreSQL
+  // (production) and SQLite (dev/tests), where `::bigint` casts are a
+  // syntax error that would take the whole analytics summary down.
+  for (const table of ['ContactSubmission', 'ContactMessage'] as const) {
+    if (await hasTable(table)) {
+      const totalRows = await db.$queryRawUnsafe<Array<{ count: bigint | number | string }>>(
+        `SELECT COUNT(*) AS count
+         FROM ${quoteIdentifier(table)}
+         WHERE ${quoteIdentifier('createdAt')} >= $1`,
+        startDate
+      );
 
-    return {
-      total: Number(totalRows[0]?.count ?? 0),
-      series: seriesRows.map((row) => ({
-        date: row.date,
-        count: Number(row.count ?? 0),
-      })),
-    };
+      return { total: Number(totalRows[0]?.count ?? 0) };
+    }
   }
 
-  if (await hasTable('ContactMessage')) {
-    const [totalRows, seriesRows] = await Promise.all([
-      db.$queryRaw<Array<{ count: bigint | number | string }>>`
-        SELECT COUNT(*)::bigint AS count
-        FROM "ContactMessage"
-        WHERE "createdAt" >= ${startDate}
-      `,
-      db.$queryRaw<Array<{ date: string; count: bigint | number | string }>>`
-        SELECT DATE("createdAt")::text AS date, COUNT(*)::bigint AS count
-        FROM "ContactMessage"
-        WHERE "createdAt" >= ${startDate}
-        GROUP BY DATE("createdAt")
-        ORDER BY date ASC
-      `,
-    ]);
-
-    return {
-      total: Number(totalRows[0]?.count ?? 0),
-      series: seriesRows.map((row) => ({
-        date: row.date,
-        count: Number(row.count ?? 0),
-      })),
-    };
-  }
-
-  return {
-    total: 0,
-    series: [] as Array<{ date: string; count: number }>,
-  };
+  return { total: 0 };
 }
 
 export async function logPageView(input: PageViewInput) {

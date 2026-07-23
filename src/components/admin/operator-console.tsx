@@ -59,6 +59,7 @@ import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { adminFetch, adminJson, isAdminApiError } from '@/lib/admin-api-client';
 import { cn } from '@/lib/utils';
 
 type OperatorProviderId =
@@ -306,14 +307,13 @@ function AdminOperatorConsoleInner() {
   async function testProvider(providerId: OperatorProviderId) {
     try {
       setTestingProvider(providerId);
-      const response = await fetch('/api/admin/operator', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ testProvider: providerId }),
-      });
-      const payload = await response.json();
+      const payload = await adminJson<{
+        valid: boolean;
+        error: string | null;
+        model: string | null;
+      }>('/api/admin/operator', 'POST', { testProvider: providerId });
 
-      if (payload.success && payload.valid) {
+      if (payload.valid) {
         toast({
           title: 'API Key Valid',
           description: `${providerId} is online using model: ${payload.model}`,
@@ -325,10 +325,12 @@ function AdminOperatorConsoleInner() {
           variant: 'destructive',
         });
       }
-    } catch {
+    } catch (testError) {
       toast({
         title: 'Validation failed',
-        description: 'An unexpected error occurred during API key testing.',
+        description: isAdminApiError(testError)
+          ? testError.message
+          : 'An unexpected error occurred during API key testing.',
         variant: 'destructive',
       });
     } finally {
@@ -366,12 +368,9 @@ function AdminOperatorConsoleInner() {
   async function loadOperatorControl(showToast = false) {
     try {
       setIsLoading(true);
-      const response = await fetch('/api/admin/operator', { cache: 'no-store' });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'Failed to load operator control plane.');
-      }
+      const payload = await adminFetch<OperatorBootstrap>('/api/admin/operator', {
+        cache: 'no-store',
+      });
 
       const nextBootstrap: OperatorBootstrap = {
         settings: payload.settings,
@@ -395,8 +394,9 @@ function AdminOperatorConsoleInner() {
     } catch (loadError) {
       toast({
         title: 'Operator unavailable',
-        description:
-          loadError instanceof Error ? loadError.message : 'Failed to load operator control plane.',
+        description: isAdminApiError(loadError)
+          ? loadError.message
+          : 'Failed to load operator control plane.',
         variant: 'destructive',
       });
     } finally {
@@ -426,19 +426,14 @@ function AdminOperatorConsoleInner() {
 
     try {
       setIsSaving(true);
-      const response = await fetch('/api/admin/operator', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          settings: draftSettings,
-          publicAssistant: draftPublicAssistant,
-        }),
+      const payload = await adminJson<{
+        settings: AdminOperatorSettings;
+        providers: OperatorProviderStatus[];
+        publicAssistant: PublicAssistantSettings;
+      }>('/api/admin/operator', 'PUT', {
+        settings: draftSettings,
+        publicAssistant: draftPublicAssistant,
       });
-      const payload = await response.json();
-
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error || 'Failed to save operator settings.');
-      }
 
       setBootstrap((current) =>
         current
@@ -460,8 +455,9 @@ function AdminOperatorConsoleInner() {
     } catch (saveError) {
       toast({
         title: 'Save failed',
-        description:
-          saveError instanceof Error ? saveError.message : 'Failed to save operator settings.',
+        description: isAdminApiError(saveError)
+          ? saveError.message
+          : 'Failed to save operator settings.',
         variant: 'destructive',
       });
     } finally {

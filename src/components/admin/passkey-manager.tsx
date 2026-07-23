@@ -2,37 +2,79 @@
 
 import { useState } from 'react';
 import { startRegistration } from '@simplewebauthn/browser';
-import { Fingerprint, Plus, Trash2, Smartphone, Monitor } from 'lucide-react';
+import type { PublicKeyCredentialCreationOptionsJSON } from '@simplewebauthn/browser';
+import { Fingerprint, Loader2, Plus, Trash2, Smartphone, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { adminFetch, adminJson } from '@/lib/admin-api-client';
 import { logger } from '@/lib/logger';
 import { motion, AnimatePresence } from 'framer-motion';
 
-interface Passkey {
+export interface PasskeySummary {
   id: string;
   credentialId: string;
   deviceName: string | null;
-  createdAt: string;
-  lastUsedAt: string | null;
+  createdAt: string | Date;
+  lastUsedAt: string | Date | null;
 }
 
 interface PasskeyManagerProps {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- passkey data from server component
-  initialPasskeys: any[];
+  initialPasskeys: PasskeySummary[];
+}
+
+interface PasskeyListResponse {
+  passkeys: PasskeySummary[];
+}
+
+interface RegistrationOptionsResponse {
+  options: PublicKeyCredentialCreationOptionsJSON;
+}
+
+function formatPasskeyDate(value: string | Date | null): string {
+  if (!value) return 'Never';
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.getTime()) ? 'Unknown' : date.toLocaleDateString();
+}
+
+function isCancelledPasskeyPrompt(message: string) {
+  return (
+    message.includes('NotAllowedError') ||
+    message.includes('timed out') ||
+    message.includes('cancelled') ||
+    message.includes('canceled')
+  );
 }
 
 export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
-  const [passkeys] = useState<Passkey[]>(initialPasskeys.map(p => ({
-    ...p,
-    createdAt: new Date(p.createdAt).toLocaleDateString(),
-    lastUsedAt: p.lastUsedAt ? new Date(p.lastUsedAt).toLocaleDateString() : 'Never',
-  })));
+  const [passkeys, setPasskeys] = useState<PasskeySummary[]>(initialPasskeys);
   const [isRegistering, setIsRegistering] = useState(false);
   const [deviceName, setDeviceName] = useState('');
+  const [deleteCandidate, setDeleteCandidate] = useState<PasskeySummary | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
+
+  const refreshPasskeys = async () => {
+    try {
+      const data = await adminFetch<PasskeyListResponse>('/api/admin/passkeys');
+      setPasskeys(data.passkeys ?? []);
+    } catch (error) {
+      // Non-fatal: the list will refresh on the next page load.
+      logger.error('Failed to refresh passkey list:', error);
+    }
+  };
 
   const handleRegister = async () => {
     if (!deviceName.trim()) {
@@ -47,47 +89,76 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
     setIsRegistering(true);
 
     try {
-      // 1. Get registration options from server
-      const optionsRes = await fetch('/api/admin/webauthn/register/options', {
-        method: 'POST',
+      // 1. Get registration options from the server (challenge bound to user)
+      const { options } = await adminJson<RegistrationOptionsResponse>(
+        '/api/admin/auth/passkey/register/generate-options',
+        'POST'
+      );
+
+      // 2. Start WebAuthn registration in the browser
+      let regResp;
+      try {
+        regResp = await startRegistration({ optionsJSON: options });
+      } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : 'Registration was cancelled.';
+        if (isCancelledPasskeyPrompt(message)) {
+          toast({
+            title: 'Passkey cancelled',
+            description: 'The passkey prompt was dismissed before registration completed.',
+          });
+          return;
+        }
+        throw error;
+      }
+
+      // 3. Verify registration on the server
+      await adminJson('/api/admin/auth/passkey/register/verify', 'POST', {
+        response: regResp,
+        deviceName: deviceName.trim(),
       });
 
-      if (!optionsRes.ok) {
-        const err = await optionsRes.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to get registration options');
-      }
-      const options = await optionsRes.json();
-
-      // 2. Start WebAuthn registration in browser
-      const regResp = await startRegistration({ optionsJSON: options });
-
-      // 3. Verify registration on server  --  send the registration response directly
-      //    plus deviceName as a top-level field for the server to persist
-      const verifyRes = await fetch(`/api/admin/webauthn/register/verify?name=${encodeURIComponent(deviceName)}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(regResp),
+      toast({
+        title: 'Passkey registered!',
+        description: 'You can now use this device to sign in securely.',
       });
-
-      if (verifyRes.ok) {
-        toast({
-          title: 'Passkey registered!',
-          description: 'You can now use this device to sign in securely.',
-        });
-        window.location.reload();
-      } else {
-        const error = await verifyRes.json().catch(() => ({ error: 'Verification failed' }));
-        throw new Error(error.error || 'Verification failed');
-      }
+      setDeviceName('');
+      await refreshPasskeys();
     } catch (error: unknown) {
       logger.error(error instanceof Error ? error.message : String(error));
       toast({
         title: 'Registration failed',
-        description: error instanceof Error ? error.message : 'Make sure your device supports biometrics.',
+        description:
+          error instanceof Error ? error.message : 'Make sure your device supports biometrics.',
         variant: 'destructive',
       });
     } finally {
       setIsRegistering(false);
+    }
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteCandidate) return;
+
+    setIsDeleting(true);
+    try {
+      await adminFetch(`/api/admin/passkeys?id=${encodeURIComponent(deleteCandidate.id)}`, {
+        method: 'DELETE',
+      });
+
+      setPasskeys((current) => current.filter((pk) => pk.id !== deleteCandidate.id));
+      toast({
+        title: 'Passkey removed',
+        description: `${deleteCandidate.deviceName || 'The device'} can no longer be used to sign in.`,
+      });
+      setDeleteCandidate(null);
+    } catch (error: unknown) {
+      toast({
+        title: 'Removal failed',
+        description: error instanceof Error ? error.message : 'Could not remove the passkey.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -116,10 +187,16 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                   value={deviceName}
                   onChange={(e) => setDeviceName(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
+                  disabled={isRegistering}
                 />
               </div>
               <Button onClick={handleRegister} disabled={isRegistering} className="shrink-0">
-                {isRegistering ? 'Registering...' : (
+                {isRegistering ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Registering...
+                  </>
+                ) : (
                   <>
                     <Plus className="mr-2 h-4 w-4" />
                     Add Passkey
@@ -152,7 +229,7 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                           <div>
                             <p className="font-medium text-sm">{pk.deviceName || 'Unnamed Device'}</p>
                             <p className="text-xs text-muted-foreground">
-                              Added: {pk.createdAt} · Last used: {pk.lastUsedAt}
+                              Added: {formatPasskeyDate(pk.createdAt)} · Last used: {formatPasskeyDate(pk.lastUsedAt)}
                             </p>
                           </div>
                         </div>
@@ -161,8 +238,8 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
                           size="icon"
                           className="text-muted-foreground hover:text-destructive"
                           aria-label={`Remove passkey for ${pk.deviceName || 'this device'}`}
-                          title="Passkey removal is not available from this interface yet."
-                          disabled
+                          onClick={() => setDeleteCandidate(pk)}
+                          disabled={isDeleting}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -179,6 +256,42 @@ export function PasskeyManager({ initialPasskeys }: PasskeyManagerProps) {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={Boolean(deleteCandidate)}
+        onOpenChange={(open) => !open && !isDeleting && setDeleteCandidate(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this passkey?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteCandidate
+                ? `${deleteCandidate.deviceName || 'This device'} will no longer be able to sign in with a passkey. Make sure you still have a password or another passkey before removing it.`
+                : 'This device will no longer be able to sign in with a passkey.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(event) => {
+                event.preventDefault();
+                void confirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Removing...
+                </>
+              ) : (
+                'Remove passkey'
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
