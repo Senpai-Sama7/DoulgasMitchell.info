@@ -2,10 +2,11 @@
 
 import { useCallback } from 'react';
 import { useReducedMotion } from 'framer-motion';
-import { Magnetic, usePinnedScene } from '@/components/immersive';
+import { Magnetic, useFilmPlayback, usePinnedScene } from '@/components/immersive';
 import { useImmersive } from '@/components/immersive/immersive-context';
 import { easings, gsap } from '@/lib/gsap';
 import { mediaManifest } from '@/lib/media-manifest';
+import { cn } from '@/lib/utils';
 
 /** Movement I — the claim, unmasked line-by-line, then parted like curtains. */
 const STATEMENT_LINES = ['Systems that', 'survive contact', 'with reality.'] as const;
@@ -97,6 +98,7 @@ const SCENE_DISTANCE = 2600;
 export function MaskParallaxSection() {
   const { scrollTo } = useImmersive();
   const prefersReducedMotion = useReducedMotion();
+  const { videoRef: filmRef, isPlaying: filmPlaying, toggle: toggleFilm } = useFilmPlayback();
 
   const handleWaypointNavigate = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
@@ -519,9 +521,13 @@ export function MaskParallaxSection() {
             ))}
           </h2>
 
-          {/* Movement II/III — the film plane, revealed through an evolving mask */}
+          {/* Movement II/III — the film plane, revealed through an evolving mask.
+              Playback is driven by useFilmPlayback (in-view autoplay with iOS
+              muted/playsinline re-assertion); when every automatic attempt is
+              refused, the full-surface toggle below doubles as the affordance. */}
           <figure className="cinema-media" data-cursor="media">
             <video
+              ref={filmRef}
               className="cinema-media-video"
               src={mediaManifest.hero.videoLoopAlt}
               poster={mediaManifest.hero.videoPosterAlt}
@@ -529,7 +535,7 @@ export function MaskParallaxSection() {
               muted
               loop
               playsInline
-              preload="metadata"
+              preload="auto"
               disablePictureInPicture
               tabIndex={-1}
             />
@@ -538,6 +544,20 @@ export function MaskParallaxSection() {
               <span>Houston · field notes</span>
               <span>29°45′ N · 95°22′ W</span>
             </figcaption>
+            <button
+              type="button"
+              className={cn('film-play', filmPlaying && 'film-play--playing')}
+              onClick={toggleFilm}
+              aria-label={filmPlaying ? 'Pause film' : 'Play film'}
+              data-cursor="interactive"
+            >
+              <span className="film-play-badge" aria-hidden>
+                <span className="film-play-ring">
+                  <span className="film-play-glyph" />
+                </span>
+                <span className="film-play-label">Play film</span>
+              </span>
+            </button>
           </figure>
 
           {/* Movement III — kinetic overline carried on the film */}

@@ -127,8 +127,10 @@ export function SiteFooter() {
           </div>
         </div>
 
-        {/* ── Meta bar ─────────────────────────────────────────────────── */}
-        <div className="flex flex-col gap-3 border-t border-border/50 py-7 font-mono text-[0.625rem] uppercase tracking-[0.18em] text-muted-foreground md:flex-row md:items-center md:justify-between">
+        {/* ── Meta bar ─────────────────────────────────────────────────────
+             Bottom clearance reserves room for the fixed ⌘K trigger plus the
+             iOS home indicator so the Studio link is always tappable. */}
+        <div className="flex flex-col gap-3 border-t border-border/50 pt-7 pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))] font-mono text-[0.625rem] uppercase tracking-[0.18em] text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>© {currentYear} Douglas Mitchell · All rights reserved</p>
           <p>
             Set in Instrument Serif · Signal teal on ink ·{' '}

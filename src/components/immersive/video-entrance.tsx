@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useReducedMotion } from 'framer-motion';
+import { useFilmPlayback } from '@/components/immersive/use-film-playback';
 import { easings, gsap } from '@/lib/gsap';
 import { mediaManifest } from '@/lib/media-manifest';
 
@@ -63,6 +64,9 @@ export function VideoEntrance() {
   const [done, setDone] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const timelineRef = useRef<gsap.core.Timeline | null>(null);
+  // In-view autoplay with iOS muted/playsinline re-assertion — keeps the gate
+  // film rolling even where plain autoPlay markup is refused.
+  const { videoRef } = useFilmPlayback({ threshold: 0 });
 
   const active = shouldPlay && !done && prefersReducedMotion !== true;
 
@@ -286,6 +290,7 @@ export function VideoEntrance() {
         <div className="video-entrance-film" style={{ clipPath: 'inset(49.7% 0% 49.7% 0%)' }}>
           <div className="video-entrance-drift">
             <video
+              ref={videoRef}
               className="video-entrance-media opacity-0"
               src={mediaManifest.hero.videoLoop}
               poster={mediaManifest.hero.videoPoster}
