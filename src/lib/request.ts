@@ -149,19 +149,41 @@ async function buildAnonymousFingerprint(request: RequestLike): Promise<string> 
   return `anonymous:${hash.slice(0, 16)}`;
 }
 
-export async function getClientIp(request: RequestLike): Promise<string> {
-  const candidates = [
-    request.headers.get('x-vercel-forwarded-for'),
-    request.headers.get('cf-connecting-ip'),
-    request.headers.get('x-real-ip'),
-    request.headers.get('x-forwarded-for'),
-  ];
+/**
+ * Ordered list of proxy headers the deployment trusts for client IP
+ * resolution. Configurable via TRUSTED_PROXY_HEADERS (comma-separated).
+ *
+ * Default: only headers that a fronting reverse proxy (Caddy/nginx)
+ * overwrites with the real socket address. Platform-specific headers like
+ * x-vercel-forwarded-for or cf-connecting-ip are NOT trusted by default:
+ * unless Vercel/Cloudflare is actually in front, clients can inject them
+ * to spoof their IP and bypass per-IP rate limits (login brute force).
+ * Set TRUSTED_PROXY_HEADERS=x-vercel-forwarded-for (or cf-connecting-ip)
+ * when running behind those platforms. Set it empty to trust no header.
+ */
+function getTrustedProxyHeaders(): string[] {
+  const configured = env.TRUSTED_PROXY_HEADERS;
 
-  for (const candidate of candidates) {
+  if (typeof configured === 'string') {
+    return configured
+      .split(',')
+      .map((header) => header.trim().toLowerCase())
+      .filter(Boolean);
+  }
+
+  return ['x-real-ip', 'x-forwarded-for'];
+}
+
+export async function getClientIp(request: RequestLike): Promise<string> {
+  for (const headerName of getTrustedProxyHeaders()) {
+    const candidate = request.headers.get(headerName);
     if (!candidate) {
       continue;
     }
 
+    // With a proxy that overwrites the header (Caddy header_up), the value
+    // is exactly the real client IP. With append-style proxies, the first
+    // entry is the original client — both are handled by taking [0].
     const normalized = candidate.split(',')[0]?.trim();
     if (normalized && isValidIP(normalized)) {
       return normalized;
@@ -181,6 +203,10 @@ export function getUserAgent(request: RequestLike) {
 
 export async function readJsonBody<T = unknown>(request: RequestLike) {
   try {
+    const contentLength = request.headers.get('content-length');
+    if (contentLength && Number(contentLength) > 5 * 1024 * 1024) {
+      throw new InvalidJsonBodyError('Request body too large (max 5MB).');
+    }
     return (await request.json()) as T;
   } catch {
     throw new InvalidJsonBodyError();

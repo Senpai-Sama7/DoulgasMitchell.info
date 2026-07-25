@@ -153,4 +153,5 @@ export const cacheKeys = {
   media: (id: string) => `media:${id}`,
   user: (id: string) => `user:${id}`,
   session: (token: string) => `session:${token}`,
+  passkeys: (userId: string) => `passkeys:${userId}`,
 };

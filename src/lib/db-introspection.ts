@@ -3,7 +3,27 @@ import { isSqlite, quoteTableName, quoteIdentifier, qualifiedColumn } from '@/li
 
 export { quoteIdentifier, qualifiedColumn };
 
-const tableColumnsCache = new Map<string, Promise<Set<string>>>();
+interface CacheEntry<T> {
+  value: T;
+  expiresAt: number;
+}
+
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const tableColumnsCache = new Map<string, CacheEntry<Promise<Set<string>>>>();
+
+function getCached<T>(cache: Map<string, CacheEntry<T>>, key: string): T | undefined {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
+function setCached<T>(cache: Map<string, CacheEntry<T>>, key: string, value: T): void {
+  cache.set(key, { value, expiresAt: Date.now() + CACHE_TTL_MS });
+}
 
 // All Prisma schema model names that can be introspected
 const ALLOWED_TABLES = new Set<string>([
@@ -22,12 +42,12 @@ export type TABLE_NAME =
   | 'Project' | 'ProjectMedia' | 'Reaction' | 'Session' | 'Setting' | 'SiteConfig'
   | 'AdminSession' | 'AdminPasskey' | 'NewsletterSubscriber' | 'ContactMessage';
 
-export async function getTableColumns(tableName: string) {
+export async function getTableColumns(tableName: string): Promise<Set<string>> {
   if (!ALLOWED_TABLES.has(tableName)) {
     return new Set<string>();
   }
 
-  const cached = tableColumnsCache.get(tableName);
+  const cached = getCached(tableColumnsCache, tableName);
   if (cached) {
     return cached;
   }
@@ -51,7 +71,7 @@ export async function getTableColumns(tableName: string) {
         .then((rows) => new Set(rows.map((row) => row.column_name)))
         .catch(() => new Set<string>());
 
-  tableColumnsCache.set(tableName, query);
+  setCached(tableColumnsCache, tableName, query);
   return query;
 }
 

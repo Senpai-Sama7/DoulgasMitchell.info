@@ -18,6 +18,7 @@ const envSchema = z.object({
   // Redis/Cache
   UPSTASH_REDIS_URL: z.string().optional(),
   UPSTASH_REDIS_TOKEN: z.string().optional(),
+  TRUSTED_PROXY_HEADERS: z.string().optional(),
 
   // Storage
   STORAGE_PROVIDER: z.enum(['local', 's3', 'r2']).default('local'),

@@ -3,6 +3,14 @@ import { db } from '@/lib/db';
 import { getTableColumns, hasColumns, hasTable, qualifiedColumn, quoteIdentifier } from '@/lib/db-introspection';
 import { sqlNow, sqlNull, sqlBool, sqlCount } from '@/lib/sql-helpers';
 
+async function resolveColumns(columns: Promise<Set<string>> | Set<string>): Promise<Set<string>> {
+  return columns instanceof Promise ? await columns : columns;
+}
+
+async function colsHas(columns: Promise<Set<string>> | Set<string>, col: string): Promise<boolean> {
+  return (await resolveColumns(columns)).has(col);
+}
+
 export interface AdminUserRecord {
   id: string;
   email: string;
@@ -532,8 +540,15 @@ export async function getAdminSecuritySummary() {
   };
 }
 
+import { getCache, setCache, deleteCache, cacheKeys } from '@/lib/cache';
+
 export async function getAdminPasskeysForUser(userId: string) {
+  const cacheKey = cacheKeys.passkeys(userId);
+  const cached = await getCache<AdminPasskeyRecord[]>(cacheKey);
+  if (cached) return cached;
+
   if (!(await hasTable('PasskeyCredential'))) {
+    await setCache(cacheKey, [], { ttl: 60 }); // Cache negative results
     return [];
   }
 
@@ -566,7 +581,7 @@ export async function getAdminPasskeysForUser(userId: string) {
     userId
   );
 
-  return rows.map((row) => ({
+  const passkeys = rows.map((row) => ({
     id: String(row.id),
     userId: String(row.userId),
     credentialId: String(row.credentialId),
@@ -577,6 +592,9 @@ export async function getAdminPasskeysForUser(userId: string) {
     createdAt: parseDate(row.createdAt) ?? new Date(),
     lastUsedAt: parseDate(row.lastUsedAt),
   })) satisfies AdminPasskeyRecord[];
+
+  await setCache(cacheKey, passkeys, { ttl: 60 }); // 1-minute TTL for passkey lists
+  return passkeys;
 }
 
 export async function updatePasskeyCounter(input: { id: string; counter: number }) {

@@ -121,13 +121,11 @@ export async function getSession(): Promise<Session | null> {
   // when the DB itself is unreachable, force re-authentication rather than
   // trusting the JWT alone.
   if (!persistedSession || !persistedSession.isActive) {
-    await deleteSession(token);
     return null;
   }
   
   // Check if session is expired
   if (new Date() > new Date(session.expiresAt) || new Date() > persistedSession.expiresAt) {
-    await deleteSession(token);
     return null;
   }
   

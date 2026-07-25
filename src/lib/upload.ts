@@ -6,25 +6,22 @@ export const ALLOWED_MIME_TYPES = {
   document: [
     'application/pdf',
     'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-powerpoint',
-    'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'text/plain',
     'text/markdown',
-    'text/html',
-    'text/javascript',
-    'text/typescript',
     'application/json',
-    'application/x-typescript',
-    'text/x-typescript',
-    'text/jsx',
-    'text/tsx',
   ],
 };
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // Increased to 100MB
+import { env } from '@/lib/env';
+
+// Define MAX_FILE_SIZE constant for consistency
+const MAX_FILE_SIZE = Number(env.MAX_FILE_SIZE) || 50;
+export const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE * 1024 * 1024;
 
 export interface FileValidationResult {
   valid: boolean;
