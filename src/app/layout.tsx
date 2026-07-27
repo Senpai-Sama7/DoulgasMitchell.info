@@ -1,5 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Geist_Mono, Instrument_Serif, JetBrains_Mono, Source_Sans_3 } from "next/font/google";
+import {
+  Fraunces,
+  Geist,
+  Geist_Mono,
+  Instrument_Serif,
+  JetBrains_Mono,
+  Source_Sans_3,
+} from "next/font/google";
 import "./globals.css";
 import { ImmersiveRoot } from "@/components/immersive";
 import { Toaster } from "@/components/ui/toaster";
@@ -11,7 +18,17 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 // 2025-enhancements.css handles the actual styling. Progressive
 // enhancement — unsupported browsers fall through to native navigation.
 
-// Body: Source Sans 3 — readable workhorse with character (not Inter/Geist default)
+// Body: Geist (2026) — variable workhorse with soft aperture, 0.965
+// x-height, and an opsz axis. Replaces Source Sans 3 as the primary
+// `--font-sans` so display uses can opt into size-aware tracking.
+const geist = Geist({
+  variable: "--font-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Legacy alias — components that still reference --font-source-sans
+// keep working without a sweep.
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
   subsets: ["latin"],
@@ -24,7 +41,21 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// Display: Instrument Serif — editorial contrast against the sans body
+// Display: Fraunces (2026) — expressive variable serif. SOFT + WONK
+// axes + opsz make it the creative-but-legible counterpoint to Geist.
+// Used by the Story chapter slate and other long-take displays.
+// Instrument Serif remains the fallback for sections not yet migrated.
+// `weight: "variable"` is required when exposing `axes` to next/font.
+const fraunces = Fraunces({
+  variable: "--font-display",
+  subsets: ["latin"],
+  display: "swap",
+  weight: "variable",
+  axes: ["opsz", "SOFT", "WONK"],
+  preload: false,
+});
+
+// Display fallback: Instrument Serif — kept for non-migrated surfaces
 const instrumentSerif = Instrument_Serif({
   variable: "--font-instrument-serif",
   subsets: ["latin"],
@@ -198,8 +229,8 @@ export default function RootLayout({
       </head>
       <body
         className={`${
-          sourceSans.variable
-        } ${geistMono.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} site-atmosphere relative antialiased bg-background text-foreground min-h-screen flex flex-col font-sans`}
+          geist.variable
+        } ${sourceSans.variable} ${geistMono.variable} ${fraunces.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} site-atmosphere relative antialiased bg-background text-foreground min-h-screen flex flex-col font-sans`}
       >
         {/* Skip link for keyboard/screen reader navigation */}
         <a href="#main-content" className="skip-link">

@@ -500,25 +500,45 @@ export function MaskParallaxSection() {
         <div className="cinema-vignette" aria-hidden />
 
         <div className="cinema-shell">
+          {/* Movement I — the slate. A mixed-case editorial header instead
+              of an all-caps rail label: more creative, less newsroom. The
+              drop-cap "S" is the first letter of the first claim, set in
+              Fraunces with the WONK axis for a hand-cut terminal. */}
           <header className="cinema-opening">
-            <p className="cinema-chapter">Chapter 03 · Story</p>
-            <p className="cinema-kicker">One take — who I am, what I ship, where to go next</p>
+            <p className="cinema-chapter">
+              <span className="cinema-chapter-num">03</span>
+              <span aria-hidden className="cinema-chapter-rule" />
+              <span className="cinema-chapter-eyebrow">Story</span>
+            </p>
+            <p className="cinema-kicker">
+              <span className="cinema-kicker-lead">One take.</span>
+              <span className="cinema-kicker-rest">
+                Who I am, what I ship, and where to go next — held in a
+                single scroll.
+              </span>
+            </p>
           </header>
 
-          {/* Movement I — the claim */}
+          {/* The claim — width-capped so it never outgrows the screen on
+              2K/4K panels. Drop-cap lives on the first letter; remaining
+              characters flow as normal Fraunces opsz-30 text. */}
           <h2 id="cinema-title" className="cinema-statement">
-            {STATEMENT_LINES.map((line, index) => (
-              <span
-                key={line}
-                className={
-                  index === STATEMENT_LINES.length - 1
-                    ? 'cinema-line cinema-line-em'
-                    : 'cinema-line'
-                }
-              >
-                {line}
-              </span>
-            ))}
+            {STATEMENT_LINES.map((line, index) => {
+              const isFirst = index === 0;
+              const isLast = index === STATEMENT_LINES.length - 1;
+              return (
+                <span
+                  key={line}
+                  className={cn(
+                    'cinema-line',
+                    isFirst && 'cinema-line--first',
+                    isLast && 'cinema-line-em'
+                  )}
+                >
+                  {line}
+                </span>
+              );
+            })}
           </h2>
 
           {/* Movement II/III — the film plane, revealed through an evolving mask.
