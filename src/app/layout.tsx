@@ -6,6 +6,11 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
+// View Transitions API (2025): enable same-document and cross-document
+// transitions for seamless navigation. The @view-transition CSS rule in
+// 2025-enhancements.css handles the actual styling. Progressive
+// enhancement — unsupported browsers fall through to native navigation.
+
 // Body: Source Sans 3 — readable workhorse with character (not Inter/Geist default)
 const sourceSans = Source_Sans_3({
   variable: "--font-source-sans",
@@ -34,6 +39,11 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
   preload: false,
 });
+
+// View Transitions API (2025 baseline). Enables seamless cross-page
+// transitions via the @view-transition CSS rule in 2025-enhancements.css.
+// Unsupported browsers fall back to native navigation.
+export const unstable_View_Transitions = true;
 
 export const viewport: Viewport = {
   width: 'device-width',

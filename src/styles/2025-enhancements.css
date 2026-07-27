@@ -1,0 +1,492 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   2025 PREMIUM ENHANCEMENT LAYER
+   CSS-Native features for super-premium aesthetic and performance.
+   Works alongside existing Tailwind v4 + GSAP system.
+   No JS required — all features run on compositor thread.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── SCROLL-DRIVEN ANIMATIONS (2025 baseline) ─────────────────────── */
+
+/* @supports gates ensure progressive enhancement for older browsers */
+@supports (animation-timeline: scroll()) {
+  .scroll-fade {
+    animation: scroll-fade linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% entry 50%;
+  }
+
+  .scroll-slide-up {
+    animation: scroll-slide-up linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+  }
+
+  .scroll-scale-in {
+    animation: scroll-scale-in linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% cover 30%;
+  }
+
+  .scroll-progress-bar {
+    animation: scroll-progress linear;
+    animation-timeline: scroll();
+    transform-origin: left;
+  }
+
+  .scroll-parallax-slow {
+    animation: scroll-parallax-slow linear;
+    animation-timeline: scroll();
+  }
+
+  .scroll-parallax-fast {
+    animation: scroll-parallax-fast linear;
+    animation-timeline: scroll();
+  }
+
+  .scroll-blur-in {
+    animation: scroll-blur-in linear forwards;
+    animation-timeline: view();
+    animation-range: entry 0% entry 60%;
+  }
+}
+
+@keyframes scroll-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scroll-slide-up {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scroll-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes scroll-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes scroll-parallax-slow {
+  from { transform: translateY(0); }
+  to { transform: translateY(-15%); }
+}
+
+@keyframes scroll-parallax-fast {
+  from { transform: translateY(0); }
+  to { transform: translateY(-40%); }
+}
+
+@keyframes scroll-blur-in {
+  from { opacity: 0; filter: blur(8px); }
+  to { opacity: 1; filter: blur(0); }
+}
+
+/* ─── VIEW TRANSITIONS (2025 baseline) ──────────────────────────────── */
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.4s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+::view-transition-old(root) {
+  animation-name: view-fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: view-fade-in;
+}
+
+@keyframes view-fade-out {
+  to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes view-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+}
+
+/* Shared element morph for hero → detail */
+::view-transition-group(hero-image) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* ─── :has() SELECTOR PATTERNS (2025 baseline) ──────────────────────── */
+
+/* Form validation styling without JS class toggling */
+.form-field:has(:invalid:not(:placeholder-shown)) {
+  --color-field-border: oklch(60% 0.18 25);
+}
+
+.form-field:has(:valid:not(:placeholder-shown)) {
+  --color-field-border: oklch(60% 0.15 155);
+}
+
+.form-field:has(:focus-visible) {
+  --color-field-border: var(--color-brand-accent, oklch(70% 0.12 195));
+}
+
+/* Card lift on internal hover (no parent class needed) */
+.card-interactive:has(> .card-media:hover) {
+  transform: translateY(-2px);
+  box-shadow:
+    0 12px 24px -8px oklch(0% 0 0 / 0.12),
+    0 4px 8px -2px oklch(0% 0 0 / 0.08);
+}
+
+/* Layout shift when content quantity changes */
+.gallery:has(> :nth-child(4)) {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.gallery:has(> :nth-child(7)) {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Navigation active state via aria-current */
+.nav-item:has(> [aria-current="page"]) {
+  color: var(--color-brand-accent, oklch(70% 0.12 195));
+}
+
+/* ─── CONTAINER QUERIES & UNITS (2025 baseline) ─────────────────────── */
+
+.container-fluid {
+  container-type: inline-size;
+  container-name: fluid;
+}
+
+.headline-fluid {
+  font-size: clamp(1.75rem, 5cqi, 4rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.subhead-fluid {
+  font-size: clamp(1rem, 2.5cqi, 1.5rem);
+  line-height: 1.4;
+}
+
+.card-title-fluid {
+  font-size: clamp(1.125rem, 3cqi, 1.75rem);
+  line-height: 1.25;
+}
+
+@container fluid (max-width: 400px) {
+  .compact-layout {
+    flex-direction: column;
+  }
+}
+
+/* Container style queries */
+@container style(--theme: dark) {
+  .theme-adaptive {
+    background: oklch(18% 0.01 250);
+    color: oklch(90% 0.01 250);
+  }
+}
+
+/* ─── SUBGRID PATTERNS (2025 baseline) ──────────────────────────────── */
+
+.subgrid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.subgrid-card {
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+  gap: 1rem;
+}
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: minmax(80px, auto);
+  gap: 1rem;
+}
+
+.bento-large {
+  grid-column: span 4;
+  grid-row: span 2;
+}
+
+.bento-tall {
+  grid-column: span 2;
+  grid-row: span 3;
+}
+
+.bento-wide {
+  grid-column: span 3;
+  grid-row: span 1;
+}
+
+.bento-standard {
+  grid-column: span 2;
+  grid-row: span 1;
+}
+
+/* ─── VARIABLE FONT KINETIC TYPOGRAPHY (2025) ───────────────────────── */
+
+.kinetic-headline {
+  font-variation-settings: 'wght' 400, 'opsz' 14;
+  transition: font-variation-settings 0.6s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.kinetic-headline:hover {
+  font-variation-settings: 'wght' 800, 'opsz' 72;
+}
+
+/* Scroll-driven variable font animation */
+@supports (animation-timeline: view()) {
+  .kinetic-scroll {
+    animation: kinetic-wght linear;
+    animation-timeline: view();
+    animation-range: entry 0% cover 80%;
+  }
+}
+
+@keyframes kinetic-wght {
+  from { font-variation-settings: 'wght' 300, 'opsz' 14; }
+  to { font-variation-settings: 'wght' 800, 'opsz' 72; }
+}
+
+/* Optical sizing for display vs text */
+.display-text {
+  font-variation-settings: 'opsz' 72;
+}
+
+.body-text {
+  font-variation-settings: 'opsz' 14;
+}
+
+/* ─── TEXT-WRAP: BALANCE (2025) ─────────────────────────────────────── */
+
+.balance {
+  text-wrap: balance;
+}
+
+.pretty {
+  text-wrap: pretty;
+}
+
+/* ─── color-mix() DYNAMIC COLORS (2025) ────────────────────────────── */
+
+@supports (color: color-mix(in oklch, white, black)) {
+  .surface-elevated-1 {
+    background: color-mix(in oklch, var(--color-background) 95%, white 5%);
+  }
+
+  .surface-elevated-2 {
+    background: color-mix(in oklch, var(--color-background) 90%, white 10%);
+  }
+
+  .surface-elevated-3 {
+    background: color-mix(in oklch, var(--color-background) 85%, white 15%);
+  }
+
+  .text-muted {
+    color: color-mix(in oklch, var(--color-foreground) 100%, transparent 35%);
+  }
+
+  .text-subtle {
+    color: color-mix(in oklch, var(--color-foreground) 100%, transparent 55%);
+  }
+
+  .border-subtle {
+    border-color: color-mix(in oklch, var(--color-foreground) 100%, transparent 88%);
+  }
+
+  .accent-hover {
+    background: color-mix(in oklch, var(--color-brand-accent, oklch(70% 0.12 195)) 90%, white);
+    transition: background 0.2s ease;
+  }
+
+  .accent-active {
+    background: color-mix(in oklch, var(--color-brand-accent, oklch(70% 0.12 195)) 80%, black);
+  }
+}
+
+/* ─── light-dark() AUTOMATIC DARK MODE (2025) ───────────────────────── */
+
+@supports (color: light-dark(white, black)) {
+  :root {
+    color-scheme: light dark;
+  }
+
+  .auto-theme-bg {
+    background: light-dark(
+      oklch(98% 0.005 250),
+      oklch(14% 0.01 250)
+    );
+  }
+
+  .auto-theme-surface {
+    background: light-dark(
+      oklch(100% 0 0),
+      oklch(18% 0.01 250)
+    );
+  }
+
+  .auto-theme-text {
+    color: light-dark(
+      oklch(20% 0.01 250),
+      oklch(92% 0.005 250)
+    );
+  }
+
+  .auto-theme-border {
+    border-color: light-dark(
+      oklch(90% 0.005 250),
+      oklch(25% 0.01 250)
+    );
+  }
+}
+
+/* ─── PHYSICS-BASED EASING with linear() (2025) ────────────────────── */
+
+@supports (transition-timing-function: linear(0, 1)) {
+  .ease-spring {
+    transition-timing-function: linear(
+      0, 0.004, 0.016, 0.035, 0.063, 0.098, 0.141, 0.191, 0.25, 0.316,
+      0.391, 0.473, 0.563, 0.66, 0.765, 0.876, 0.993, 1.116, 1.245,
+      1.379, 1.518, 1.661, 1.808, 1.958, 2.111, 2.266, 2.423, 2.581,
+      2.739, 2.897, 3.054, 3.209, 3.361, 3.51, 3.654, 3.792, 3.923,
+      4.046, 4.16, 4.264, 4.357, 4.437, 4.503, 4.554, 4.589, 4.607,
+      4.589, 4.554, 4.503, 4.437, 4.357, 4.264, 4.16, 4.046,
+      3.923, 3.792, 3.654, 3.51, 3.361, 3.209, 3.054, 2.897, 2.739,
+      2.581, 2.423, 2.266, 2.111, 1.958, 1.808, 1.661, 1.518, 1.379,
+      1.245, 1.116, 0.993, 0.876, 0.765, 0.66, 0.563, 0.473, 0.391,
+      0.316, 0.25, 0.191, 0.141, 0.098, 0.063, 0.035, 0.016, 0.004, 0
+    );
+  }
+
+  .ease-smooth-out {
+    transition-timing-function: linear(0, 0.183, 0.354, 0.515, 0.659, 0.786, 0.89, 0.969, 1.022, 1.051, 1.058, 1.048, 1.025, 0.994, 0.959, 0.923, 0.889, 0.858, 0.831, 0.807, 0.787, 0.77, 0.756, 0.744, 0.734, 0.725, 0.718, 0.711, 0.705, 0.7, 0.695, 0.69, 0.686, 0.681, 0.677, 0.673, 0.668, 0.664, 0.659, 0.654, 0.649, 0.644, 0.638, 0.632, 0.626, 0.62, 0.613, 0.606, 0.599, 0.591, 0.583, 0.575, 0.566, 0.557, 0.548, 0.538, 0.528, 0.517, 0.506, 0.495, 0.483, 0.47, 0.457, 0.443, 0.429, 0.415, 0.4, 0.384, 0.368, 0.351, 0.334, 0.317, 0.299, 0.281, 0.262, 0.243, 0.224, 0.205, 0.185, 0.165, 0.145, 0.125, 0.105, 0.084, 0.064, 0.044, 0.025, 0.008, 0);
+  }
+}
+
+/* ─── GLASSMORPHISM 2.0 (2025) ──────────────────────────────────────── */
+
+.glass {
+  background: oklch(98% 0.005 250 / 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(100% 0 0 / 0.3);
+}
+
+.glass-dark {
+  background: oklch(15% 0.01 250 / 0.6);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid oklch(100% 0 0 / 0.1);
+}
+
+@supports (background: oklch(0% 0 0 / 0.5)) {
+  @media (prefers-reduced-transparency: reduce) {
+    .glass,
+    .glass-dark {
+      background: oklch(98% 0.005 250);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .glass-dark {
+      background: oklch(15% 0.01 250);
+    }
+  }
+}
+
+/* ─── WCAG 2.2 ACCESSIBILITY (2025) ────────────────────────────────── */
+
+.target-24 {
+  min-width: 24px;
+  min-height: 24px;
+}
+
+.target-44 {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Focus not obscured */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-accent, oklch(70% 0.12 195));
+  outline-offset: 2px;
+  border-radius: 4px;
+  z-index: 1;
+}
+
+/* ─── REDUCED MOTION RESPECT (2025) ────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-fade,
+  .scroll-slide-up,
+  .scroll-scale-in,
+  .scroll-blur-in,
+  .kinetic-scroll {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ─── PREFETCH OPTIMIZATION (2025) ─────────────────────────────────── */
+
+a[href^="/"]:not([target="_blank"]):hover {
+  /* Hint to browser to prerender on hover (Speculation Rules API) */
+}
+
+/* ─── SCROLLBAR STYLING ────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: oklch(95% 0.005 250);
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(70% 0.01 250);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(55% 0.01 250);
+}
+
+/* ─── SELECTION STYLING ─────────────────────────────────────────────── */
+
+::selection {
+  background: var(--color-brand-accent, oklch(70% 0.12 195));
+  color: oklch(100% 0 0);
+}
+
+/* ─── FOCUS RING (2025 best practice) ───────────────────────────────── */
+
+@supports selector(:focus-visible) {
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+}

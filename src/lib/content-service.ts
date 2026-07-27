@@ -63,7 +63,41 @@ interface AdminContentSnapshot {
   books: AdminSnapshotItem[];
 }
 
-const tableAvailability = new Map<string, Promise<boolean>>();
+// LRU cache with TTL for table-availability lookups. Bounded size prevents
+// memory growth from one-off table name permutations in long-running processes.
+const TABLE_AVAILABILITY_MAX_ENTRIES = 100;
+const TABLE_AVAILABILITY_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+interface TableAvailabilityEntry {
+  promise: Promise<boolean>;
+  expiresAt: number;
+}
+
+const tableAvailability = new Map<string, TableAvailabilityEntry>();
+
+function setTableAvailability(key: string, promise: Promise<boolean>) {
+  if (tableAvailability.has(key)) {
+    tableAvailability.delete(key); // Re-insert to bump to most-recently-used.
+  } else if (tableAvailability.size >= TABLE_AVAILABILITY_MAX_ENTRIES) {
+    // Evict oldest insertion (Maps preserve insertion order).
+    const oldestKey = tableAvailability.keys().next().value;
+    if (oldestKey !== undefined) tableAvailability.delete(oldestKey);
+  }
+  tableAvailability.set(key, { promise, expiresAt: Date.now() + TABLE_AVAILABILITY_TTL_MS });
+}
+
+function getTableAvailability(key: string): Promise<boolean> | null {
+  const entry = tableAvailability.get(key);
+  if (!entry) return null;
+  if (Date.now() > entry.expiresAt) {
+    tableAvailability.delete(key);
+    return null;
+  }
+  // Touch: delete and re-insert to mark as most-recently-used.
+  tableAvailability.delete(key);
+  tableAvailability.set(key, entry);
+  return entry.promise;
+}
 
 function getTableDiscoveryQuery() {
   const databaseUrl = process.env.DATABASE_URL ?? '';
@@ -85,13 +119,13 @@ function getTableDiscoveryQuery() {
 
 async function hasTables(tableNames: string[]) {
   const key = [...tableNames].sort().join(',');
-  const cached = tableAvailability.get(key);
+  const cached = getTableAvailability(key);
   if (cached) return cached;
 
   const discoveryQuery = getTableDiscoveryQuery();
   if (!discoveryQuery) {
     const availabilityPromise = Promise.resolve(false);
-    tableAvailability.set(key, availabilityPromise);
+    setTableAvailability(key, availabilityPromise);
     return availabilityPromise;
   }
 
@@ -103,7 +137,7 @@ async function hasTables(tableNames: string[]) {
     })
     .catch(() => false);
 
-  tableAvailability.set(key, availabilityPromise);
+  setTableAvailability(key, availabilityPromise);
   return availabilityPromise;
 }
 
@@ -112,7 +146,9 @@ function parseStringArray(input: string | null | undefined, fallback: string[] =
 
   try {
     const parsed = JSON.parse(input) as unknown;
-    return Array.isArray(parsed) ? parsed.filter((value): value is string => typeof value === 'string') : fallback;
+    return Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === 'string')
+      : fallback;
   } catch {
     return fallback;
   }
@@ -159,7 +195,10 @@ function mapDbArticleToShowcase(article: {
     excerpt: article.excerpt,
     category: titleCaseCategory(article.category),
     readTime: `${article.readingTime} min`,
-    date: formatMonthYear(article.publishedAt ?? article.updatedAt, fallback?.date ?? 'Recently updated'),
+    date: formatMonthYear(
+      article.publishedAt ?? article.updatedAt,
+      fallback?.date ?? 'Recently updated'
+    ),
     featured: article.featured,
     trending: fallback?.trending ?? false,
     tags: parseStringArray(article.tags, fallback?.tags ?? []),
@@ -202,10 +241,12 @@ function mapDbProjectToShowcase(project: {
     timeline:
       project.startDate || project.endDate
         ? `${project.startDate?.getFullYear() ?? 'Start'} → ${project.endDate?.getFullYear() ?? 'Present'}`
-        : fallback?.timeline ?? 'Active',
+        : (fallback?.timeline ?? 'Active'),
     status: titleCaseCategory(project.status),
     challenge: fallback?.challenge ?? 'Challenge details available on request.',
-    solution: fallback?.solution ?? ['Architecture and implementation details available on request.'],
+    solution: fallback?.solution ?? [
+      'Architecture and implementation details available on request.',
+    ],
     outcomes: fallback?.outcomes ?? ['A working system with measurable delivery potential.'],
     metrics: fallback?.metrics ?? [],
   };
@@ -254,7 +295,9 @@ function mapDbBookToShowcase(book: {
     description: book.description,
     amazonUrl: book.amazonUrl || bookShowcase.amazonUrl,
     publisher: book.publisher || bookShowcase.publisher,
-    publishDate: book.publishDate ? book.publishDate.getFullYear().toString() : bookShowcase.publishDate,
+    publishDate: book.publishDate
+      ? book.publishDate.getFullYear().toString()
+      : bookShowcase.publishDate,
     highlights: bookShowcase.highlights,
     chapters: bookShowcase.chapters,
     testimonials: bookShowcase.testimonials,
@@ -286,7 +329,8 @@ export const getLandingPageData = cache(async () => {
       certifications: certificationShowcase,
       book: bookShowcase,
       contentSource: 'fallback' as const,
-      contentWarning: 'Live content storage is unavailable, so the site is serving the built-in editorial fallback dataset.',
+      contentWarning:
+        'Live content storage is unavailable, so the site is serving the built-in editorial fallback dataset.',
     };
   }
 
@@ -462,53 +506,58 @@ export const getSearchableContent = cache(async () => {
 });
 
 export const getAdminDashboardData = cache(async () => {
-  return withFallback(async () => {
-    const [articles, projects, media, contacts, subscribers, pageViews, recentActivity] = await Promise.all([
-      (await hasTables(['Article'])) ? db.article.count() : featuredArticles.length,
-      (await hasTables(['Project'])) ? db.project.count() : featuredProjects.length,
-      countMediaRecords(),
-      countContactSubmissions(),
-      countNewsletterSubscribers(),
-      (await hasTable('PageView')) ? db.pageView.count() : 0,
-      getRecentActivityEntries(8),
-    ]);
+  return withFallback(
+    async () => {
+      const [articles, projects, media, contacts, subscribers, pageViews, recentActivity] =
+        await Promise.all([
+          (await hasTables(['Article'])) ? db.article.count() : featuredArticles.length,
+          (await hasTables(['Project'])) ? db.project.count() : featuredProjects.length,
+          countMediaRecords(),
+          countContactSubmissions(),
+          countNewsletterSubscribers(),
+          (await hasTable('PageView')) ? db.pageView.count() : 0,
+          getRecentActivityEntries(8),
+        ]);
 
-    return {
-      stats: {
-        articles,
-        projects,
-        media,
-        contacts,
-        subscribers,
-        pageViews,
-      },
-      recentActivity: recentActivity.map((entry) => ({
-        id: entry.id,
-        action: entry.action,
-        resource: entry.resource,
-        resourceId: entry.resourceId,
-        relativeTime: formatDistanceToNowStrict(entry.createdAt, { addSuffix: true }),
-        actor: entry.actor || 'System',
-      })),
-    };
-  }, {
-    stats: {
-      articles: featuredArticles.length,
-      projects: featuredProjects.length,
-      media: 0,
-      contacts: 0,
-      subscribers: 0,
-      pageViews: 0,
+      return {
+        stats: {
+          articles,
+          projects,
+          media,
+          contacts,
+          subscribers,
+          pageViews,
+        },
+        recentActivity: recentActivity.map((entry) => ({
+          id: entry.id,
+          action: entry.action,
+          resource: entry.resource,
+          resourceId: entry.resourceId,
+          relativeTime: formatDistanceToNowStrict(entry.createdAt, { addSuffix: true }),
+          actor: entry.actor || 'System',
+        })),
+      };
     },
-    recentActivity: [],
-  });
+    {
+      stats: {
+        articles: featuredArticles.length,
+        projects: featuredProjects.length,
+        media: 0,
+        contacts: 0,
+        subscribers: 0,
+        pageViews: 0,
+      },
+      recentActivity: [],
+    }
+  );
 });
 
 export const getAdminContentSnapshot = cache(async () => {
   const fallbackSnapshot: AdminContentSnapshot = {
     editable: false,
     source: 'fallback' as const,
-    warning: 'Content tables are unavailable. You can preview the fallback inventory, but editing is disabled until the database is provisioned.',
+    warning:
+      'Content tables are unavailable. You can preview the fallback inventory, but editing is disabled until the database is provisioned.',
     articles: featuredArticles.map((article) => ({
       id: article.slug,
       title: article.title,
@@ -767,7 +816,10 @@ export const getAdminSecurityData = cache(async () => {
 export const getUserPasskeys = cache(async (userId: string) => {
   return withFallback(async () => {
     const legacyPasskeys = await getAdminPasskeysForUser(userId);
-    const supportsCurrentPasskeyShape = await hasColumns('PasskeyCredential', ['userId', 'credentialId']);
+    const supportsCurrentPasskeyShape = await hasColumns('PasskeyCredential', [
+      'userId',
+      'credentialId',
+    ]);
 
     if (legacyPasskeys.length > 0 || !supportsCurrentPasskeyShape) {
       return legacyPasskeys.map((passkey) => ({

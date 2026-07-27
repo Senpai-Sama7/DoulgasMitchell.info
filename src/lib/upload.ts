@@ -2,7 +2,15 @@
 export const ALLOWED_MIME_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'], // Removed svg due to XSS risk
   video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
-  audio: ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/x-m4a', 'audio/aac'],
+  audio: [
+    'audio/mpeg',
+    'audio/mp3',
+    'audio/wav',
+    'audio/ogg',
+    'audio/webm',
+    'audio/x-m4a',
+    'audio/aac',
+  ],
   document: [
     'application/pdf',
     'application/msword',
@@ -62,13 +70,13 @@ export function validateFileType(mimeType: string): FileValidationResult {
 
 // Validate file size
 export function validateFileSize(size: number): FileValidationResult {
-  if (size <= MAX_FILE_SIZE) {
+  if (size <= MAX_FILE_SIZE_BYTES) {
     return { valid: true };
   }
-  
+
   return {
     valid: false,
-    error: `File size ${formatFileSize(size)} exceeds maximum of ${formatFileSize(MAX_FILE_SIZE)}`,
+    error: `File size ${formatFileSize(size)} exceeds maximum of ${formatFileSize(MAX_FILE_SIZE_BYTES)}`,
   };
 }
 
@@ -82,11 +90,20 @@ export function formatFileSize(bytes: number): string {
 }
 
 // Get file category
-export function getFileCategory(mimeType: string): 'image' | 'video' | 'audio' | 'document' | 'code' | 'unknown' {
+export function getFileCategory(
+  mimeType: string
+): 'image' | 'video' | 'audio' | 'document' | 'code' | 'unknown' {
   if (ALLOWED_MIME_TYPES.image.includes(mimeType)) return 'image';
   if (ALLOWED_MIME_TYPES.video.includes(mimeType)) return 'video';
   if (ALLOWED_MIME_TYPES.audio.includes(mimeType)) return 'audio';
-  if (mimeType.includes('json') || mimeType.includes('javascript') || mimeType.includes('typescript') || mimeType.includes('html') || mimeType.includes('markdown')) return 'code';
+  if (
+    mimeType.includes('json') ||
+    mimeType.includes('javascript') ||
+    mimeType.includes('typescript') ||
+    mimeType.includes('html') ||
+    mimeType.includes('markdown')
+  )
+    return 'code';
   if (ALLOWED_MIME_TYPES.document.includes(mimeType)) return 'document';
   if (mimeType.startsWith('text/')) return 'document';
   return 'unknown';
@@ -95,7 +112,7 @@ export function getFileCategory(mimeType: string): 'image' | 'video' | 'audio' |
 // Get file icon based on type
 export function getFileIcon(mimeType: string): string {
   const category = getFileCategory(mimeType);
-  
+
   const icons = {
     image: '🖼️',
     video: '🎬',
@@ -104,7 +121,7 @@ export function getFileIcon(mimeType: string): string {
     code: '💻',
     unknown: '📎',
   };
-  
+
   return icons[category];
 }
 

@@ -25,19 +25,11 @@ const publicAssistantSchema = z.object({
 });
 
 // Timeout wrapper — aborts slow AI provider responses
-async function withTimeout<T>(
-  fn: () => Promise<T>,
-  timeoutMs: number = 15_000
-): Promise<T> {
-  const timer = setTimeout(() => { /* timeout handled by Promise.race */ }, timeoutMs);
+async function withTimeout<T>(fn: () => Promise<T>, timeoutMs: number = 15_000): Promise<T> {
   const timeoutPromise = new Promise<never>((_, reject) => {
     setTimeout(() => reject(new Error('AI provider timeout after ' + timeoutMs + 'ms')), timeoutMs);
   });
-  try {
-    return await Promise.race([fn(), timeoutPromise]);
-  } finally {
-    clearTimeout(timer);
-  }
+  return await Promise.race([fn(), timeoutPromise]);
 }
 
 export async function POST(request: NextRequest) {
@@ -45,10 +37,7 @@ export async function POST(request: NextRequest) {
   try {
     // Circuit breaker check (Redis-backed)
     if (await isCircuitOpen()) {
-      return ApiHandler.error(
-        'Service temporarily unavailable. Please try again shortly.',
-        503
-      );
+      return ApiHandler.error('Service temporarily unavailable. Please try again shortly.', 503);
     }
 
     const originCheck = validateTrustedOrigin(request);

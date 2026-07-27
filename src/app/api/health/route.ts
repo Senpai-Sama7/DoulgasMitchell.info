@@ -1,5 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getClientIp } from '@/lib/request';
+import { rateLimit } from '@/lib/rate-limit';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +15,26 @@ interface HealthStatus {
 
 const startTime = Date.now();
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate-limit health checks to prevent DB amplification DoS.
+  // 30 req/min per IP is generous for orchestrators and uptime probes.
+  const clientIp = await getClientIp(request);
+  const limit = await rateLimit(clientIp, {
+    limit: 30,
+    windowMs: 60 * 1000,
+    prefix: 'health',
+  });
+
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', resetAt: limit.resetAt },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(Math.ceil((limit.resetAt - Date.now()) / 1000)) },
+      }
+    );
+  }
+
   const checks: HealthStatus['checks'] = {};
   let overallStatus: HealthStatus['status'] = 'healthy';
 

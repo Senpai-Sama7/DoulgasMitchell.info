@@ -25,9 +25,9 @@ function incr(key: string) {
   }
 }
 
-function getCounter(key: string): Promise<number> {
-  if (!redis) return Promise.resolve(0);
-  return redis.get(key).then((v) => (v ? Number(v) : 0));
+function getCounter(key: string, fallbackKey: string): Promise<number> {
+  if (!redis) return Promise.resolve(fallbackCounters.get(fallbackKey) ?? 0);
+  return redis.get(key).then((v) => (v ? Number(v) : (fallbackCounters.get(fallbackKey) ?? 0)));
 }
 
 export function incrementRequests() {
@@ -70,10 +70,7 @@ export function incrementAiRequests() {
 // Read helpers — used by /api/metrics GET handler
 // ---------------------------------------------------------------------------
 async function readCounter(metric: string): Promise<number> {
-  if (isRedisActive()) {
-    return getCounter(makeKey(metric, today()));
-  }
-  return fallbackCounters.get(`${metric}:${today()}`) ?? 0;
+  return getCounter(makeKey(metric, today()), `${metric}:${today()}`);
 }
 
 export async function getMetricsSnapshot() {

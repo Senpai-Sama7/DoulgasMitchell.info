@@ -19,10 +19,7 @@ interface UpdateResult {
  * quotes every identifier, and uses parameterised placeholders for every value.
  * Returns the inserted row via RETURNING (or last_insert_rowid on SQLite).
  */
-export async function safeInsert(
-  table: TABLE_NAME,
-  data: RowValues,
-): Promise<InsertResult> {
+export async function safeInsert(table: TABLE_NAME, data: RowValues): Promise<InsertResult> {
   const columns = await getTableColumns(table);
   if (columns.size === 0) {
     throw new Error(`Table "${table}" is not available for INSERT.`);
@@ -46,7 +43,7 @@ export async function safeInsert(
 
   const rows = await db.$queryRawUnsafe<Array<Record<string, unknown>>>(
     `INSERT INTO "${table}" (${columnList}) VALUES (${placeholders}) RETURNING *`,
-    ...values,
+    ...values
   );
 
   return {
@@ -62,7 +59,7 @@ export async function safeInsert(
 export async function safeUpdate(
   table: TABLE_NAME,
   data: RowValues,
-  where: RowValues,
+  where: RowValues
 ): Promise<UpdateResult> {
   const columns = await getTableColumns(table);
   if (columns.size === 0) {
@@ -98,12 +95,12 @@ export async function safeUpdate(
 
   const allValues = [...setValues, ...whereValues];
 
-  await db.$executeRawUnsafe(
+  const affected = await db.$executeRawUnsafe(
     `UPDATE "${table}" SET ${setClauses.join(', ')} WHERE ${whereClauses.join(' AND ')}`,
-    ...allValues,
+    ...allValues
   );
 
-  return { affected: 1 };
+  return { affected: Number(affected) };
 }
 
 /**
@@ -114,7 +111,7 @@ export async function safeUpdate(
 export async function safeUpsert(
   table: TABLE_NAME,
   conflictColumn: string,
-  data: RowValues,
+  data: RowValues
 ): Promise<InsertResult> {
   if (isSqlite()) {
     const existing = await safeSelectOne(table, [conflictColumn], {
@@ -150,9 +147,7 @@ export async function safeUpsert(
     insertColumns.push(quoteIdentifier(col));
     values.push(val);
     if (col !== conflictColumn) {
-      updateColumns.push(
-        `${quoteIdentifier(col)} = EXCLUDED.${quoteIdentifier(col)}`,
-      );
+      updateColumns.push(`${quoteIdentifier(col)} = EXCLUDED.${quoteIdentifier(col)}`);
     }
   }
 
@@ -165,7 +160,7 @@ export async function safeUpsert(
      ON CONFLICT (${quoteIdentifier(conflictColumn)}) DO UPDATE
      SET ${updateColumns.join(', ')}
      RETURNING *`,
-    ...values,
+    ...values
   );
 
   return {
@@ -187,7 +182,7 @@ export async function safeSelect(
     orderDirection?: 'ASC' | 'DESC';
     limit?: number;
     offset?: number;
-  },
+  }
 ): Promise<Record<string, unknown>[]> {
   const columns = await getTableColumns(table);
   if (columns.size === 0) {
@@ -230,10 +225,7 @@ export async function safeSelect(
     clauses.push(`OFFSET $${params.length}`);
   }
 
-  return db.$queryRawUnsafe<Array<Record<string, unknown>>>(
-    clauses.join(' '),
-    ...params,
-  );
+  return db.$queryRawUnsafe<Array<Record<string, unknown>>>(clauses.join(' '), ...params);
 }
 
 /**
@@ -242,7 +234,7 @@ export async function safeSelect(
 export async function safeSelectOne(
   table: TABLE_NAME,
   selectColumns: string[],
-  where: RowValues,
+  where: RowValues
 ): Promise<Record<string, unknown> | null> {
   const rows = await safeSelect(table, selectColumns, where, { limit: 1 });
   return rows[0] ?? null;
@@ -252,10 +244,7 @@ export async function safeSelectOne(
  * Type-safe soft DELETE. Always requires WHERE clause.
  * Returns true if at least one row was deleted.
  */
-export async function safeDelete(
-  table: TABLE_NAME,
-  where: RowValues,
-): Promise<boolean> {
+export async function safeDelete(table: TABLE_NAME, where: RowValues): Promise<boolean> {
   const columns = await getTableColumns(table);
   if (columns.size === 0) return false;
 
@@ -272,12 +261,12 @@ export async function safeDelete(
     throw new Error(`DELETE on "${table}" requires at least one WHERE condition.`);
   }
 
-  await db.$executeRawUnsafe(
+  const affected = await db.$executeRawUnsafe(
     `DELETE FROM "${table}" WHERE ${whereParts.join(' AND ')}`,
-    ...params,
+    ...params
   );
 
-  return true;
+  return Number(affected) > 0;
 }
 
 /**
@@ -287,8 +276,11 @@ export async function safeDelete(
  */
 export async function safeRawSelect<T = Record<string, unknown>>(
   sqlTemplate: string,
-  params: ColumnValue[] = [],
+  params: ColumnValue[] = []
 ): Promise<T[]> {
-  const result = await db.$queryRawUnsafe<Array<{ [key: string]: unknown }>>(sqlTemplate, ...params);
+  const result = await db.$queryRawUnsafe<Array<{ [key: string]: unknown }>>(
+    sqlTemplate,
+    ...params
+  );
   return result as unknown as T[];
 }
