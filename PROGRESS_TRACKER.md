@@ -262,4 +262,72 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
 ---
 
 **Last Updated:** 2026-07-27T17:17:55Z
-**Status:** ✅ ALL PHASES COMPLETE
+**Status:** ✅ Phases 1–7 COMPLETE (2025 baseline)
+
+---
+
+## Phase 8: 2026 Premium Refresh
+
+**Scope (evidence-based, 2025/2026 official sources):**
+- Finish the in-flight Movement I cinema slate refresh (working tree had 3 dirty files when this phase started).
+- Layer 2025 web platform baseline: `@starting-style` + `transition-behavior: allow-discrete` for entry animations; `interpolate-size: allow-keywords` for `auto`/`clamp()` height transitions; `light-dark()` for native OS theme parity; `text-wrap: balance` for top-of-page headlines; expand `animation-timeline: view()` reveals.
+- Keep the existing same-doc `useViewTransition` hook; **do not** opt into `@view-transition { navigation: auto }` on `<html>` because the public surface is a single route (`/`). MDN: `@view-transition` is Limited availability (not Baseline). caniuse 2026: Chrome 150 ✅, Safari 26.4 ✅, Firefox 152 ×.
+
+**Sources (2025/2026, official):**
+- MDN `animation-timeline` — Limited availability, ship behind `@supports (animation-timeline: view())`.
+- MDN `@view-transition` — Limited availability.
+- Chrome for Developers — View Transitions: same-doc Chrome 111+, cross-doc Chrome 126+; MPA opt-in via `@view-transition { navigation: auto }` (NOT used here, see scope).
+- web.dev / Chrome for Developers — Scroll-driven animations, scroll-timeline/view-timeline.
+- MDN / W3C CSS Color 4 — `light-dark()`, `color-mix(in oklch, …)`.
+- MDN `text-wrap: pretty | balance` — Baseline 2024.
+
+**Must-not-touch (security perimeter):** `next.config.ts` headers, `src/lib/auth.ts` cookie policy, `prisma/schema*.prisma`, `src/proxy.ts`.
+
+### Checkpoints
+
+- [x] CP0 — Reconcile the tracker's stale-completion claim.
+  - Gate: `grep -c "### Phase 8" PROGRESS_TRACKER.md` → `>= 1` (this block exists).
+  - Proof: `grep -c "### Phase 8" PROGRESS_TRACKER.md` → `1` (exit 0) @ 2026-07-27T18:09:58Z
+
+- [ ] CP 8.1 — Complete the in-flight Movement I slate (cinema-chapter-eyebrow, cinema-chapter-rule span, cinema-kicker-lead/rest, Fraunces/Geist font swap).
+  - Gate: `bun run typecheck && bun run lint && bun run test && bun run build` all exit 0; `curl -s http://localhost:3000 | grep -c "cinema-chapter-eyebrow"` >= 1.
+  - Proof: _pending_
+
+- [ ] CP 8.2 — `@starting-style` + `transition-behavior: allow-discrete` entry transitions.
+  - Gate: `grep -cE "@starting-style|transition-behavior: allow-discrete" src/app/globals.css src/styles/2025-enhancements.css` >= 4; new unit test in `src/__tests__/2025-enhancements.test.ts` passes; `bun run test` exits 0.
+  - Proof: _pending_
+
+- [ ] CP 8.3 — `interpolate-size: allow-keywords` for the cinema depth handoff and any `auto`/`clamp()` height transitions.
+  - Gate: `grep -cE "interpolate-size" src/app/globals.css src/styles/2025-enhancements.css` >= 2; new unit test passes; `bun run test` exits 0.
+  - Proof: _pending_
+
+- [ ] CP 8.4 — `light-dark()` for the cinema palette (and a paired light palette) so OS-level theme switch is honored.
+  - Gate: `grep -c "light-dark" src/app/globals.css src/styles/2025-enhancements.css` >= 3; new unit test passes; `bun run test` exits 0.
+  - Proof: _pending_
+
+- [ ] CP 8.5 — `text-wrap: balance` on top-of-page headlines; preserve `pretty` on body.
+  - Gate: `grep -cE "text-wrap: (balance|pretty)" src/app/globals.css src/styles/2025-enhancements.css` >= 4; lint-clean.
+  - Proof: _pending_
+
+- [ ] CP 8.6 — Document the new utilities with a source-cited comment block in `src/styles/2025-enhancements.css`.
+  - Gate: `grep -c "MDN\|W3C\|web.dev\|Chrome for Developers" src/styles/2025-enhancements.css` >= 4.
+  - Proof: _pending_
+
+- [ ] CP 8.7 — Hostile audit: no `any`, no disabled rules, no `console.log` added, all `@supports` blocks present for non-Baseline features.
+  - Gate: `grep -rE "\\bany\\b" src/styles/2025-enhancements.css src/app/globals.css` returns 0; `bun run lint` exits 0 with <= 2 pre-existing admin-compat warnings.
+  - Proof: _pending_
+
+- [ ] CP 8.8 — Final gate: all four RALPH gates green in a single fresh run.
+  - Gate: `bun run typecheck && bun run lint && bun run test && bun run build` all exit 0; `git status --porcelain` shows only the expected files.
+  - Proof: _pending_
+
+### Completion Log (Phase 8)
+
+| CP  | Gate | Result | Timestamp |
+|-----|------|--------|-----------|
+| CP0 | `grep -c "### Phase 8" PROGRESS_TRACKER.md` | 1 (>= 1 ✓) | 2026-07-27T18:09:58Z |
+
+---
+
+**Last Updated:** 2026-07-27T18:09:07Z
+**Status:** 🟡 Phase 8 IN PROGRESS (8 checkpoints, commit-per-checkpoint)
