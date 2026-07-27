@@ -535,3 +535,31 @@ a[href^="/"]:not([target="_blank"]):hover {
     }
   }
 }
+
+/* ─── interpolate-size: allow-keywords (2025) ─────────────────────────
+   Source: MDN — https://developer.mozilla.org/en-US/docs/Web/CSS/interpolate-size
+   Status: Chrome 129+ (2024), Safari 18.2+ (Dec 2024), Firefox 144+ (2025).
+   Lets `height: auto` and `height: <complex-clamp>()` transition smoothly
+   (normally discrete jumps). Used here for the cinema depth-handoff
+   gradient whose height is a clamp(38rem, 62svh, 52rem), so it
+   transitions gracefully across viewport sizes instead of jumping.
+   Progressive enhancement: behind @supports + reduced-motion guard. */
+@supports (interpolate-size: allow-keywords) {
+  @media (prefers-reduced-motion: no-preference) {
+    :root {
+      interpolate-size: allow-keywords;
+    }
+
+    .cinema-section::before {
+      transition: height 600ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Generic utility: any element with .size-interpolate gets the
+       smooth auto -> <length> transition. */
+    .size-interpolate {
+      transition:
+        height 500ms cubic-bezier(0.22, 1, 0.36, 1),
+        width 500ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+  }
+}

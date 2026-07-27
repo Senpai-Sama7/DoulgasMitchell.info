@@ -308,9 +308,11 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
     - `bun run typecheck` → 0 errors (exit 0) @ 2026-07-27T18:23:48Z
     - `bun run lint` → 0 errors, 2 pre-existing warnings (exit 0) @ 2026-07-27T18:24:30Z
 
-- [ ] CP 8.3 — `interpolate-size: allow-keywords` for the cinema depth handoff and any `auto`/`clamp()` height transitions.
+- [x] CP 8.3 — `interpolate-size: allow-keywords` for the cinema depth handoff and any `auto`/`clamp()` height transitions.
   - Gate: `grep -cE "interpolate-size" src/app/globals.css src/styles/2025-enhancements.css` >= 2; new unit test passes; `bun run test` exits 0.
-  - Proof: _pending_
+  - Proof:
+    - `grep -cE "interpolate-size" src/app/globals.css src/styles/2025-enhancements.css` → `0 + 4 = 4` (>= 2 ✓) @ 2026-07-27T18:25:45Z
+    - `bun run test` → `Test Files 15 passed (15), Tests 139 passed (139)` (was 135, +4 new) (exit 0) @ 2026-07-27T18:26:17Z
 
 - [ ] CP 8.4 — `light-dark()` for the cinema palette (and a paired light palette) so OS-level theme switch is honored.
   - Gate: `grep -c "light-dark" src/app/globals.css src/styles/2025-enhancements.css` >= 3; new unit test passes; `bun run test` exits 0.
@@ -339,6 +341,7 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
 | CP0   | `grep -c "### Phase 8" PROGRESS_TRACKER.md` | 1 (>= 1 ✓) | 2026-07-27T18:09:58Z |
 | CP 8.1 | typecheck + lint + test + build + smoke | 0/0/131/0/200 ✓ | 2026-07-27T18:20:13Z |
 | CP 8.2 | grep + test + typecheck + lint | 7/135/0/0 ✓ | 2026-07-27T18:24:30Z |
+| CP 8.3 | grep + test | 4/139 ✓ | 2026-07-27T18:26:17Z |
 
 ---
 

@@ -157,3 +157,30 @@ describe("2026 entry transitions (Phase 8.2)", () => {
     expect(css).toContain(".premium-enter-slate {");
   });
 });
+
+describe("2026 interpolate-size (Phase 8.3)", () => {
+  it("declares interpolate-size: allow-keywords on :root", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toMatch(/interpolate-size:\s*allow-keywords/);
+  });
+
+  it("gates the feature behind @supports (interpolate-size: allow-keywords)", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toMatch(
+      /@supports\s*\(interpolate-size:\s*allow-keywords\)/
+    );
+  });
+
+  it("targets the cinema depth-handoff gradient", () => {
+    const css = read("styles/2025-enhancements.css");
+    // Find the block, then assert it references the cinema depth gradient
+    const block = css.slice(css.indexOf("@supports (interpolate-size:"));
+    expect(block).toContain(".cinema-section::before");
+  });
+
+  it("respects prefers-reduced-motion inside the block", () => {
+    const css = read("styles/2025-enhancements.css");
+    const block = css.slice(css.indexOf("@supports (interpolate-size:"));
+    expect(block).toContain("prefers-reduced-motion: no-preference");
+  });
+});
