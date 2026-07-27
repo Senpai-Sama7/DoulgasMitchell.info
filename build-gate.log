@@ -1,25 +1,95 @@
-$ prisma generate && NODE_ENV=production next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/
+$ bun scripts/build-generate.mjs && NODE_ENV=production next build && bun scripts/postbuild-standalone.mjs
+[build-generate] Detected SQLite database URL. Generating from schema.sqlite.prisma...
 Environment variables loaded from .env
-Prisma schema loaded from prisma/schema.prisma
+Prisma schema loaded from prisma/schema.sqlite.prisma
 
-✔ Generated Prisma Client (v6.19.2) to ./node_modules/.pnpm/@prisma+client@6.19.2_prisma@6.19.2_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client in 139ms
+✔ Generated Prisma Client (v6.19.3) to ./node_modules/@prisma/client in 415ms
 
 Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
 
-Tip: Want to turn off tips and other hints? https://pris.ly/tip-4-nohints
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
 
-▲ Next.js 16.1.6 (Turbopack)
-- Environments: .env.local, .env
+▲ Next.js 16.2.4 (Turbopack)
+- Environments: .env
+- Experiments (use with caution):
+  · optimizePackageImports
 
   Creating an optimized production build ...
-✓ Compiled successfully in 15.9s
+Turbopack build encountered 2 warnings:
+./src/lib/logger.ts:20:16
+Module not found: Can't resolve 'async_hooks'
+  [90m18 |[0m     }
+  [90m19 |[0m     [90m// eslint-disable-next-line @typescript-eslint/no-require-imports[0m
+[31m[1m>[0m [90m20 |[0m     [36mconst[0m ah = require([32m'async_hooks'[0m);
+  [90m   |[0m                [31m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m21 |[0m     [36mif[0m (ah && ah.[33mAsyncLocalStorage[0m) {
+  [90m22 |[0m       [33mAsyncLocalStorage[0m = [36mnew[0m ah.[33mAsyncLocalStorage[0m();
+  [90m23 |[0m     } [36melse[0m {
+
+
+
+Import traces:
+  #1 [App Route]:
+    ./src/lib/logger.ts
+    ./src/app/api/newsletter/route.ts
+
+  #2 [App Route]:
+    ./src/lib/logger.ts
+    ./src/lib/upload-server.ts
+    ./src/app/api/upload/route.ts
+
+  #3 [Client Component Browser]:
+    ./src/lib/logger.ts [Client Component Browser]
+    ./src/app/error.tsx [Client Component Browser]
+    ./src/app/error.tsx [Server Component]
+
+  #4 [Client Component SSR]:
+    ./src/lib/logger.ts [Client Component SSR]
+    ./src/app/error.tsx [Client Component SSR]
+    ./src/app/error.tsx [Server Component]
+
+  #5 [Middleware]:
+    ./src/lib/logger.ts
+    ./src/proxy-handler.ts
+    ./src/proxy.ts
+
+  #6 [Server Component]:
+    ./src/lib/logger.ts
+    ./src/lib/analytics.ts
+    ./src/lib/content-service.ts
+    ./src/app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+./next.config.ts
+Encountered unexpected file in NFT list
+A file was traced that indicates that the whole project was traced unintentionally. Somewhere in the import trace below, there are:
+- filesystem operations (like path.join, path.resolve or fs.readFile), or
+- very dynamic requires (like require('./' + foo)).
+To resolve this, you can
+- remove them if possible, or
+- only use them in development, or
+- make sure they are statically scoped to some subfolder: path.join(process.cwd(), 'data', bar), or
+- add ignore comments: path.join(/*turbopackIgnore: true*/ process.cwd(), bar)
+
+Import trace:
+  App Route:
+    ./next.config.ts
+    ./src/lib/upload-server.ts
+    ./src/app/api/upload/route.ts
+
+
+✓ Compiled successfully in 35.8s
   Running TypeScript ...
+  Finished TypeScript in 31.8s ...
   Collecting page data using 11 workers ...
+⚠ Using edge runtime on a page currently disables static generation for that page
   Generating static pages using 11 workers (0/42) ...
   Generating static pages using 11 workers (10/42) 
   Generating static pages using 11 workers (20/42) 
   Generating static pages using 11 workers (31/42) 
-✓ Generating static pages using 11 workers (42/42) in 4.5s
+✓ Generating static pages using 11 workers (42/42) in 1566ms
   Finalizing page optimization ...
 
 Route (app)                                                 Revalidate  Expire
@@ -50,25 +120,30 @@ Route (app)                                                 Revalidate  Expire
 ├ ƒ /api/admin/notes
 ├ ƒ /api/admin/notifications
 ├ ƒ /api/admin/operator
+├ ƒ /api/admin/passkeys
 ├ ƒ /api/admin/setup
-├ ƒ /api/admin/webauthn/register/options
-├ ƒ /api/admin/webauthn/register/verify
 ├ ƒ /api/analytics/page-view
 ├ ƒ /api/contact
+├ ƒ /api/health
+├ ƒ /api/metrics
 ├ ƒ /api/newsletter
 ├ ƒ /api/public-assistant
 ├ ƒ /api/seed
 ├ ƒ /api/upload
+├ ○ /chat
 ├ ○ /notes
+├ ƒ /notes/[slug]
+├ ○ /offline
+├ ƒ /opengraph-image
 ├ ○ /robots.txt
 ├ ƒ /search
 ├ ○ /sitemap.xml
-├ ● /work/[slug]
-│ ├ /work/ai-workflow-automation
-│ ├ /work/confident-mind-platform
-│ └ /work/systems-architecture-toolkit
-└ ● /writing/[slug]
-  └ /writing/rizz-prompting-attractor-based-style-steering
+├ ● /work/[slug]                                                    1h      1y
+│ ├ /work/ai-workflow-automation                                    1h      1y
+│ ├ /work/confident-mind-platform                                   1h      1y
+│ └ /work/systems-architecture-toolkit                              1h      1y
+└ ● /writing/[slug]                                                 1h      1y
+  └ /writing/rizz-prompting-attractor-based-style-steering          1h      1y
 
 
 ƒ Proxy (Middleware)
@@ -77,3 +152,6 @@ Route (app)                                                 Revalidate  Expire
 ●  (SSG)      prerendered as static HTML (uses generateStaticParams)
 ƒ  (Dynamic)  server-rendered on demand
 
+[postbuild] copied .next/static -> .next/standalone/.next/static
+[postbuild] copied public -> .next/standalone/public
+BUILD_EXIT=0
