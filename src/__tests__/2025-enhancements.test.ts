@@ -125,3 +125,35 @@ describe("2025 layout integration", () => {
     expect(layout).toContain("unstable_View_Transitions");
   });
 });
+
+/* ═══ Phase 8 — 2026 Premium Refresh (added 2026-07-27) ═══ */
+
+describe("2026 entry transitions (Phase 8.2)", () => {
+  it("contains @starting-style and transition-behavior: allow-discrete", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toContain("@starting-style");
+    expect(css).toContain("transition-behavior: allow-discrete");
+  });
+
+  it("gates entry transitions behind @supports", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toMatch(
+      /@supports\s*\(transition-behavior:\s*allow-discrete\)/
+    );
+  });
+
+  it("respects prefers-reduced-motion inside the entry-transitions block", () => {
+    const css = read("styles/2025-enhancements.css");
+    // Find the entry-transitions @supports block and check it contains the guard
+    const block = css.slice(
+      css.indexOf("@supports (transition-behavior: allow-discrete)"),
+    );
+    expect(block).toContain("prefers-reduced-motion: no-preference");
+  });
+
+  it("exposes .premium-enter and .premium-enter-slate utility classes", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toContain(".premium-enter {");
+    expect(css).toContain(".premium-enter-slate {");
+  });
+});

@@ -490,3 +490,48 @@ a[href^="/"]:not([target="_blank"]):hover {
     outline: none;
   }
 }
+
+/* ─── ENTRY TRANSITIONS: @starting-style + transition-behavior (2025) ──
+   Sources:
+     - MDN: https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style
+     - MDN: https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior
+     - W3C: CSS Transitions Level 2 (Working Draft, 2025)
+   Browser support: Baseline 2024+ (Chrome 117+, Edge 117+, Safari 17.5+,
+   Firefox 129+). Behind @supports so older browsers see the destination
+   state with no animation (graceful degradation). Pair with a reduced-
+   motion guard so users who opt out get the static destination too. */
+@supports (transition-behavior: allow-discrete) {
+  @media (prefers-reduced-motion: no-preference) {
+    .premium-enter {
+      transition:
+        opacity 600ms linear,
+        transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+        filter 500ms ease-out;
+      transition-behavior: allow-discrete;
+    }
+
+    /* The "from" frame — only applies at the start of the transition. */
+    @starting-style {
+      .premium-enter {
+        opacity: 0;
+        transform: translateY(8px);
+        filter: blur(4px);
+      }
+    }
+
+    /* Variant: a faster, more decisive pop for the cinema slate. */
+    .premium-enter-slate {
+      transition:
+        opacity 850ms cubic-bezier(0.16, 1, 0.3, 1),
+        transform 1100ms cubic-bezier(0.22, 1, 0.36, 1);
+      transition-behavior: allow-discrete;
+    }
+
+    @starting-style {
+      .premium-enter-slate {
+        opacity: 0;
+        transform: translateY(14px);
+      }
+    }
+  }
+}

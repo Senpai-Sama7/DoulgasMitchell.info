@@ -300,9 +300,13 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
   - ❌ FAIL (sandbox-only, non-blocking): `next/font/google` cannot reach `fonts.googleapis.com` from this dev environment — every font fetch times out at 3000ms and Next falls back to system fonts. Production build succeeded (it has a Google Fonts cache); dev server returns 200 with all new classes present. This is a **sandbox network limitation**, not a code regression. In Vercel/production the Fraunces + Geist swap works as designed. Logged for awareness only.
   - ✅ FIX: None required. The WIP degrades gracefully to system fallbacks in dev (Next 16's documented `display: "swap"` fallback path). All 4 RALPH gates and the smoke check pass.
 
-- [ ] CP 8.2 — `@starting-style` + `transition-behavior: allow-discrete` entry transitions.
+- [x] CP 8.2 — `@starting-style` + `transition-behavior: allow-discrete` entry transitions.
   - Gate: `grep -cE "@starting-style|transition-behavior: allow-discrete" src/app/globals.css src/styles/2025-enhancements.css` >= 4; new unit test in `src/__tests__/2025-enhancements.test.ts` passes; `bun run test` exits 0.
-  - Proof: _pending_
+  - Proof:
+    - `grep -cE "..." src/app/globals.css src/styles/2025-enhancements.css` → `0 + 7 = 7` (>= 4 ✓) @ 2026-07-27T18:23:00Z
+    - `bun run test` → `Test Files 15 passed (15), Tests 135 passed (135)` (was 131, +4 new) (exit 0) @ 2026-07-27T18:23:16Z
+    - `bun run typecheck` → 0 errors (exit 0) @ 2026-07-27T18:23:48Z
+    - `bun run lint` → 0 errors, 2 pre-existing warnings (exit 0) @ 2026-07-27T18:24:30Z
 
 - [ ] CP 8.3 — `interpolate-size: allow-keywords` for the cinema depth handoff and any `auto`/`clamp()` height transitions.
   - Gate: `grep -cE "interpolate-size" src/app/globals.css src/styles/2025-enhancements.css` >= 2; new unit test passes; `bun run test` exits 0.
@@ -330,10 +334,11 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
 
 ### Completion Log (Phase 8)
 
-| CP   | Gate | Result | Timestamp |
-|------|------|--------|-----------|
-| CP0  | `grep -c "### Phase 8" PROGRESS_TRACKER.md` | 1 (>= 1 ✓) | 2026-07-27T18:09:58Z |
+| CP    | Gate | Result | Timestamp |
+|-------|------|--------|-----------|
+| CP0   | `grep -c "### Phase 8" PROGRESS_TRACKER.md` | 1 (>= 1 ✓) | 2026-07-27T18:09:58Z |
 | CP 8.1 | typecheck + lint + test + build + smoke | 0/0/131/0/200 ✓ | 2026-07-27T18:20:13Z |
+| CP 8.2 | grep + test + typecheck + lint | 7/135/0/0 ✓ | 2026-07-27T18:24:30Z |
 
 ---
 
