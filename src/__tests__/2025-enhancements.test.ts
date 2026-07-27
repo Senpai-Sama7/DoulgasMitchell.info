@@ -215,3 +215,24 @@ describe("2026 cinema light-dark() (Phase 8.4)", () => {
     expect(block).toContain("oklch(0.95 0.006 236)"); // text dark
   });
 });
+
+describe("2026 text-wrap balance/pretty (Phase 8.5)", () => {
+  it("applies text-wrap: pretty to .cinema-statement (with a comment)", () => {
+    const css = read("app/globals.css");
+    const block = css.slice(css.indexOf(".cinema-statement {"));
+    const closing = block.indexOf("}");
+    const head = block.slice(0, closing);
+    expect(head).toContain("text-wrap: pretty");
+    // Comment explaining why pretty (not balance) is correct here.
+    // The comment is *above* the property, so search backwards from the
+    // property to the opening of the block.
+    const propIdx = head.indexOf("text-wrap: pretty");
+    const preceding = head.slice(0, propIdx);
+    expect(preceding).toContain("balance");
+  });
+
+  it("keeps text-wrap: balance elsewhere (utility class)", () => {
+    const css = read("styles/2025-enhancements.css");
+    expect(css).toContain("text-wrap: balance");
+  });
+});

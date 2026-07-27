@@ -320,9 +320,13 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
     - `grep -c "light-dark" src/app/globals.css src/styles/2025-enhancements.css` → `6 + 6 = 12` (>= 3 ✓; was 6 before this CP — +6 new on the cinema tokens) @ 2026-07-27T18:27:00Z
     - `bun run test` → `Test Files 15 passed (15), Tests 142 passed (142)` (was 139, +3 new) (exit 0) @ 2026-07-27T18:27:22Z
 
-- [ ] CP 8.5 — `text-wrap: balance` on top-of-page headlines; preserve `pretty` on body.
+- [x] CP 8.5 — `text-wrap: balance` on top-of-page headlines; preserve `pretty` on body.
   - Gate: `grep -cE "text-wrap: (balance|pretty)" src/app/globals.css src/styles/2025-enhancements.css` >= 4; lint-clean.
-  - Proof: _pending_
+  - Proof:
+    - `grep -cE "text-wrap: (balance|pretty)" src/app/globals.css src/styles/2025-enhancements.css` → `3 + 2 = 5` (>= 4 ✓) @ 2026-07-27T18:28:00Z
+    - `bun run test` → `Test Files 15 passed (15), Tests 144 passed (144)` (was 142, +2 new) (exit 0) @ 2026-07-27T18:28:57Z
+  - ❌ FAIL: Initial CP 8.5 test asserted "balance" appeared *after* `text-wrap: pretty;` — but the explanatory comment is *above* the property. Test searched the wrong direction. @ 2026-07-27T18:28:35Z
+  - ✅ FIX: Reversed search direction: take `head.slice(0, propIdx)` and assert the preceding comment contains "balance". Single test, single line change. @ 2026-07-27T18:28:50Z
 
 - [ ] CP 8.6 — Document the new utilities with a source-cited comment block in `src/styles/2025-enhancements.css`.
   - Gate: `grep -c "MDN\|W3C\|web.dev\|Chrome for Developers" src/styles/2025-enhancements.css` >= 4.
@@ -345,6 +349,7 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
 | CP 8.2 | grep + test + typecheck + lint | 7/135/0/0 ✓ | 2026-07-27T18:24:30Z |
 | CP 8.3 | grep + test | 4/139 ✓ | 2026-07-27T18:26:17Z |
 | CP 8.4 | grep + test | 12/142 ✓ | 2026-07-27T18:27:22Z |
+| CP 8.5 | grep + test | 5/144 ✓ | 2026-07-27T18:28:57Z |
 
 ---
 

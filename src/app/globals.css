@@ -5466,6 +5466,10 @@ a:focus-visible .lux-underline {
     'kern' on,
     'liga' on,
     'dlig' on;
+  /* pretty (not balance): the statement is rendered as 3 individual <span>
+     lines, so balance cannot apply (it operates within a single text
+     block). pretty still optimizes orphan/widow + ragged-edge rhythm
+     across the visible line breaks. */
   text-wrap: pretty;
   hanging-punctuation: first last;
   color: var(--cinema-text);
