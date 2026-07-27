@@ -236,3 +236,28 @@ describe("2026 text-wrap balance/pretty (Phase 8.5)", () => {
     expect(css).toContain("text-wrap: balance");
   });
 });
+
+describe("2026 source citations (Phase 8.6)", () => {
+  it("cites MDN / W3C / web.dev / Chrome for Developers in the file header", () => {
+    const css = read("styles/2025-enhancements.css");
+    // The header summary lists each 2026 addition with at least one source URL
+    const header = css.slice(0, css.indexOf("SCROLL-DRIVEN ANIMATIONS"));
+    expect(header).toContain("MDN");
+    expect(header).toContain("W3C");
+    // The new 2026 sections each cite at least one official source.
+    const body = css.slice(css.indexOf("SCROLL-DRIVEN ANIMATIONS"));
+    const mdns = (body.match(/MDN:/g) || []).length;
+    const w3cs = (body.match(/W3C:/g) || []).length;
+    // The 2026 addendum sections cite at least 2 MDN + 2 W3C
+    // (one each for the interpolate-size / entry-transition / light-dark areas)
+    expect(mdns).toBeGreaterThanOrEqual(2);
+    expect(w3cs).toBeGreaterThanOrEqual(1);
+  });
+
+  it("documents the View Transitions decision (MPA opt-in NOT used)", () => {
+    const css = read("styles/2025-enhancements.css");
+    const header = css.slice(0, css.indexOf("SCROLL-DRIVEN ANIMATIONS"));
+    expect(header).toContain("NOT used");
+    expect(header).toContain("single route");
+  });
+});

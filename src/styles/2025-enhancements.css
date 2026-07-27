@@ -3,6 +3,45 @@
    CSS-Native features for super-premium aesthetic and performance.
    Works alongside existing Tailwind v4 + GSAP system.
    No JS required — all features run on compositor thread.
+   ═══════════════════════════════════════════════════════════════════════════
+
+   2026 ADDITIONS (Phase 8) — all progressive-enhancement, all behind
+   @supports with a prefers-reduced-motion guard where applicable.
+   Official 2025/2026 sources:
+
+   - @starting-style + transition-behavior: allow-discrete
+       MDN: developer.mozilla.org/en-US/docs/Web/CSS/@starting-style
+       MDN: developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior
+       W3C: CSS Transitions Level 2 (Working Draft, 2025)
+       Status: Baseline 2024+ (Chrome 117+, Safari 17.5+, Firefox 129+)
+
+   - interpolate-size: allow-keywords
+       MDN: developer.mozilla.org/en-US/docs/Web/CSS/interpolate-size
+       W3C: CSS Sizing Level 4
+       Status: Chrome 129+ (2024), Safari 18.2+ (Dec 2024), Firefox 144+ (2025)
+
+   - light-dark() (cinema palette extension)
+       MDN: developer.mozilla.org/en-US/docs/Web/CSS/light-dark
+       W3C: CSS Color 4
+       Status: Baseline 2024+ (Chrome 123+, Safari 17.5+, Firefox 120+)
+
+   - text-wrap: pretty | balance
+       MDN: developer.mozilla.org/en-US/docs/Web/CSS/text-wrap
+       CSS Text Module Level 4
+       Status: Baseline 2024+
+
+   - (carried over from 2025 baseline)
+       scroll-driven animations (animation-timeline: scroll() / view())
+       :has() selector
+       Container query units (cqi / cqw)
+       Subgrid
+       View Transitions (same-doc via useViewTransition hook; MPA opt-in
+       NOT used here because the public surface is a single route)
+       Variable font kinetic typography (opsz / SOFT / WONK)
+       OKLCH + color-mix
+       linear() easing
+       Subgrid bento grids
+
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─── SCROLL-DRIVEN ANIMATIONS (2025 baseline) ─────────────────────── */
