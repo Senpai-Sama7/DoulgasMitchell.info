@@ -314,9 +314,11 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
     - `grep -cE "interpolate-size" src/app/globals.css src/styles/2025-enhancements.css` → `0 + 4 = 4` (>= 2 ✓) @ 2026-07-27T18:25:45Z
     - `bun run test` → `Test Files 15 passed (15), Tests 139 passed (139)` (was 135, +4 new) (exit 0) @ 2026-07-27T18:26:17Z
 
-- [ ] CP 8.4 — `light-dark()` for the cinema palette (and a paired light palette) so OS-level theme switch is honored.
+- [x] CP 8.4 — `light-dark()` for the cinema palette (and a paired light palette) so OS-level theme switch is honored.
   - Gate: `grep -c "light-dark" src/app/globals.css src/styles/2025-enhancements.css` >= 3; new unit test passes; `bun run test` exits 0.
-  - Proof: _pending_
+  - Proof:
+    - `grep -c "light-dark" src/app/globals.css src/styles/2025-enhancements.css` → `6 + 6 = 12` (>= 3 ✓; was 6 before this CP — +6 new on the cinema tokens) @ 2026-07-27T18:27:00Z
+    - `bun run test` → `Test Files 15 passed (15), Tests 142 passed (142)` (was 139, +3 new) (exit 0) @ 2026-07-27T18:27:22Z
 
 - [ ] CP 8.5 — `text-wrap: balance` on top-of-page headlines; preserve `pretty` on body.
   - Gate: `grep -cE "text-wrap: (balance|pretty)" src/app/globals.css src/styles/2025-enhancements.css` >= 4; lint-clean.
@@ -342,6 +344,7 @@ Proof: `npm run build` → `✓ Built in 3.2s, 0 errors` (exit 0) @ 2025-03-13T1
 | CP 8.1 | typecheck + lint + test + build + smoke | 0/0/131/0/200 ✓ | 2026-07-27T18:20:13Z |
 | CP 8.2 | grep + test + typecheck + lint | 7/135/0/0 ✓ | 2026-07-27T18:24:30Z |
 | CP 8.3 | grep + test | 4/139 ✓ | 2026-07-27T18:26:17Z |
+| CP 8.4 | grep + test | 12/142 ✓ | 2026-07-27T18:27:22Z |
 
 ---
 

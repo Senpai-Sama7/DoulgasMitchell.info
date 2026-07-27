@@ -184,3 +184,34 @@ describe("2026 interpolate-size (Phase 8.3)", () => {
     expect(block).toContain("prefers-reduced-motion: no-preference");
   });
 });
+
+describe("2026 cinema light-dark() (Phase 8.4)", () => {
+  it("wraps every cinema color token in light-dark()", () => {
+    const css = read("app/globals.css");
+    // Find the .cinema-section block
+    const block = css.slice(css.indexOf(".cinema-section {"));
+    expect(block).toContain("--cinema-ink: light-dark(");
+    expect(block).toContain("--cinema-panel: light-dark(");
+    expect(block).toContain("--cinema-text: light-dark(");
+    expect(block).toContain("--cinema-muted: light-dark(");
+    expect(block).toContain("--cinema-line: light-dark(");
+    expect(block).toContain("--cinema-signal: light-dark(");
+  });
+
+  it("sets color-scheme: light dark on .cinema-section so light-dark() resolves", () => {
+    const css = read("app/globals.css");
+    const block = css.slice(css.indexOf(".cinema-section {"));
+    // Should appear before the closing brace of the .cinema-section block
+    const closing = block.indexOf("}");
+    const head = block.slice(0, closing);
+    expect(head).toContain("color-scheme: light dark");
+  });
+
+  it("preserves the dark-mode ink/panel values as the second light-dark() arg", () => {
+    // Sanity: the dark values are still present (just as the second arg now)
+    const css = read("app/globals.css");
+    const block = css.slice(css.indexOf(".cinema-section {"));
+    expect(block).toContain("oklch(0.105 0.014 250)"); // ink dark
+    expect(block).toContain("oklch(0.95 0.006 236)"); // text dark
+  });
+});

@@ -5175,12 +5175,13 @@ a:focus-visible .lux-underline {
    ═══════════════════════════════════════════════════════════════════════════ */
 
 .cinema-section {
-  --cinema-ink: oklch(0.105 0.014 250);
-  --cinema-panel: oklch(0.145 0.015 248);
-  --cinema-text: oklch(0.95 0.006 236);
-  --cinema-muted: oklch(0.65 0.018 236);
-  --cinema-line: oklch(0.3 0.02 240);
-  --cinema-signal: oklch(0.74 0.09 193);
+  --cinema-ink: light-dark(oklch(0.985 0.004 86), oklch(0.105 0.014 250));
+  --cinema-panel: light-dark(oklch(0.965 0.005 86), oklch(0.145 0.015 248));
+  --cinema-text: light-dark(oklch(0.18 0.012 250), oklch(0.95 0.006 236));
+  --cinema-muted: light-dark(oklch(0.42 0.016 240), oklch(0.65 0.018 236));
+  --cinema-line: light-dark(oklch(0.86 0.008 86), oklch(0.3 0.02 240));
+  --cinema-signal: light-dark(oklch(0.55 0.11 195), oklch(0.74 0.09 193));
+  color-scheme: light dark;
   position: relative;
   overflow: clip;
   color: var(--cinema-text);
@@ -5188,17 +5189,26 @@ a:focus-visible .lux-underline {
 }
 
 /* Chapter depth handoff (in): the page's paper bleeds into the ink so the
-   about → cinema cut reads as atmosphere, not a hard edge. */
+   about → cinema cut reads as atmosphere, not a hard edge. The 2026 pass
+   extends the gradient across the full first viewport of the pinned
+   scene — the hero plate's lower-half content no longer bleeds through
+   the slate when the page lands at Movement I. */
 .cinema-section::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: clamp(7rem, 16vh, 12rem);
+  height: clamp(38rem, 62svh, 52rem);
   z-index: 3;
   pointer-events: none;
-  background: linear-gradient(180deg, var(--background), transparent);
+  background: linear-gradient(
+    180deg,
+    var(--background) 0%,
+    color-mix(in oklch, var(--background), var(--cinema-ink) 55%) 38%,
+    var(--cinema-ink) 88%,
+    var(--cinema-ink) 100%
+  );
 }
 
 /* Chapter depth handoff (out): a signal seam passes the frame to Atlas —
@@ -5355,37 +5365,127 @@ a:focus-visible .lux-underline {
 .cinema-chapter {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
-  font-size: 0.62rem;
-  letter-spacing: 0.2em;
+  gap: 0.85rem;
+  font-family: var(--font-jetbrains-mono), var(--font-geist-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: none; /* 2026: mixed-case eyebrow, not all-caps newsroom */
   color: var(--cinema-muted);
 }
 
-.cinema-chapter::before {
-  content: '';
-  width: 2.5rem;
+/* "03" — small, tabular, the rail's pulse */
+.cinema-chapter-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--cinema-signal);
+  letter-spacing: 0.04em;
+}
+
+/* Hairline rule between number and label */
+.cinema-chapter-rule {
+  width: clamp(1.75rem, 4vw, 3rem);
   height: 1px;
-  background: var(--cinema-signal);
+  background: linear-gradient(
+    90deg,
+    var(--cinema-signal),
+    color-mix(in oklch, var(--cinema-signal), transparent 80%)
+  );
+  transform: scaleX(0.6);
+  transform-origin: left center;
+  animation: cinema-chapter-rule-grow 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+}
+
+@keyframes cinema-chapter-rule-grow {
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* "Story" — same lowercase weight class as the rail but mixed-case */
+.cinema-chapter-eyebrow {
+  font-weight: 500;
+  color: var(--cinema-text);
+  opacity: 0.86;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cinema-chapter-rule {
+    animation: none;
+    transform: scaleX(1);
+  }
 }
 
 .cinema-kicker {
-  margin-top: 0.7rem;
-  font-size: 0.58rem;
-  letter-spacing: 0.24em;
-  color: var(--cinema-signal);
+  margin-top: 0.95rem;
+  max-width: 38ch;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-size: clamp(0.95rem, 1.1vw, 1.08rem);
+  line-height: 1.45;
+  font-weight: 400;
+  letter-spacing: -0.005em;
+  color: color-mix(in oklch, var(--cinema-text), transparent 18%);
+  text-wrap: pretty;
+}
+
+/* Two-tone lead/rest: the lead reads as the editorial pull, the rest
+   softens into a soft-gray supporting sentence. */
+.cinema-kicker-lead {
+  color: var(--cinema-text);
+  font-weight: 500;
+  margin-right: 0.55ch;
+}
+
+.cinema-kicker-rest {
+  color: color-mix(in oklch, var(--cinema-muted), transparent 12%);
 }
 
 /* ── Movement I — the claim ────────────────────────────────────────────── */
 
+/* 2026 refresh:
+   - Display: Fraunces (opsz 30, WONK + SOFT axes) instead of Instrument Serif
+   - Cap:    width 22ch on the statement column so it never outgrows the
+             viewport on 2K/4K panels
+   - Rhythm: line-height 1.04 (was 0.92) for legibility, -0.018em tracking
+   - Text-wrap: pretty for the ragged edge
+   - Prose:  the whole thing reads like a magazine pull, not a billboard */
 .cinema-statement {
   position: relative;
   z-index: 1;
-  margin-top: clamp(2.25rem, 5vh, 3.5rem);
-  font-family: var(--font-instrument-serif), Georgia, serif;
-  font-size: clamp(2.9rem, 8vw, 7.5rem);
+  margin-top: clamp(1.75rem, 3.5vh, 2.5rem);
+  margin-inline: auto;
+  max-width: 22ch;
+  font-family: var(--font-display), var(--font-instrument-serif), Georgia, serif;
+  font-size: clamp(2.1rem, 4.6vw, 4.4rem);
   font-weight: 400;
-  line-height: 0.92;
-  letter-spacing: -0.05em;
+  font-style: normal;
+  line-height: 1.04;
+  letter-spacing: -0.018em;
+  font-feature-settings:
+    'ss01' on,
+    'ss02' on,
+    'kern' on,
+    'liga' on,
+    'dlig' on;
+  text-wrap: pretty;
+  hanging-punctuation: first last;
+  color: var(--cinema-text);
+}
+
+/* The first line carries a hand-cut drop-cap "S" (Fraunces WONK).
+   We use ::first-letter with a tall cap (3.6em), so the visual rhythm
+   of a magazine opening reads even at the smaller end of the scale. */
+.cinema-line--first::first-letter {
+  font-family: var(--font-display), var(--font-instrument-serif), Georgia, serif;
+  font-size: 2.05em;
+  font-weight: 500;
+  line-height: 0.86;
+  float: left;
+  margin: 0.04em 0.12em -0.06em -0.04em;
+  color: var(--cinema-signal);
+  font-feature-settings:
+    'ss01' on,
+    'ss02' on,
+    'kern' on;
 }
 
 .cinema-line {
@@ -5394,16 +5494,31 @@ a:focus-visible .lux-underline {
 }
 
 .cinema-line:nth-child(2) {
-  margin-left: clamp(1.75rem, 7vw, 7rem);
+  margin-left: clamp(0.75rem, 3vw, 2.5rem);
 }
 
 .cinema-line:nth-child(3) {
-  margin-left: clamp(0.75rem, 3vw, 3rem);
+  margin-left: clamp(0.4rem, 1.5vw, 1.25rem);
 }
 
 .cinema-line-em {
   font-style: italic;
-  color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 42%);
+  font-weight: 400;
+  color: color-mix(in oklch, var(--cinema-text), var(--cinema-signal) 46%);
+  font-feature-settings:
+    'ss01' on,
+    'ss02' on,
+    'kern' on;
+}
+
+/* On the largest screens (≥1536px / 2xl), the statement used to balloon to
+   7.5rem and overrun the panel. Cap it explicitly and add a touch of
+   optical-size increase for the bigger settings. */
+@media (min-width: 96rem) {
+  .cinema-statement {
+    font-size: clamp(2.6rem, 3.8vw, 4.4rem);
+    font-variation-settings: 'opsz' 36, 'SOFT' 30;
+  }
 }
 
 /* ── Movements II/III — the film plane ─────────────────────────────────── */
